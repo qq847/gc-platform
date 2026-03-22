@@ -1,0 +1,835 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Let's Meet — Organizer View · Event HQ</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg: #e8e4da;
+    --orange: #d95f2b;
+    --teal: #0a7fa8;
+    --green: #0d9b72;
+    --yellow: #f0a500;
+    --card: #ffffff;
+    --sidebar: #1a1f2e;
+    --nav-h: 60px;
+    --sidebar-w: 220px;
+    --text: #1a1a2e;
+    --muted: #6b7280;
+    --border: #e0ddd6;
+  }
+
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+    font-size: 14px;
+  }
+
+  /* ── TOP NAV ── */
+  .topnav {
+    position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+    height: var(--nav-h);
+    background: #fff;
+    border-bottom: 1px solid var(--border);
+    display: flex; align-items: center; padding: 0 20px;
+    gap: 16px;
+  }
+  .topnav .logo {
+    font-weight: 700; font-size: 15px; letter-spacing: .02em;
+    color: var(--text); white-space: nowrap;
+  }
+  .topnav .logo span { color: var(--orange); }
+  .topnav-spacer { flex: 1; }
+  .topnav .event-badge {
+    background: var(--bg); border: 1px solid var(--border);
+    border-radius: 8px; padding: 5px 12px;
+    font-size: 13px; font-weight: 500; color: var(--text);
+  }
+  .topnav .icon-btn {
+    width: 36px; height: 36px; border-radius: 50%;
+    background: var(--bg); border: none; cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 16px; position: relative;
+  }
+  .notif-dot {
+    position: absolute; top: 6px; right: 6px;
+    width: 8px; height: 8px; border-radius: 50%;
+    background: var(--orange); border: 2px solid #fff;
+  }
+  .avatar {
+    width: 34px; height: 34px; border-radius: 50%;
+    background: linear-gradient(135deg, var(--teal), var(--green));
+    display: flex; align-items: center; justify-content: center;
+    color: #fff; font-weight: 700; font-size: 13px; cursor: pointer;
+  }
+
+  /* ── LAYOUT ── */
+  .layout {
+    display: flex;
+    margin-top: var(--nav-h);
+    min-height: calc(100vh - var(--nav-h));
+  }
+
+  /* ── SIDEBAR ── */
+  .sidebar {
+    width: var(--sidebar-w);
+    background: var(--sidebar);
+    color: #c8cdd8;
+    padding: 20px 0;
+    flex-shrink: 0;
+    position: sticky; top: var(--nav-h);
+    height: calc(100vh - var(--nav-h));
+    overflow-y: auto;
+  }
+  .sidebar-section { margin-bottom: 8px; }
+  .sidebar-label {
+    font-size: 10px; font-weight: 600; letter-spacing: .1em;
+    text-transform: uppercase; color: #5a6275;
+    padding: 12px 20px 6px;
+  }
+  .sidebar-item {
+    display: flex; align-items: center; gap: 10px;
+    padding: 9px 20px; cursor: pointer;
+    font-size: 13.5px; font-weight: 400; color: #9aa0ad;
+    border-left: 3px solid transparent;
+    transition: all .15s;
+  }
+  .sidebar-item:hover { background: rgba(255,255,255,.06); color: #fff; }
+  .sidebar-item.active {
+    background: rgba(217, 95, 43, .15);
+    color: #fff; font-weight: 600;
+    border-left-color: var(--orange);
+  }
+  .sidebar-item .icon { font-size: 16px; width: 20px; text-align: center; }
+  .badge-count {
+    margin-left: auto; background: var(--orange);
+    color: #fff; font-size: 10px; font-weight: 700;
+    border-radius: 10px; padding: 1px 6px; min-width: 18px; text-align: center;
+  }
+
+  /* ── MAIN ── */
+  .main {
+    flex: 1;
+    padding: 28px 32px;
+    overflow-y: auto;
+    min-width: 0;
+  }
+
+  /* ── PAGE HEADER ── */
+  .page-header { margin-bottom: 20px; }
+  .page-header h1 { font-size: 22px; font-weight: 700; color: var(--text); }
+  .page-header p { font-size: 14px; color: var(--muted); margin-top: 2px; }
+  .status-pill {
+    display: inline-flex; align-items: center; gap: 6px;
+    background: rgba(13,155,114,.12); border: 1px solid rgba(13,155,114,.3);
+    border-radius: 20px; padding: 4px 12px;
+    font-size: 12.5px; font-weight: 600; color: #0d9b72;
+    margin-top: 8px;
+  }
+
+  /* ── TABS ── */
+  .tabs {
+    display: flex; gap: 4px;
+    border-bottom: 2px solid var(--border);
+    margin-bottom: 24px;
+  }
+  .tab {
+    padding: 10px 18px; cursor: pointer;
+    font-size: 13.5px; font-weight: 500; color: var(--muted);
+    border-bottom: 2px solid transparent; margin-bottom: -2px;
+    transition: all .15s;
+  }
+  .tab:hover { color: var(--text); }
+  .tab.active { color: var(--orange); border-bottom-color: var(--orange); font-weight: 600; }
+
+  /* ── STAT CARDS ── */
+  .stat-grid {
+    display: grid; grid-template-columns: repeat(4, 1fr);
+    gap: 14px; margin-bottom: 24px;
+  }
+  .stat-card {
+    background: var(--card); border-radius: 12px;
+    padding: 18px 20px;
+    box-shadow: 0 1px 3px rgba(0,0,0,.06);
+  }
+  .stat-card .s-icon { font-size: 22px; margin-bottom: 8px; }
+  .stat-card .s-val { font-size: 28px; font-weight: 700; color: var(--text); line-height: 1; }
+  .stat-card .s-label { font-size: 12px; color: var(--muted); margin-top: 4px; }
+  .stat-card .s-sub { font-size: 11px; color: var(--muted); margin-top: 6px; }
+  .s-bar { height: 3px; border-radius: 3px; margin-top: 10px; background: var(--border); overflow: hidden; }
+  .s-bar-fill { height: 100%; border-radius: 3px; }
+
+  /* ── TWO COLUMN ── */
+  .two-col { display: flex; gap: 20px; align-items: flex-start; }
+  .col-main { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 20px; }
+  .col-side { width: 300px; flex-shrink: 0; display: flex; flex-direction: column; gap: 16px; }
+
+  /* ── CARD ── */
+  .card {
+    background: var(--card); border-radius: 12px;
+    box-shadow: 0 1px 3px rgba(0,0,0,.06);
+    overflow: hidden;
+  }
+  .card-head {
+    padding: 14px 18px;
+    border-bottom: 1px solid var(--border);
+    display: flex; align-items: center; gap: 8px;
+  }
+  .card-head h2 { font-size: 14px; font-weight: 600; flex: 1; }
+  .card-body { padding: 16px 18px; }
+
+  /* ── TIMELINE GRID ── */
+  .timeline-wrap { overflow-x: auto; }
+  .timeline-table {
+    border-collapse: collapse;
+    min-width: 900px;
+    width: 100%;
+  }
+  .timeline-table th, .timeline-table td {
+    border: 1px solid #ede9e1;
+    font-size: 11px;
+    text-align: center;
+  }
+  .tl-head-room {
+    width: 90px; background: #f5f3ef; font-weight: 600;
+    color: var(--muted); padding: 8px; text-align: left;
+    font-size: 11.5px;
+  }
+  .tl-head-time {
+    background: #f5f3ef; font-weight: 500;
+    color: var(--muted); padding: 5px 4px; white-space: nowrap;
+    min-width: 44px;
+  }
+  .tl-cell {
+    height: 32px; padding: 3px; position: relative;
+    cursor: pointer;
+  }
+  .tl-cell:hover { background: rgba(10,127,168,.05); }
+  .meet-block {
+    border-radius: 4px; font-size: 9px; font-weight: 600;
+    height: 100%; display: flex; align-items: center;
+    justify-content: center; line-height: 1.2;
+    padding: 1px 3px;
+    overflow: hidden;
+    color: #fff;
+  }
+  .meet-confirmed { background: #0d9b72; }
+  .meet-pending { background: #f0a500; color: #fff; }
+  .meet-empty { background: transparent; }
+  .room-label {
+    background: #f5f3ef; font-weight: 600;
+    color: var(--text); padding: 6px 10px;
+    font-size: 12px; text-align: left;
+  }
+
+  /* ── ISSUES ── */
+  .issue-list { display: flex; flex-direction: column; gap: 10px; }
+  .issue-item {
+    display: flex; align-items: center; gap: 12px;
+    padding: 12px 14px;
+    border-radius: 8px; border: 1px solid;
+  }
+  .issue-conflict { background: #fff7f5; border-color: #ffd4c4; }
+  .issue-room { background: #fffbf0; border-color: #fde68a; }
+  .issue-icon { font-size: 18px; }
+  .issue-text { flex: 1; }
+  .issue-text strong { font-size: 13px; font-weight: 600; display: block; }
+  .issue-text span { font-size: 11.5px; color: var(--muted); }
+  .issue-actions { display: flex; gap: 6px; }
+  .btn-sm {
+    padding: 5px 10px; border-radius: 6px; font-size: 11.5px;
+    font-weight: 600; cursor: pointer; border: none; font-family: inherit;
+    transition: all .15s;
+  }
+  .btn-primary { background: var(--orange); color: #fff; }
+  .btn-primary:hover { background: #c04f1f; }
+  .btn-ghost {
+    background: transparent; color: var(--muted);
+    border: 1px solid var(--border);
+  }
+  .btn-ghost:hover { background: var(--bg); color: var(--text); }
+
+  /* ── ACTIVITY ── */
+  .activity-list { display: flex; flex-direction: column; gap: 0; }
+  .activity-item {
+    display: flex; align-items: flex-start; gap: 10px;
+    padding: 10px 0; border-bottom: 1px solid var(--border);
+  }
+  .activity-item:last-child { border-bottom: none; }
+  .act-dot {
+    width: 8px; height: 8px; border-radius: 50%;
+    flex-shrink: 0; margin-top: 4px;
+  }
+  .act-dot.req { background: var(--teal); }
+  .act-dot.conf { background: var(--green); }
+  .act-dot.cancel { background: #ef4444; }
+  .act-dot.info { background: var(--yellow); }
+  .act-text { font-size: 12.5px; color: var(--text); flex: 1; line-height: 1.5; }
+  .act-text strong { font-weight: 600; }
+  .act-time { font-size: 11px; color: var(--muted); white-space: nowrap; }
+
+  /* ── SIDE PANEL ── */
+  .action-grid {
+    display: grid; grid-template-columns: 1fr 1fr;
+    gap: 8px; padding: 14px;
+  }
+  .action-btn {
+    display: flex; flex-direction: column; align-items: center;
+    gap: 5px; padding: 12px 8px;
+    background: var(--bg); border: 1px solid var(--border);
+    border-radius: 10px; cursor: pointer;
+    font-size: 11.5px; font-weight: 500; color: var(--text);
+    font-family: inherit; transition: all .15s;
+    text-align: center;
+  }
+  .action-btn:hover { background: #fff; border-color: var(--orange); color: var(--orange); }
+  .action-btn .ab-icon { font-size: 20px; }
+
+  .stat-row {
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 10px 16px; border-bottom: 1px solid var(--border);
+    font-size: 13px;
+  }
+  .stat-row:last-child { border-bottom: none; }
+  .stat-row .sr-label { color: var(--muted); }
+  .stat-row .sr-val { font-weight: 600; color: var(--text); }
+
+  .top-person {
+    padding: 14px 16px;
+  }
+  .top-person-row {
+    display: flex; align-items: center; gap: 10px; margin-bottom: 8px;
+  }
+  .tp-avatar {
+    width: 36px; height: 36px; border-radius: 50%;
+    background: linear-gradient(135deg, var(--teal), var(--green));
+    display: flex; align-items: center; justify-content: center;
+    color: #fff; font-weight: 700; font-size: 14px;
+  }
+  .tp-info { flex: 1; }
+  .tp-name { font-size: 13.5px; font-weight: 600; }
+  .tp-sub { font-size: 11.5px; color: var(--muted); }
+  .tp-badge {
+    background: rgba(13,155,114,.12); color: var(--green);
+    font-size: 11px; font-weight: 700; border-radius: 6px;
+    padding: 2px 8px;
+  }
+  .mini-bar-wrap { margin-top: 6px; }
+  .mini-bar-label {
+    display: flex; justify-content: space-between;
+    font-size: 11px; color: var(--muted); margin-bottom: 3px;
+  }
+  .mini-bar { height: 5px; background: var(--border); border-radius: 3px; overflow: hidden; }
+  .mini-bar-fill { height: 100%; border-radius: 3px; background: var(--green); }
+
+  .legend-row {
+    display: flex; gap: 14px; padding: 10px 16px;
+    border-top: 1px solid var(--border); flex-wrap: wrap;
+  }
+  .legend-item { display: flex; align-items: center; gap: 5px; font-size: 11px; color: var(--muted); }
+  .legend-dot { width: 10px; height: 10px; border-radius: 3px; }
+</style>
+</head>
+<body>
+
+<!-- TOP NAV -->
+<nav class="topnav">
+  <div class="logo">GAME <span>CONNECTION</span> · Event HQ</div>
+  <div class="topnav-spacer"></div>
+  <div class="event-badge">🎮 Indie Game Fest 2026</div>
+  <button class="icon-btn" title="Notifications">
+    🔔<span class="notif-dot"></span>
+  </button>
+  <div class="avatar">QQ</div>
+</nav>
+
+<!-- LAYOUT -->
+<div class="layout">
+
+  <!-- SIDEBAR -->
+  <aside class="sidebar">
+    <div class="sidebar-section">
+      <div class="sidebar-label">Event</div>
+      <div class="sidebar-item"><span class="icon">📊</span> Dashboard</div>
+      <div class="sidebar-item"><span class="icon">📅</span> Schedule</div>
+      <div class="sidebar-item"><span class="icon">👥</span> Participants</div>
+      <div class="sidebar-item"><span class="icon">🎮</span> Game Showcase</div>
+      <div class="sidebar-item"><span class="icon">🏆</span> Awards</div>
+    </div>
+    <div class="sidebar-section">
+      <div class="sidebar-label">Networking</div>
+      <div class="sidebar-item active"><span class="icon">🤝</span> Let's Meet <span class="badge-count">8</span></div>
+      <div class="sidebar-item"><span class="icon">💬</span> Messages</div>
+    </div>
+    <div class="sidebar-section">
+      <div class="sidebar-label">Manage</div>
+      <div class="sidebar-item"><span class="icon">🏟️</span> Rooms & Venues</div>
+      <div class="sidebar-item"><span class="icon">📣</span> Communications</div>
+      <div class="sidebar-item"><span class="icon">📈</span> Analytics</div>
+      <div class="sidebar-item"><span class="icon">⚙️</span> Settings</div>
+    </div>
+  </aside>
+
+  <!-- MAIN CONTENT -->
+  <main class="main">
+
+    <!-- PAGE HEADER -->
+    <div class="page-header">
+      <h1>Let's Meet — Organizer View</h1>
+      <p>Manage all meetings for Indie Game Fest 2026</p>
+      <div class="status-pill">🟢 Open — 284 participants · 3 days · 847 meeting requests</div>
+    </div>
+
+    <!-- TABS -->
+    <div class="tabs">
+      <div class="tab active">Overview</div>
+      <div class="tab">Meeting Grid</div>
+      <div class="tab">Participants</div>
+      <div class="tab">Room Management</div>
+    </div>
+
+    <!-- STAT CARDS -->
+    <div class="stat-grid">
+      <div class="stat-card">
+        <div class="s-icon">🤝</div>
+        <div class="s-val">847</div>
+        <div class="s-label">Total Requests</div>
+        <div class="s-sub">+34 in last 24h</div>
+        <div class="s-bar"><div class="s-bar-fill" style="width:100%;background:var(--teal)"></div></div>
+      </div>
+      <div class="stat-card">
+        <div class="s-icon">✅</div>
+        <div class="s-val">623</div>
+        <div class="s-label">Confirmed Meetings</div>
+        <div class="s-sub">73.6% confirmation rate</div>
+        <div class="s-bar"><div class="s-bar-fill" style="width:73%;background:var(--green)"></div></div>
+      </div>
+      <div class="stat-card">
+        <div class="s-icon">⏳</div>
+        <div class="s-val">156</div>
+        <div class="s-label">Pending</div>
+        <div class="s-sub">18.4% awaiting response</div>
+        <div class="s-bar"><div class="s-bar-fill" style="width:18%;background:var(--yellow)"></div></div>
+      </div>
+      <div class="stat-card">
+        <div class="s-icon">📍</div>
+        <div class="s-val">68</div>
+        <div class="s-label">Unmatched</div>
+        <div class="s-sub">8% need attention</div>
+        <div class="s-bar"><div class="s-bar-fill" style="width:8%;background:#ef4444"></div></div>
+      </div>
+    </div>
+
+    <!-- TWO-COLUMN LAYOUT -->
+    <div class="two-col">
+
+      <!-- LEFT COLUMN -->
+      <div class="col-main">
+
+        <!-- TODAY'S MEETING OVERVIEW (TIMELINE) -->
+        <div class="card">
+          <div class="card-head">
+            <h2>📅 Today's Meeting Overview</h2>
+            <span style="font-size:12px;color:var(--muted)">Tuesday, April 15 · 4 rooms</span>
+          </div>
+          <div class="card-body" style="padding:12px;">
+            <div class="timeline-wrap">
+              <table class="timeline-table">
+                <thead>
+                  <tr>
+                    <th class="tl-head-room">Room</th>
+                    <th class="tl-head-time">9:00</th>
+                    <th class="tl-head-time">9:30</th>
+                    <th class="tl-head-time">10:00</th>
+                    <th class="tl-head-time">10:30</th>
+                    <th class="tl-head-time">11:00</th>
+                    <th class="tl-head-time">11:30</th>
+                    <th class="tl-head-time">12:00</th>
+                    <th class="tl-head-time">12:30</th>
+                    <th class="tl-head-time">13:00</th>
+                    <th class="tl-head-time">13:30</th>
+                    <th class="tl-head-time">14:00</th>
+                    <th class="tl-head-time">14:30</th>
+                    <th class="tl-head-time">15:00</th>
+                    <th class="tl-head-time">15:30</th>
+                    <th class="tl-head-time">16:00</th>
+                    <th class="tl-head-time">16:30</th>
+                    <th class="tl-head-time">17:00</th>
+                    <th class="tl-head-time">17:30</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <!-- Room A -->
+                  <tr>
+                    <td class="room-label">Room A</td>
+                    <td class="tl-cell"><div class="meet-block meet-confirmed" title="Sarah C. ↔ Alex K.">S↔A</div></td>
+                    <td class="tl-cell"></td>
+                    <td class="tl-cell"><div class="meet-block meet-confirmed" title="Mike R. ↔ Lisa T.">M↔L</div></td>
+                    <td class="tl-cell"><div class="meet-block meet-confirmed" title="Tom W. ↔ Jane D.">T↔J</div></td>
+                    <td class="tl-cell"></td>
+                    <td class="tl-cell"><div class="meet-block meet-confirmed" title="Chris M. ↔ Ana S.">C↔A</div></td>
+                    <td class="tl-cell"></td>
+                    <td class="tl-cell"></td>
+                    <td class="tl-cell"><div class="meet-block meet-confirmed" title="Ben H. ↔ Mia R.">B↔M</div></td>
+                    <td class="tl-cell"><div class="meet-block meet-pending" title="Pending: Dave ↔ Zoe">D↔Z</div></td>
+                    <td class="tl-cell"></td>
+                    <td class="tl-cell"><div class="meet-block meet-confirmed">K↔P</div></td>
+                    <td class="tl-cell"></td>
+                    <td class="tl-cell"><div class="meet-block meet-confirmed">N↔R</div></td>
+                    <td class="tl-cell"><div class="meet-block meet-pending">E↔F</div></td>
+                    <td class="tl-cell"></td>
+                    <td class="tl-cell"><div class="meet-block meet-confirmed">L↔G</div></td>
+                    <td class="tl-cell"></td>
+                  </tr>
+                  <!-- Room B -->
+                  <tr>
+                    <td class="room-label">Room B</td>
+                    <td class="tl-cell"></td>
+                    <td class="tl-cell"><div class="meet-block meet-confirmed">J↔K</div></td>
+                    <td class="tl-cell"><div class="meet-block meet-confirmed">P↔Q</div></td>
+                    <td class="tl-cell"></td>
+                    <td class="tl-cell"><div class="meet-block meet-pending">V↔W</div></td>
+                    <td class="tl-cell"><div class="meet-block meet-confirmed">H↔I</div></td>
+                    <td class="tl-cell"></td>
+                    <td class="tl-cell"><div class="meet-block meet-confirmed">O↔N</div></td>
+                    <td class="tl-cell"><div class="meet-block meet-confirmed">S↔R</div></td>
+                    <td class="tl-cell"></td>
+                    <td class="tl-cell"><div class="meet-block meet-confirmed">A↔B</div></td>
+                    <td class="tl-cell"><div class="meet-block meet-pending">C↔D</div></td>
+                    <td class="tl-cell"></td>
+                    <td class="tl-cell"><div class="meet-block meet-confirmed">E↔G</div></td>
+                    <td class="tl-cell"><div class="meet-block meet-confirmed">H↔J</div></td>
+                    <td class="tl-cell"></td>
+                    <td class="tl-cell"><div class="meet-block meet-confirmed">K↔L</div></td>
+                    <td class="tl-cell"><div class="meet-block meet-pending">M↔N</div></td>
+                  </tr>
+                  <!-- Room C -->
+                  <tr>
+                    <td class="room-label">Room C</td>
+                    <td class="tl-cell"><div class="meet-block meet-confirmed">X↔Y</div></td>
+                    <td class="tl-cell"><div class="meet-block meet-confirmed">A↔Z</div></td>
+                    <td class="tl-cell"></td>
+                    <td class="tl-cell"><div class="meet-block meet-confirmed">B↔C</div></td>
+                    <td class="tl-cell"><div class="meet-block meet-confirmed">D↔E</div></td>
+                    <td class="tl-cell"></td>
+                    <td class="tl-cell"><div class="meet-block meet-pending">F↔G</div></td>
+                    <td class="tl-cell"><div class="meet-block meet-confirmed">H↔K</div></td>
+                    <td class="tl-cell"></td>
+                    <td class="tl-cell"><div class="meet-block meet-confirmed">L↔M</div></td>
+                    <td class="tl-cell"><div class="meet-block meet-pending">N↔O</div></td>
+                    <td class="tl-cell"></td>
+                    <td class="tl-cell"><div class="meet-block meet-confirmed">P↔Q</div></td>
+                    <td class="tl-cell"><div class="meet-block meet-confirmed">R↔S</div></td>
+                    <td class="tl-cell"></td>
+                    <td class="tl-cell"><div class="meet-block meet-confirmed">T↔U</div></td>
+                    <td class="tl-cell"><div class="meet-block meet-pending">V↔W</div></td>
+                    <td class="tl-cell"></td>
+                  </tr>
+                  <!-- Virtual -->
+                  <tr>
+                    <td class="room-label">Virtual</td>
+                    <td class="tl-cell"><div class="meet-block meet-confirmed" style="background:var(--teal)">V↔V</div></td>
+                    <td class="tl-cell"><div class="meet-block meet-confirmed" style="background:var(--teal)">V↔V</div></td>
+                    <td class="tl-cell"><div class="meet-block meet-pending">V↔V</div></td>
+                    <td class="tl-cell"><div class="meet-block meet-confirmed" style="background:var(--teal)">V↔V</div></td>
+                    <td class="tl-cell"></td>
+                    <td class="tl-cell"><div class="meet-block meet-confirmed" style="background:var(--teal)">V↔V</div></td>
+                    <td class="tl-cell"><div class="meet-block meet-confirmed" style="background:var(--teal)">V↔V</div></td>
+                    <td class="tl-cell"><div class="meet-block meet-pending">V↔V</div></td>
+                    <td class="tl-cell"><div class="meet-block meet-confirmed" style="background:var(--teal)">V↔V</div></td>
+                    <td class="tl-cell"><div class="meet-block meet-confirmed" style="background:var(--teal)">V↔V</div></td>
+                    <td class="tl-cell"></td>
+                    <td class="tl-cell"><div class="meet-block meet-confirmed" style="background:var(--teal)">V↔V</div></td>
+                    <td class="tl-cell"><div class="meet-block meet-pending">V↔V</div></td>
+                    <td class="tl-cell"><div class="meet-block meet-confirmed" style="background:var(--teal)">V↔V</div></td>
+                    <td class="tl-cell"></td>
+                    <td class="tl-cell"><div class="meet-block meet-confirmed" style="background:var(--teal)">V↔V</div></td>
+                    <td class="tl-cell"><div class="meet-block meet-confirmed" style="background:var(--teal)">V↔V</div></td>
+                    <td class="tl-cell"><div class="meet-block meet-pending">V↔V</div></td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+            <div class="legend-row">
+              <div class="legend-item"><div class="legend-dot" style="background:var(--green)"></div> Confirmed</div>
+              <div class="legend-item"><div class="legend-dot" style="background:var(--yellow)"></div> Pending</div>
+              <div class="legend-item"><div class="legend-dot" style="background:var(--teal)"></div> Virtual</div>
+              <div class="legend-item"><div class="legend-dot" style="background:var(--border)"></div> Available</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- MATCHING ISSUES -->
+        <div class="card">
+          <div class="card-head">
+            <h2>⚠️ Matching Issues</h2>
+            <span style="background:#fef3f2;color:#ef4444;border:1px solid #fecdca;border-radius:6px;padding:2px 8px;font-size:11px;font-weight:600;">8 need attention</span>
+          </div>
+          <div class="card-body">
+            <div style="font-size:12px;color:var(--muted);margin-bottom:10px;font-weight:500;">TIME CONFLICTS — 3 issues</div>
+            <div class="issue-list" style="margin-bottom:16px;">
+              <div class="issue-item issue-conflict">
+                <div class="issue-icon">🔴</div>
+                <div class="issue-text">
+                  <strong>Sarah Chen ↔ Marcus Lee</strong>
+                  <span>Both have meetings in Room A at 10:00 — overlap with Tom & Jake session</span>
+                </div>
+                <div class="issue-actions">
+                  <button class="btn-sm btn-primary">Auto-resolve</button>
+                  <button class="btn-sm btn-ghost">Manual fix</button>
+                </div>
+              </div>
+              <div class="issue-item issue-conflict">
+                <div class="issue-icon">🔴</div>
+                <div class="issue-text">
+                  <strong>Diego Ruiz ↔ Yuki Tanaka</strong>
+                  <span>14:30 conflict — Virtual slot double-booked by 2 pairs</span>
+                </div>
+                <div class="issue-actions">
+                  <button class="btn-sm btn-primary">Auto-resolve</button>
+                  <button class="btn-sm btn-ghost">Manual fix</button>
+                </div>
+              </div>
+              <div class="issue-item issue-conflict">
+                <div class="issue-icon">🔴</div>
+                <div class="issue-text">
+                  <strong>Nina Park ↔ Felix Wagner</strong>
+                  <span>16:00 conflict — Room C has 3 simultaneous confirmed bookings</span>
+                </div>
+                <div class="issue-actions">
+                  <button class="btn-sm btn-primary">Auto-resolve</button>
+                  <button class="btn-sm btn-ghost">Manual fix</button>
+                </div>
+              </div>
+            </div>
+            <div style="font-size:12px;color:var(--muted);margin-bottom:10px;font-weight:500;">ROOM SHORTAGE — 5 time slots</div>
+            <div class="issue-list">
+              <div class="issue-item issue-room">
+                <div class="issue-icon">🟡</div>
+                <div class="issue-text">
+                  <strong>11:00 – 6 requests, only 4 room slots available</strong>
+                  <span>2 meetings cannot be accommodated at this time</span>
+                </div>
+                <div class="issue-actions">
+                  <button class="btn-sm btn-primary">Auto-resolve</button>
+                  <button class="btn-sm btn-ghost">Manual fix</button>
+                </div>
+              </div>
+              <div class="issue-item issue-room">
+                <div class="issue-icon">🟡</div>
+                <div class="issue-text">
+                  <strong>14:00 – 7 requests, only 4 room slots available</strong>
+                  <span>3 meetings need to be rescheduled to another slot</span>
+                </div>
+                <div class="issue-actions">
+                  <button class="btn-sm btn-primary">Auto-resolve</button>
+                  <button class="btn-sm btn-ghost">Manual fix</button>
+                </div>
+              </div>
+              <div class="issue-item issue-room" style="opacity:.7">
+                <div class="issue-icon">🟡</div>
+                <div class="issue-text">
+                  <strong>+3 more room shortage issues</strong>
+                  <span>15:30, 16:30, 17:00 — click to expand all</span>
+                </div>
+                <div class="issue-actions">
+                  <button class="btn-sm btn-ghost">View all 5</button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- RECENT ACTIVITY -->
+        <div class="card">
+          <div class="card-head">
+            <h2>🕐 Recent Activity</h2>
+            <span style="font-size:12px;color:var(--muted)">Live · Last 10 events</span>
+          </div>
+          <div class="card-body" style="padding:0 18px;">
+            <div class="activity-list">
+              <div class="activity-item">
+                <div class="act-dot req"></div>
+                <div class="act-text"><strong>Sarah Chen</strong> requested a meeting with <strong>Marcus Lee</strong> (Nexus Publishing)</div>
+                <div class="act-time">2 min ago</div>
+              </div>
+              <div class="activity-item">
+                <div class="act-dot conf"></div>
+                <div class="act-text"><strong>Alex Kim</strong> confirmed meeting with <strong>Diego Ruiz</strong> · Room B, 11:00</div>
+                <div class="act-time">5 min ago</div>
+              </div>
+              <div class="activity-item">
+                <div class="act-dot req"></div>
+                <div class="act-text"><strong>Yuki Tanaka</strong> requested a meeting with <strong>Felix Wagner</strong> (IndieFund VC)</div>
+                <div class="act-time">8 min ago</div>
+              </div>
+              <div class="activity-item">
+                <div class="act-dot conf"></div>
+                <div class="act-text"><strong>Nina Park</strong> confirmed meeting with <strong>Tom Hartley</strong> · Virtual, 9:30</div>
+                <div class="act-time">12 min ago</div>
+              </div>
+              <div class="activity-item">
+                <div class="act-dot cancel"></div>
+                <div class="act-text"><strong>Priya Sharma</strong> cancelled meeting with <strong>Jake Wilson</strong> (scheduling conflict)</div>
+                <div class="act-time">15 min ago</div>
+              </div>
+              <div class="activity-item">
+                <div class="act-dot conf"></div>
+                <div class="act-text"><strong>Lucas Mendes</strong> confirmed meeting with <strong>Anna Kovacs</strong> · Room A, 14:00</div>
+                <div class="act-time">18 min ago</div>
+              </div>
+              <div class="activity-item">
+                <div class="act-dot req"></div>
+                <div class="act-text"><strong>James Liu</strong> requested a meeting with <strong>Sarah Chen</strong></div>
+                <div class="act-time">22 min ago</div>
+              </div>
+              <div class="activity-item">
+                <div class="act-dot info"></div>
+                <div class="act-text">System auto-resolved 2 scheduling conflicts in Room C · 10:30–11:00 block</div>
+                <div class="act-time">30 min ago</div>
+              </div>
+              <div class="activity-item">
+                <div class="act-dot conf"></div>
+                <div class="act-text"><strong>Mia Roberts</strong> confirmed meeting with <strong>Carlos Vega</strong> · Room B, 15:30</div>
+                <div class="act-time">35 min ago</div>
+              </div>
+              <div class="activity-item">
+                <div class="act-dot req"></div>
+                <div class="act-text"><strong>Oliver Braun</strong> requested a meeting with <strong>Yuki Tanaka</strong> (Pixel Valley Studio)</div>
+                <div class="act-time">41 min ago</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div><!-- /col-main -->
+
+      <!-- RIGHT SIDE PANEL -->
+      <div class="col-side">
+
+        <!-- QUICK ACTIONS -->
+        <div class="card">
+          <div class="card-head"><h2>⚡ Quick Actions</h2></div>
+          <div class="action-grid">
+            <button class="action-btn">
+              <span class="ab-icon">📧</span>
+              Send Reminder to Pending
+            </button>
+            <button class="action-btn">
+              <span class="ab-icon">📤</span>
+              Export Schedule
+            </button>
+            <button class="action-btn">
+              <span class="ab-icon">🏟️</span>
+              Add Room
+            </button>
+            <button class="action-btn">
+              <span class="ab-icon">🔒</span>
+              Close Requests
+            </button>
+          </div>
+        </div>
+
+        <!-- ENGAGEMENT STATS -->
+        <div class="card">
+          <div class="card-head"><h2>📊 Engagement Stats</h2></div>
+
+          <!-- Most Requested -->
+          <div class="top-person">
+            <div style="font-size:11px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;margin-bottom:8px;">Most Requested</div>
+            <div class="top-person-row">
+              <div class="tp-avatar">SC</div>
+              <div class="tp-info">
+                <div class="tp-name">Sarah Chen</div>
+                <div class="tp-sub">Nexus Publishing · Publisher</div>
+              </div>
+              <div class="tp-badge">23×</div>
+            </div>
+            <div class="mini-bar-wrap">
+              <div class="mini-bar-label"><span>Meeting requests</span><span>23 / 30 max</span></div>
+              <div class="mini-bar"><div class="mini-bar-fill" style="width:77%"></div></div>
+            </div>
+          </div>
+
+          <div class="stat-row">
+            <span class="sr-label">Avg meetings / participant</span>
+            <span class="sr-val">2.2</span>
+          </div>
+          <div class="stat-row">
+            <span class="sr-label">Accept rate</span>
+            <span class="sr-val" style="color:var(--green)">73%</span>
+          </div>
+          <div class="stat-row">
+            <span class="sr-label">Decline rate</span>
+            <span class="sr-val" style="color:#ef4444">18%</span>
+          </div>
+          <div class="stat-row">
+            <span class="sr-label">No response</span>
+            <span class="sr-val" style="color:var(--yellow)">9%</span>
+          </div>
+          <div class="stat-row">
+            <span class="sr-label">Avg response time</span>
+            <span class="sr-val">4.3 hrs</span>
+          </div>
+          <div class="stat-row">
+            <span class="sr-label">Total meeting hours</span>
+            <span class="sr-val">311 hrs</span>
+          </div>
+        </div>
+
+        <!-- ROOM UTILIZATION -->
+        <div class="card">
+          <div class="card-head"><h2>🏟️ Room Utilization</h2></div>
+          <div style="padding:14px 16px;">
+            <div style="margin-bottom:12px;">
+              <div class="mini-bar-label" style="font-size:12.5px;font-weight:500;color:var(--text);">
+                <span>Room A</span><span style="color:var(--green);font-weight:600;">87%</span>
+              </div>
+              <div class="mini-bar" style="height:8px;margin-top:4px;">
+                <div class="mini-bar-fill" style="width:87%;background:var(--green)"></div>
+              </div>
+            </div>
+            <div style="margin-bottom:12px;">
+              <div class="mini-bar-label" style="font-size:12.5px;font-weight:500;color:var(--text);">
+                <span>Room B</span><span style="color:var(--green);font-weight:600;">92%</span>
+              </div>
+              <div class="mini-bar" style="height:8px;margin-top:4px;">
+                <div class="mini-bar-fill" style="width:92%;background:var(--orange)"></div>
+              </div>
+            </div>
+            <div style="margin-bottom:12px;">
+              <div class="mini-bar-label" style="font-size:12.5px;font-weight:500;color:var(--text);">
+                <span>Room C</span><span style="color:var(--teal);font-weight:600;">74%</span>
+              </div>
+              <div class="mini-bar" style="height:8px;margin-top:4px;">
+                <div class="mini-bar-fill" style="width:74%;background:var(--teal)"></div>
+              </div>
+            </div>
+            <div>
+              <div class="mini-bar-label" style="font-size:12.5px;font-weight:500;color:var(--text);">
+                <span>Virtual</span><span style="color:var(--teal);font-weight:600;">68%</span>
+              </div>
+              <div class="mini-bar" style="height:8px;margin-top:4px;">
+                <div class="mini-bar-fill" style="width:68%;background:var(--teal)"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div><!-- /col-side -->
+
+    </div><!-- /two-col -->
+
+  </main>
+</div>
+
+</body>
+</html>
