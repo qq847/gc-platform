@@ -1,0 +1,544 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Game Showcase — Event HQ</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'DM Sans',sans-serif;background:#e8e4da;color:#1c1a17;min-height:100vh}
+
+/* Top Nav */
+.topnav{position:sticky;top:0;z-index:100;height:56px;background:#fff;border-bottom:1px solid #e0dbd0;display:flex;align-items:center;justify-content:space-between;padding:0 24px 0 220px}
+.topnav-logo{font-weight:700;font-size:15px;color:#1c1a17;letter-spacing:.3px}
+.topnav-logo span{color:#d95f2b}
+.topnav-right{display:flex;align-items:center;gap:16px}
+.notif-btn{width:36px;height:36px;border:none;background:#f5f3ef;border-radius:8px;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:16px;position:relative}
+.notif-dot{position:absolute;top:6px;right:6px;width:8px;height:8px;background:#d95f2b;border-radius:50%;border:2px solid #fff}
+.org-info{display:flex;align-items:center;gap:10px}
+.org-avatar{width:32px;height:32px;border-radius:50%;background:linear-gradient(135deg,#d95f2b,#f08040);display:flex;align-items:center;justify-content:center;color:#fff;font-weight:700;font-size:13px}
+.org-name{font-size:13px;font-weight:600;color:#1c1a17}
+
+/* Sidebar */
+.sidebar{position:fixed;top:0;left:0;width:200px;height:100vh;background:#1c1a17;padding-top:56px;z-index:99;overflow-y:auto}
+.sidebar-nav{padding:16px 0}
+.nav-item{display:flex;align-items:center;gap:10px;padding:10px 16px;font-size:13.5px;font-weight:500;color:#a09890;cursor:pointer;transition:all .15s;text-decoration:none}
+.nav-item:hover{color:#fff;background:rgba(255,255,255,.06)}
+.nav-item.active{color:#fff;background:rgba(217,95,43,.2);border-right:3px solid #d95f2b}
+.nav-item .icon{font-size:15px;width:20px;text-align:center}
+
+/* Main */
+.main{margin-left:200px;padding-top:56px;min-height:100vh}
+.content{padding:24px}
+
+/* Page Header */
+.page-header{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:24px}
+.page-title h1{font-size:24px;font-weight:700;color:#1c1a17;margin-bottom:4px}
+.page-title p{font-size:14px;color:#6b6660}
+.header-right{display:flex;align-items:center;gap:12px}
+.stat-badge{padding:6px 12px;border-radius:20px;font-size:12px;font-weight:600}
+.badge-total{background:#e8e4da;color:#6b6660}
+.badge-approved{background:#d4f5e7;color:#0d9b72}
+.badge-pending{background:#fef3e2;color:#d97706}
+.btn{padding:9px 18px;border-radius:8px;font-size:13.5px;font-weight:600;cursor:pointer;border:none;font-family:'DM Sans',sans-serif;transition:all .15s;display:inline-flex;align-items:center;gap:6px}
+.btn-primary{background:#d95f2b;color:#fff}
+.btn-primary:hover{background:#c4521f}
+.btn-sm{padding:5px 12px;font-size:12px;font-weight:600;border-radius:6px;cursor:pointer;border:1px solid;font-family:'DM Sans',sans-serif}
+.btn-view{background:#fff;color:#0a7fa8;border-color:#0a7fa8}
+.btn-feature{background:#fff;color:#d95f2b;border-color:#d95f2b}
+.btn-approve{background:#0d9b72;color:#fff;border-color:#0d9b72}
+.btn-reject{background:#fff;color:#dc2626;border-color:#dc2626}
+.btn-ghost{background:transparent;color:#6b6660;border-color:#d0cbc0}
+.btn-ghost:hover{background:#f5f3ef}
+
+/* Two-col layout */
+.two-col{display:flex;gap:20px;align-items:flex-start}
+.main-col{flex:1;min-width:0}
+.right-panel{width:300px;flex-shrink:0}
+
+/* Tabs */
+.tabs{display:flex;gap:2px;background:#f0ece4;border-radius:8px;padding:4px;margin-bottom:16px}
+.tab{padding:7px 14px;border-radius:6px;font-size:13px;font-weight:500;color:#6b6660;cursor:pointer;transition:all .15s;border:none;background:none;font-family:'DM Sans',sans-serif}
+.tab.active{background:#fff;color:#1c1a17;font-weight:600;box-shadow:0 1px 3px rgba(0,0,0,.1)}
+.tab-count{background:#e8e4da;color:#6b6660;padding:1px 7px;border-radius:10px;font-size:11px;margin-left:4px}
+.tab.active .tab-count{background:#d95f2b;color:#fff}
+
+/* Game List */
+.card{background:#fff;border-radius:12px;overflow:hidden;box-shadow:0 1px 3px rgba(0,0,0,.06)}
+.game-row{display:flex;align-items:center;gap:14px;padding:14px 16px;border-bottom:1px solid #f0ece4;cursor:pointer;transition:background .1s}
+.game-row:last-child{border-bottom:none}
+.game-row:hover{background:#fafaf8}
+.game-thumb{width:60px;height:45px;border-radius:6px;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;color:#fff;letter-spacing:.5px}
+.game-info{flex:1;min-width:0}
+.game-name{font-size:14px;font-weight:600;color:#1c1a17;display:flex;align-items:center;gap:6px}
+.featured-star{color:#d95f2b;font-size:12px}
+.genre-tag{display:inline-block;padding:2px 8px;background:#f0ece4;border-radius:4px;font-size:11px;font-weight:500;color:#6b6660}
+.game-dev{font-size:12px;color:#6b6660;margin-top:3px}
+.game-meta{font-size:11px;color:#a09890;text-align:center;min-width:80px}
+.status-badge{padding:3px 10px;border-radius:12px;font-size:11px;font-weight:600;min-width:70px;text-align:center}
+.status-approved{background:#d4f5e7;color:#0d9b72}
+.status-pending{background:#fef3e2;color:#d97706}
+.status-featured{background:#fde8dc;color:#d95f2b}
+.status-rejected{background:#fee2e2;color:#dc2626}
+.platform-icons{display:flex;gap:4px;min-width:60px}
+.plat-icon{width:22px;height:22px;border-radius:4px;background:#f0ece4;display:flex;align-items:center;justify-content:center;font-size:11px}
+.actions{display:flex;gap:4px;flex-shrink:0}
+
+/* Right Panel Cards */
+.panel-card{background:#fff;border-radius:12px;padding:18px;box-shadow:0 1px 3px rgba(0,0,0,.06);margin-bottom:16px}
+.panel-card h3{font-size:13px;font-weight:700;color:#1c1a17;margin-bottom:14px;letter-spacing:.2px}
+.stat-row{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;font-size:13px}
+.stat-label{color:#6b6660}
+.stat-val{font-weight:600;color:#1c1a17}
+.progress-wrap{margin:12px 0}
+.progress-bar-bg{height:6px;background:#f0ece4;border-radius:3px;overflow:hidden;margin-top:4px}
+.progress-bar{height:6px;border-radius:3px;background:#0d9b72}
+.invite-input{display:flex;gap:8px;margin-top:10px}
+.invite-input input{flex:1;padding:8px 12px;border:1px solid #d0cbc0;border-radius:8px;font-size:13px;font-family:'DM Sans',sans-serif;outline:none}
+.invite-input input:focus{border-color:#d95f2b}
+.featured-list{margin-top:4px}
+.featured-item{display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid #f5f3ef;font-size:13px;color:#1c1a17}
+.featured-item:last-child{border-bottom:none}
+.drag-handle{color:#a09890;cursor:grab;font-size:16px}
+.feat-thumb{width:36px;height:27px;border-radius:4px;flex-shrink:0}
+.feat-name{flex:1;font-weight:500;font-size:12.5px}
+.feat-rank{font-size:11px;color:#a09890;width:18px;text-align:center}
+.url-box{display:flex;gap:8px;margin-top:8px}
+.url-box input{flex:1;padding:7px 10px;border:1px solid #d0cbc0;border-radius:8px;font-size:12px;font-family:'DM Sans',sans-serif;background:#f5f3ef;color:#6b6660}
+.btn-copy{padding:7px 12px;border-radius:8px;font-size:12px;font-weight:600;cursor:pointer;border:1px solid #d0cbc0;background:#fff;color:#6b6660;font-family:'DM Sans',sans-serif}
+.btn-copy:hover{background:#f0ece4}
+.inv-stats{display:flex;gap:16px;margin:10px 0}
+.inv-stat-item{text-align:center;flex:1;padding:10px;background:#f5f3ef;border-radius:8px}
+.inv-stat-num{font-size:20px;font-weight:700;color:#1c1a17}
+.inv-stat-label{font-size:11px;color:#6b6660;margin-top:2px}
+
+/* Detail Overlay */
+.overlay-bg{position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,.35);z-index:200;opacity:0;pointer-events:none;transition:opacity .2s}
+.overlay-bg.open{opacity:1;pointer-events:all}
+.detail-panel{position:fixed;top:0;right:-460px;width:460px;height:100%;background:#fff;z-index:201;overflow-y:auto;transition:right .25s ease;box-shadow:-4px 0 20px rgba(0,0,0,.12)}
+.detail-panel.open{right:0}
+.detail-header{padding:20px 24px;border-bottom:1px solid #f0ece4;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;background:#fff;z-index:1}
+.close-btn{width:32px;height:32px;border:none;background:#f5f3ef;border-radius:8px;cursor:pointer;font-size:16px;display:flex;align-items:center;justify-content:center}
+.detail-body{padding:24px}
+.detail-thumb{width:100%;height:180px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:24px;font-weight:700;color:#fff;margin-bottom:20px}
+.detail-section{margin-bottom:20px}
+.detail-section h4{font-size:12px;font-weight:700;color:#a09890;text-transform:uppercase;letter-spacing:.5px;margin-bottom:10px}
+.detail-section p{font-size:14px;color:#1c1a17;line-height:1.6}
+.detail-row{display:flex;gap:8px;margin-bottom:8px;font-size:13.5px}
+.detail-row .label{color:#6b6660;min-width:100px}
+.detail-row .val{color:#1c1a17;font-weight:500}
+.detail-actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:20px;padding-top:20px;border-top:1px solid #f0ece4}
+</style>
+</head>
+<body>
+
+<!-- Top Nav -->
+<nav class="topnav">
+  <div class="topnav-logo"><span>GAME CONNECTION</span> · Event HQ</div>
+  <div class="topnav-right">
+    <button class="notif-btn">🔔<span class="notif-dot"></span></button>
+    <div class="org-info">
+      <div class="org-avatar">I</div>
+      <div class="org-name">Indie Game Fest 2026</div>
+    </div>
+  </div>
+</nav>
+
+<!-- Sidebar -->
+<aside class="sidebar">
+  <nav class="sidebar-nav">
+    <a class="nav-item" href="#"><span class="icon">📊</span>Dashboard</a>
+    <a class="nav-item" href="#"><span class="icon">🎪</span>My Events</a>
+    <a class="nav-item" href="#"><span class="icon">👥</span>Buyer Invitations</a>
+    <a class="nav-item active" href="#"><span class="icon">🎮</span>Game Showcase</a>
+    <a class="nav-item" href="#"><span class="icon">🏆</span>Awards</a>
+    <a class="nav-item" href="#"><span class="icon">📅</span>Schedule</a>
+    <a class="nav-item" href="#"><span class="icon">📧</span>Communications</a>
+    <a class="nav-item" href="#"><span class="icon">📈</span>Analytics</a>
+    <a class="nav-item" href="#"><span class="icon">⚙️</span>Settings</a>
+  </nav>
+</aside>
+
+<!-- Main Content -->
+<main class="main">
+  <div class="content">
+    <!-- Page Header -->
+    <div class="page-header">
+      <div class="page-title">
+        <h1>Game Showcase Zone</h1>
+        <p>Manage submitted games for Indie Game Fest 2026</p>
+      </div>
+      <div class="header-right">
+        <span class="stat-badge badge-total">23 Submitted</span>
+        <span class="stat-badge badge-approved">18 Approved</span>
+        <span class="stat-badge badge-pending">5 Pending</span>
+        <button class="btn btn-primary" onclick="alert('Invite Developers')">+ Invite Developers</button>
+      </div>
+    </div>
+
+    <div class="two-col">
+      <!-- Left: Game List -->
+      <div class="main-col">
+        <div class="tabs">
+          <button class="tab active" onclick="setTab(this,'all')">All Games<span class="tab-count">23</span></button>
+          <button class="tab" onclick="setTab(this,'pending')">Pending Review<span class="tab-count">5</span></button>
+          <button class="tab" onclick="setTab(this,'approved')">Approved<span class="tab-count">18</span></button>
+          <button class="tab" onclick="setTab(this,'featured')">Featured<span class="tab-count">6</span></button>
+          <button class="tab" onclick="setTab(this,'rejected')">Rejected<span class="tab-count">1</span></button>
+        </div>
+
+        <div class="card">
+          <!-- Game Rows -->
+          <div class="game-row" onclick="openDetail('Phantom Circuit','Akihabara Studio','Puzzle / Horror','🇯🇵','Featured','#6b48c0')">
+            <svg class="game-thumb" style="background:linear-gradient(135deg,#6b48c0,#9b6fd4)" width="60" height="45" viewBox="0 0 60 45"><text x="50%" y="55%" dominant-baseline="middle" text-anchor="middle" fill="rgba(255,255,255,.5)" font-size="16">👻</text></svg>
+            <div class="game-info">
+              <div class="game-name">Phantom Circuit <span class="featured-star">⭐</span><span class="genre-tag">Puzzle/Horror</span></div>
+              <div class="game-dev">Akihabara Studio 🇯🇵</div>
+            </div>
+            <div class="game-meta">Mar 8, 2026</div>
+            <span class="status-badge status-featured">Featured</span>
+            <div class="platform-icons"><span class="plat-icon">🖥</span><span class="plat-icon">🎮</span></div>
+            <div class="actions" onclick="event.stopPropagation()">
+              <button class="btn-sm btn-view">View</button>
+              <button class="btn-sm btn-feature">Unfeature</button>
+            </div>
+          </div>
+
+          <div class="game-row" onclick="openDetail('Echoes of Jade Dynasty','CloudPeak Games','RPG','🇨🇳','Featured','#0a7fa8')">
+            <svg class="game-thumb" style="background:linear-gradient(135deg,#0a7fa8,#2eb5e0)" width="60" height="45" viewBox="0 0 60 45"><text x="50%" y="55%" dominant-baseline="middle" text-anchor="middle" fill="rgba(255,255,255,.5)" font-size="16">🐉</text></svg>
+            <div class="game-info">
+              <div class="game-name">Echoes of Jade Dynasty <span class="featured-star">⭐</span><span class="genre-tag">RPG</span></div>
+              <div class="game-dev">CloudPeak Games 🇨🇳</div>
+            </div>
+            <div class="game-meta">Mar 9, 2026</div>
+            <span class="status-badge status-featured">Featured</span>
+            <div class="platform-icons"><span class="plat-icon">🖥</span><span class="plat-icon">📱</span></div>
+            <div class="actions" onclick="event.stopPropagation()">
+              <button class="btn-sm btn-view">View</button>
+              <button class="btn-sm btn-feature">Unfeature</button>
+            </div>
+          </div>
+
+          <div class="game-row" onclick="openDetail('Neon Requiem','Lumière Studio','Action RPG','🇫🇷','Approved','#e05a8a')">
+            <svg class="game-thumb" style="background:linear-gradient(135deg,#e05a8a,#f78fb3)" width="60" height="45" viewBox="0 0 60 45"><text x="50%" y="55%" dominant-baseline="middle" text-anchor="middle" fill="rgba(255,255,255,.5)" font-size="16">⚔️</text></svg>
+            <div class="game-info">
+              <div class="game-name">Neon Requiem <span class="genre-tag">Action RPG</span></div>
+              <div class="game-dev">Lumière Studio 🇫🇷</div>
+            </div>
+            <div class="game-meta">Mar 10, 2026</div>
+            <span class="status-badge status-approved">Approved</span>
+            <div class="platform-icons"><span class="plat-icon">🖥</span></div>
+            <div class="actions" onclick="event.stopPropagation()">
+              <button class="btn-sm btn-view">View</button>
+              <button class="btn-sm btn-feature">Feature</button>
+            </div>
+          </div>
+
+          <div class="game-row" onclick="openDetail('Jungle Protocol','Mekong Dev','Survival','🇻🇳','Approved','#2d8a3e')">
+            <svg class="game-thumb" style="background:linear-gradient(135deg,#2d8a3e,#52c041)" width="60" height="45" viewBox="0 0 60 45"><text x="50%" y="55%" dominant-baseline="middle" text-anchor="middle" fill="rgba(255,255,255,.5)" font-size="16">🌿</text></svg>
+            <div class="game-info">
+              <div class="game-name">Jungle Protocol <span class="genre-tag">Survival</span></div>
+              <div class="game-dev">Mekong Dev 🇻🇳</div>
+            </div>
+            <div class="game-meta">Mar 11, 2026</div>
+            <span class="status-badge status-approved">Approved</span>
+            <div class="platform-icons"><span class="plat-icon">🖥</span><span class="plat-icon">🎮</span></div>
+            <div class="actions" onclick="event.stopPropagation()">
+              <button class="btn-sm btn-view">View</button>
+              <button class="btn-sm btn-feature">Feature</button>
+            </div>
+          </div>
+
+          <div class="game-row" onclick="openDetail('Island Keeper','Batik Games','Casual','🇮🇩','Approved','#f5a623')">
+            <svg class="game-thumb" style="background:linear-gradient(135deg,#f5a623,#f7ca6d)" width="60" height="45" viewBox="0 0 60 45"><text x="50%" y="55%" dominant-baseline="middle" text-anchor="middle" fill="rgba(255,255,255,.5)" font-size="16">🏝️</text></svg>
+            <div class="game-info">
+              <div class="game-name">Island Keeper <span class="genre-tag">Casual</span></div>
+              <div class="game-dev">Batik Games 🇮🇩</div>
+            </div>
+            <div class="game-meta">Mar 11, 2026</div>
+            <span class="status-badge status-approved">Approved</span>
+            <div class="platform-icons"><span class="plat-icon">📱</span></div>
+            <div class="actions" onclick="event.stopPropagation()">
+              <button class="btn-sm btn-view">View</button>
+              <button class="btn-sm btn-feature">Feature</button>
+            </div>
+          </div>
+
+          <div class="game-row" onclick="openDetail('Steel Horizon','IronForge','Strategy','🇨🇳','Featured','#4a6fa5')">
+            <svg class="game-thumb" style="background:linear-gradient(135deg,#4a6fa5,#7695c9)" width="60" height="45" viewBox="0 0 60 45"><text x="50%" y="55%" dominant-baseline="middle" text-anchor="middle" fill="rgba(255,255,255,.5)" font-size="16">⚙️</text></svg>
+            <div class="game-info">
+              <div class="game-name">Steel Horizon <span class="featured-star">⭐</span><span class="genre-tag">Strategy</span></div>
+              <div class="game-dev">IronForge 🇨🇳</div>
+            </div>
+            <div class="game-meta">Mar 12, 2026</div>
+            <span class="status-badge status-featured">Featured</span>
+            <div class="platform-icons"><span class="plat-icon">🖥</span></div>
+            <div class="actions" onclick="event.stopPropagation()">
+              <button class="btn-sm btn-view">View</button>
+              <button class="btn-sm btn-feature">Unfeature</button>
+            </div>
+          </div>
+
+          <div class="game-row" onclick="openDetail('Chronicle of Stars','Northern Lights','Strategy RPG','🇨🇦','Approved','#1a6b7a')">
+            <svg class="game-thumb" style="background:linear-gradient(135deg,#1a6b7a,#2db3c8)" width="60" height="45" viewBox="0 0 60 45"><text x="50%" y="55%" dominant-baseline="middle" text-anchor="middle" fill="rgba(255,255,255,.5)" font-size="16">⭐</text></svg>
+            <div class="game-info">
+              <div class="game-name">Chronicle of Stars <span class="genre-tag">Strategy RPG</span></div>
+              <div class="game-dev">Northern Lights 🇨🇦</div>
+            </div>
+            <div class="game-meta">Mar 13, 2026</div>
+            <span class="status-badge status-approved">Approved</span>
+            <div class="platform-icons"><span class="plat-icon">🖥</span><span class="plat-icon">🎮</span></div>
+            <div class="actions" onclick="event.stopPropagation()">
+              <button class="btn-sm btn-view">View</button>
+              <button class="btn-sm btn-feature">Feature</button>
+            </div>
+          </div>
+
+          <div class="game-row" onclick="openDetail('Roots & Ruins','Grünwald Games','Simulation','🇩🇪','Approved','#5c7a35')">
+            <svg class="game-thumb" style="background:linear-gradient(135deg,#5c7a35,#8ab553)" width="60" height="45" viewBox="0 0 60 45"><text x="50%" y="55%" dominant-baseline="middle" text-anchor="middle" fill="rgba(255,255,255,.5)" font-size="16">🌳</text></svg>
+            <div class="game-info">
+              <div class="game-name">Roots &amp; Ruins <span class="genre-tag">Simulation</span></div>
+              <div class="game-dev">Grünwald Games 🇩🇪</div>
+            </div>
+            <div class="game-meta">Mar 14, 2026</div>
+            <span class="status-badge status-approved">Approved</span>
+            <div class="platform-icons"><span class="plat-icon">🖥</span></div>
+            <div class="actions" onclick="event.stopPropagation()">
+              <button class="btn-sm btn-view">View</button>
+              <button class="btn-sm btn-feature">Feature</button>
+            </div>
+          </div>
+
+          <div class="game-row" onclick="openDetail('Void Wanderer','Starfield Games','Sci-fi RPG','🇰🇷','Pending','#3a3a6a')">
+            <svg class="game-thumb" style="background:linear-gradient(135deg,#3a3a6a,#6060a8)" width="60" height="45" viewBox="0 0 60 45"><text x="50%" y="55%" dominant-baseline="middle" text-anchor="middle" fill="rgba(255,255,255,.5)" font-size="16">🚀</text></svg>
+            <div class="game-info">
+              <div class="game-name">Void Wanderer <span class="genre-tag">Sci-fi RPG</span></div>
+              <div class="game-dev">Starfield Games 🇰🇷</div>
+            </div>
+            <div class="game-meta">Mar 15, 2026</div>
+            <span class="status-badge status-pending">Pending</span>
+            <div class="platform-icons"><span class="plat-icon">🖥</span></div>
+            <div class="actions" onclick="event.stopPropagation()">
+              <button class="btn-sm btn-view">View</button>
+              <button class="btn-sm btn-approve">Approve</button>
+              <button class="btn-sm btn-reject">Reject</button>
+            </div>
+          </div>
+
+          <div class="game-row" onclick="openDetail('Shadow Protocol','ByteWave Studio','RPG','🇨🇳','Pending','#2a2a2a')">
+            <svg class="game-thumb" style="background:linear-gradient(135deg,#2a2a2a,#505050)" width="60" height="45" viewBox="0 0 60 45"><text x="50%" y="55%" dominant-baseline="middle" text-anchor="middle" fill="rgba(255,255,255,.5)" font-size="16">🥷</text></svg>
+            <div class="game-info">
+              <div class="game-name">Shadow Protocol <span class="genre-tag">RPG</span></div>
+              <div class="game-dev">ByteWave Studio 🇨🇳</div>
+            </div>
+            <div class="game-meta">Mar 16, 2026</div>
+            <span class="status-badge status-pending">Pending</span>
+            <div class="platform-icons"><span class="plat-icon">🖥</span><span class="plat-icon">🎮</span></div>
+            <div class="actions" onclick="event.stopPropagation()">
+              <button class="btn-sm btn-view">View</button>
+              <button class="btn-sm btn-approve">Approve</button>
+              <button class="btn-sm btn-reject">Reject</button>
+            </div>
+          </div>
+
+          <div class="game-row" onclick="openDetail('Desert Storm','Cairo Games','Strategy','🇪🇬','Pending','#c4892b')">
+            <svg class="game-thumb" style="background:linear-gradient(135deg,#c4892b,#e0b060)" width="60" height="45" viewBox="0 0 60 45"><text x="50%" y="55%" dominant-baseline="middle" text-anchor="middle" fill="rgba(255,255,255,.5)" font-size="16">🏜️</text></svg>
+            <div class="game-info">
+              <div class="game-name">Desert Storm <span class="genre-tag">Strategy</span></div>
+              <div class="game-dev">Cairo Games 🇪🇬</div>
+            </div>
+            <div class="game-meta">Mar 17, 2026</div>
+            <span class="status-badge status-pending">Pending</span>
+            <div class="platform-icons"><span class="plat-icon">🖥</span></div>
+            <div class="actions" onclick="event.stopPropagation()">
+              <button class="btn-sm btn-view">View</button>
+              <button class="btn-sm btn-approve">Approve</button>
+              <button class="btn-sm btn-reject">Reject</button>
+            </div>
+          </div>
+
+          <div class="game-row" onclick="openDetail('Forest Spirit','Bamboo Dev','Adventure','🇯🇵','Pending','#2d7a4a')">
+            <svg class="game-thumb" style="background:linear-gradient(135deg,#2d7a4a,#55b070)" width="60" height="45" viewBox="0 0 60 45"><text x="50%" y="55%" dominant-baseline="middle" text-anchor="middle" fill="rgba(255,255,255,.5)" font-size="16">🎋</text></svg>
+            <div class="game-info">
+              <div class="game-name">Forest Spirit <span class="genre-tag">Adventure</span></div>
+              <div class="game-dev">Bamboo Dev 🇯🇵</div>
+            </div>
+            <div class="game-meta">Mar 18, 2026</div>
+            <span class="status-badge status-pending">Pending</span>
+            <div class="platform-icons"><span class="plat-icon">📱</span></div>
+            <div class="actions" onclick="event.stopPropagation()">
+              <button class="btn-sm btn-view">View</button>
+              <button class="btn-sm btn-approve">Approve</button>
+              <button class="btn-sm btn-reject">Reject</button>
+            </div>
+          </div>
+
+          <div class="game-row" onclick="openDetail('Cyberblast 2077','GlitchWave','FPS','🇺🇸','Rejected','#7a0000')">
+            <svg class="game-thumb" style="background:linear-gradient(135deg,#7a0000,#b01010)" width="60" height="45" viewBox="0 0 60 45"><text x="50%" y="55%" dominant-baseline="middle" text-anchor="middle" fill="rgba(255,255,255,.5)" font-size="16">💀</text></svg>
+            <div class="game-info">
+              <div class="game-name">Cyberblast 2077 <span class="genre-tag">FPS</span></div>
+              <div class="game-dev">GlitchWave 🇺🇸</div>
+            </div>
+            <div class="game-meta">Mar 5, 2026</div>
+            <span class="status-badge status-rejected">Rejected</span>
+            <div class="platform-icons"><span class="plat-icon">🖥</span></div>
+            <div class="actions" onclick="event.stopPropagation()">
+              <button class="btn-sm btn-view">View</button>
+              <button class="btn-sm btn-approve">Reconsider</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Right Panel -->
+      <div class="right-panel">
+        <!-- Stats -->
+        <div class="panel-card">
+          <h3>📊 Showcase Stats</h3>
+          <div class="stat-row"><span class="stat-label">Total Views</span><span class="stat-val">1,247</span></div>
+          <div class="stat-row"><span class="stat-label">Avg Time on Page</span><span class="stat-val">2m 34s</span></div>
+          <div class="stat-row" style="margin-bottom:0"><span class="stat-label">Most Viewed</span><span class="stat-val" style="color:#d95f2b">Phantom Circuit</span></div>
+        </div>
+
+        <!-- Developer Invitations -->
+        <div class="panel-card">
+          <h3>👨‍💻 Developer Invitations</h3>
+          <div class="inv-stats">
+            <div class="inv-stat-item"><div class="inv-stat-num">45</div><div class="inv-stat-label">Invited</div></div>
+            <div class="inv-stat-item"><div class="inv-stat-num">31</div><div class="inv-stat-label">Submitted</div></div>
+            <div class="inv-stat-item"><div class="inv-stat-num" style="color:#0d9b72">69%</div><div class="inv-stat-label">Conversion</div></div>
+          </div>
+          <div class="progress-wrap">
+            <div style="display:flex;justify-content:space-between;font-size:11px;color:#6b6660;margin-bottom:4px"><span>Submission Rate</span><span>31/45</span></div>
+            <div class="progress-bar-bg"><div class="progress-bar" style="width:69%"></div></div>
+          </div>
+          <button class="btn btn-primary" style="width:100%;justify-content:center;margin-bottom:10px" onclick="alert('Invite Developers')">+ Invite More Developers</button>
+          <div class="invite-input">
+            <input type="text" placeholder="Email or search developer...">
+            <button class="btn btn-primary" style="padding:8px 14px">Send</button>
+          </div>
+        </div>
+
+        <!-- Featured Games -->
+        <div class="panel-card">
+          <h3>⭐ Featured Games <span style="font-size:11px;font-weight:400;color:#a09890">(drag to reorder)</span></h3>
+          <div class="featured-list">
+            <div class="featured-item">
+              <span class="drag-handle">⠿</span>
+              <span class="feat-rank">1</span>
+              <svg class="feat-thumb" style="background:linear-gradient(135deg,#6b48c0,#9b6fd4)" width="36" height="27" viewBox="0 0 36 27"><text x="50%" y="55%" dominant-baseline="middle" text-anchor="middle" fill="rgba(255,255,255,.5)" font-size="12">👻</text></svg>
+              <span class="feat-name">Phantom Circuit</span>
+            </div>
+            <div class="featured-item">
+              <span class="drag-handle">⠿</span>
+              <span class="feat-rank">2</span>
+              <svg class="feat-thumb" style="background:linear-gradient(135deg,#0a7fa8,#2eb5e0)" width="36" height="27" viewBox="0 0 36 27"><text x="50%" y="55%" dominant-baseline="middle" text-anchor="middle" fill="rgba(255,255,255,.5)" font-size="12">🐉</text></svg>
+              <span class="feat-name">Echoes of Jade Dynasty</span>
+            </div>
+            <div class="featured-item">
+              <span class="drag-handle">⠿</span>
+              <span class="feat-rank">3</span>
+              <svg class="feat-thumb" style="background:linear-gradient(135deg,#4a6fa5,#7695c9)" width="36" height="27" viewBox="0 0 36 27"><text x="50%" y="55%" dominant-baseline="middle" text-anchor="middle" fill="rgba(255,255,255,.5)" font-size="12">⚙️</text></svg>
+              <span class="feat-name">Steel Horizon</span>
+            </div>
+            <div class="featured-item">
+              <span class="drag-handle">⠿</span>
+              <span class="feat-rank">4</span>
+              <svg class="feat-thumb" style="background:linear-gradient(135deg,#2d8a3e,#52c041)" width="36" height="27" viewBox="0 0 36 27"><text x="50%" y="55%" dominant-baseline="middle" text-anchor="middle" fill="rgba(255,255,255,.5)" font-size="12">🌿</text></svg>
+              <span class="feat-name">Jungle Protocol</span>
+            </div>
+            <div class="featured-item">
+              <span class="drag-handle">⠿</span>
+              <span class="feat-rank">5</span>
+              <svg class="feat-thumb" style="background:linear-gradient(135deg,#1a6b7a,#2db3c8)" width="36" height="27" viewBox="0 0 36 27"><text x="50%" y="55%" dominant-baseline="middle" text-anchor="middle" fill="rgba(255,255,255,.5)" font-size="12">⭐</text></svg>
+              <span class="feat-name">Chronicle of Stars</span>
+            </div>
+            <div class="featured-item">
+              <span class="drag-handle">⠿</span>
+              <span class="feat-rank">6</span>
+              <svg class="feat-thumb" style="background:linear-gradient(135deg,#5c7a35,#8ab553)" width="36" height="27" viewBox="0 0 36 27"><text x="50%" y="55%" dominant-baseline="middle" text-anchor="middle" fill="rgba(255,255,255,.5)" font-size="12">🌳</text></svg>
+              <span class="feat-name">Roots &amp; Ruins</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Public URL -->
+        <div class="panel-card">
+          <h3>🔗 Public Showcase URL</h3>
+          <p style="font-size:12px;color:#6b6660;margin-bottom:8px">Share this link with attendees to view the game showcase</p>
+          <div class="url-box">
+            <input type="text" value="gc.events/ign2026/showcase" readonly>
+            <button class="btn-copy" onclick="navigator.clipboard.writeText('gc.events/ign2026/showcase');this.textContent='Copied!';setTimeout(()=>this.textContent='Copy',2000)">Copy</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</main>
+
+<!-- Detail Overlay -->
+<div class="overlay-bg" id="overlayBg" onclick="closeDetail()"></div>
+<div class="detail-panel" id="detailPanel">
+  <div class="detail-header">
+    <div>
+      <div id="detailTitle" style="font-size:18px;font-weight:700;color:#1c1a17"></div>
+      <div id="detailDev" style="font-size:13px;color:#6b6660;margin-top:3px"></div>
+    </div>
+    <button class="close-btn" onclick="closeDetail()">✕</button>
+  </div>
+  <div class="detail-body">
+    <div id="detailThumb" class="detail-thumb"></div>
+    <div class="detail-section">
+      <h4>Game Details</h4>
+      <div class="detail-row"><span class="label">Genre</span><span class="val" id="detailGenre"></span></div>
+      <div class="detail-row"><span class="label">Developer</span><span class="val" id="detailDevFull"></span></div>
+      <div class="detail-row"><span class="label">Country</span><span class="val" id="detailCountry"></span></div>
+      <div class="detail-row"><span class="label">Status</span><span class="val" id="detailStatus"></span></div>
+      <div class="detail-row"><span class="label">Platforms</span><span class="val">PC, Console</span></div>
+      <div class="detail-row"><span class="label">Engine</span><span class="val">Unity 2023</span></div>
+      <div class="detail-row"><span class="label">Release Date</span><span class="val">Q3 2026</span></div>
+    </div>
+    <div class="detail-section">
+      <h4>Description</h4>
+      <p>An immersive indie experience that pushes the boundaries of interactive storytelling. Featuring stunning handcrafted visuals and an emotionally rich narrative. Designed for PC and console audiences worldwide.</p>
+    </div>
+    <div class="detail-section">
+      <h4>Developer Contact</h4>
+      <div class="detail-row"><span class="label">Contact</span><span class="val">dev@studio.com</span></div>
+      <div class="detail-row"><span class="label">Website</span><span class="val" style="color:#0a7fa8">studio.gg</span></div>
+      <div class="detail-row"><span class="label">Team Size</span><span class="val">8 people</span></div>
+    </div>
+    <div class="detail-actions">
+      <button class="btn btn-approve" style="background:#0d9b72;color:#fff;border:none">✅ Approve</button>
+      <button class="btn" style="background:#fff;color:#d95f2b;border:1px solid #d95f2b">⭐ Feature</button>
+      <button class="btn" style="background:#fff;color:#dc2626;border:1px solid #dc2626">✕ Reject</button>
+      <button class="btn btn-ghost">Message Developer</button>
+    </div>
+  </div>
+</div>
+
+<script>
+function setTab(el, tab) {
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  el.classList.add('active');
+}
+function openDetail(name, dev, genre, country, status, color) {
+  document.getElementById('detailTitle').textContent = name;
+  document.getElementById('detailDev').textContent = dev + ' ' + country;
+  document.getElementById('detailGenre').textContent = genre;
+  document.getElementById('detailDevFull').textContent = dev;
+  document.getElementById('detailCountry').textContent = country;
+  document.getElementById('detailStatus').textContent = status;
+  document.getElementById('detailThumb').style.background = 'linear-gradient(135deg,' + color + ', ' + color + 'aa)';
+  document.getElementById('detailThumb').textContent = name.charAt(0);
+  document.getElementById('detailPanel').classList.add('open');
+  document.getElementById('overlayBg').classList.add('open');
+}
+function closeDetail() {
+  document.getElementById('detailPanel').classList.remove('open');
+  document.getElementById('overlayBg').classList.remove('open');
+}
+</script>
+</body>
+</html>
