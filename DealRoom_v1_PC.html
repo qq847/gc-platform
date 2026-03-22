@@ -1,0 +1,529 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Deal Room — Echoes of Jade Dynasty × Devolver Digital</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'DM Sans', sans-serif; background: #e8e4da; color: #1c1a17; min-height: 100vh; display: flex; flex-direction: column; }
+
+  /* TOPNAV */
+  .topnav {
+    position: sticky; top: 0; z-index: 100;
+    background: #fff; border-bottom: 1px solid #e0dbd2;
+    height: 60px; display: flex; align-items: center;
+    padding: 0 24px; gap: 20px; box-shadow: 0 1px 4px rgba(0,0,0,.06);
+  }
+  .nav-logo { font-size: 16px; font-weight: 700; color: #1c1a17; white-space: nowrap; letter-spacing: .5px; }
+  .nav-logo span { color: #d95f2b; }
+  .nav-search { display: flex; align-items: center; gap: 8px; background: #f5f3ef; border: 1px solid #e0dbd2; border-radius: 8px; padding: 6px 12px; min-width: 220px; }
+  .nav-search input { border: none; background: transparent; outline: none; font-family: inherit; font-size: 14px; color: #1c1a17; width: 100%; }
+  .nav-search input::placeholder { color: #a09890; }
+  .nav-links { display: flex; align-items: center; gap: 4px; flex: 1; justify-content: center; }
+  .nav-links a { text-decoration: none; color: #6b6660; font-size: 14px; font-weight: 500; padding: 6px 14px; border-radius: 6px; cursor: pointer; transition: all .15s; }
+  .nav-links a:hover { color: #1c1a17; background: #f5f3ef; }
+  .nav-links a.active { color: #d95f2b; font-weight: 600; background: #fef0e9; }
+  .nav-right { display: flex; align-items: center; gap: 12px; }
+  .nav-bell { font-size: 18px; cursor: pointer; color: #6b6660; }
+  .nav-avatar { width: 34px; height: 34px; border-radius: 50%; background: linear-gradient(135deg, #d95f2b, #e8834f); display: flex; align-items: center; justify-content: center; color: #fff; font-size: 13px; font-weight: 700; cursor: pointer; }
+
+  /* DEAL HEADER */
+  .deal-header {
+    background: #fff; border-bottom: 1px solid #e0dbd2;
+    padding: 14px 24px; position: sticky; top: 60px; z-index: 90;
+  }
+  .breadcrumb { font-size: 12.5px; color: #6b6660; display: flex; align-items: center; gap: 5px; margin-bottom: 10px; }
+  .breadcrumb a { color: #0a7fa8; text-decoration: none; cursor: pointer; }
+  .breadcrumb a:hover { text-decoration: underline; }
+  .breadcrumb .sep { color: #a09890; }
+  .deal-header-row { display: flex; align-items: center; gap: 16px; flex-wrap: wrap; }
+  .deal-title { font-size: 17px; font-weight: 700; }
+  .deal-status-badge { background: #fef9e6; color: #c17a00; border: 1.5px solid #f0d060; border-radius: 20px; padding: 4px 12px; font-size: 12px; font-weight: 700; display: inline-flex; align-items: center; gap: 5px; }
+  .deal-parties { display: flex; align-items: center; gap: 10px; font-size: 13.5px; color: #6b6660; }
+  .party-badge { background: #f5f3ef; border-radius: 20px; padding: 4px 12px; font-size: 12.5px; font-weight: 600; color: #1c1a17; }
+  .party-badge.dev { background: #e6f4fa; color: #0a7fa8; }
+  .party-badge.pub { background: #fef0e9; color: #d95f2b; }
+  .deal-started { font-size: 12px; color: #a09890; margin-left: auto; }
+
+  /* MAIN LAYOUT */
+  .deal-layout {
+    display: flex; flex: 1; max-width: 1440px; margin: 0 auto; width: 100%;
+    padding: 20px 24px; gap: 20px; align-items: flex-start;
+  }
+
+  /* LEFT PANEL */
+  .panel-left {
+    width: 280px; flex-shrink: 0;
+    position: sticky; top: 130px;
+    display: flex; flex-direction: column; gap: 16px;
+    max-height: calc(100vh - 150px); overflow-y: auto;
+  }
+  .panel-left::-webkit-scrollbar { width: 4px; }
+  .panel-left::-webkit-scrollbar-thumb { background: #d0ccc4; border-radius: 4px; }
+
+  /* RIGHT PANEL */
+  .panel-right {
+    width: 300px; flex-shrink: 0;
+    position: sticky; top: 130px;
+    display: flex; flex-direction: column; gap: 16px;
+    max-height: calc(100vh - 150px); overflow-y: auto;
+  }
+  .panel-right::-webkit-scrollbar { width: 4px; }
+  .panel-right::-webkit-scrollbar-thumb { background: #d0ccc4; border-radius: 4px; }
+
+  /* CENTER PANEL */
+  .panel-center { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 0; }
+  .msg-container { background: #fff; border-radius: 12px; border: 1px solid #e0dbd2; display: flex; flex-direction: column; min-height: 600px; }
+
+  /* SHARED CARD */
+  .side-card { background: #fff; border-radius: 12px; padding: 18px; border: 1px solid #e0dbd2; }
+  .side-card-title { font-size: 13.5px; font-weight: 700; margin-bottom: 12px; display: flex; align-items: center; gap: 6px; color: #1c1a17; }
+
+  /* TERMS SUMMARY */
+  .terms-summary { display: flex; flex-direction: column; gap: 0; }
+  .ts-row { display: flex; justify-content: space-between; align-items: center; padding: 7px 0; border-bottom: 1px solid #f5f3ef; }
+  .ts-row:last-child { border-bottom: none; }
+  .ts-key { font-size: 12px; color: #a09890; }
+  .ts-val { font-size: 13px; font-weight: 600; color: #1c1a17; text-align: right; }
+  .ts-val.orange { color: #d95f2b; }
+  .ts-status { font-size: 11px; font-weight: 600; background: #fef9e6; color: #c17a00; padding: 2px 8px; border-radius: 10px; }
+
+  /* NEGOTIATION STATUS */
+  .neg-list { display: flex; flex-direction: column; gap: 8px; }
+  .neg-item { display: flex; align-items: flex-start; gap: 9px; padding: 9px 10px; border-radius: 8px; background: #f9f8f5; }
+  .neg-icon { width: 18px; height: 18px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 10px; flex-shrink: 0; margin-top: 1px; }
+  .neg-agreed { background: #e6f7f2; color: #0d9b72; }
+  .neg-active { background: #fef9e6; color: #c17a00; }
+  .neg-pending { background: #f0ede7; color: #a09890; }
+  .neg-body { flex: 1; }
+  .neg-label { font-size: 13px; font-weight: 600; }
+  .neg-label.agreed { color: #0d9b72; }
+  .neg-label.active { color: #c17a00; }
+  .neg-label.pending { color: #a09890; }
+  .neg-sub { font-size: 11.5px; color: #a09890; margin-top: 2px; }
+
+  /* DEAL ACTIONS */
+  .deal-actions { display: flex; flex-direction: column; gap: 8px; }
+  .btn-action { border-radius: 8px; padding: 9px 14px; font-family: inherit; font-size: 13px; font-weight: 600; cursor: pointer; transition: all .15s; width: 100%; text-align: left; }
+  .btn-action-outline { background: #fff; color: #1c1a17; border: 1.5px solid #e0dbd2; }
+  .btn-action-outline:hover { border-color: #0a7fa8; color: #0a7fa8; }
+  .btn-action-green { background: #e6f7f2; color: #0d9b72; border: 1.5px solid #0d9b72; }
+  .btn-action-green:disabled { opacity: .4; cursor: not-allowed; }
+
+  /* TABS */
+  .msg-tabs { display: flex; border-bottom: 1px solid #e0dbd2; padding: 0 16px; gap: 4px; }
+  .msg-tab { padding: 12px 16px; font-size: 14px; font-weight: 500; color: #6b6660; cursor: pointer; border-bottom: 2.5px solid transparent; margin-bottom: -1px; transition: all .15s; }
+  .msg-tab:hover { color: #1c1a17; }
+  .msg-tab.active { color: #d95f2b; border-bottom-color: #d95f2b; font-weight: 600; }
+
+  /* MESSAGE LIST */
+  .msg-list { flex: 1; padding: 20px 16px; display: flex; flex-direction: column; gap: 16px; overflow-y: auto; min-height: 400px; }
+  .msg-item { display: flex; gap: 12px; align-items: flex-start; }
+  .msg-item.right { flex-direction: row-reverse; }
+  .msg-avatar { width: 34px; height: 34px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 700; flex-shrink: 0; }
+  .msg-avatar.devolver { background: linear-gradient(135deg, #d95f2b, #e8834f); color: #fff; }
+  .msg-avatar.cloudpeak { background: linear-gradient(135deg, #1a3a6e, #7b2d8b); color: #fff; }
+  .msg-bubble { max-width: 68%; }
+  .msg-sender { font-size: 12px; font-weight: 700; color: #6b6660; margin-bottom: 4px; }
+  .msg-item.right .msg-sender { text-align: right; }
+  .msg-text { background: #f5f3ef; border-radius: 10px; padding: 11px 14px; font-size: 13.5px; line-height: 1.55; color: #1c1a17; }
+  .msg-item.right .msg-text { background: #fef0e9; }
+  .msg-time { font-size: 11px; color: #a09890; margin-top: 4px; }
+  .msg-item.right .msg-time { text-align: right; }
+
+  .system-msg { display: flex; align-items: center; gap: 8px; justify-content: center; }
+  .system-bubble { background: #e6f4fa; border: 1px solid #b8dff0; border-radius: 20px; padding: 6px 16px; font-size: 12px; color: #0a7fa8; font-weight: 500; }
+
+  /* MESSAGE INPUT */
+  .msg-input-area { border-top: 1px solid #e0dbd2; padding: 14px 16px; display: flex; align-items: flex-end; gap: 10px; }
+  .msg-input-wrap { flex: 1; background: #f5f3ef; border: 1.5px solid #e0dbd2; border-radius: 10px; padding: 10px 12px; display: flex; align-items: flex-end; gap: 8px; transition: border-color .15s; }
+  .msg-input-wrap:focus-within { border-color: #d95f2b; background: #fff; }
+  .msg-input-wrap textarea { flex: 1; border: none; background: transparent; font-family: inherit; font-size: 14px; color: #1c1a17; resize: none; outline: none; min-height: 20px; max-height: 120px; line-height: 1.5; }
+  .msg-input-wrap textarea::placeholder { color: #a09890; }
+  .input-actions { display: flex; gap: 6px; align-items: center; padding-bottom: 2px; }
+  .input-icon-btn { background: none; border: none; font-size: 16px; cursor: pointer; color: #a09890; line-height: 1; transition: color .15s; }
+  .input-icon-btn:hover { color: #1c1a17; }
+  .btn-send { background: #d95f2b; color: #fff; border: none; border-radius: 8px; width: 38px; height: 38px; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: background .15s; flex-shrink: 0; }
+  .btn-send:hover { background: #c05426; }
+
+  /* RIGHT PANEL — DOCS */
+  .doc-list { display: flex; flex-direction: column; gap: 8px; }
+  .doc-item { display: flex; align-items: center; gap: 10px; padding: 8px 10px; background: #f9f8f5; border-radius: 8px; cursor: pointer; transition: background .15s; }
+  .doc-item:hover { background: #f0ede7; }
+  .doc-icon { font-size: 18px; flex-shrink: 0; }
+  .doc-info { flex: 1; min-width: 0; }
+  .doc-name { font-size: 12.5px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .doc-status { font-size: 11px; margin-top: 2px; }
+  .doc-status.signed { color: #0d9b72; }
+  .doc-status.shared { color: #6b6660; }
+  .doc-status.review { color: #c17a00; }
+  .btn-upload { width: 100%; background: #fff; border: 1.5px dashed #d0ccc4; border-radius: 8px; padding: 9px; font-family: inherit; font-size: 13px; color: #6b6660; cursor: pointer; margin-top: 8px; transition: all .15s; }
+  .btn-upload:hover { border-color: #d95f2b; color: #d95f2b; background: #fef0e9; }
+
+  /* CONTACTS */
+  .contacts-list { display: flex; flex-direction: column; gap: 10px; }
+  .contact-item { display: flex; align-items: center; gap: 10px; }
+  .contact-avatar { width: 36px; height: 36px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 700; flex-shrink: 0; }
+  .contact-info { flex: 1; }
+  .contact-name { font-size: 13px; font-weight: 600; }
+  .contact-role { font-size: 11.5px; color: #a09890; }
+
+  /* TIMELINE */
+  .deal-tl { display: flex; flex-direction: column; gap: 8px; }
+  .dtl-item { display: flex; gap: 10px; align-items: flex-start; position: relative; }
+  .dtl-item:not(:last-child)::after { content: ''; position: absolute; left: 5px; top: 14px; bottom: -8px; width: 2px; background: #e8e4da; }
+  .dtl-dot { width: 12px; height: 12px; border-radius: 50%; background: #d0ccc4; flex-shrink: 0; margin-top: 3px; z-index: 1; }
+  .dtl-dot.active { background: #d95f2b; }
+  .dtl-body { flex: 1; }
+  .dtl-date { font-size: 11px; color: #a09890; }
+  .dtl-event { font-size: 12.5px; color: #1c1a17; font-weight: 500; }
+
+  /* QUICK ACTIONS */
+  .quick-actions { display: flex; flex-direction: column; gap: 8px; }
+  .qa-btn { width: 100%; border-radius: 8px; padding: 10px 14px; font-family: inherit; font-size: 13px; font-weight: 600; cursor: pointer; transition: all .15s; text-align: left; display: flex; align-items: center; gap: 8px; }
+  .qa-btn-outline { background: #fff; color: #1c1a17; border: 1.5px solid #e0dbd2; }
+  .qa-btn-outline:hover { border-color: #0a7fa8; color: #0a7fa8; }
+  .qa-btn-orange { background: #d95f2b; color: #fff; border: none; }
+  .qa-btn-orange:hover { background: #c05426; }
+</style>
+</head>
+<body>
+
+<!-- TOPNAV -->
+<nav class="topnav">
+  <div class="nav-logo">GAME <span>CONNECTION</span></div>
+  <div class="nav-search">
+    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#a09890" stroke-width="2.5"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+    <input type="text" placeholder="Search games, studios, deals...">
+  </div>
+  <div class="nav-links">
+    <a href="#">Home</a>
+    <a href="#">People</a>
+    <a href="#">Projects</a>
+    <a href="#" class="active">Market</a>
+    <a href="#">Events</a>
+  </div>
+  <div class="nav-right">
+    <div class="nav-bell">🔔</div>
+    <div class="nav-avatar">QQ</div>
+  </div>
+</nav>
+
+<!-- DEAL HEADER -->
+<div class="deal-header">
+  <div class="breadcrumb">
+    <a href="#">Market</a><span class="sep">›</span>
+    <a href="#">My Deals</a><span class="sep">›</span>
+    <span style="color:#1c1a17;font-weight:500;">Echoes of Jade Dynasty × Devolver Digital</span>
+  </div>
+  <div class="deal-header-row">
+    <div class="deal-title">Deal Room</div>
+    <div class="deal-status-badge">🟡 In Negotiation</div>
+    <div class="deal-parties">
+      <span class="party-badge dev">CloudPeak Games (Dev)</span>
+      <span style="color:#a09890;font-size:16px;">↔</span>
+      <span class="party-badge pub">Devolver Digital (Publisher)</span>
+    </div>
+    <div class="deal-started">Started March 18, 2026</div>
+  </div>
+</div>
+
+<!-- MAIN LAYOUT -->
+<div class="deal-layout">
+
+  <!-- LEFT PANEL -->
+  <aside class="panel-left">
+    <!-- Terms Summary -->
+    <div class="side-card">
+      <div class="side-card-title">📄 Current Terms Summary</div>
+      <div class="terms-summary">
+        <div class="ts-row"><span class="ts-key">Deal Type</span><span class="ts-val">Publishing Deal</span></div>
+        <div class="ts-row"><span class="ts-key">Rights</span><span class="ts-val">Global (ex. China)</span></div>
+        <div class="ts-row"><span class="ts-key">Rev Share</span><span class="ts-val orange">70/30 (proposed)</span></div>
+        <div class="ts-row"><span class="ts-key">Min Guarantee</span><span class="ts-val orange">$350K (counter)</span></div>
+        <div class="ts-row"><span class="ts-key">Duration</span><span class="ts-val">5 years</span></div>
+        <div class="ts-row"><span class="ts-key">Platform</span><span class="ts-val">PC + Console</span></div>
+        <div class="ts-row"><span class="ts-key">Status</span><span class="ts-status">Under Review</span></div>
+      </div>
+    </div>
+
+    <!-- Negotiation Progress -->
+    <div class="side-card">
+      <div class="side-card-title">⚖️ Negotiation Progress</div>
+      <div class="neg-list">
+        <div class="neg-item">
+          <div class="neg-icon neg-agreed">✓</div>
+          <div class="neg-body">
+            <div class="neg-label agreed">Revenue Share</div>
+            <div class="neg-sub">Agreed — 70/30</div>
+          </div>
+        </div>
+        <div class="neg-item">
+          <div class="neg-icon neg-active">⟳</div>
+          <div class="neg-body">
+            <div class="neg-label active">Minimum Guarantee</div>
+            <div class="neg-sub">Negotiating — $200K vs $350K</div>
+          </div>
+        </div>
+        <div class="neg-item">
+          <div class="neg-icon neg-pending">○</div>
+          <div class="neg-body">
+            <div class="neg-label pending">Marketing Commitments</div>
+            <div class="neg-sub">Pending</div>
+          </div>
+        </div>
+        <div class="neg-item">
+          <div class="neg-icon neg-pending">○</div>
+          <div class="neg-body">
+            <div class="neg-label pending">Localization Support</div>
+            <div class="neg-sub">Pending</div>
+          </div>
+        </div>
+        <div class="neg-item">
+          <div class="neg-icon neg-pending">○</div>
+          <div class="neg-body">
+            <div class="neg-label pending">Contract Duration</div>
+            <div class="neg-sub">Pending</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Deal Actions -->
+    <div class="side-card">
+      <div class="side-card-title">⚡ Deal Actions</div>
+      <div class="deal-actions">
+        <button class="btn-action btn-action-outline">📝 Propose New Terms</button>
+        <button class="btn-action btn-action-outline">⚖️ Request Legal Review</button>
+        <button class="btn-action btn-action-green" disabled title="Complete all pending terms first">✅ Close Deal (pending terms)</button>
+      </div>
+      <div style="font-size:11px;color:#a09890;margin-top:8px;">Close Deal is unlocked when all terms are agreed.</div>
+    </div>
+  </aside>
+
+  <!-- CENTER PANEL -->
+  <div class="panel-center">
+    <div class="msg-container">
+      <!-- TABS -->
+      <div class="msg-tabs">
+        <div class="msg-tab active" onclick="setTab(this)">Messages</div>
+        <div class="msg-tab" onclick="setTab(this)">Activity Log</div>
+        <div class="msg-tab" onclick="setTab(this)">Notes</div>
+      </div>
+
+      <!-- MESSAGE LIST -->
+      <div class="msg-list" id="msgList">
+
+        <!-- MSG 1 - Devolver -->
+        <div class="msg-item">
+          <div class="msg-avatar devolver">DD</div>
+          <div class="msg-bubble">
+            <div class="msg-sender">Devolver Digital — Sarah Chen</div>
+            <div class="msg-text">Thank you for sharing the detailed build. We've reviewed the Beta and we're very impressed with the scope and polish of Echoes of Jade Dynasty. The combat system in particular is exactly the kind of fluid, skill-based action that resonates with our audience. We'd love to explore a publishing partnership.</div>
+            <div class="msg-time">Mar 18 · 10:24 AM</div>
+          </div>
+        </div>
+
+        <!-- MSG 2 - CloudPeak -->
+        <div class="msg-item right">
+          <div class="msg-avatar cloudpeak">CP</div>
+          <div class="msg-bubble">
+            <div class="msg-sender">CloudPeak Games — Wei Zhang</div>
+            <div class="msg-text">Thank you! We're thrilled to hear that and genuinely excited about the potential partnership. Devolver Digital's track record with unique, narrative-driven titles aligns perfectly with what we're building. Regarding the minimum guarantee, we have specific expectations based on our production investment over three years — happy to discuss terms.</div>
+            <div class="msg-time">Mar 18 · 11:08 AM</div>
+          </div>
+        </div>
+
+        <!-- MSG 3 - Devolver -->
+        <div class="msg-item">
+          <div class="msg-avatar devolver">DD</div>
+          <div class="msg-bubble">
+            <div class="msg-sender">Devolver Digital — Sarah Chen</div>
+            <div class="msg-text">We completely understand your position on the MG. Given the current market conditions and our portfolio risk, our initial offer would be $200K with performance bonuses tied to Metacritic score milestones and first-month sales targets. We believe this structure is fair and lets both sides benefit from the game's success.</div>
+            <div class="msg-time">Mar 19 · 9:45 AM</div>
+          </div>
+        </div>
+
+        <!-- MSG 4 - CloudPeak -->
+        <div class="msg-item right">
+          <div class="msg-avatar cloudpeak">CP</div>
+          <div class="msg-bubble">
+            <div class="msg-sender">CloudPeak Games — Wei Zhang</div>
+            <div class="msg-text">We appreciate the offer and understand the rationale. However, given the scope and quality of the project — 40+ hours of content, full voice acting, UE5 production — we'd need a minimum guarantee of at least $350K to proceed. This reflects our remaining production budget and localization costs. We remain open on the performance bonus structure.</div>
+            <div class="msg-time">Mar 19 · 2:17 PM</div>
+          </div>
+        </div>
+
+        <!-- MSG 5 - Devolver -->
+        <div class="msg-item">
+          <div class="msg-avatar devolver">DD</div>
+          <div class="msg-bubble">
+            <div class="msg-sender">Devolver Digital — Sarah Chen</div>
+            <div class="msg-text">We've discussed internally and can meet at $300K with an additional $50K milestone payment upon delivery of Gold Master build. We'd also cover EN/FR/DE localization costs, which we estimate around $60K, bringing the total guaranteed publisher investment to approximately $410K. This is our best offer at this stage.</div>
+            <div class="msg-time">Mar 20 · 11:30 AM</div>
+          </div>
+        </div>
+
+        <!-- MSG 6 - CloudPeak -->
+        <div class="msg-item right">
+          <div class="msg-avatar cloudpeak">CP</div>
+          <div class="msg-bubble">
+            <div class="msg-sender">CloudPeak Games — Wei Zhang</div>
+            <div class="msg-text">That structure works well for us. Let's move forward with the $300K base + $50K Gold Master milestone + publisher-funded localization. We'd also need to confirm the marketing budget commitment and Steam feature placement support. Can you send over the draft terms document? We'll have our legal team review within 48 hours.</div>
+            <div class="msg-time">Mar 20 · 4:52 PM</div>
+          </div>
+        </div>
+
+        <!-- SYSTEM MSG -->
+        <div class="system-msg">
+          <div class="system-bubble">
+            🔔 System Update · Mar 21 — Terms updated: Minimum Guarantee moved to <strong>$300K + $50K milestone</strong> (pending final confirmation by both parties)
+          </div>
+        </div>
+
+        <!-- MSG 7 - Devolver -->
+        <div class="msg-item">
+          <div class="msg-avatar devolver">DD</div>
+          <div class="msg-bubble">
+            <div class="msg-sender">Devolver Digital — Sarah Chen</div>
+            <div class="msg-text">Draft terms document attached (Publishing_Terms_Draft_v1.docx). Please review and let us know if any adjustments are needed. We've also included our standard Steam launch support clause covering featuring, launch trailer co-funding, and press outreach. Looking forward to finalizing this and getting the partnership moving!</div>
+            <div class="msg-time">Mar 21 · 10:05 AM</div>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- INPUT AREA -->
+      <div class="msg-input-area">
+        <div class="msg-input-wrap">
+          <textarea placeholder="Type a message..." rows="1" oninput="this.style.height='auto';this.style.height=this.scrollHeight+'px'"></textarea>
+          <div class="input-actions">
+            <button class="input-icon-btn" title="Emoji">😊</button>
+            <button class="input-icon-btn" title="Attach file">📎</button>
+          </div>
+        </div>
+        <button class="btn-send" title="Send">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- RIGHT PANEL -->
+  <aside class="panel-right">
+
+    <!-- Documents -->
+    <div class="side-card">
+      <div class="side-card-title">📁 Documents</div>
+      <div class="doc-list">
+        <div class="doc-item">
+          <span class="doc-icon">📄</span>
+          <div class="doc-info">
+            <div class="doc-name">NDA_CloudPeak_Devolver.pdf</div>
+            <div class="doc-status signed">✅ Signed</div>
+          </div>
+        </div>
+        <div class="doc-item">
+          <span class="doc-icon">📦</span>
+          <div class="doc-info">
+            <div class="doc-name">Game_Build_Beta_v0.8.zip</div>
+            <div class="doc-status shared">Shared · Mar 20</div>
+          </div>
+        </div>
+        <div class="doc-item">
+          <span class="doc-icon">📄</span>
+          <div class="doc-info">
+            <div class="doc-name">Publishing_Terms_Draft_v1.docx</div>
+            <div class="doc-status review">🔄 Under Review</div>
+          </div>
+        </div>
+        <div class="doc-item">
+          <span class="doc-icon">📊</span>
+          <div class="doc-info">
+            <div class="doc-name">Marketing_Deck_2026.pdf</div>
+            <div class="doc-status shared">Shared · Mar 21</div>
+          </div>
+        </div>
+      </div>
+      <button class="btn-upload">+ Upload Document</button>
+    </div>
+
+    <!-- Key Contacts -->
+    <div class="side-card">
+      <div class="side-card-title">👤 Key Contacts</div>
+      <div class="contacts-list">
+        <div class="contact-item">
+          <div class="contact-avatar" style="background:linear-gradient(135deg,#1a3a6e,#7b2d8b);color:#fff;">WZ</div>
+          <div class="contact-info">
+            <div class="contact-name">Wei Zhang</div>
+            <div class="contact-role">CloudPeak Games · CEO</div>
+          </div>
+        </div>
+        <div class="contact-item">
+          <div class="contact-avatar" style="background:linear-gradient(135deg,#d95f2b,#e8834f);color:#fff;">SC</div>
+          <div class="contact-info">
+            <div class="contact-name">Sarah Chen</div>
+            <div class="contact-role">Devolver Digital · Publishing Dir.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Deal Timeline -->
+    <div class="side-card">
+      <div class="side-card-title">🗓 Deal Timeline</div>
+      <div class="deal-tl">
+        <div class="dtl-item">
+          <div class="dtl-dot"></div>
+          <div class="dtl-body"><div class="dtl-date">Mar 15</div><div class="dtl-event">Listing Posted</div></div>
+        </div>
+        <div class="dtl-item">
+          <div class="dtl-dot"></div>
+          <div class="dtl-body"><div class="dtl-date">Mar 18</div><div class="dtl-event">First Contact</div></div>
+        </div>
+        <div class="dtl-item">
+          <div class="dtl-dot"></div>
+          <div class="dtl-body"><div class="dtl-date">Mar 19</div><div class="dtl-event">NDA Signed</div></div>
+        </div>
+        <div class="dtl-item">
+          <div class="dtl-dot"></div>
+          <div class="dtl-body"><div class="dtl-date">Mar 20</div><div class="dtl-event">Build Shared</div></div>
+        </div>
+        <div class="dtl-item">
+          <div class="dtl-dot"></div>
+          <div class="dtl-body"><div class="dtl-date">Mar 21</div><div class="dtl-event">Terms Discussion</div></div>
+        </div>
+        <div class="dtl-item">
+          <div class="dtl-dot active"></div>
+          <div class="dtl-body"><div class="dtl-date" style="color:#d95f2b;font-weight:600;">Today</div><div class="dtl-event" style="color:#d95f2b;font-weight:600;">Counter-offer Received</div></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Quick Actions -->
+    <div class="side-card">
+      <div class="side-card-title">⚡ Quick Actions</div>
+      <div class="quick-actions">
+        <button class="qa-btn qa-btn-outline"><span>📅</span> Schedule a Call</button>
+        <button class="qa-btn qa-btn-orange"><span>📋</span> Generate Term Sheet</button>
+      </div>
+    </div>
+
+  </aside>
+
+</div>
+
+<script>
+  function setTab(el) {
+    document.querySelectorAll('.msg-tab').forEach(t => t.classList.remove('active'));
+    el.classList.add('active');
+  }
+
+  // Auto-scroll to bottom of messages
+  const msgList = document.getElementById('msgList');
+  msgList.scrollTop = msgList.scrollHeight;
+</script>
+</body>
+</html>
