@@ -1,0 +1,1277 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Projects – Game Connection</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg: #e8e4da;
+    --orange: #d95f2b;
+    --teal: #0a7fa8;
+    --green: #0d9b72;
+    --card: #fff;
+    --text: #1c1a17;
+    --text-sec: #6b6660;
+    --text-weak: #a09890;
+    --radius: 10px;
+    --radius-lg: 12px;
+    --nav-h: 64px;
+  }
+
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-width: 900px;
+    min-height: 100vh;
+  }
+
+  /* ── NAV ── */
+  nav.topbar {
+    position: fixed;
+    top: 0; left: 0; right: 0;
+    height: var(--nav-h);
+    background: var(--card);
+    border-bottom: 1px solid #e0dbd2;
+    display: flex;
+    align-items: center;
+    padding: 0 24px;
+    gap: 16px;
+    z-index: 100;
+    box-shadow: 0 2px 8px rgba(0,0,0,.06);
+  }
+
+  .logo {
+    font-weight: 700;
+    font-size: 15px;
+    letter-spacing: .08em;
+    color: var(--orange);
+    white-space: nowrap;
+    flex-shrink: 0;
+  }
+
+  .search-wrap {
+    flex: 1;
+    max-width: 340px;
+    position: relative;
+  }
+  .search-wrap input {
+    width: 100%;
+    padding: 9px 16px 9px 38px;
+    border: 1.5px solid #ddd8ce;
+    border-radius: 24px;
+    font-family: inherit;
+    font-size: 13.5px;
+    background: var(--bg);
+    color: var(--text);
+    outline: none;
+    transition: border-color .2s;
+  }
+  .search-wrap input:focus { border-color: var(--teal); }
+  .search-wrap svg {
+    position: absolute;
+    left: 12px; top: 50%;
+    transform: translateY(-50%);
+    color: var(--text-weak);
+  }
+
+  nav.topbar .nav-links {
+    display: flex;
+    gap: 4px;
+    margin-left: 12px;
+  }
+  nav.topbar .nav-links a {
+    text-decoration: none;
+    color: var(--text-sec);
+    font-size: 14px;
+    font-weight: 500;
+    padding: 7px 14px;
+    border-radius: 8px;
+    transition: background .18s, color .18s;
+  }
+  nav.topbar .nav-links a:hover { background: #f0ede7; color: var(--text); }
+  nav.topbar .nav-links a.active {
+    color: var(--orange);
+    background: #fdf0e9;
+  }
+
+  .nav-right {
+    margin-left: auto;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex-shrink: 0;
+  }
+  .bell-btn {
+    width: 38px; height: 38px;
+    border-radius: 50%;
+    border: none;
+    background: var(--bg);
+    cursor: pointer;
+    display: grid;
+    place-items: center;
+    color: var(--text-sec);
+    transition: background .18s;
+    position: relative;
+  }
+  .bell-btn:hover { background: #e0dbd2; }
+  .bell-badge {
+    position: absolute;
+    top: 6px; right: 6px;
+    width: 8px; height: 8px;
+    background: var(--orange);
+    border-radius: 50%;
+    border: 2px solid #fff;
+  }
+  .avatar {
+    width: 36px; height: 36px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, var(--orange), #f4a261);
+    color: #fff;
+    display: grid;
+    place-items: center;
+    font-weight: 700;
+    font-size: 14px;
+    cursor: pointer;
+  }
+
+  /* ── LAYOUT ── */
+  .page-wrap {
+    display: flex;
+    margin-top: var(--nav-h);
+    min-height: calc(100vh - var(--nav-h));
+  }
+
+  /* ── SIDEBAR ── */
+  .sidebar {
+    width: 260px;
+    flex-shrink: 0;
+    padding: 24px 16px;
+    position: sticky;
+    top: var(--nav-h);
+    height: calc(100vh - var(--nav-h));
+    overflow-y: auto;
+  }
+  .sidebar::-webkit-scrollbar { width: 4px; }
+  .sidebar::-webkit-scrollbar-thumb { background: #ccc8c0; border-radius: 4px; }
+
+  .filter-section { margin-bottom: 24px; }
+  .filter-section h4 {
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: .08em;
+    text-transform: uppercase;
+    color: var(--text-weak);
+    margin-bottom: 10px;
+  }
+  .filter-list { display: flex; flex-direction: column; gap: 2px; }
+  .filter-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 7px 10px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 13.5px;
+    color: var(--text-sec);
+    transition: background .15s, color .15s;
+    user-select: none;
+  }
+  .filter-item:hover { background: #ece9e1; color: var(--text); }
+  .filter-item.active {
+    background: #fdf0e9;
+    color: var(--orange);
+    font-weight: 600;
+  }
+  .filter-count {
+    font-size: 11.5px;
+    background: #ece9e1;
+    color: var(--text-weak);
+    padding: 1px 7px;
+    border-radius: 10px;
+  }
+  .filter-item.active .filter-count {
+    background: #fddfc8;
+    color: var(--orange);
+  }
+
+  .stats-box {
+    background: var(--card);
+    border-radius: var(--radius);
+    padding: 16px;
+    margin-top: 8px;
+  }
+  .stat-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 8px 0;
+    border-bottom: 1px solid #f0ede7;
+    font-size: 13px;
+  }
+  .stat-row:last-child { border-bottom: none; }
+  .stat-row .label { color: var(--text-sec); }
+  .stat-row .val { font-weight: 700; color: var(--text); }
+  .stat-row .val.orange { color: var(--orange); }
+  .stat-row .val.teal { color: var(--teal); }
+
+  /* ── MAIN ── */
+  .main-content {
+    flex: 1;
+    padding: 24px 20px;
+    min-width: 0;
+  }
+
+  .sort-bar {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 20px;
+  }
+  .sort-bar span {
+    font-size: 13px;
+    color: var(--text-sec);
+    margin-right: 4px;
+  }
+  .sort-btn {
+    padding: 7px 16px;
+    border-radius: 20px;
+    border: 1.5px solid #ddd8ce;
+    background: var(--card);
+    font-family: inherit;
+    font-size: 13.5px;
+    color: var(--text-sec);
+    cursor: pointer;
+    font-weight: 500;
+    transition: all .18s;
+  }
+  .sort-btn:hover { border-color: var(--teal); color: var(--teal); }
+  .sort-btn.active {
+    background: var(--teal);
+    border-color: var(--teal);
+    color: #fff;
+  }
+
+  .projects-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 18px;
+  }
+
+  /* ── PROJECT CARD ── */
+  .proj-card {
+    background: var(--card);
+    border-radius: var(--radius-lg);
+    overflow: hidden;
+    transition: transform .2s, box-shadow .2s;
+    cursor: pointer;
+    border: 1px solid #ece9e1;
+  }
+  .proj-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 8px 24px rgba(0,0,0,.1);
+  }
+  .card-cover {
+    height: 140px;
+    position: relative;
+    overflow: hidden;
+  }
+  .card-cover svg { width: 100%; height: 100%; }
+  .status-badge {
+    position: absolute;
+    top: 10px; left: 10px;
+    padding: 3px 10px;
+    border-radius: 20px;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: .03em;
+    backdrop-filter: blur(4px);
+  }
+  .badge-pub { background: rgba(217,95,43,.9); color: #fff; }
+  .badge-inv { background: rgba(10,127,168,.9); color: #fff; }
+  .badge-dev { background: rgba(13,155,114,.9); color: #fff; }
+  .badge-rel { background: rgba(28,26,23,.75); color: #fff; }
+
+  .card-body { padding: 14px 16px; }
+  .card-title {
+    font-size: 15px;
+    font-weight: 700;
+    color: var(--text);
+    margin-bottom: 3px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .card-genre {
+    font-size: 12px;
+    color: var(--teal);
+    font-weight: 500;
+    margin-bottom: 8px;
+  }
+  .card-studio {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 12.5px;
+    color: var(--text-sec);
+    margin-bottom: 8px;
+  }
+  .flag { font-size: 16px; }
+  .platforms {
+    display: flex;
+    gap: 5px;
+    margin-bottom: 10px;
+    flex-wrap: wrap;
+  }
+  .platform-tag {
+    font-size: 11px;
+    padding: 2px 8px;
+    background: #f0ede7;
+    color: var(--text-sec);
+    border-radius: 6px;
+    font-weight: 500;
+  }
+  .card-desc {
+    font-size: 12.5px;
+    color: var(--text-sec);
+    line-height: 1.55;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    margin-bottom: 14px;
+  }
+  .card-footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding-top: 12px;
+    border-top: 1px solid #f0ede7;
+    gap: 8px;
+  }
+  .card-meta {
+    font-size: 11.5px;
+    color: var(--text-weak);
+    display: flex;
+    gap: 10px;
+  }
+  .card-meta span { display: flex; align-items: center; gap: 3px; }
+  .card-actions { display: flex; gap: 6px; }
+  .btn-save {
+    padding: 6px 12px;
+    border-radius: 8px;
+    border: 1.5px solid #ddd8ce;
+    background: transparent;
+    font-family: inherit;
+    font-size: 12px;
+    color: var(--text-sec);
+    cursor: pointer;
+    font-weight: 500;
+    transition: all .18s;
+  }
+  .btn-save:hover { border-color: var(--text-sec); color: var(--text); }
+  .btn-connect {
+    padding: 6px 14px;
+    border-radius: 8px;
+    border: none;
+    background: var(--orange);
+    font-family: inherit;
+    font-size: 12px;
+    color: #fff;
+    cursor: pointer;
+    font-weight: 600;
+    transition: opacity .18s;
+  }
+  .btn-connect:hover { opacity: .88; }
+
+  /* ── RIGHT PANEL ── */
+  .right-panel {
+    width: 300px;
+    flex-shrink: 0;
+    padding: 24px 16px;
+    position: sticky;
+    top: var(--nav-h);
+    height: calc(100vh - var(--nav-h));
+    overflow-y: auto;
+  }
+  .right-panel::-webkit-scrollbar { width: 4px; }
+  .right-panel::-webkit-scrollbar-thumb { background: #ccc8c0; border-radius: 4px; }
+
+  .panel-section {
+    background: var(--card);
+    border-radius: var(--radius-lg);
+    padding: 18px;
+    margin-bottom: 18px;
+    border: 1px solid #ece9e1;
+  }
+  .panel-section h3 {
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--text);
+    margin-bottom: 14px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .panel-section h3 span { color: var(--orange); }
+
+  .featured-item {
+    display: flex;
+    gap: 10px;
+    padding: 10px 0;
+    border-bottom: 1px solid #f5f3ef;
+    cursor: pointer;
+    transition: opacity .18s;
+  }
+  .featured-item:last-child { border-bottom: none; padding-bottom: 0; }
+  .featured-item:hover { opacity: .78; }
+  .fi-cover {
+    width: 48px; height: 48px;
+    border-radius: 8px;
+    flex-shrink: 0;
+    overflow: hidden;
+  }
+  .fi-cover svg { width: 100%; height: 100%; }
+  .fi-info { flex: 1; min-width: 0; }
+  .fi-name { font-size: 13px; font-weight: 600; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .fi-sub { font-size: 11.5px; color: var(--text-sec); margin-top: 2px; }
+  .fi-badge { font-size: 10px; font-weight: 600; padding: 2px 7px; border-radius: 8px; margin-top: 4px; display: inline-block; }
+
+  .studio-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 8px 0;
+    border-bottom: 1px solid #f5f3ef;
+    cursor: pointer;
+    transition: opacity .18s;
+  }
+  .studio-item:last-child { border-bottom: none; }
+  .studio-item:hover { opacity: .78; }
+  .studio-logo {
+    width: 36px; height: 36px;
+    border-radius: 8px;
+    display: grid;
+    place-items: center;
+    font-size: 13px;
+    font-weight: 700;
+    color: #fff;
+    flex-shrink: 0;
+  }
+  .studio-info { flex: 1; min-width: 0; }
+  .studio-name { font-size: 13px; font-weight: 600; color: var(--text); }
+  .studio-sub { font-size: 11.5px; color: var(--text-sec); }
+  .active-dot {
+    width: 8px; height: 8px;
+    border-radius: 50%;
+    background: var(--green);
+    flex-shrink: 0;
+  }
+
+  .genre-row { margin-bottom: 10px; }
+  .genre-row:last-child { margin-bottom: 0; }
+  .genre-label {
+    display: flex;
+    justify-content: space-between;
+    font-size: 12.5px;
+    margin-bottom: 4px;
+  }
+  .genre-label .name { color: var(--text-sec); font-weight: 500; }
+  .genre-label .pct { color: var(--text-weak); font-size: 11.5px; }
+  .genre-bar-bg {
+    height: 6px;
+    background: #f0ede7;
+    border-radius: 3px;
+    overflow: hidden;
+  }
+  .genre-bar-fill {
+    height: 100%;
+    border-radius: 3px;
+    transition: width .4s ease;
+  }
+</style>
+</head>
+<body>
+
+<!-- TOP NAV -->
+<nav class="topbar">
+  <div class="logo">🎮 GAME CONNECTION</div>
+
+  <div class="search-wrap">
+    <svg width="15" height="15" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2">
+      <circle cx="9" cy="9" r="6"/><path d="M15 15l3 3"/>
+    </svg>
+    <input type="text" placeholder="Search games, studios, genres...">
+  </div>
+
+  <div class="nav-links">
+    <a href="#">Home</a>
+    <a href="#">People</a>
+    <a href="#" class="active">Projects</a>
+    <a href="#">Events</a>
+    <a href="#">Market</a>
+  </div>
+
+  <div class="nav-right">
+    <button class="bell-btn">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/>
+      </svg>
+      <div class="bell-badge"></div>
+    </button>
+    <div class="avatar">Q</div>
+  </div>
+</nav>
+
+<!-- PAGE WRAP -->
+<div class="page-wrap">
+
+  <!-- LEFT SIDEBAR -->
+  <aside class="sidebar">
+
+    <div class="filter-section">
+      <h4>Status</h4>
+      <div class="filter-list">
+        <div class="filter-item active">All <span class="filter-count">10</span></div>
+        <div class="filter-item">Seeking Publisher <span class="filter-count">4</span></div>
+        <div class="filter-item">Seeking Investment <span class="filter-count">2</span></div>
+        <div class="filter-item">In Development <span class="filter-count">2</span></div>
+        <div class="filter-item">Released <span class="filter-count">3</span></div>
+      </div>
+    </div>
+
+    <div class="filter-section">
+      <h4>Platform</h4>
+      <div class="filter-list">
+        <div class="filter-item active">All <span class="filter-count">10</span></div>
+        <div class="filter-item">PC <span class="filter-count">8</span></div>
+        <div class="filter-item">Mobile <span class="filter-count">6</span></div>
+        <div class="filter-item">Console <span class="filter-count">4</span></div>
+        <div class="filter-item">VR <span class="filter-count">1</span></div>
+      </div>
+    </div>
+
+    <div class="filter-section">
+      <h4>Genre</h4>
+      <div class="filter-list">
+        <div class="filter-item active">All <span class="filter-count">10</span></div>
+        <div class="filter-item">RPG <span class="filter-count">3</span></div>
+        <div class="filter-item">Strategy <span class="filter-count">2</span></div>
+        <div class="filter-item">Action <span class="filter-count">2</span></div>
+        <div class="filter-item">Puzzle <span class="filter-count">1</span></div>
+        <div class="filter-item">Simulation <span class="filter-count">2</span></div>
+        <div class="filter-item">Horror <span class="filter-count">1</span></div>
+      </div>
+    </div>
+
+    <div class="filter-section">
+      <h4>Region</h4>
+      <div class="filter-list">
+        <div class="filter-item active">All <span class="filter-count">10</span></div>
+        <div class="filter-item">Asia <span class="filter-count">6</span></div>
+        <div class="filter-item">Europe <span class="filter-count">2</span></div>
+        <div class="filter-item">North America <span class="filter-count">2</span></div>
+      </div>
+    </div>
+
+    <div class="filter-section">
+      <h4>Quick Stats</h4>
+      <div class="stats-box">
+        <div class="stat-row">
+          <span class="label">Total Projects</span>
+          <span class="val">10</span>
+        </div>
+        <div class="stat-row">
+          <span class="label">New This Week</span>
+          <span class="val orange">+3</span>
+        </div>
+        <div class="stat-row">
+          <span class="label">Seeking Funding</span>
+          <span class="val teal">6</span>
+        </div>
+      </div>
+    </div>
+
+  </aside>
+
+  <!-- MAIN CONTENT -->
+  <main class="main-content">
+
+    <div class="sort-bar">
+      <span>Sort by:</span>
+      <button class="sort-btn active">Latest</button>
+      <button class="sort-btn">Trending</button>
+      <button class="sort-btn">Most Saved</button>
+    </div>
+
+    <div class="projects-grid">
+
+      <!-- 1. Echoes of the Jade Dynasty -->
+      <div class="proj-card">
+        <div class="card-cover">
+          <svg viewBox="0 0 400 140" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid slice">
+            <defs>
+              <linearGradient id="g1" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" stop-color="#2d1b4e"/>
+                <stop offset="50%" stop-color="#8b2252"/>
+                <stop offset="100%" stop-color="#d4a017"/>
+              </linearGradient>
+            </defs>
+            <rect width="400" height="140" fill="url(#g1)"/>
+            <circle cx="320" cy="30" r="60" fill="rgba(212,160,23,.15)"/>
+            <path d="M0 80 Q100 40 200 80 Q300 120 400 70 L400 140 L0 140Z" fill="rgba(0,0,0,.25)"/>
+            <text x="50%" y="52%" dominant-baseline="middle" text-anchor="middle" fill="rgba(255,255,255,.12)" font-size="48" font-weight="900" font-family="sans-serif">龙</text>
+          </svg>
+          <div class="status-badge badge-pub">Seeking Publisher</div>
+        </div>
+        <div class="card-body">
+          <div class="card-title">Echoes of the Jade Dynasty</div>
+          <div class="card-genre">RPG</div>
+          <div class="card-studio">
+            <span class="flag">🇨🇳</span>
+            <span>CloudPeak Games · Shanghai</span>
+          </div>
+          <div class="platforms">
+            <span class="platform-tag">PC</span>
+            <span class="platform-tag">Console</span>
+          </div>
+          <div class="card-desc">An epic open-world RPG set in ancient China, blending mythological lore with tactical real-time combat. Built on Unreal Engine 5 with stunning environmental storytelling.</div>
+          <div class="card-footer">
+            <div class="card-meta">
+              <span>👥 12</span>
+              <span>⏱ 3 yrs</span>
+              <span>🔧 UE5</span>
+            </div>
+            <div class="card-actions">
+              <button class="btn-save">♡ Save</button>
+              <button class="btn-connect">Connect</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 2. Steel Horizon -->
+      <div class="proj-card">
+        <div class="card-cover">
+          <svg viewBox="0 0 400 140" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid slice">
+            <defs>
+              <linearGradient id="g2" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" stop-color="#0a1628"/>
+                <stop offset="50%" stop-color="#1a3a5c"/>
+                <stop offset="100%" stop-color="#2e6b9e"/>
+              </linearGradient>
+            </defs>
+            <rect width="400" height="140" fill="url(#g2)"/>
+            <line x1="0" y1="90" x2="400" y2="90" stroke="rgba(46,107,158,.5)" stroke-width="1"/>
+            <line x1="0" y1="70" x2="400" y2="70" stroke="rgba(46,107,158,.3)" stroke-width="1"/>
+            <rect x="60" y="50" width="30" height="40" fill="rgba(255,255,255,.1)" rx="2"/>
+            <rect x="100" y="40" width="50" height="50" fill="rgba(255,255,255,.08)" rx="2"/>
+            <rect x="160" y="55" width="20" height="35" fill="rgba(255,255,255,.12)" rx="2"/>
+            <circle cx="350" cy="30" r="25" fill="rgba(255,200,0,.1)"/>
+          </svg>
+          <div class="status-badge badge-inv">Seeking Investment</div>
+        </div>
+        <div class="card-body">
+          <div class="card-title">Steel Horizon</div>
+          <div class="card-genre">Strategy</div>
+          <div class="card-studio">
+            <span class="flag">🇨🇳</span>
+            <span>IronForge Interactive · Shenzhen</span>
+          </div>
+          <div class="platforms">
+            <span class="platform-tag">PC</span>
+            <span class="platform-tag">Mobile</span>
+          </div>
+          <div class="card-desc">A near-future turn-based strategy title featuring geopolitical simulation, resource warfare, and deep tech trees. Cross-platform with asymmetric UI design.</div>
+          <div class="card-footer">
+            <div class="card-meta">
+              <span>👥 8</span>
+              <span>⏱ 2 yrs</span>
+              <span>🔧 Unity</span>
+            </div>
+            <div class="card-actions">
+              <button class="btn-save">♡ Save</button>
+              <button class="btn-connect">Connect</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 3. Neon Requiem -->
+      <div class="proj-card">
+        <div class="card-cover">
+          <svg viewBox="0 0 400 140" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid slice">
+            <defs>
+              <linearGradient id="g3" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" stop-color="#0d0015"/>
+                <stop offset="50%" stop-color="#3a0050"/>
+                <stop offset="100%" stop-color="#ff2d78"/>
+              </linearGradient>
+            </defs>
+            <rect width="400" height="140" fill="url(#g3)"/>
+            <circle cx="200" cy="70" r="50" fill="rgba(255,45,120,.08)"/>
+            <circle cx="200" cy="70" r="30" fill="rgba(255,45,120,.06)"/>
+            <rect x="0" y="100" width="400" height="40" fill="rgba(0,0,0,.4)"/>
+            <text x="30" y="38" fill="rgba(255,45,120,.5)" font-size="11" font-family="monospace">NEON_SYS:ACTIVE</text>
+          </svg>
+          <div class="status-badge badge-dev">In Development</div>
+        </div>
+        <div class="card-body">
+          <div class="card-title">Neon Requiem</div>
+          <div class="card-genre">Action RPG</div>
+          <div class="card-studio">
+            <span class="flag">🇫🇷</span>
+            <span>Lumière Studio · Paris</span>
+          </div>
+          <div class="platforms">
+            <span class="platform-tag">PC</span>
+          </div>
+          <div class="card-desc">Cyberpunk action RPG with soulslike combat and a branching narrative set in a dystopian future Paris. Stunning ray-traced visuals powered by Unreal Engine 5.</div>
+          <div class="card-footer">
+            <div class="card-meta">
+              <span>👥 6</span>
+              <span>⏱ 18 mo</span>
+              <span>🔧 UE5</span>
+            </div>
+            <div class="card-actions">
+              <button class="btn-save">♡ Save</button>
+              <button class="btn-connect">Connect</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 4. Roots & Ruins -->
+      <div class="proj-card">
+        <div class="card-cover">
+          <svg viewBox="0 0 400 140" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid slice">
+            <defs>
+              <linearGradient id="g4" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" stop-color="#1a3a1a"/>
+                <stop offset="50%" stop-color="#2d6a2d"/>
+                <stop offset="100%" stop-color="#7ec850"/>
+              </linearGradient>
+            </defs>
+            <rect width="400" height="140" fill="url(#g4)"/>
+            <ellipse cx="200" cy="110" rx="200" ry="30" fill="rgba(0,0,0,.2)"/>
+            <rect x="170" y="40" width="8" height="50" fill="rgba(255,255,255,.3)"/>
+            <ellipse cx="174" cy="38" rx="20" ry="18" fill="rgba(126,200,80,.6)"/>
+            <rect x="220" y="55" width="6" height="35" fill="rgba(255,255,255,.2)"/>
+            <ellipse cx="223" cy="53" rx="14" ry="12" fill="rgba(126,200,80,.5)"/>
+          </svg>
+          <div class="status-badge badge-rel">Released</div>
+        </div>
+        <div class="card-body">
+          <div class="card-title">Roots &amp; Ruins</div>
+          <div class="card-genre">Simulation</div>
+          <div class="card-studio">
+            <span class="flag">🇩🇪</span>
+            <span>Grünwald Games · Berlin</span>
+          </div>
+          <div class="platforms">
+            <span class="platform-tag">PC</span>
+            <span class="platform-tag">Mobile</span>
+          </div>
+          <div class="card-desc">A cozy ecological simulation where players restore ancient forests and build sustainable communities. Calm gameplay with rich seasonal events and biodiversity mechanics.</div>
+          <div class="card-footer">
+            <div class="card-meta">
+              <span>👥 4</span>
+              <span>✅ Live</span>
+              <span>🔧 Unity</span>
+            </div>
+            <div class="card-actions">
+              <button class="btn-save">♡ Save</button>
+              <button class="btn-connect">Connect</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 5. Project Nemesis -->
+      <div class="proj-card">
+        <div class="card-cover">
+          <svg viewBox="0 0 400 140" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid slice">
+            <defs>
+              <linearGradient id="g5" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" stop-color="#1c0a00"/>
+                <stop offset="50%" stop-color="#5c1a00"/>
+                <stop offset="100%" stop-color="#d95f2b"/>
+              </linearGradient>
+            </defs>
+            <rect width="400" height="140" fill="url(#g5)"/>
+            <polygon points="200,20 230,80 170,80" fill="rgba(217,95,43,.3)"/>
+            <polygon points="200,25 225,75 175,75" fill="rgba(217,95,43,.15)"/>
+            <circle cx="340" cy="110" r="40" fill="rgba(217,95,43,.1)"/>
+            <rect x="0" y="110" width="400" height="30" fill="rgba(0,0,0,.35)"/>
+          </svg>
+          <div class="status-badge badge-pub">Seeking Publisher</div>
+        </div>
+        <div class="card-body">
+          <div class="card-title">Project Nemesis</div>
+          <div class="card-genre">Action / Shooter</div>
+          <div class="card-studio">
+            <span class="flag">🇺🇸</span>
+            <span>Apex Interactive · Los Angeles</span>
+          </div>
+          <div class="platforms">
+            <span class="platform-tag">PC</span>
+            <span class="platform-tag">Console</span>
+          </div>
+          <div class="card-desc">High-octane tactical shooter with destructible environments, squad mechanics, and a Hollywood-scale cinematic campaign. AAA production values from a veteran team of 20.</div>
+          <div class="card-footer">
+            <div class="card-meta">
+              <span>👥 20</span>
+              <span>⏱ 2.5 yrs</span>
+              <span>🔧 UE5</span>
+            </div>
+            <div class="card-actions">
+              <button class="btn-save">♡ Save</button>
+              <button class="btn-connect">Connect</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 6. Chronicle of Stars -->
+      <div class="proj-card">
+        <div class="card-cover">
+          <svg viewBox="0 0 400 140" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid slice">
+            <defs>
+              <linearGradient id="g6" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" stop-color="#08082a"/>
+                <stop offset="50%" stop-color="#141464"/>
+                <stop offset="100%" stop-color="#4040b0"/>
+              </linearGradient>
+            </defs>
+            <rect width="400" height="140" fill="url(#g6)"/>
+            <circle cx="80" cy="40" r="3" fill="rgba(255,255,255,.8)"/>
+            <circle cx="150" cy="20" r="2" fill="rgba(255,255,255,.6)"/>
+            <circle cx="250" cy="35" r="4" fill="rgba(255,255,255,.9)"/>
+            <circle cx="350" cy="25" r="2" fill="rgba(255,255,255,.7)"/>
+            <circle cx="310" cy="60" r="3" fill="rgba(255,255,255,.5)"/>
+            <circle cx="60" cy="80" r="2" fill="rgba(255,255,255,.6)"/>
+            <circle cx="200" cy="70" r="25" fill="rgba(64,64,176,.4)"/>
+          </svg>
+          <div class="status-badge badge-dev">In Development</div>
+        </div>
+        <div class="card-body">
+          <div class="card-title">Chronicle of Stars</div>
+          <div class="card-genre">Strategy RPG</div>
+          <div class="card-studio">
+            <span class="flag">🇨🇦</span>
+            <span>Northern Lights Dev · Vancouver</span>
+          </div>
+          <div class="platforms">
+            <span class="platform-tag">PC</span>
+            <span class="platform-tag">Mobile</span>
+          </div>
+          <div class="card-desc">A narrative strategy RPG set in a procedurally generated galaxy where player choices reshape civilizations. Built with Godot for cross-platform flexibility.</div>
+          <div class="card-footer">
+            <div class="card-meta">
+              <span>👥 5</span>
+              <span>⏱ 14 mo</span>
+              <span>🔧 Godot</span>
+            </div>
+            <div class="card-actions">
+              <button class="btn-save">♡ Save</button>
+              <button class="btn-connect">Connect</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 7. Phantom Circuit -->
+      <div class="proj-card">
+        <div class="card-cover">
+          <svg viewBox="0 0 400 140" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid slice">
+            <defs>
+              <linearGradient id="g7" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" stop-color="#0a0a0a"/>
+                <stop offset="50%" stop-color="#1a1a2e"/>
+                <stop offset="100%" stop-color="#16213e"/>
+              </linearGradient>
+            </defs>
+            <rect width="400" height="140" fill="url(#g7)"/>
+            <line x1="50" y1="70" x2="150" y2="70" stroke="rgba(0,255,180,.3)" stroke-width="1.5"/>
+            <line x1="150" y1="70" x2="150" y2="40" stroke="rgba(0,255,180,.3)" stroke-width="1.5"/>
+            <line x1="150" y1="40" x2="260" y2="40" stroke="rgba(0,255,180,.3)" stroke-width="1.5"/>
+            <line x1="260" y1="40" x2="260" y2="90" stroke="rgba(0,255,180,.3)" stroke-width="1.5"/>
+            <line x1="260" y1="90" x2="370" y2="90" stroke="rgba(0,255,180,.3)" stroke-width="1.5"/>
+            <circle cx="200" cy="70" r="12" fill="rgba(0,255,180,.15)" stroke="rgba(0,255,180,.4)" stroke-width="1"/>
+          </svg>
+          <div class="status-badge badge-pub">Seeking Publisher</div>
+        </div>
+        <div class="card-body">
+          <div class="card-title">Phantom Circuit</div>
+          <div class="card-genre">Puzzle / Horror</div>
+          <div class="card-studio">
+            <span class="flag">🇯🇵</span>
+            <span>Akihabara Studio · Tokyo</span>
+          </div>
+          <div class="platforms">
+            <span class="platform-tag">PC</span>
+            <span class="platform-tag">Console</span>
+          </div>
+          <div class="card-desc">Atmospheric horror puzzle game where players manipulate electric circuits to survive a haunted research station. Distinctive Japanese horror aesthetics meets logic-based gameplay.</div>
+          <div class="card-footer">
+            <div class="card-meta">
+              <span>👥 7</span>
+              <span>⏱ 2 yrs</span>
+              <span>🔧 Unity</span>
+            </div>
+            <div class="card-actions">
+              <button class="btn-save">♡ Save</button>
+              <button class="btn-connect">Connect</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 8. Arena of Legends: Reborn -->
+      <div class="proj-card">
+        <div class="card-cover">
+          <svg viewBox="0 0 400 140" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid slice">
+            <defs>
+              <linearGradient id="g8" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" stop-color="#1a0033"/>
+                <stop offset="50%" stop-color="#4a0072"/>
+                <stop offset="100%" stop-color="#ffd700"/>
+              </linearGradient>
+            </defs>
+            <rect width="400" height="140" fill="url(#g8)"/>
+            <polygon points="200,15 220,60 270,60 230,88 246,133 200,105 154,133 170,88 130,60 180,60" fill="rgba(255,215,0,.2)" stroke="rgba(255,215,0,.4)" stroke-width="1"/>
+            <circle cx="200" cy="70" r="35" fill="rgba(255,215,0,.05)"/>
+          </svg>
+          <div class="status-badge badge-rel">Released</div>
+        </div>
+        <div class="card-body">
+          <div class="card-title">Arena of Legends: Reborn</div>
+          <div class="card-genre">MOBA</div>
+          <div class="card-studio">
+            <span class="flag">🇰🇷</span>
+            <span>DragonScale Games · Seoul</span>
+          </div>
+          <div class="platforms">
+            <span class="platform-tag">PC</span>
+            <span class="platform-tag">Mobile</span>
+          </div>
+          <div class="card-desc">Full-scale MOBA relaunch with revamped hero roster, ranked seasons, and cross-play between PC and mobile. Live with 500K+ monthly active users and growing esports scene.</div>
+          <div class="card-footer">
+            <div class="card-meta">
+              <span>👥 35</span>
+              <span>✅ Live</span>
+              <span>🔧 Custom</span>
+            </div>
+            <div class="card-actions">
+              <button class="btn-save">♡ Save</button>
+              <button class="btn-connect">Connect</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 9. Jungle Protocol -->
+      <div class="proj-card">
+        <div class="card-cover">
+          <svg viewBox="0 0 400 140" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid slice">
+            <defs>
+              <linearGradient id="g9" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" stop-color="#0a1a0a"/>
+                <stop offset="50%" stop-color="#0d3b1a"/>
+                <stop offset="100%" stop-color="#1a6b2e"/>
+              </linearGradient>
+            </defs>
+            <rect width="400" height="140" fill="url(#g9)"/>
+            <rect x="30" y="50" width="12" height="90" fill="rgba(13,155,114,.3)" rx="4"/>
+            <rect x="55" y="35" width="15" height="105" fill="rgba(13,155,114,.25)" rx="4"/>
+            <rect x="350" y="40" width="12" height="100" fill="rgba(13,155,114,.3)" rx="4"/>
+            <rect x="330" y="60" width="10" height="80" fill="rgba(13,155,114,.2)" rx="4"/>
+            <ellipse cx="200" cy="120" rx="180" ry="25" fill="rgba(0,0,0,.3)"/>
+          </svg>
+          <div class="status-badge badge-inv">Seeking Investment</div>
+        </div>
+        <div class="card-body">
+          <div class="card-title">Jungle Protocol</div>
+          <div class="card-genre">Survival</div>
+          <div class="card-studio">
+            <span class="flag">🇻🇳</span>
+            <span>Mekong Dev · Ho Chi Minh City</span>
+          </div>
+          <div class="platforms">
+            <span class="platform-tag">PC</span>
+            <span class="platform-tag">Mobile</span>
+          </div>
+          <div class="card-desc">Multiplayer jungle survival with base-building, resource extraction, and faction warfare. Southeast Asian rainforest setting with authentic ecological diversity.</div>
+          <div class="card-footer">
+            <div class="card-meta">
+              <span>👥 6</span>
+              <span>⏱ 16 mo</span>
+              <span>🔧 Unity</span>
+            </div>
+            <div class="card-actions">
+              <button class="btn-save">♡ Save</button>
+              <button class="btn-connect">Connect</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 10. Island Keeper -->
+      <div class="proj-card">
+        <div class="card-cover">
+          <svg viewBox="0 0 400 140" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid slice">
+            <defs>
+              <linearGradient id="g10" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" stop-color="#006994"/>
+                <stop offset="50%" stop-color="#0099cc"/>
+                <stop offset="100%" stop-color="#66d9ff"/>
+              </linearGradient>
+            </defs>
+            <rect width="400" height="140" fill="url(#g10)"/>
+            <ellipse cx="200" cy="100" rx="80" ry="20" fill="rgba(255,230,100,.6)"/>
+            <rect x="195" y="60" width="5" height="40" fill="rgba(139,90,43,.8)"/>
+            <polygon points="197,60 215,60 206,30" fill="rgba(255,50,50,.8)"/>
+            <ellipse cx="200" cy="100" rx="80" ry="8" fill="rgba(0,0,0,.15)"/>
+            <path d="M0 110 Q100 90 200 110 Q300 130 400 105 L400 140 L0 140Z" fill="rgba(0,80,140,.4)"/>
+          </svg>
+          <div class="status-badge badge-rel">Released</div>
+        </div>
+        <div class="card-body">
+          <div class="card-title">Island Keeper</div>
+          <div class="card-genre">Simulation / Casual</div>
+          <div class="card-studio">
+            <span class="flag">🇮🇩</span>
+            <span>Batik Games · Jakarta</span>
+          </div>
+          <div class="platforms">
+            <span class="platform-tag">Mobile</span>
+          </div>
+          <div class="card-desc">Casual island management sim where players cultivate tropical ecosystems, trade with neighboring islands, and unlock cultural heritage content inspired by Indonesian traditions.</div>
+          <div class="card-footer">
+            <div class="card-meta">
+              <span>👥 3</span>
+              <span>✅ Live</span>
+              <span>🔧 Unity</span>
+            </div>
+            <div class="card-actions">
+              <button class="btn-save">♡ Save</button>
+              <button class="btn-connect">Connect</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div><!-- /projects-grid -->
+  </main>
+
+  <!-- RIGHT PANEL -->
+  <aside class="right-panel">
+
+    <!-- Featured Projects -->
+    <div class="panel-section">
+      <h3>⭐ Featured Projects</h3>
+
+      <div class="featured-item">
+        <div class="fi-cover">
+          <svg viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg">
+            <defs>
+              <linearGradient id="fp1" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" stop-color="#2d1b4e"/>
+                <stop offset="100%" stop-color="#d4a017"/>
+              </linearGradient>
+            </defs>
+            <rect width="48" height="48" fill="url(#fp1)"/>
+            <text x="50%" y="55%" dominant-baseline="middle" text-anchor="middle" fill="rgba(255,255,255,.5)" font-size="22" font-family="sans-serif">龙</text>
+          </svg>
+        </div>
+        <div class="fi-info">
+          <div class="fi-name">Echoes of the Jade Dynasty</div>
+          <div class="fi-sub">CloudPeak Games · RPG</div>
+          <span class="fi-badge badge-pub">Seeking Publisher</span>
+        </div>
+      </div>
+
+      <div class="featured-item">
+        <div class="fi-cover">
+          <svg viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg">
+            <defs>
+              <linearGradient id="fp2" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" stop-color="#1c0a00"/>
+                <stop offset="100%" stop-color="#d95f2b"/>
+              </linearGradient>
+            </defs>
+            <rect width="48" height="48" fill="url(#fp2)"/>
+            <polygon points="24,8 28,20 40,20 31,27 34,39 24,32 14,39 17,27 8,20 20,20" fill="rgba(255,255,255,.2)"/>
+          </svg>
+        </div>
+        <div class="fi-info">
+          <div class="fi-name">Project Nemesis</div>
+          <div class="fi-sub">Apex Interactive · Action</div>
+          <span class="fi-badge badge-pub">Seeking Publisher</span>
+        </div>
+      </div>
+
+      <div class="featured-item">
+        <div class="fi-cover">
+          <svg viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg">
+            <defs>
+              <linearGradient id="fp3" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" stop-color="#1a0033"/>
+                <stop offset="100%" stop-color="#ffd700"/>
+              </linearGradient>
+            </defs>
+            <rect width="48" height="48" fill="url(#fp3)"/>
+            <circle cx="24" cy="24" r="14" fill="rgba(255,215,0,.2)" stroke="rgba(255,215,0,.5)" stroke-width="1"/>
+          </svg>
+        </div>
+        <div class="fi-info">
+          <div class="fi-name">Arena of Legends: Reborn</div>
+          <div class="fi-sub">DragonScale Games · MOBA</div>
+          <span class="fi-badge badge-rel">Released</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Recently Active Studios -->
+    <div class="panel-section">
+      <h3>🏢 Recently Active Studios</h3>
+
+      <div class="studio-item">
+        <div class="studio-logo" style="background: linear-gradient(135deg,#d95f2b,#f4a261);">CP</div>
+        <div class="studio-info">
+          <div class="studio-name">CloudPeak Games</div>
+          <div class="studio-sub">🇨🇳 Shanghai · 12 members</div>
+        </div>
+        <div class="active-dot"></div>
+      </div>
+
+      <div class="studio-item">
+        <div class="studio-logo" style="background: linear-gradient(135deg,#0a7fa8,#2ec4e8);">DS</div>
+        <div class="studio-info">
+          <div class="studio-name">DragonScale Games</div>
+          <div class="studio-sub">🇰🇷 Seoul · 35 members</div>
+        </div>
+        <div class="active-dot"></div>
+      </div>
+
+      <div class="studio-item">
+        <div class="studio-logo" style="background: linear-gradient(135deg,#0d9b72,#2ee8a0);">AX</div>
+        <div class="studio-info">
+          <div class="studio-name">Apex Interactive</div>
+          <div class="studio-sub">🇺🇸 Los Angeles · 20 members</div>
+        </div>
+        <div class="active-dot"></div>
+      </div>
+
+      <div class="studio-item">
+        <div class="studio-logo" style="background: linear-gradient(135deg,#8b2252,#e0508a);">LS</div>
+        <div class="studio-info">
+          <div class="studio-name">Lumière Studio</div>
+          <div class="studio-sub">🇫🇷 Paris · 6 members</div>
+        </div>
+        <div class="active-dot"></div>
+      </div>
+
+      <div class="studio-item">
+        <div class="studio-logo" style="background: linear-gradient(135deg,#4040b0,#8080e0);">IF</div>
+        <div class="studio-info">
+          <div class="studio-name">IronForge Interactive</div>
+          <div class="studio-sub">🇨🇳 Shenzhen · 8 members</div>
+        </div>
+        <div class="active-dot"></div>
+      </div>
+    </div>
+
+    <!-- Trending Genres -->
+    <div class="panel-section">
+      <h3>📊 Trending Genres</h3>
+
+      <div class="genre-row">
+        <div class="genre-label">
+          <span class="name">RPG</span>
+          <span class="pct">78%</span>
+        </div>
+        <div class="genre-bar-bg">
+          <div class="genre-bar-fill" style="width:78%; background: var(--orange);"></div>
+        </div>
+      </div>
+
+      <div class="genre-row">
+        <div class="genre-label">
+          <span class="name">Action</span>
+          <span class="pct">65%</span>
+        </div>
+        <div class="genre-bar-bg">
+          <div class="genre-bar-fill" style="width:65%; background: var(--teal);"></div>
+        </div>
+      </div>
+
+      <div class="genre-row">
+        <div class="genre-label">
+          <span class="name">Strategy</span>
+          <span class="pct">54%</span>
+        </div>
+        <div class="genre-bar-bg">
+          <div class="genre-bar-fill" style="width:54%; background: var(--green);"></div>
+        </div>
+      </div>
+
+      <div class="genre-row">
+        <div class="genre-label">
+          <span class="name">Simulation</span>
+          <span class="pct">41%</span>
+        </div>
+        <div class="genre-bar-bg">
+          <div class="genre-bar-fill" style="width:41%; background: #9b6fd9;"></div>
+        </div>
+      </div>
+
+      <div class="genre-row">
+        <div class="genre-label">
+          <span class="name">Survival</span>
+          <span class="pct">33%</span>
+        </div>
+        <div class="genre-bar-bg">
+          <div class="genre-bar-fill" style="width:33%; background: #d98b2b;"></div>
+        </div>
+      </div>
+
+      <div class="genre-row">
+        <div class="genre-label">
+          <span class="name">Horror</span>
+          <span class="pct">22%</span>
+        </div>
+        <div class="genre-bar-bg">
+          <div class="genre-bar-fill" style="width:22%; background: #6b6660;"></div>
+        </div>
+      </div>
+    </div>
+
+  </aside>
+
+</div><!-- /page-wrap -->
+
+<script>
+  // Filter items toggle
+  document.querySelectorAll('.filter-item').forEach(item => {
+    item.addEventListener('click', () => {
+      const section = item.closest('.filter-list');
+      section.querySelectorAll('.filter-item').forEach(i => i.classList.remove('active'));
+      item.classList.add('active');
+    });
+  });
+
+  // Sort buttons toggle
+  document.querySelectorAll('.sort-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('.sort-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+    });
+  });
+</script>
+</body>
+</html>
