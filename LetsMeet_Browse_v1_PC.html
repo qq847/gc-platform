@@ -1,0 +1,1107 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Let's Meet – Browse Participants | Game Connection</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --bg: #e8e4da;
+    --orange: #d95f2b;
+    --orange-dark: #b84e22;
+    --teal: #0a7fa8;
+    --green: #0d9b72;
+    --card: #ffffff;
+    --text: #1a1a1a;
+    --text-muted: #6b7280;
+    --border: #d4cfc4;
+    --chip-bg: #f0ece4;
+  }
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+  }
+
+  /* ===== NAV ===== */
+  nav {
+    background: #fff;
+    border-bottom: 1px solid var(--border);
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+  }
+  .nav-inner {
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 0 24px;
+    height: 60px;
+    display: flex;
+    align-items: center;
+    gap: 20px;
+  }
+  .logo {
+    font-weight: 700;
+    font-size: 17px;
+    letter-spacing: 0.5px;
+    color: var(--text);
+    white-space: nowrap;
+    text-decoration: none;
+  }
+  .logo span { color: var(--orange); }
+  .nav-search {
+    flex: 1;
+    max-width: 320px;
+    position: relative;
+  }
+  .nav-search input {
+    width: 100%;
+    padding: 8px 12px 8px 36px;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    font-family: inherit;
+    font-size: 14px;
+    background: var(--bg);
+    outline: none;
+  }
+  .nav-search input:focus { border-color: var(--teal); }
+  .nav-search svg { position: absolute; left: 10px; top: 50%; transform: translateY(-50%); color: var(--text-muted); }
+  .nav-links {
+    display: flex;
+    gap: 4px;
+    margin-left: 8px;
+  }
+  .nav-links a {
+    text-decoration: none;
+    color: var(--text-muted);
+    font-size: 14px;
+    font-weight: 500;
+    padding: 6px 12px;
+    border-radius: 6px;
+    transition: all 0.15s;
+  }
+  .nav-links a:hover { background: var(--bg); color: var(--text); }
+  .nav-letsmeet {
+    background: var(--orange);
+    color: #fff !important;
+    border-radius: 8px !important;
+    font-weight: 600 !important;
+  }
+  .nav-letsmeet:hover { background: var(--orange-dark) !important; color: #fff !important; }
+  .nav-right {
+    margin-left: auto;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+  .nav-icon-btn {
+    width: 36px; height: 36px;
+    display: flex; align-items: center; justify-content: center;
+    border-radius: 8px;
+    cursor: pointer;
+    position: relative;
+    color: var(--text-muted);
+    transition: background 0.15s;
+  }
+  .nav-icon-btn:hover { background: var(--bg); }
+  .notif-badge {
+    position: absolute;
+    top: 4px; right: 4px;
+    width: 8px; height: 8px;
+    background: var(--orange);
+    border-radius: 50%;
+    border: 1.5px solid #fff;
+  }
+  .avatar-nav {
+    width: 34px; height: 34px;
+    border-radius: 50%;
+    background: var(--teal);
+    color: #fff;
+    font-weight: 700;
+    font-size: 14px;
+    display: flex; align-items: center; justify-content: center;
+    cursor: pointer;
+  }
+
+  /* ===== PAGE HEADER ===== */
+  .page-header {
+    background: #fff;
+    border-bottom: 1px solid var(--border);
+    padding: 20px 24px;
+  }
+  .page-header-inner {
+    max-width: 1400px;
+    margin: 0 auto;
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 20px;
+  }
+  .badge-event {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: #fff3ee;
+    border: 1px solid #fbd0be;
+    color: var(--orange);
+    font-size: 12px;
+    font-weight: 600;
+    padding: 4px 10px;
+    border-radius: 20px;
+    margin-bottom: 8px;
+  }
+  .page-title { font-size: 26px; font-weight: 700; margin-bottom: 4px; }
+  .page-subtitle { color: var(--text-muted); font-size: 14px; }
+  .header-actions {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex-shrink: 0;
+    padding-top: 28px;
+  }
+  .btn-schedule {
+    display: flex; align-items: center; gap: 6px;
+    padding: 9px 16px;
+    background: var(--teal);
+    color: #fff;
+    border: none;
+    border-radius: 8px;
+    font-family: inherit;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    text-decoration: none;
+    transition: opacity 0.15s;
+  }
+  .btn-schedule:hover { opacity: 0.88; }
+  .slots-badge {
+    background: #e8f7f2;
+    border: 1px solid #a8dece;
+    color: var(--green);
+    font-size: 13px;
+    font-weight: 700;
+    padding: 6px 14px;
+    border-radius: 20px;
+  }
+
+  /* ===== LAYOUT ===== */
+  .main-layout {
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 24px 24px 60px;
+    display: flex;
+    gap: 24px;
+    align-items: flex-start;
+  }
+
+  /* ===== FILTER PANEL ===== */
+  .filter-panel {
+    width: 280px;
+    flex-shrink: 0;
+    background: var(--card);
+    border-radius: 12px;
+    border: 1px solid var(--border);
+    padding: 20px;
+    position: sticky;
+    top: 84px;
+  }
+  .filter-panel h3 {
+    font-size: 15px;
+    font-weight: 700;
+    margin-bottom: 16px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .filter-search {
+    position: relative;
+    margin-bottom: 20px;
+  }
+  .filter-search input {
+    width: 100%;
+    padding: 9px 12px 9px 36px;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    font-family: inherit;
+    font-size: 14px;
+    outline: none;
+    background: var(--bg);
+  }
+  .filter-search input:focus { border-color: var(--teal); }
+  .filter-search svg { position: absolute; left: 10px; top: 50%; transform: translateY(-50%); color: var(--text-muted); }
+  .filter-section { margin-bottom: 18px; }
+  .filter-label {
+    font-size: 12px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: var(--text-muted);
+    margin-bottom: 8px;
+  }
+  .chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+  }
+  .chip {
+    padding: 5px 10px;
+    border-radius: 20px;
+    border: 1.5px solid var(--border);
+    background: var(--chip-bg);
+    font-size: 12px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.15s;
+    user-select: none;
+  }
+  .chip:hover { border-color: var(--orange); color: var(--orange); }
+  .chip.active { background: var(--orange); border-color: var(--orange); color: #fff; }
+  .radio-group { display: flex; flex-direction: column; gap: 6px; }
+  .radio-item {
+    display: flex; align-items: center; gap: 8px;
+    font-size: 13px; cursor: pointer;
+  }
+  .radio-item input[type="radio"] { accent-color: var(--orange); }
+  .filter-actions {
+    display: flex; align-items: center; justify-content: space-between;
+    margin-top: 20px; padding-top: 16px;
+    border-top: 1px solid var(--border);
+  }
+  .btn-apply {
+    background: var(--orange);
+    color: #fff;
+    border: none;
+    border-radius: 8px;
+    padding: 9px 20px;
+    font-family: inherit;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: opacity 0.15s;
+  }
+  .btn-apply:hover { opacity: 0.88; }
+  .btn-reset { color: var(--text-muted); font-size: 13px; text-decoration: underline; cursor: pointer; background: none; border: none; font-family: inherit; }
+  .filter-count { margin-top: 14px; font-size: 12px; color: var(--text-muted); text-align: center; }
+
+  /* ===== PARTICIPANT GRID ===== */
+  .participants-area { flex: 1; min-width: 0; }
+  .participants-header {
+    display: flex; align-items: center; justify-content: space-between;
+    margin-bottom: 16px;
+  }
+  .participants-count { font-size: 14px; color: var(--text-muted); }
+  .sort-select {
+    padding: 7px 12px;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    font-family: inherit;
+    font-size: 13px;
+    background: #fff;
+    outline: none;
+    cursor: pointer;
+  }
+  .participants-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+  }
+
+  /* ===== PARTICIPANT CARD ===== */
+  .p-card {
+    background: var(--card);
+    border-radius: 12px;
+    border: 1px solid var(--border);
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    transition: box-shadow 0.15s, transform 0.15s;
+  }
+  .p-card:hover { box-shadow: 0 4px 16px rgba(0,0,0,0.08); transform: translateY(-1px); }
+  .p-card-top { display: flex; align-items: flex-start; gap: 12px; }
+  .p-avatar {
+    width: 48px; height: 48px;
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-weight: 700; font-size: 18px;
+    color: #fff;
+    flex-shrink: 0;
+  }
+  .p-info { flex: 1; min-width: 0; }
+  .p-name {
+    font-weight: 700;
+    font-size: 15px;
+    display: flex; align-items: center; gap: 6px;
+  }
+  .p-flag { font-size: 16px; }
+  .p-company { font-size: 13px; color: var(--text-muted); margin-top: 1px; }
+  .p-role-badge {
+    display: inline-block;
+    padding: 3px 9px;
+    border-radius: 12px;
+    font-size: 11px;
+    font-weight: 600;
+    margin-top: 4px;
+  }
+  .badge-publisher { background: #eef5ff; color: #2563eb; }
+  .badge-developer { background: #f0fdf4; color: #15803d; }
+  .badge-investor { background: #fef9ee; color: #b45309; }
+  .badge-service { background: #f5f3ff; color: #7c3aed; }
+  .p-seeking {
+    font-size: 13px;
+    color: var(--text);
+    line-height: 1.4;
+  }
+  .p-seeking span { color: var(--text-muted); }
+  .p-mutual { font-size: 11px; color: var(--text-muted); }
+  .p-mutual strong { color: var(--teal); }
+  .p-free {
+    font-size: 12px;
+    color: var(--text-muted);
+    background: var(--chip-bg);
+    padding: 5px 10px;
+    border-radius: 6px;
+    line-height: 1.4;
+  }
+  .p-free strong { color: var(--text); }
+  .p-actions { display: flex; gap: 8px; margin-top: 2px; }
+  .btn-request {
+    flex: 1;
+    background: var(--orange);
+    color: #fff;
+    border: none;
+    border-radius: 8px;
+    padding: 9px 12px;
+    font-family: inherit;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: opacity 0.15s;
+  }
+  .btn-request:hover { opacity: 0.88; }
+  .btn-request.pending {
+    background: #f3f4f6;
+    color: var(--text-muted);
+    cursor: default;
+  }
+  .btn-request.confirmed {
+    background: #e8f7f2;
+    color: var(--green);
+    cursor: default;
+  }
+  .btn-view {
+    flex: 1;
+    background: transparent;
+    color: var(--teal);
+    border: 1.5px solid var(--teal);
+    border-radius: 8px;
+    padding: 9px 12px;
+    font-family: inherit;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+  .btn-view:hover { background: #eef8fc; }
+
+  /* ===== OVERLAY ===== */
+  .overlay-backdrop {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.45);
+    z-index: 200;
+    align-items: center;
+    justify-content: center;
+  }
+  .overlay-backdrop.active { display: flex; }
+  .overlay-modal {
+    background: #fff;
+    border-radius: 16px;
+    padding: 32px;
+    width: 100%;
+    max-width: 500px;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.2);
+    position: relative;
+    animation: slideUp 0.2s ease;
+  }
+  @keyframes slideUp {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  .overlay-close {
+    position: absolute; top: 16px; right: 16px;
+    background: none; border: none; font-size: 22px;
+    cursor: pointer; color: var(--text-muted); line-height: 1;
+  }
+  .overlay-title { font-size: 20px; font-weight: 700; margin-bottom: 20px; }
+  .overlay-person {
+    display: flex; align-items: center; gap: 14px;
+    padding: 14px;
+    background: var(--bg);
+    border-radius: 10px;
+    margin-bottom: 20px;
+  }
+  .overlay-person .p-avatar { width: 52px; height: 52px; font-size: 20px; }
+  .overlay-person-name { font-weight: 700; font-size: 16px; }
+  .overlay-person-company { font-size: 13px; color: var(--text-muted); }
+  .form-group { margin-bottom: 16px; }
+  .form-label { font-size: 13px; font-weight: 600; margin-bottom: 8px; display: block; }
+  .time-pills { display: flex; flex-wrap: wrap; gap: 8px; }
+  .time-pill {
+    padding: 7px 14px;
+    border: 1.5px solid var(--border);
+    border-radius: 20px;
+    font-size: 13px;
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+  .time-pill:hover { border-color: var(--orange); color: var(--orange); }
+  .time-pill.selected { background: var(--orange); border-color: var(--orange); color: #fff; }
+  .form-textarea {
+    width: 100%;
+    padding: 10px 12px;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    font-family: inherit;
+    font-size: 13px;
+    line-height: 1.5;
+    resize: vertical;
+    min-height: 100px;
+    outline: none;
+  }
+  .form-textarea:focus { border-color: var(--teal); }
+  .overlay-actions { display: flex; gap: 10px; margin-top: 20px; }
+  .btn-cancel {
+    flex: 1;
+    background: transparent;
+    border: 1.5px solid var(--border);
+    border-radius: 8px;
+    padding: 11px;
+    font-family: inherit;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    color: var(--text-muted);
+    transition: all 0.15s;
+  }
+  .btn-cancel:hover { border-color: var(--text-muted); color: var(--text); }
+  .btn-send {
+    flex: 2;
+    background: var(--orange);
+    color: #fff;
+    border: none;
+    border-radius: 8px;
+    padding: 11px;
+    font-family: inherit;
+    font-size: 14px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: opacity 0.15s;
+  }
+  .btn-send:hover { opacity: 0.88; }
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+  <div class="nav-inner">
+    <a href="#" class="logo">GAME <span>CONNECTION</span></a>
+    <div class="nav-search">
+      <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>
+      <input type="text" placeholder="Search people, companies...">
+    </div>
+    <div class="nav-links">
+      <a href="#">Home</a>
+      <a href="#">People</a>
+      <a href="#">Projects</a>
+      <a href="#">Events</a>
+      <a href="#">Market</a>
+      <a href="LetsMeet_Schedule_v1_openclaw.html" class="nav-letsmeet">🤝 Let's Meet</a>
+    </div>
+    <div class="nav-right">
+      <div class="nav-icon-btn">
+        <svg width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+        <div class="notif-badge"></div>
+      </div>
+      <div class="avatar-nav">YQ</div>
+    </div>
+  </div>
+</nav>
+
+<!-- PAGE HEADER -->
+<div class="page-header">
+  <div class="page-header-inner">
+    <div>
+      <div class="badge-event">📍 Indie Game Fest 2026 · Apr 15–17 · Berlin</div>
+      <h1 class="page-title">Let's Meet</h1>
+      <p class="page-subtitle">Request 1-on-1 meetings with other participants. You have 8 meeting slots available.</p>
+    </div>
+    <div class="header-actions">
+      <a href="LetsMeet_Schedule_v1_openclaw.html" class="btn-schedule">
+        <svg width="15" height="15" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+        My Schedule
+      </a>
+      <div class="slots-badge">6 slots remaining</div>
+    </div>
+  </div>
+</div>
+
+<!-- MAIN LAYOUT -->
+<div class="main-layout">
+
+  <!-- FILTER PANEL -->
+  <div class="filter-panel">
+    <h3>
+      <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"/></svg>
+      Filters
+    </h3>
+
+    <div class="filter-search">
+      <svg width="15" height="15" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>
+      <input type="text" placeholder="Search participants...">
+    </div>
+
+    <div class="filter-section">
+      <div class="filter-label">Role</div>
+      <div class="chips">
+        <div class="chip active" onclick="toggleChip(this)">Publisher</div>
+        <div class="chip" onclick="toggleChip(this)">Developer</div>
+        <div class="chip" onclick="toggleChip(this)">Investor</div>
+        <div class="chip" onclick="toggleChip(this)">Service Provider</div>
+      </div>
+    </div>
+
+    <div class="filter-section">
+      <div class="filter-label">Market Interest</div>
+      <div class="chips">
+        <div class="chip active" onclick="toggleChip(this)">Asia</div>
+        <div class="chip" onclick="toggleChip(this)">Europe</div>
+        <div class="chip" onclick="toggleChip(this)">Americas</div>
+        <div class="chip" onclick="toggleChip(this)">Global</div>
+      </div>
+    </div>
+
+    <div class="filter-section">
+      <div class="filter-label">Goals</div>
+      <div class="chips">
+        <div class="chip" onclick="toggleChip(this)">Publishing Deal</div>
+        <div class="chip" onclick="toggleChip(this)">Investment</div>
+        <div class="chip" onclick="toggleChip(this)">Co-development</div>
+        <div class="chip" onclick="toggleChip(this)">Distribution</div>
+        <div class="chip active" onclick="toggleChip(this)">Networking</div>
+      </div>
+    </div>
+
+    <div class="filter-section">
+      <div class="filter-label">Availability</div>
+      <div class="radio-group">
+        <label class="radio-item"><input type="radio" name="avail" value="any" checked> Any Time</label>
+        <label class="radio-item"><input type="radio" name="avail" value="apr15"> Apr 15</label>
+        <label class="radio-item"><input type="radio" name="avail" value="apr16"> Apr 16</label>
+        <label class="radio-item"><input type="radio" name="avail" value="apr17"> Apr 17</label>
+      </div>
+    </div>
+
+    <div class="filter-section">
+      <div class="filter-label">Show</div>
+      <div class="radio-group">
+        <label class="radio-item"><input type="radio" name="show" value="all" checked> All</label>
+        <label class="radio-item"><input type="radio" name="show" value="available"> Available</label>
+        <label class="radio-item"><input type="radio" name="show" value="requested"> Already Requested</label>
+        <label class="radio-item"><input type="radio" name="show" value="confirmed"> Confirmed</label>
+      </div>
+    </div>
+
+    <div class="filter-actions">
+      <button class="btn-apply">Apply Filters</button>
+      <button class="btn-reset">Reset</button>
+    </div>
+    <div class="filter-count">Showing 20 of 284 participants</div>
+  </div>
+
+  <!-- PARTICIPANTS LIST -->
+  <div class="participants-area">
+    <div class="participants-header">
+      <div class="participants-count">20 participants found</div>
+      <select class="sort-select">
+        <option>Sort: Best Match</option>
+        <option>Sort: A–Z</option>
+        <option>Sort: Company</option>
+        <option>Sort: Availability</option>
+      </select>
+    </div>
+
+    <div class="participants-grid" id="grid">
+
+      <!-- 1. Sarah Chen -->
+      <div class="p-card">
+        <div class="p-card-top">
+          <div class="p-avatar" style="background:#d95f2b">SC</div>
+          <div class="p-info">
+            <div class="p-name">Sarah Chen <span class="p-flag">🇺🇸</span></div>
+            <div class="p-company">Devolver Digital</div>
+            <span class="p-role-badge badge-publisher">Publishing Dir</span>
+          </div>
+        </div>
+        <div class="p-seeking"><span>Looking for:</span> Indie RPG / Action titles with strong narrative</div>
+        <div class="p-mutual">👥 <strong>3</strong> mutual connections</div>
+        <div class="p-free"><strong>Free:</strong> Apr 15 AM & PM, Apr 16 AM</div>
+        <div class="p-actions">
+          <button class="btn-request" onclick="openOverlay('Sarah Chen','Devolver Digital','SC','#d95f2b',['Apr 15 – 10:00 AM','Apr 15 – 2:00 PM','Apr 16 – 9:00 AM'])">Request Meeting</button>
+          <button class="btn-view">View Profile</button>
+        </div>
+      </div>
+
+      <!-- 2. Marc Dubois -->
+      <div class="p-card">
+        <div class="p-card-top">
+          <div class="p-avatar" style="background:#4f46e5">MD</div>
+          <div class="p-info">
+            <div class="p-name">Marc Dubois <span class="p-flag">🇫🇷</span></div>
+            <div class="p-company">Ubisoft</div>
+            <span class="p-role-badge badge-publisher">VP Business Dev</span>
+          </div>
+        </div>
+        <div class="p-seeking"><span>Looking for:</span> Innovative mobile & PC titles for partnership</div>
+        <div class="p-mutual">👥 <strong>5</strong> mutual connections</div>
+        <div class="p-free"><strong>Free:</strong> Apr 15 PM, Apr 17 AM</div>
+        <div class="p-actions">
+          <button class="btn-request pending" disabled>⏳ Pending</button>
+          <button class="btn-view">View Profile</button>
+        </div>
+      </div>
+
+      <!-- 3. Jin Park -->
+      <div class="p-card">
+        <div class="p-card-top">
+          <div class="p-avatar" style="background:#0a7fa8">JP</div>
+          <div class="p-info">
+            <div class="p-name">Jin Park <span class="p-flag">🇰🇷</span></div>
+            <div class="p-company">Riot Games</div>
+            <span class="p-role-badge badge-developer">Sr Producer</span>
+          </div>
+        </div>
+        <div class="p-seeking"><span>Looking for:</span> Co-development partners with multiplayer expertise</div>
+        <div class="p-mutual">👥 <strong>2</strong> mutual connections</div>
+        <div class="p-free"><strong>Free:</strong> Apr 16 all day</div>
+        <div class="p-actions">
+          <button class="btn-request" onclick="openOverlay('Jin Park','Riot Games','JP','#0a7fa8',['Apr 16 – 9:00 AM','Apr 16 – 11:00 AM','Apr 16 – 2:00 PM','Apr 16 – 4:00 PM'])">Request Meeting</button>
+          <button class="btn-view">View Profile</button>
+        </div>
+      </div>
+
+      <!-- 4. Emma Thompson -->
+      <div class="p-card">
+        <div class="p-card-top">
+          <div class="p-avatar" style="background:#0d9b72">ET</div>
+          <div class="p-info">
+            <div class="p-name">Emma Thompson <span class="p-flag">🇺🇸</span></div>
+            <div class="p-company">Indie Fund</div>
+            <span class="p-role-badge badge-investor">Investor</span>
+          </div>
+        </div>
+        <div class="p-seeking"><span>Looking for:</span> Early stage studios with unique vision</div>
+        <div class="p-mutual">👥 <strong>7</strong> mutual connections</div>
+        <div class="p-free"><strong>Free:</strong> Apr 15 AM</div>
+        <div class="p-actions">
+          <button class="btn-request confirmed" disabled>✅ Confirmed · Apr 15, 10:00</button>
+          <button class="btn-view">View Profile</button>
+        </div>
+      </div>
+
+      <!-- 5. Yuki Tanaka -->
+      <div class="p-card">
+        <div class="p-card-top">
+          <div class="p-avatar" style="background:#c2410c">YT</div>
+          <div class="p-info">
+            <div class="p-name">Yuki Tanaka <span class="p-flag">🇯🇵</span></div>
+            <div class="p-company">Square Enix</div>
+            <span class="p-role-badge badge-publisher">Intl Licensing</span>
+          </div>
+        </div>
+        <div class="p-seeking"><span>Looking for:</span> IP licensing opportunities in Asian markets</div>
+        <div class="p-mutual">👥 <strong>1</strong> mutual connection</div>
+        <div class="p-free"><strong>Free:</strong> Apr 16 PM, Apr 17 all day</div>
+        <div class="p-actions">
+          <button class="btn-request" onclick="openOverlay('Yuki Tanaka','Square Enix','YT','#c2410c',['Apr 16 – 2:00 PM','Apr 16 – 4:00 PM','Apr 17 – 10:00 AM','Apr 17 – 2:00 PM'])">Request Meeting</button>
+          <button class="btn-view">View Profile</button>
+        </div>
+      </div>
+
+      <!-- 6. Li Wei -->
+      <div class="p-card">
+        <div class="p-card-top">
+          <div class="p-avatar" style="background:#7c3aed">LW</div>
+          <div class="p-info">
+            <div class="p-name">Li Wei <span class="p-flag">🇨🇳</span></div>
+            <div class="p-company">NetEase Games</div>
+            <span class="p-role-badge badge-publisher">BD Director</span>
+          </div>
+        </div>
+        <div class="p-seeking"><span>Looking for:</span> Quality games for China market publishing</div>
+        <div class="p-mutual">👥 <strong>4</strong> mutual connections</div>
+        <div class="p-free"><strong>Free:</strong> Apr 15 PM</div>
+        <div class="p-actions">
+          <button class="btn-request" onclick="openOverlay('Li Wei','NetEase Games','LW','#7c3aed',['Apr 15 – 2:00 PM','Apr 15 – 4:00 PM'])">Request Meeting</button>
+          <button class="btn-view">View Profile</button>
+        </div>
+      </div>
+
+      <!-- 7. Zhang Min -->
+      <div class="p-card">
+        <div class="p-card-top">
+          <div class="p-avatar" style="background:#0891b2">ZM</div>
+          <div class="p-info">
+            <div class="p-name">Zhang Min <span class="p-flag">🇨🇳</span></div>
+            <div class="p-company">Tencent Games</div>
+            <span class="p-role-badge badge-publisher">Publishing Lead</span>
+          </div>
+        </div>
+        <div class="p-seeking"><span>Looking for:</span> Mobile games with global potential</div>
+        <div class="p-mutual">👥 <strong>3</strong> mutual connections</div>
+        <div class="p-free"><strong>Free:</strong> Apr 16 AM & PM</div>
+        <div class="p-actions">
+          <button class="btn-request" onclick="openOverlay('Zhang Min','Tencent Games','ZM','#0891b2',['Apr 16 – 9:00 AM','Apr 16 – 11:00 AM','Apr 16 – 2:00 PM'])">Request Meeting</button>
+          <button class="btn-view">View Profile</button>
+        </div>
+      </div>
+
+      <!-- 8. Anna Kowalski -->
+      <div class="p-card">
+        <div class="p-card-top">
+          <div class="p-avatar" style="background:#be185d">AK</div>
+          <div class="p-info">
+            <div class="p-name">Anna Kowalski <span class="p-flag">🇵🇱</span></div>
+            <div class="p-company">CD Projekt</div>
+            <span class="p-role-badge badge-developer">Sr Producer</span>
+          </div>
+        </div>
+        <div class="p-seeking"><span>Looking for:</span> Story-driven games with strong world-building</div>
+        <div class="p-mutual">👥 <strong>6</strong> mutual connections</div>
+        <div class="p-free"><strong>Free:</strong> Apr 17 AM</div>
+        <div class="p-actions">
+          <button class="btn-request" onclick="openOverlay('Anna Kowalski','CD Projekt','AK','#be185d',['Apr 17 – 10:00 AM','Apr 17 – 11:30 AM'])">Request Meeting</button>
+          <button class="btn-view">View Profile</button>
+        </div>
+      </div>
+
+      <!-- 9. David Kim -->
+      <div class="p-card">
+        <div class="p-card-top">
+          <div class="p-avatar" style="background:#065f46">DK</div>
+          <div class="p-info">
+            <div class="p-name">David Kim <span class="p-flag">🇰🇷</span></div>
+            <div class="p-company">Krafton</div>
+            <span class="p-role-badge badge-investor">VP Strategy</span>
+          </div>
+        </div>
+        <div class="p-seeking"><span>Looking for:</span> Acquisition targets & strategic partnerships</div>
+        <div class="p-mutual">👥 <strong>2</strong> mutual connections</div>
+        <div class="p-free"><strong>Free:</strong> Apr 15 PM, Apr 16 AM</div>
+        <div class="p-actions">
+          <button class="btn-request" onclick="openOverlay('David Kim','Krafton','DK','#065f46',['Apr 15 – 3:00 PM','Apr 16 – 10:00 AM'])">Request Meeting</button>
+          <button class="btn-view">View Profile</button>
+        </div>
+      </div>
+
+      <!-- 10. Tom Richards -->
+      <div class="p-card">
+        <div class="p-card-top">
+          <div class="p-avatar" style="background:#92400e">TR</div>
+          <div class="p-info">
+            <div class="p-name">Tom Richards <span class="p-flag">🇬🇧</span></div>
+            <div class="p-company">Team17</div>
+            <span class="p-role-badge badge-publisher">Publishing Manager</span>
+          </div>
+        </div>
+        <div class="p-seeking"><span>Looking for:</span> Indie games across all genres</div>
+        <div class="p-mutual">👥 <strong>8</strong> mutual connections</div>
+        <div class="p-free"><strong>Free:</strong> Apr 15 PM, Apr 16 PM</div>
+        <div class="p-actions">
+          <button class="btn-request" onclick="openOverlay('Tom Richards','Team17','TR','#92400e',['Apr 15 – 3:00 PM','Apr 15 – 4:30 PM','Apr 16 – 2:00 PM','Apr 16 – 4:00 PM'])">Request Meeting</button>
+          <button class="btn-view">View Profile</button>
+        </div>
+      </div>
+
+      <!-- 11. Sofia Rossi -->
+      <div class="p-card">
+        <div class="p-card-top">
+          <div class="p-avatar" style="background:#b45309">SR</div>
+          <div class="p-info">
+            <div class="p-name">Sofia Rossi <span class="p-flag">🇮🇹</span></div>
+            <div class="p-company">Milestone S.r.l.</div>
+            <span class="p-role-badge badge-developer">Game Director</span>
+          </div>
+        </div>
+        <div class="p-seeking"><span>Looking for:</span> Racing & sports game co-dev partners</div>
+        <div class="p-mutual">👥 <strong>2</strong> mutual connections</div>
+        <div class="p-free"><strong>Free:</strong> Apr 15 AM, Apr 17 PM</div>
+        <div class="p-actions">
+          <button class="btn-request" onclick="openOverlay('Sofia Rossi','Milestone S.r.l.','SR','#b45309',['Apr 15 – 9:30 AM','Apr 17 – 2:00 PM'])">Request Meeting</button>
+          <button class="btn-view">View Profile</button>
+        </div>
+      </div>
+
+      <!-- 12. Carlos Mendez -->
+      <div class="p-card">
+        <div class="p-card-top">
+          <div class="p-avatar" style="background:#1d4ed8">CM</div>
+          <div class="p-info">
+            <div class="p-name">Carlos Mendez <span class="p-flag">🇲🇽</span></div>
+            <div class="p-company">Lemon Sky Studios</div>
+            <span class="p-role-badge badge-service">Art Director</span>
+          </div>
+        </div>
+        <div class="p-seeking"><span>Looking for:</span> Art outsourcing contracts with AAA studios</div>
+        <div class="p-mutual">👥 <strong>1</strong> mutual connection</div>
+        <div class="p-free"><strong>Free:</strong> Apr 15 PM, Apr 16 AM, Apr 17 AM</div>
+        <div class="p-actions">
+          <button class="btn-request" onclick="openOverlay('Carlos Mendez','Lemon Sky Studios','CM','#1d4ed8',['Apr 15 – 2:00 PM','Apr 16 – 10:00 AM','Apr 17 – 9:00 AM'])">Request Meeting</button>
+          <button class="btn-view">View Profile</button>
+        </div>
+      </div>
+
+      <!-- 13. Priya Sharma -->
+      <div class="p-card">
+        <div class="p-card-top">
+          <div class="p-avatar" style="background:#a21caf">PS</div>
+          <div class="p-info">
+            <div class="p-name">Priya Sharma <span class="p-flag">🇮🇳</span></div>
+            <div class="p-company">Nazara Technologies</div>
+            <span class="p-role-badge badge-publisher">VP Publishing</span>
+          </div>
+        </div>
+        <div class="p-seeking"><span>Looking for:</span> Casual & hypercasual titles for South Asia</div>
+        <div class="p-mutual">👥 <strong>3</strong> mutual connections</div>
+        <div class="p-free"><strong>Free:</strong> Apr 16 AM & PM</div>
+        <div class="p-actions">
+          <button class="btn-request" onclick="openOverlay('Priya Sharma','Nazara Technologies','PS','#a21caf',['Apr 16 – 9:00 AM','Apr 16 – 11:00 AM','Apr 16 – 3:00 PM'])">Request Meeting</button>
+          <button class="btn-view">View Profile</button>
+        </div>
+      </div>
+
+      <!-- 14. Lars Eriksson -->
+      <div class="p-card">
+        <div class="p-card-top">
+          <div class="p-avatar" style="background:#0f766e">LE</div>
+          <div class="p-info">
+            <div class="p-name">Lars Eriksson <span class="p-flag">🇸🇪</span></div>
+            <div class="p-company">Paradox Interactive</div>
+            <span class="p-role-badge badge-publisher">Head of BD</span>
+          </div>
+        </div>
+        <div class="p-seeking"><span>Looking for:</span> Strategy & grand strategy games for publishing</div>
+        <div class="p-mutual">👥 <strong>9</strong> mutual connections</div>
+        <div class="p-free"><strong>Free:</strong> Apr 15 AM, Apr 16 PM</div>
+        <div class="p-actions">
+          <button class="btn-request" onclick="openOverlay('Lars Eriksson','Paradox Interactive','LE','#0f766e',['Apr 15 – 10:00 AM','Apr 16 – 2:00 PM'])">Request Meeting</button>
+          <button class="btn-view">View Profile</button>
+        </div>
+      </div>
+
+      <!-- 15. Aiko Nakamura -->
+      <div class="p-card">
+        <div class="p-card-top">
+          <div class="p-avatar" style="background:#dc2626">AN</div>
+          <div class="p-info">
+            <div class="p-name">Aiko Nakamura <span class="p-flag">🇯🇵</span></div>
+            <div class="p-company">DeNA Co.</div>
+            <span class="p-role-badge badge-developer">Mobile Lead</span>
+          </div>
+        </div>
+        <div class="p-seeking"><span>Looking for:</span> Anime-style games and JP market entry</div>
+        <div class="p-mutual">👥 <strong>0</strong> mutual connections</div>
+        <div class="p-free"><strong>Free:</strong> Apr 15 AM & PM, Apr 17</div>
+        <div class="p-actions">
+          <button class="btn-request" onclick="openOverlay('Aiko Nakamura','DeNA Co.','AN','#dc2626',['Apr 15 – 9:00 AM','Apr 15 – 3:00 PM','Apr 17 – 10:00 AM'])">Request Meeting</button>
+          <button class="btn-view">View Profile</button>
+        </div>
+      </div>
+
+      <!-- 16. Kevin O'Brien -->
+      <div class="p-card">
+        <div class="p-card-top">
+          <div class="p-avatar" style="background:#6d28d9">KO</div>
+          <div class="p-info">
+            <div class="p-name">Kevin O'Brien <span class="p-flag">🇮🇪</span></div>
+            <div class="p-company">Supermassive Games</div>
+            <span class="p-role-badge badge-developer">Lead Designer</span>
+          </div>
+        </div>
+        <div class="p-seeking"><span>Looking for:</span> Narrative horror co-development partners</div>
+        <div class="p-mutual">👥 <strong>4</strong> mutual connections</div>
+        <div class="p-free"><strong>Free:</strong> Apr 16 PM, Apr 17 AM</div>
+        <div class="p-actions">
+          <button class="btn-request" onclick="openOverlay('Kevin O\'Brien','Supermassive Games','KO','#6d28d9',['Apr 16 – 3:00 PM','Apr 17 – 9:30 AM'])">Request Meeting</button>
+          <button class="btn-view">View Profile</button>
+        </div>
+      </div>
+
+      <!-- 17. Maria Santos -->
+      <div class="p-card">
+        <div class="p-card-top">
+          <div class="p-avatar" style="background:#ca8a04">MS</div>
+          <div class="p-info">
+            <div class="p-name">Maria Santos <span class="p-flag">🇧🇷</span></div>
+            <div class="p-company">Aquiris Game Studio</div>
+            <span class="p-role-badge badge-developer">CEO & Founder</span>
+          </div>
+        </div>
+        <div class="p-seeking"><span>Looking for:</span> Investment & publishing deals for LATAM market</div>
+        <div class="p-mutual">👥 <strong>2</strong> mutual connections</div>
+        <div class="p-free"><strong>Free:</strong> Apr 15 PM, Apr 17 PM</div>
+        <div class="p-actions">
+          <button class="btn-request" onclick="openOverlay('Maria Santos','Aquiris Game Studio','MS','#ca8a04',['Apr 15 – 2:30 PM','Apr 17 – 1:00 PM'])">Request Meeting</button>
+          <button class="btn-view">View Profile</button>
+        </div>
+      </div>
+
+      <!-- 18. Hiroshi Yamamoto -->
+      <div class="p-card">
+        <div class="p-card-top">
+          <div class="p-avatar" style="background:#475569">HY</div>
+          <div class="p-info">
+            <div class="p-name">Hiroshi Yamamoto <span class="p-flag">🇯🇵</span></div>
+            <div class="p-company">Bandai Namco</div>
+            <span class="p-role-badge badge-publisher">Intl Publishing</span>
+          </div>
+        </div>
+        <div class="p-seeking"><span>Looking for:</span> Action RPG titles for global distribution</div>
+        <div class="p-mutual">👥 <strong>5</strong> mutual connections</div>
+        <div class="p-free"><strong>Free:</strong> Apr 15 AM, Apr 16 AM</div>
+        <div class="p-actions">
+          <button class="btn-request" onclick="openOverlay('Hiroshi Yamamoto','Bandai Namco','HY','#475569',['Apr 15 – 9:00 AM','Apr 16 – 9:30 AM'])">Request Meeting</button>
+          <button class="btn-view">View Profile</button>
+        </div>
+      </div>
+
+      <!-- 19. Fatima Al-Rashid -->
+      <div class="p-card">
+        <div class="p-card-top">
+          <div class="p-avatar" style="background:#16a34a">FA</div>
+          <div class="p-info">
+            <div class="p-name">Fatima Al-Rashid <span class="p-flag">🇸🇦</span></div>
+            <div class="p-company">Tamatem Games</div>
+            <span class="p-role-badge badge-publisher">Regional Director</span>
+          </div>
+        </div>
+        <div class="p-seeking"><span>Looking for:</span> Games localized for MENA mobile market</div>
+        <div class="p-mutual">👥 <strong>1</strong> mutual connection</div>
+        <div class="p-free"><strong>Free:</strong> Apr 16 AM, Apr 17 all day</div>
+        <div class="p-actions">
+          <button class="btn-request" onclick="openOverlay('Fatima Al-Rashid','Tamatem Games','FA','#16a34a',['Apr 16 – 10:00 AM','Apr 17 – 9:00 AM','Apr 17 – 2:00 PM','Apr 17 – 4:00 PM'])">Request Meeting</button>
+          <button class="btn-view">View Profile</button>
+        </div>
+      </div>
+
+      <!-- 20. Alex Petrov -->
+      <div class="p-card">
+        <div class="p-card-top">
+          <div class="p-avatar" style="background:#7c3aed">AP</div>
+          <div class="p-info">
+            <div class="p-name">Alex Petrov <span class="p-flag">🇩🇪</span></div>
+            <div class="p-company">Astragon Entertainment</div>
+            <span class="p-role-badge badge-service">VC Partner</span>
+          </div>
+        </div>
+        <div class="p-seeking"><span>Looking for:</span> Seed-stage studios with innovative mechanics</div>
+        <div class="p-mutual">👥 <strong>6</strong> mutual connections</div>
+        <div class="p-free"><strong>Free:</strong> Apr 15 AM, Apr 16 PM, Apr 17 AM</div>
+        <div class="p-actions">
+          <button class="btn-request" onclick="openOverlay('Alex Petrov','Astragon Entertainment','AP','#7c3aed',['Apr 15 – 11:00 AM','Apr 16 – 3:30 PM','Apr 17 – 10:00 AM'])">Request Meeting</button>
+          <button class="btn-view">View Profile</button>
+        </div>
+      </div>
+
+    </div><!-- /grid -->
+  </div><!-- /participants-area -->
+</div><!-- /main-layout -->
+
+<!-- OVERLAY -->
+<div class="overlay-backdrop" id="overlay" onclick="closeOverlayIfBackdrop(event)">
+  <div class="overlay-modal">
+    <button class="overlay-close" onclick="closeOverlay()">×</button>
+    <h2 class="overlay-title" id="overlay-title">Request a meeting with...</h2>
+    <div class="overlay-person">
+      <div class="p-avatar overlay-avatar" id="overlay-avatar">--</div>
+      <div>
+        <div class="overlay-person-name" id="overlay-name">Name</div>
+        <div class="overlay-person-company" id="overlay-company">Company</div>
+      </div>
+    </div>
+
+    <div class="form-group">
+      <label class="form-label">Select a time slot <span style="color:var(--text-muted);font-weight:400">(mutual availability)</span></label>
+      <div class="time-pills" id="time-pills"></div>
+    </div>
+
+    <div class="form-group">
+      <label class="form-label">Message <span style="color:var(--text-muted);font-weight:400">(optional)</span></label>
+      <textarea class="form-textarea" id="overlay-message" placeholder="Write a message..."></textarea>
+    </div>
+
+    <div class="overlay-actions">
+      <button class="btn-cancel" onclick="closeOverlay()">Cancel</button>
+      <button class="btn-send" onclick="sendRequest()">📨 Send Request</button>
+    </div>
+  </div>
+</div>
+
+<script>
+function toggleChip(el) {
+  el.classList.toggle('active');
+}
+
+let currentName = '';
+function openOverlay(name, company, initials, color, slots) {
+  currentName = name;
+  document.getElementById('overlay-title').textContent = 'Request a meeting with ' + name;
+  document.getElementById('overlay-name').textContent = name;
+  document.getElementById('overlay-company').textContent = company;
+  const av = document.getElementById('overlay-avatar');
+  av.textContent = initials;
+  av.style.background = color;
+
+  const pillsContainer = document.getElementById('time-pills');
+  pillsContainer.innerHTML = '';
+  slots.forEach((slot, i) => {
+    const pill = document.createElement('div');
+    pill.className = 'time-pill' + (i === 0 ? ' selected' : '');
+    pill.textContent = slot;
+    pill.onclick = () => {
+      document.querySelectorAll('.time-pill').forEach(p => p.classList.remove('selected'));
+      pill.classList.add('selected');
+    };
+    pillsContainer.appendChild(pill);
+  });
+
+  const firstName = name.split(' ')[0];
+  document.getElementById('overlay-message').value =
+    `Hi ${firstName}, I'd love to connect at Indie Game Fest 2026! I've been following the great work at ${company} and believe there could be a great synergy between our projects. Looking forward to a productive conversation!`;
+
+  document.getElementById('overlay').classList.add('active');
+}
+
+function closeOverlay() {
+  document.getElementById('overlay').classList.remove('active');
+}
+
+function closeOverlayIfBackdrop(e) {
+  if (e.target === document.getElementById('overlay')) closeOverlay();
+}
+
+function sendRequest() {
+  const selected = document.querySelector('.time-pill.selected');
+  if (!selected) { alert('Please select a time slot.'); return; }
+  alert('✅ Meeting request sent to ' + currentName + ' for ' + selected.textContent + '!\n\nYou\'ll be notified once they confirm.');
+  closeOverlay();
+}
+</script>
+</body>
+</html>
