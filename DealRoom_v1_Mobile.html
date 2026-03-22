@@ -1,0 +1,834 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>Deal Room — Echoes of Jade Dynasty</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: #e8e4da;
+    min-height: 100vh;
+    display: flex;
+    justify-content: center;
+  }
+  .app {
+    width: 100%;
+    max-width: 480px;
+    min-height: 100vh;
+    background: #e8e4da;
+    position: relative;
+    display: flex;
+    flex-direction: column;
+  }
+
+  /* Top Nav */
+  .top-nav {
+    background: #fff;
+    border-bottom: 1px solid #eee;
+    padding: 0 16px;
+    flex-shrink: 0;
+  }
+  .nav-row {
+    display: flex;
+    align-items: center;
+    height: 52px;
+  }
+  .nav-back {
+    font-size: 20px;
+    color: #333;
+    cursor: pointer;
+    width: 36px;
+    text-decoration: none;
+    display: flex;
+    align-items: center;
+  }
+  .nav-title {
+    flex: 1;
+    text-align: center;
+    font-size: 16px;
+    font-weight: 600;
+    color: #1a1a1a;
+  }
+  .nav-more {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    border: 1.5px solid #ddd;
+    background: #fff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 18px;
+    cursor: pointer;
+    color: #555;
+    letter-spacing: 1px;
+  }
+  .deal-status-row {
+    display: flex;
+    align-items: center;
+    padding: 8px 0 12px;
+    gap: 6px;
+    font-size: 12px;
+    color: #555;
+    font-weight: 500;
+    overflow: hidden;
+  }
+  .status-dot {
+    width: 8px;
+    height: 8px;
+    background: #f0c040;
+    border-radius: 50%;
+    flex-shrink: 0;
+  }
+  .status-text {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  /* Tabs */
+  .tabs-sticky {
+    background: #fff;
+    border-bottom: 1px solid #eee;
+    position: sticky;
+    top: 0;
+    z-index: 50;
+    flex-shrink: 0;
+  }
+  .tabs {
+    display: flex;
+    padding: 0 16px;
+  }
+  .tab {
+    flex: 1;
+    padding: 12px 0;
+    text-align: center;
+    font-size: 14px;
+    font-weight: 500;
+    color: #aaa;
+    cursor: pointer;
+    border-bottom: 2px solid transparent;
+    transition: all 0.2s;
+    user-select: none;
+  }
+  .tab.active {
+    color: #d95f2b;
+    border-bottom-color: #d95f2b;
+    font-weight: 700;
+  }
+
+  /* Tab panels */
+  .tab-panel { display: none; }
+  .tab-panel.active { display: flex; flex-direction: column; flex: 1; }
+
+  /* ===================== MESSAGES TAB ===================== */
+  .messages-area {
+    flex: 1;
+    padding: 14px 14px 80px;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  /* Date separator */
+  .date-sep {
+    text-align: center;
+    font-size: 11px;
+    color: #aaa;
+    font-weight: 500;
+    position: relative;
+    margin: 6px 0;
+  }
+  .date-sep::before,
+  .date-sep::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    width: 28%;
+    height: 1px;
+    background: #ddd;
+  }
+  .date-sep::before { left: 0; }
+  .date-sep::after { right: 0; }
+
+  /* System message */
+  .sys-msg {
+    text-align: center;
+    font-size: 11px;
+    color: #888;
+    background: rgba(0,0,0,0.05);
+    padding: 6px 14px;
+    border-radius: 20px;
+    margin: 0 auto;
+    max-width: 80%;
+  }
+
+  /* Chat bubbles */
+  .msg-row {
+    display: flex;
+    align-items: flex-end;
+    gap: 8px;
+  }
+  .msg-row.self {
+    flex-direction: row-reverse;
+  }
+  .avatar {
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 11px;
+    font-weight: 700;
+    color: #fff;
+    flex-shrink: 0;
+    align-self: flex-end;
+  }
+  .avatar-other { background: linear-gradient(135deg, #0a7fa8, #0d4a7a); }
+  .avatar-self { background: linear-gradient(135deg, #d95f2b, #b04820); }
+
+  .bubble-wrap {
+    max-width: 72%;
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+  }
+  .msg-row.self .bubble-wrap { align-items: flex-end; }
+
+  .sender-name {
+    font-size: 11px;
+    color: #888;
+    font-weight: 500;
+    padding: 0 4px;
+  }
+
+  .bubble {
+    padding: 10px 13px;
+    border-radius: 16px;
+    font-size: 14px;
+    line-height: 1.45;
+    word-break: break-word;
+  }
+  .bubble-other {
+    background: #fff;
+    color: #1a1a1a;
+    border-bottom-left-radius: 4px;
+  }
+  .bubble-self {
+    background: #d95f2b;
+    color: #fff;
+    border-bottom-right-radius: 4px;
+  }
+  .msg-time {
+    font-size: 10px;
+    color: #bbb;
+    padding: 0 4px;
+  }
+
+  /* Input bar */
+  .input-bar {
+    position: fixed;
+    bottom: 64px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 100%;
+    max-width: 480px;
+    background: #fff;
+    border-top: 1px solid #eee;
+    padding: 10px 12px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    z-index: 100;
+  }
+  .input-attach {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    border: 1.5px solid #ddd;
+    background: #fafafa;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 17px;
+    cursor: pointer;
+    flex-shrink: 0;
+  }
+  .input-field {
+    flex: 1;
+    height: 38px;
+    border: 1.5px solid #e0e0e0;
+    border-radius: 20px;
+    padding: 0 14px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 14px;
+    color: #1a1a1a;
+    background: #fafafa;
+    outline: none;
+  }
+  .input-field:focus {
+    border-color: #0a7fa8;
+    background: #fff;
+  }
+  .input-send {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    background: #d95f2b;
+    border: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 16px;
+    cursor: pointer;
+    flex-shrink: 0;
+    color: #fff;
+  }
+
+  /* ===================== TERMS TAB ===================== */
+  .terms-panel {
+    padding: 14px 14px 130px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .terms-card {
+    background: #fff;
+    border-radius: 12px;
+    overflow: hidden;
+  }
+  .terms-card-title {
+    font-size: 13px;
+    font-weight: 700;
+    color: #888;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    padding: 14px 16px 10px;
+    border-bottom: 1px solid #f5f5f5;
+  }
+  .term-item {
+    display: flex;
+    align-items: center;
+    padding: 13px 16px;
+    border-bottom: 1px solid #f5f5f5;
+    gap: 12px;
+  }
+  .term-item:last-child { border-bottom: none; }
+  .term-status-icon {
+    font-size: 17px;
+    width: 22px;
+    text-align: center;
+    flex-shrink: 0;
+  }
+  .term-item-content { flex: 1; }
+  .term-item-name {
+    font-size: 14px;
+    font-weight: 600;
+    color: #1a1a1a;
+  }
+  .term-item-value {
+    font-size: 12px;
+    color: #888;
+    margin-top: 2px;
+  }
+  .term-item-badge {
+    font-size: 11px;
+    font-weight: 600;
+    padding: 3px 8px;
+    border-radius: 20px;
+    flex-shrink: 0;
+  }
+  .badge-agreed {
+    background: #e6f9f2;
+    color: #0d9b72;
+  }
+  .badge-pending {
+    background: #fff3e6;
+    color: #d95f2b;
+  }
+  .badge-open {
+    background: #f5f5f5;
+    color: #aaa;
+  }
+
+  .propose-btn-wrap {
+    padding: 0 14px;
+    position: fixed;
+    bottom: 64px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 100%;
+    max-width: 480px;
+    background: #e8e4da;
+    padding: 12px 14px;
+    z-index: 100;
+  }
+  .propose-btn {
+    width: 100%;
+    height: 48px;
+    background: #fff;
+    color: #0a7fa8;
+    border: 2px solid #0a7fa8;
+    border-radius: 12px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 15px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+  .propose-btn:active {
+    background: #0a7fa8;
+    color: #fff;
+  }
+
+  /* ===================== FILES TAB ===================== */
+  .files-panel {
+    padding: 14px 14px 130px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .files-card {
+    background: #fff;
+    border-radius: 12px;
+    overflow: hidden;
+  }
+  .file-item {
+    display: flex;
+    align-items: center;
+    padding: 13px 16px;
+    border-bottom: 1px solid #f5f5f5;
+    gap: 12px;
+  }
+  .file-item:last-child { border-bottom: none; }
+  .file-icon-wrap {
+    width: 42px;
+    height: 42px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 20px;
+    flex-shrink: 0;
+  }
+  .file-icon-nda { background: #e6f9f2; }
+  .file-icon-build { background: #fff3e6; }
+  .file-icon-draft { background: #fff8e1; }
+  .file-icon-deck { background: #e8f4fd; }
+  .file-icon-invoice { background: #f5f0ff; }
+  .file-info { flex: 1; }
+  .file-name {
+    font-size: 14px;
+    font-weight: 600;
+    color: #1a1a1a;
+  }
+  .file-meta {
+    font-size: 12px;
+    color: #aaa;
+    margin-top: 2px;
+  }
+  .file-status {
+    font-size: 11px;
+    font-weight: 600;
+    padding: 3px 8px;
+    border-radius: 20px;
+    flex-shrink: 0;
+  }
+  .file-actions {
+    display: flex;
+    gap: 6px;
+    flex-shrink: 0;
+    margin-left: 6px;
+  }
+  .file-btn {
+    width: 30px;
+    height: 30px;
+    border-radius: 8px;
+    border: 1.5px solid #e0e0e0;
+    background: #fafafa;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 14px;
+    cursor: pointer;
+    color: #555;
+  }
+
+  .upload-btn-wrap {
+    position: fixed;
+    bottom: 64px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 100%;
+    max-width: 480px;
+    background: #e8e4da;
+    padding: 12px 14px;
+    z-index: 100;
+  }
+  .upload-btn {
+    width: 100%;
+    height: 48px;
+    background: #0a7fa8;
+    color: #fff;
+    border: none;
+    border-radius: 12px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 15px;
+    font-weight: 700;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+  }
+
+  /* Bottom Tab Bar */
+  .tab-bar {
+    position: fixed;
+    bottom: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 100%;
+    max-width: 480px;
+    height: 64px;
+    background: #fff;
+    border-top: 1px solid #e8e4da;
+    display: flex;
+    z-index: 200;
+  }
+  .tab-item {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 3px;
+    cursor: pointer;
+    text-decoration: none;
+  }
+  .tab-icon { font-size: 20px; }
+  .tab-label {
+    font-size: 10px;
+    font-weight: 500;
+    color: #aaa;
+  }
+  .tab-item.active .tab-label { color: #d95f2b; }
+  .tab-dot {
+    width: 4px;
+    height: 4px;
+    background: #d95f2b;
+    border-radius: 50%;
+    margin-top: -2px;
+  }
+</style>
+</head>
+<body>
+<div class="app">
+
+  <!-- Top Nav -->
+  <div class="top-nav">
+    <div class="nav-row">
+      <a class="nav-back" href="#">←</a>
+      <span class="nav-title">Deal Room</span>
+      <button class="nav-more">⋯</button>
+    </div>
+    <div class="deal-status-row">
+      <div class="status-dot"></div>
+      <span class="status-text">In Negotiation &nbsp;·&nbsp; Echoes of Jade Dynasty &times; Devolver Digital</span>
+    </div>
+  </div>
+
+  <!-- Tab Switcher -->
+  <div class="tabs-sticky">
+    <div class="tabs">
+      <div class="tab active" data-tab="messages" onclick="switchTab('messages')">Messages</div>
+      <div class="tab" data-tab="terms" onclick="switchTab('terms')">Terms</div>
+      <div class="tab" data-tab="files" onclick="switchTab('files')">Files</div>
+    </div>
+  </div>
+
+  <!-- ========== MESSAGES TAB ========== -->
+  <div class="tab-panel active" id="tab-messages">
+    <div class="messages-area">
+
+      <div class="date-sep">Yesterday</div>
+
+      <!-- 1. Sarah Chen -->
+      <div class="msg-row">
+        <div class="avatar avatar-other">SC</div>
+        <div class="bubble-wrap">
+          <span class="sender-name">Sarah Chen · Devolver Digital</span>
+          <div class="bubble bubble-other">
+            Thank you for sharing the Beta build. We've reviewed it thoroughly and we're very impressed with the world design — the attention to detail in the open-world environments is remarkable. The combat system feels very polished for this stage. We'd love to move forward with formal discussions. 🎮
+          </div>
+          <span class="msg-time">14:32</span>
+        </div>
+      </div>
+
+      <!-- 2. Wei Zhang (self) -->
+      <div class="msg-row self">
+        <div class="avatar avatar-self">WZ</div>
+        <div class="bubble-wrap">
+          <span class="sender-name" style="text-align:right;">Wei Zhang · CloudPeak</span>
+          <div class="bubble bubble-self">
+            Thank you! We're excited about the potential partnership with Devolver. Regarding the minimum guarantee, we were hoping to discuss a range that reflects the 3 years of development and the scope of what we've built. We feel $350K is a fair starting point given the current Beta quality.
+          </div>
+          <span class="msg-time">15:10</span>
+        </div>
+      </div>
+
+      <!-- 3. Sarah Chen -->
+      <div class="msg-row">
+        <div class="avatar avatar-other">SC</div>
+        <div class="bubble-wrap">
+          <span class="sender-name">Sarah Chen · Devolver Digital</span>
+          <div class="bubble bubble-other">
+            We understand your position. Our initial offer would be $200,000 with performance bonuses tied to unit sales milestones — an additional $100K upon reaching 50K units and another $150K at 150K units. This structure aligns our incentives and reduces upfront risk for both parties.
+          </div>
+          <span class="msg-time">16:45</span>
+        </div>
+      </div>
+
+      <!-- 4. Wei Zhang (self) -->
+      <div class="msg-row self">
+        <div class="avatar avatar-self">WZ</div>
+        <div class="bubble-wrap">
+          <div class="bubble bubble-self">
+            We appreciate the offer, but given the scope and 3 years of development invested, we'd need at minimum $350K as the base guarantee. The milestone bonuses are welcome, but we need more security to complete the final development phase and cover our team for the next 8 months.
+          </div>
+          <span class="msg-time">17:20</span>
+        </div>
+      </div>
+
+      <!-- 5. System -->
+      <div class="sys-msg">🔄 Terms updated: MG under discussion ($200K vs $350K)</div>
+      <div style="text-align:center;font-size:10px;color:#ccc;margin-top:-8px;">17:21</div>
+
+      <div class="date-sep">Today</div>
+
+      <!-- 6. Sarah Chen -->
+      <div class="msg-row">
+        <div class="avatar avatar-other">SC</div>
+        <div class="bubble-wrap">
+          <span class="sender-name">Sarah Chen · Devolver Digital</span>
+          <div class="bubble bubble-other">
+            We've discussed internally and we can meet at $300K base + a $50K milestone bonus upon hitting 100K sales. This is our best offer within current budget parameters. Can you confirm if this works before we move to draft contract stage?
+          </div>
+          <span class="msg-time">09:15</span>
+        </div>
+      </div>
+
+      <!-- 7. Wei Zhang (self) -->
+      <div class="msg-row self">
+        <div class="avatar avatar-self">WZ</div>
+        <div class="bubble-wrap">
+          <div class="bubble bubble-self">
+            That structure works for us. $300K base + $50K milestone is acceptable. Please send the draft terms when ready and we'll have our legal team review within 3 business days. Looking forward to making this happen! 🤝
+          </div>
+          <span class="msg-time">10:30</span>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Input Bar -->
+    <div class="input-bar">
+      <div class="input-attach">📎</div>
+      <input class="input-field" type="text" placeholder="Type a message...">
+      <button class="input-send">➤</button>
+    </div>
+  </div>
+
+  <!-- ========== TERMS TAB ========== -->
+  <div class="tab-panel" id="tab-terms">
+    <div class="terms-panel">
+
+      <div class="terms-card">
+        <div class="terms-card-title">Deal Terms Progress</div>
+        <div class="term-item">
+          <span class="term-status-icon">✅</span>
+          <div class="term-item-content">
+            <div class="term-item-name">Revenue Share</div>
+            <div class="term-item-value">70/30 — Developer / Publisher</div>
+          </div>
+          <span class="term-item-badge badge-agreed">Agreed</span>
+        </div>
+        <div class="term-item">
+          <span class="term-status-icon">🔄</span>
+          <div class="term-item-content">
+            <div class="term-item-name">Minimum Guarantee</div>
+            <div class="term-item-value">$300K base + $50K milestone</div>
+          </div>
+          <span class="term-item-badge badge-pending">Pending Final</span>
+        </div>
+        <div class="term-item">
+          <span class="term-status-icon">⬜</span>
+          <div class="term-item-content">
+            <div class="term-item-name">Marketing Commitments</div>
+            <div class="term-item-value">Not yet discussed</div>
+          </div>
+          <span class="term-item-badge badge-open">Pending</span>
+        </div>
+        <div class="term-item">
+          <span class="term-status-icon">⬜</span>
+          <div class="term-item-content">
+            <div class="term-item-name">Localization Support</div>
+            <div class="term-item-value">Not yet discussed</div>
+          </div>
+          <span class="term-item-badge badge-open">Pending</span>
+        </div>
+        <div class="term-item">
+          <span class="term-status-icon">⬜</span>
+          <div class="term-item-content">
+            <div class="term-item-name">Contract Duration</div>
+            <div class="term-item-value">Not yet discussed</div>
+          </div>
+          <span class="term-item-badge badge-open">Pending</span>
+        </div>
+      </div>
+
+      <div style="background:#fff;border-radius:12px;padding:14px 16px;">
+        <div style="display:flex;justify-content:space-between;margin-bottom:8px;">
+          <span style="font-size:13px;font-weight:600;color:#555;">Overall Progress</span>
+          <span style="font-size:13px;font-weight:700;color:#0d9b72;">2/5 Agreed</span>
+        </div>
+        <div style="height:7px;background:#eee;border-radius:6px;overflow:hidden;">
+          <div style="width:28%;height:100%;background:linear-gradient(90deg,#0d9b72,#0a7fa8);border-radius:6px;"></div>
+        </div>
+        <div style="font-size:12px;color:#aaa;margin-top:6px;">Revenue Share confirmed · MG near agreement</div>
+      </div>
+
+    </div>
+
+    <div class="propose-btn-wrap">
+      <button class="propose-btn">＋ Propose New Terms</button>
+    </div>
+  </div>
+
+  <!-- ========== FILES TAB ========== -->
+  <div class="tab-panel" id="tab-files">
+    <div class="files-panel">
+
+      <div class="files-card">
+        <div class="file-item">
+          <div class="file-icon-wrap file-icon-nda">📄</div>
+          <div class="file-info">
+            <div class="file-name">NDA Agreement</div>
+            <div class="file-meta">PDF · 2.1 MB · Signed</div>
+          </div>
+          <span class="file-status badge-agreed" style="font-size:11px;font-weight:600;padding:3px 8px;border-radius:20px;background:#e6f9f2;color:#0d9b72;">✅ Signed</span>
+          <div class="file-actions">
+            <div class="file-btn">⬇</div>
+          </div>
+        </div>
+        <div class="file-item">
+          <div class="file-icon-wrap file-icon-build">📦</div>
+          <div class="file-info">
+            <div class="file-name">Game Build (Beta 0.9)</div>
+            <div class="file-meta">ZIP · 4.7 GB · Shared</div>
+          </div>
+          <span class="file-status" style="font-size:11px;font-weight:600;padding:3px 8px;border-radius:20px;background:#fff3e6;color:#d95f2b;">📦 Shared</span>
+          <div class="file-actions">
+            <div class="file-btn">⬇</div>
+          </div>
+        </div>
+        <div class="file-item">
+          <div class="file-icon-wrap file-icon-draft">📝</div>
+          <div class="file-info">
+            <div class="file-name">Terms Draft v1</div>
+            <div class="file-meta">DOCX · 320 KB · In Review</div>
+          </div>
+          <span class="file-status" style="font-size:11px;font-weight:600;padding:3px 8px;border-radius:20px;background:#fff8e1;color:#e0a800;">🔄 Review</span>
+          <div class="file-actions">
+            <div class="file-btn">👁</div>
+            <div class="file-btn">⬇</div>
+          </div>
+        </div>
+        <div class="file-item">
+          <div class="file-icon-wrap file-icon-deck">📊</div>
+          <div class="file-info">
+            <div class="file-name">Marketing Deck</div>
+            <div class="file-meta">PDF · 8.4 MB · Shared</div>
+          </div>
+          <span class="file-status" style="font-size:11px;font-weight:600;padding:3px 8px;border-radius:20px;background:#e8f4fd;color:#0a7fa8;">📊 Shared</span>
+          <div class="file-actions">
+            <div class="file-btn">👁</div>
+            <div class="file-btn">⬇</div>
+          </div>
+        </div>
+        <div class="file-item">
+          <div class="file-icon-wrap file-icon-invoice">🧾</div>
+          <div class="file-info">
+            <div class="file-name">Invoice Template</div>
+            <div class="file-meta">PDF · 156 KB · Draft</div>
+          </div>
+          <span class="file-status" style="font-size:11px;font-weight:600;padding:3px 8px;border-radius:20px;background:#f5f0ff;color:#8b5cf6;">📄 Draft</span>
+          <div class="file-actions">
+            <div class="file-btn">👁</div>
+            <div class="file-btn">⬇</div>
+          </div>
+        </div>
+      </div>
+
+      <div style="background:#fff;border-radius:12px;padding:12px 16px;display:flex;align-items:center;gap:10px;border:1.5px dashed #ddd;">
+        <div style="font-size:22px;">🔒</div>
+        <div style="font-size:13px;color:#888;flex:1;">All files are end-to-end encrypted and only accessible to deal participants.</div>
+      </div>
+
+    </div>
+
+    <div class="upload-btn-wrap">
+      <button class="upload-btn">
+        <span>⬆</span> Upload File
+      </button>
+    </div>
+  </div>
+
+  <!-- Bottom Tab Bar -->
+  <nav class="tab-bar">
+    <a class="tab-item" href="#">
+      <span class="tab-icon">🏠</span>
+      <span class="tab-label">Home</span>
+    </a>
+    <a class="tab-item" href="#">
+      <span class="tab-icon">👥</span>
+      <span class="tab-label">People</span>
+    </a>
+    <a class="tab-item" href="#">
+      <span class="tab-icon">📋</span>
+      <span class="tab-label">Projects</span>
+    </a>
+    <a class="tab-item active" href="#">
+      <span class="tab-icon">🏪</span>
+      <span class="tab-label">Market</span>
+      <div class="tab-dot"></div>
+    </a>
+    <a class="tab-item" href="#">
+      <span class="tab-icon">💬</span>
+      <span class="tab-label">Messages</span>
+    </a>
+  </nav>
+
+</div><!-- /app -->
+
+<script>
+  function switchTab(tab) {
+    // Update tab buttons
+    document.querySelectorAll('.tabs .tab').forEach(t => {
+      t.classList.toggle('active', t.dataset.tab === tab);
+    });
+    // Show/hide panels
+    document.querySelectorAll('.tab-panel').forEach(p => {
+      p.classList.toggle('active', p.id === 'tab-' + tab);
+    });
+  }
+</script>
+</body>
+</html>
