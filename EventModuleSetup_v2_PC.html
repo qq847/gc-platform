@@ -1,0 +1,580 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Event Module Setup — GAME CONNECTION Event HQ</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: #e8e4da;
+    color: #1a1a1a;
+    min-height: 100vh;
+  }
+
+  /* NAV */
+  .nav {
+    background: #1a1a1a;
+    padding: 0 32px;
+    height: 56px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+  .nav-brand {
+    font-size: 15px;
+    font-weight: 700;
+    color: #fff;
+    letter-spacing: 0.5px;
+  }
+  .nav-brand span { color: #d95f2b; }
+  .nav-right {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+  }
+  .nav-avatar {
+    width: 32px; height: 32px;
+    border-radius: 50%;
+    background: #d95f2b;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 13px; font-weight: 700; color: #fff;
+  }
+  .nav-event-label {
+    font-size: 13px;
+    color: #aaa;
+  }
+
+  /* MAIN */
+  .main {
+    max-width: 860px;
+    margin: 0 auto;
+    padding: 40px 20px 80px;
+  }
+
+  /* PAGE HEADER */
+  .page-header {
+    margin-bottom: 32px;
+  }
+  .page-header h1 {
+    font-size: 26px;
+    font-weight: 700;
+    color: #1a1a1a;
+    margin-bottom: 4px;
+  }
+  .page-header p {
+    font-size: 14px;
+    color: #666;
+  }
+
+  /* STEPPER */
+  .stepper {
+    display: flex;
+    align-items: center;
+    margin-bottom: 40px;
+    background: #fff;
+    border-radius: 12px;
+    padding: 20px 28px;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+  }
+  .step {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex: 1;
+  }
+  .step-circle {
+    width: 32px; height: 32px;
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 13px; font-weight: 700;
+    flex-shrink: 0;
+  }
+  .step-circle.done { background: #0d9b72; color: #fff; }
+  .step-circle.active { background: #d95f2b; color: #fff; }
+  .step-circle.todo { background: #e0ddd6; color: #999; }
+  .step-text { }
+  .step-text .step-num { font-size: 11px; color: #999; font-weight: 500; }
+  .step-text .step-name { font-size: 14px; font-weight: 600; color: #1a1a1a; }
+  .step-text .step-name.active-label { color: #d95f2b; }
+  .step-text .step-name.todo-label { color: #999; }
+  .step-connector {
+    flex: 0 0 40px;
+    height: 2px;
+    background: #e0ddd6;
+    margin: 0 8px;
+  }
+  .step-connector.done-conn { background: #0d9b72; }
+
+  /* SECTION TITLE */
+  .section-title {
+    font-size: 13px;
+    font-weight: 700;
+    color: #999;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    margin-bottom: 16px;
+  }
+
+  /* MODULE GRID */
+  .module-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 16px;
+    margin-bottom: 32px;
+  }
+
+  .module-card {
+    background: #fff;
+    border-radius: 12px;
+    padding: 20px;
+    border: 2px solid transparent;
+    position: relative;
+    transition: box-shadow 0.2s, border-color 0.2s;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+  }
+  .module-card:hover { box-shadow: 0 4px 16px rgba(0,0,0,0.10); }
+  .module-card.off { opacity: 0.7; border: 2px dashed #ccc; }
+  .module-card.exclusive { border: 2px solid #d95f2b; }
+
+  /* TOGGLE */
+  .toggle-wrap {
+    position: absolute;
+    top: 16px; right: 16px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .toggle {
+    position: relative;
+    width: 40px; height: 22px;
+    cursor: pointer;
+  }
+  .toggle input { opacity: 0; width: 0; height: 0; }
+  .slider {
+    position: absolute; top: 0; left: 0; right: 0; bottom: 0;
+    background: #ccc;
+    border-radius: 22px;
+    transition: background 0.2s;
+  }
+  .slider::before {
+    content: '';
+    position: absolute;
+    width: 16px; height: 16px;
+    left: 3px; top: 3px;
+    background: #fff;
+    border-radius: 50%;
+    transition: transform 0.2s;
+  }
+  .toggle input:checked + .slider { background: #0d9b72; }
+  .toggle input:checked + .slider::before { transform: translateX(18px); }
+
+  /* BADGE */
+  .badge {
+    display: inline-block;
+    font-size: 10px;
+    font-weight: 700;
+    padding: 2px 7px;
+    border-radius: 20px;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+  }
+  .badge-popular { background: #0a7fa8; color: #fff; }
+  .badge-exclusive {
+    background: #d95f2b;
+    color: #fff;
+    font-size: 9px;
+    letter-spacing: 0.4px;
+  }
+
+  .module-badge-row {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin-bottom: 10px;
+  }
+
+  .module-icon {
+    font-size: 26px;
+    margin-bottom: 8px;
+    display: block;
+  }
+  .module-name {
+    font-size: 15px;
+    font-weight: 700;
+    color: #1a1a1a;
+    margin-bottom: 2px;
+  }
+  .module-tag {
+    font-size: 11px;
+    color: #0a7fa8;
+    font-weight: 600;
+    margin-bottom: 8px;
+  }
+  .module-desc {
+    font-size: 12px;
+    color: #777;
+    line-height: 1.5;
+    margin-bottom: 12px;
+  }
+  .module-meta {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+  .module-meta-item {
+    font-size: 11px;
+    color: #999;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+  }
+  .module-meta-item.sponsorship { color: #d95f2b; font-weight: 600; }
+  .module-meta-item.sponsorship-none { color: #bbb; }
+
+  /* SUMMARY BAR */
+  .summary-bar {
+    background: #fff;
+    border-radius: 12px;
+    padding: 24px 28px;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 24px;
+  }
+  .summary-left h3 {
+    font-size: 16px;
+    font-weight: 700;
+    color: #1a1a1a;
+    margin-bottom: 4px;
+  }
+  .summary-left p {
+    font-size: 13px;
+    color: #888;
+  }
+  .summary-stats {
+    display: flex;
+    gap: 32px;
+  }
+  .summary-stat {
+    text-align: center;
+  }
+  .summary-stat .num {
+    font-size: 28px;
+    font-weight: 700;
+    color: #d95f2b;
+  }
+  .summary-stat .label {
+    font-size: 12px;
+    color: #999;
+    margin-top: 2px;
+  }
+
+  /* FOOTER ACTIONS */
+  .footer-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 12px;
+    margin-top: 8px;
+  }
+  .btn {
+    padding: 12px 24px;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    border: none;
+    font-family: 'DM Sans', sans-serif;
+    transition: opacity 0.15s;
+  }
+  .btn:hover { opacity: 0.88; }
+  .btn-primary { background: #d95f2b; color: #fff; }
+  .btn-secondary { background: #fff; color: #1a1a1a; border: 1.5px solid #ddd; }
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav class="nav">
+  <div class="nav-brand"><span>GAME CONNECTION</span> · Event HQ</div>
+  <div class="nav-right">
+    <span class="nav-event-label">Indie Game Fest 2026</span>
+    <div class="nav-avatar">QQ</div>
+  </div>
+</nav>
+
+<!-- MAIN -->
+<div class="main">
+  <div class="page-header">
+    <h1>Event Setup</h1>
+    <p>Configure your event modules and unlock sponsorship opportunities.</p>
+  </div>
+
+  <!-- STEPPER -->
+  <div class="stepper">
+    <div class="step">
+      <div class="step-circle done">✓</div>
+      <div class="step-text">
+        <div class="step-num">Step 1</div>
+        <div class="step-name">Basic Info</div>
+      </div>
+    </div>
+    <div class="step-connector done-conn"></div>
+    <div class="step">
+      <div class="step-circle active">2</div>
+      <div class="step-text">
+        <div class="step-num">Step 2</div>
+        <div class="step-name active-label">Module Setup</div>
+      </div>
+    </div>
+    <div class="step-connector"></div>
+    <div class="step">
+      <div class="step-circle todo">3</div>
+      <div class="step-text">
+        <div class="step-num">Step 3</div>
+        <div class="step-name todo-label">Sponsorship Setup</div>
+      </div>
+    </div>
+    <div class="step-connector"></div>
+    <div class="step">
+      <div class="step-circle todo">4</div>
+      <div class="step-text">
+        <div class="step-num">Step 4</div>
+        <div class="step-name todo-label">Review</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODULE GRID -->
+  <div class="section-title">Select Modules</div>
+  <div class="module-grid" id="moduleGrid">
+
+    <!-- 1. Registration & Tickets -->
+    <div class="module-card" id="card-1">
+      <div class="toggle-wrap">
+        <label class="toggle">
+          <input type="checkbox" checked onchange="updateSummary()">
+          <span class="slider"></span>
+        </label>
+      </div>
+      <span class="module-icon">🎟️</span>
+      <div class="module-name">Registration &amp; Tickets</div>
+      <div class="module-desc">Manage attendee registration, ticket types, and check-in.</div>
+      <div class="module-meta">
+        <div class="module-meta-item">⏱ 5 min setup</div>
+        <div class="module-meta-item sponsorship">💰 Enables 2 sponsorship products</div>
+      </div>
+    </div>
+
+    <!-- 2. Game Showcase -->
+    <div class="module-card" id="card-2">
+      <div class="toggle-wrap">
+        <label class="toggle">
+          <input type="checkbox" checked onchange="updateSummary()">
+          <span class="slider"></span>
+        </label>
+      </div>
+      <span class="module-icon">🎮</span>
+      <div class="module-name">Game Showcase</div>
+      <div class="module-desc">Curate and display game submissions for your event.</div>
+      <div class="module-meta">
+        <div class="module-meta-item">⏱ 8 min setup</div>
+        <div class="module-meta-item sponsorship">💰 Enables 4 sponsorship products</div>
+      </div>
+    </div>
+
+    <!-- 3. Awards -->
+    <div class="module-card" id="card-3">
+      <div class="toggle-wrap">
+        <label class="toggle">
+          <input type="checkbox" checked onchange="updateSummary()">
+          <span class="slider"></span>
+        </label>
+      </div>
+      <span class="module-icon">🏆</span>
+      <div class="module-name">Awards</div>
+      <div class="module-desc">Create award categories, manage nominations and voting.</div>
+      <div class="module-meta">
+        <div class="module-meta-item">⏱ 10 min setup</div>
+        <div class="module-meta-item sponsorship">💰 Enables 6 sponsorship products</div>
+      </div>
+    </div>
+
+    <!-- 4. Schedule & Sessions -->
+    <div class="module-card" id="card-4">
+      <div class="toggle-wrap">
+        <label class="toggle">
+          <input type="checkbox" checked onchange="updateSummary()">
+          <span class="slider"></span>
+        </label>
+      </div>
+      <span class="module-icon">📅</span>
+      <div class="module-name">Schedule &amp; Sessions</div>
+      <div class="module-desc">Build a multi-day program with speakers and sessions.</div>
+      <div class="module-meta">
+        <div class="module-meta-item">⏱ 12 min setup</div>
+        <div class="module-meta-item sponsorship">💰 Enables 4 sponsorship products</div>
+      </div>
+    </div>
+
+    <!-- 5. Buyer Invitations -->
+    <div class="module-card" id="card-5">
+      <div class="toggle-wrap">
+        <label class="toggle">
+          <input type="checkbox" checked onchange="updateSummary()">
+          <span class="slider"></span>
+        </label>
+      </div>
+      <span class="module-icon">👥</span>
+      <div class="module-name">Buyer Invitations</div>
+      <div class="module-desc">Invite and manage qualified buyers for your event.</div>
+      <div class="module-meta">
+        <div class="module-meta-item">⏱ 5 min setup</div>
+        <div class="module-meta-item sponsorship-none">No sponsorship products</div>
+      </div>
+    </div>
+
+    <!-- 6. Let's Meet — EXCLUSIVE -->
+    <div class="module-card exclusive" id="card-6">
+      <div class="toggle-wrap">
+        <label class="toggle">
+          <input type="checkbox" checked onchange="updateSummary()">
+          <span class="slider"></span>
+        </label>
+      </div>
+      <div class="module-badge-row">
+        <span class="badge badge-exclusive">★ GAME CONNECTION EXCLUSIVE</span>
+      </div>
+      <span class="module-icon">🤝</span>
+      <div class="module-name">Let's Meet</div>
+      <div class="module-tag">Matchmaking</div>
+      <div class="module-desc">Enable 1-on-1 meeting scheduling between attendees. Set time slots, meeting duration, and room assignments.</div>
+      <div class="module-meta">
+        <div class="module-meta-item">⏱ 10 min setup</div>
+        <div class="module-meta-item sponsorship">💰 Enables 2 sponsorship products</div>
+        <div class="module-meta-item" style="color:#aaa;font-size:10px;">Meeting Room Sponsor · Schedule Sponsor</div>
+      </div>
+    </div>
+
+    <!-- 7. Live Streaming -->
+    <div class="module-card off" id="card-7">
+      <div class="toggle-wrap">
+        <label class="toggle">
+          <input type="checkbox" onchange="updateSummary()">
+          <span class="slider"></span>
+        </label>
+      </div>
+      <div class="module-badge-row">
+        <span class="badge badge-popular">🔥 POPULAR</span>
+      </div>
+      <span class="module-icon">🎤</span>
+      <div class="module-name">Live Streaming</div>
+      <div class="module-desc">Stream your event sessions live to a global audience.</div>
+      <div class="module-meta">
+        <div class="module-meta-item">⏱ 15 min setup</div>
+        <div class="module-meta-item sponsorship">💰 Enables 3 sponsorship products</div>
+      </div>
+    </div>
+
+    <!-- 8. Merchandise Store -->
+    <div class="module-card off" id="card-8">
+      <div class="toggle-wrap">
+        <label class="toggle">
+          <input type="checkbox" onchange="updateSummary()">
+          <span class="slider"></span>
+        </label>
+      </div>
+      <span class="module-icon">🛍️</span>
+      <div class="module-name">Merchandise Store</div>
+      <div class="module-desc">Sell branded merchandise and digital goods to attendees.</div>
+      <div class="module-meta">
+        <div class="module-meta-item">⏱ 8 min setup</div>
+        <div class="module-meta-item sponsorship">💰 Enables 1 sponsorship product</div>
+      </div>
+    </div>
+
+    <!-- 9. Analytics & Reports -->
+    <div class="module-card off" id="card-9">
+      <div class="toggle-wrap">
+        <label class="toggle">
+          <input type="checkbox" onchange="updateSummary()">
+          <span class="slider"></span>
+        </label>
+      </div>
+      <span class="module-icon">📊</span>
+      <div class="module-name">Analytics &amp; Reports</div>
+      <div class="module-desc">In-depth event data reports, attendance insights, and export tools.</div>
+      <div class="module-meta">
+        <div class="module-meta-item">⏱ 2 min setup</div>
+        <div class="module-meta-item sponsorship-none">No sponsorship products</div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- SUMMARY BAR -->
+  <div class="summary-bar">
+    <div class="summary-left">
+      <h3>Sponsorship Summary</h3>
+      <p>Modules enabled unlock sponsorship products for the next step.</p>
+    </div>
+    <div class="summary-stats">
+      <div class="summary-stat">
+        <div class="num" id="activeModules">6</div>
+        <div class="label">Modules ON</div>
+      </div>
+      <div class="summary-stat">
+        <div class="num" id="sponsorProducts">18</div>
+        <div class="label">Sponsorship Products</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- FOOTER ACTIONS -->
+  <div class="footer-actions">
+    <button class="btn btn-secondary">← Back</button>
+    <button class="btn btn-primary">Continue to Sponsorship Setup →</button>
+  </div>
+</div>
+
+<script>
+  // Module sponsorship product counts
+  const sponsorCounts = [2, 4, 6, 4, 0, 2, 3, 1, 0];
+
+  function updateSummary() {
+    const checkboxes = document.querySelectorAll('#moduleGrid .toggle input[type="checkbox"]');
+    let activeCount = 0;
+    let sponsorTotal = 0;
+
+    checkboxes.forEach((cb, i) => {
+      const card = cb.closest('.module-card');
+      if (cb.checked) {
+        activeCount++;
+        sponsorTotal += sponsorCounts[i];
+        card.classList.remove('off');
+        // Preserve exclusive border
+        if (i === 5) {
+          card.classList.add('exclusive');
+          card.style.border = '2px solid #d95f2b';
+        } else {
+          card.style.border = '2px solid transparent';
+        }
+      } else {
+        card.classList.add('off');
+        card.style.border = '2px dashed #ccc';
+        if (i === 5) card.classList.remove('exclusive');
+      }
+    });
+
+    document.getElementById('activeModules').textContent = activeCount;
+    document.getElementById('sponsorProducts').textContent = sponsorTotal;
+  }
+
+  // Initial run
+  updateSummary();
+</script>
+</body>
+</html>
