@@ -1,0 +1,1197 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Game Connection – Venue Map</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: #e8e4da;
+    color: #1a1a1a;
+    min-height: 100vh;
+  }
+
+  /* ── TOP BAR ── */
+  .topbar {
+    background: #1a1a1a;
+    color: #fff;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 32px;
+    height: 56px;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+  }
+  .topbar-logo {
+    font-size: 18px;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+    color: #d95f2b;
+  }
+  .topbar-logo span { color: #fff; }
+  .topbar-title { font-size: 13px; color: #aaa; font-weight: 400; }
+
+  /* ── TOGGLE ── */
+  .view-toggle {
+    display: flex;
+    background: #333;
+    border-radius: 8px;
+    padding: 3px;
+    gap: 2px;
+  }
+  .view-toggle button {
+    border: none;
+    border-radius: 6px;
+    padding: 6px 16px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+    background: transparent;
+    color: #aaa;
+  }
+  .view-toggle button.active {
+    background: #d95f2b;
+    color: #fff;
+  }
+
+  /* ── MAIN LAYOUT ── */
+  .app {
+    max-width: 1400px;
+    margin: 0 auto;
+    display: flex;
+    height: calc(100vh - 56px);
+    overflow: hidden;
+  }
+
+  /* ── LEFT PANEL ── */
+  .sidebar {
+    width: 280px;
+    min-width: 280px;
+    background: #fff;
+    border-right: 1px solid #ddd;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
+
+  .sidebar-inner {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    overflow: hidden;
+  }
+
+  .sidebar-section {
+    padding: 16px;
+    border-bottom: 1px solid #f0ede6;
+  }
+
+  .sidebar-section h3 {
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: #999;
+    margin-bottom: 10px;
+  }
+
+  /* Search */
+  .search-box {
+    position: relative;
+  }
+  .search-box input {
+    width: 100%;
+    padding: 9px 36px 9px 12px;
+    border: 1.5px solid #e0ddd6;
+    border-radius: 8px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 13px;
+    background: #faf9f6;
+    outline: none;
+    transition: border 0.2s;
+  }
+  .search-box input:focus { border-color: #d95f2b; }
+  .search-box .search-icon {
+    position: absolute;
+    right: 10px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #bbb;
+    font-size: 14px;
+    pointer-events: none;
+  }
+  .search-clear {
+    position: absolute;
+    right: 10px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #bbb;
+    font-size: 16px;
+    cursor: pointer;
+    display: none;
+    background: none;
+    border: none;
+    line-height: 1;
+  }
+
+  /* Legend */
+  .legend-items {
+    display: flex;
+    flex-direction: column;
+    gap: 7px;
+  }
+  .legend-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 12px;
+    color: #555;
+    cursor: pointer;
+    padding: 3px 4px;
+    border-radius: 4px;
+    transition: background 0.15s;
+  }
+  .legend-item:hover { background: #f5f2ed; }
+  .legend-dot {
+    width: 12px;
+    height: 12px;
+    border-radius: 3px;
+    flex-shrink: 0;
+  }
+  .dot-available { background: #4caf7d; }
+  .dot-sold      { background: #d95f2b; }
+  .dot-reserved  { background: #4a90d9; }
+  .dot-unavail   { background: #c0bdb6; }
+
+  /* Booth list */
+  .booth-list-wrap {
+    flex: 1;
+    overflow-y: auto;
+    padding: 12px 16px;
+  }
+  .booth-list-wrap::-webkit-scrollbar { width: 4px; }
+  .booth-list-wrap::-webkit-scrollbar-track { background: transparent; }
+  .booth-list-wrap::-webkit-scrollbar-thumb { background: #ddd; border-radius: 2px; }
+
+  .booth-group-label {
+    font-size: 10px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: #bbb;
+    margin: 12px 0 6px;
+  }
+
+  .booth-list-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 8px 10px;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: background 0.15s;
+    margin-bottom: 2px;
+  }
+  .booth-list-item:hover { background: #f5f2ed; }
+  .booth-list-item.active { background: #fde8db; }
+  .booth-list-item .bnum {
+    font-size: 12px;
+    font-weight: 700;
+    color: #d95f2b;
+    width: 34px;
+    flex-shrink: 0;
+  }
+  .booth-list-item .binfo { flex: 1; min-width: 0; }
+  .booth-list-item .bname {
+    font-size: 12px;
+    font-weight: 600;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    color: #222;
+  }
+  .booth-list-item .bgame {
+    font-size: 11px;
+    color: #999;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .booth-list-item .bstatus {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    flex-shrink: 0;
+  }
+
+  /* ── RIGHT MAP AREA ── */
+  .map-area {
+    flex: 1;
+    overflow: auto;
+    padding: 24px;
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+  }
+  .map-area::-webkit-scrollbar { width: 6px; height: 6px; }
+  .map-area::-webkit-scrollbar-track { background: transparent; }
+  .map-area::-webkit-scrollbar-thumb { background: #ccc; border-radius: 3px; }
+
+  /* Zoom controls */
+  .zoom-controls {
+    position: absolute;
+    top: 16px;
+    right: 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    z-index: 50;
+  }
+  .zoom-btn {
+    width: 34px;
+    height: 34px;
+    background: #fff;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    font-size: 18px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 500;
+    color: #555;
+    transition: all 0.15s;
+    box-shadow: 0 1px 4px rgba(0,0,0,.08);
+  }
+  .zoom-btn:hover { background: #f5f2ed; border-color: #d95f2b; color: #d95f2b; }
+  .zoom-label {
+    text-align: center;
+    font-size: 11px;
+    color: #aaa;
+    background: #fff;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    padding: 3px 0;
+  }
+
+  /* ── FLOOR PLAN ── */
+  .floor-plan {
+    display: inline-flex;
+    flex-direction: column;
+    gap: 10px;
+    transform-origin: top left;
+    transition: transform 0.2s;
+    min-width: 800px;
+  }
+
+  /* Stage */
+  .stage-row {
+    width: 100%;
+  }
+  .stage-block {
+    background: #3a3a3a;
+    color: #fff;
+    border-radius: 10px;
+    height: 60px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 14px;
+    font-weight: 700;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    box-shadow: 0 2px 8px rgba(0,0,0,.15);
+  }
+
+  /* Middle row */
+  .middle-row {
+    display: flex;
+    gap: 10px;
+    align-items: flex-start;
+  }
+
+  /* Pod zone */
+  .pod-zone {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+  .zone-label {
+    font-size: 10px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: #aaa;
+    padding-left: 2px;
+  }
+  .pod-grid {
+    display: grid;
+    grid-template-columns: repeat(5, 50px);
+    gap: 4px;
+  }
+  .pod-cell {
+    width: 50px;
+    height: 50px;
+    border-radius: 6px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 10px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: transform 0.15s, box-shadow 0.15s, outline 0.15s;
+    position: relative;
+    user-select: none;
+    border: 1.5px solid transparent;
+  }
+  .pod-cell:hover {
+    transform: scale(1.08);
+    z-index: 2;
+    box-shadow: 0 4px 12px rgba(0,0,0,.18);
+  }
+
+  /* Booth zone */
+  .booth-zone {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+  .booth-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 80px);
+    gap: 6px;
+  }
+  .booth-cell {
+    width: 80px;
+    height: 80px;
+    border-radius: 8px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    font-size: 11px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: transform 0.15s, box-shadow 0.15s;
+    position: relative;
+    user-select: none;
+    border: 1.5px solid transparent;
+    gap: 2px;
+  }
+  .booth-cell:hover {
+    transform: scale(1.06);
+    z-index: 2;
+    box-shadow: 0 4px 14px rgba(0,0,0,.2);
+  }
+  .booth-cell .bcell-company {
+    font-size: 9px;
+    font-weight: 500;
+    text-align: center;
+    line-height: 1.2;
+    opacity: 0.85;
+    max-width: 70px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  /* Meet Rooms */
+  .meet-zone {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+  .meet-rooms {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+  .meet-room {
+    width: 110px;
+    height: 70px;
+    background: #c0bdb6;
+    border-radius: 8px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    font-size: 11px;
+    font-weight: 600;
+    color: #555;
+    gap: 2px;
+    border: 1.5px solid #b0ada6;
+    box-shadow: 0 1px 4px rgba(0,0,0,.08);
+  }
+  .meet-room .room-sub { font-size: 10px; font-weight: 400; color: #888; }
+
+  /* Bottom row */
+  .bottom-row {
+    display: flex;
+    gap: 10px;
+  }
+  .area-block {
+    flex: 1;
+    height: 70px;
+    background: #c0bdb6;
+    border-radius: 10px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    font-size: 12px;
+    font-weight: 600;
+    color: #555;
+    gap: 3px;
+    border: 1.5px solid #b0ada6;
+    box-shadow: 0 1px 4px rgba(0,0,0,.08);
+  }
+  .area-block .area-icon { font-size: 18px; }
+  .area-block.entrance { background: #e8e2d4; border-color: #d4cfc5; }
+  .area-block.entrance .area-label { color: #d95f2b; font-weight: 700; }
+
+  /* Cell colors */
+  .status-sold {
+    background: #ffe0cc;
+    border-color: #d95f2b;
+    color: #c04a15;
+  }
+  .status-reserved {
+    background: #cde3f7;
+    border-color: #4a90d9;
+    color: #1c5fa3;
+  }
+  .status-available {
+    background: #d4f0e0;
+    border-color: #4caf7d;
+    color: #276944;
+  }
+  .status-unavailable {
+    background: #edeae4;
+    border-color: #c0bdb6;
+    color: #999;
+    cursor: default;
+  }
+
+  /* Highlight (search result) */
+  @keyframes pulse-highlight {
+    0%   { outline: 3px solid #d95f2b; outline-offset: 2px; box-shadow: 0 0 0 0 rgba(217,95,43,.5); }
+    50%  { outline: 3px solid #d95f2b; outline-offset: 3px; box-shadow: 0 0 0 8px rgba(217,95,43,0); }
+    100% { outline: 3px solid #d95f2b; outline-offset: 2px; box-shadow: 0 0 0 0 rgba(217,95,43,.5); }
+  }
+  .highlighted {
+    animation: pulse-highlight 1s ease-in-out 3;
+    z-index: 10;
+  }
+  .selected-cell {
+    outline: 3px solid #1a1a1a;
+    outline-offset: 2px;
+    z-index: 5;
+  }
+
+  /* ── INFO PANEL ── */
+  .info-panel {
+    position: fixed;
+    top: 56px;
+    right: -360px;
+    width: 340px;
+    height: calc(100vh - 56px);
+    background: #fff;
+    border-left: 1px solid #e0ddd6;
+    box-shadow: -4px 0 20px rgba(0,0,0,.1);
+    transition: right 0.3s cubic-bezier(0.4,0,0.2,1);
+    z-index: 200;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
+  .info-panel.open { right: 0; }
+
+  .info-panel-header {
+    padding: 20px 20px 16px;
+    border-bottom: 1px solid #f0ede6;
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+  }
+  .info-panel-id {
+    font-size: 28px;
+    font-weight: 800;
+    color: #d95f2b;
+    line-height: 1;
+  }
+  .info-panel-type {
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: #bbb;
+    margin-top: 4px;
+  }
+  .info-close {
+    background: none;
+    border: none;
+    font-size: 22px;
+    cursor: pointer;
+    color: #aaa;
+    line-height: 1;
+    padding: 2px 4px;
+    border-radius: 4px;
+  }
+  .info-close:hover { background: #f5f2ed; color: #555; }
+
+  .info-panel-body { padding: 20px; flex: 1; overflow-y: auto; }
+
+  .info-status-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 5px 12px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 700;
+    margin-bottom: 18px;
+  }
+  .badge-sold      { background: #ffe0cc; color: #c04a15; }
+  .badge-reserved  { background: #cde3f7; color: #1c5fa3; }
+  .badge-available { background: #d4f0e0; color: #276944; }
+  .badge-unavailable { background: #edeae4; color: #999; }
+
+  .info-field { margin-bottom: 16px; }
+  .info-field label {
+    display: block;
+    font-size: 10px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: #bbb;
+    margin-bottom: 4px;
+  }
+  .info-field .value {
+    font-size: 14px;
+    font-weight: 500;
+    color: #222;
+  }
+  .info-field .value.empty { color: #bbb; font-style: italic; font-weight: 400; }
+
+  /* Edit status (Organizer) */
+  .edit-section {
+    border-top: 1px solid #f0ede6;
+    padding: 16px 20px;
+  }
+  .edit-section label {
+    display: block;
+    font-size: 10px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: #bbb;
+    margin-bottom: 8px;
+  }
+  .status-select {
+    width: 100%;
+    padding: 9px 12px;
+    border: 1.5px solid #e0ddd6;
+    border-radius: 8px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 13px;
+    font-weight: 500;
+    background: #faf9f6;
+    color: #222;
+    outline: none;
+    cursor: pointer;
+    transition: border 0.2s;
+    appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%23aaa' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 12px center;
+    padding-right: 32px;
+  }
+  .status-select:focus { border-color: #d95f2b; }
+
+  .apply-btn {
+    margin-top: 10px;
+    width: 100%;
+    padding: 10px;
+    background: #d95f2b;
+    color: #fff;
+    border: none;
+    border-radius: 8px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 13px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: background 0.2s;
+  }
+  .apply-btn:hover { background: #c04a15; }
+
+  /* Empty state in list */
+  .list-empty {
+    text-align: center;
+    padding: 24px 0;
+    color: #bbb;
+    font-size: 12px;
+  }
+
+  /* Map wrapper for scroll + zoom */
+  .map-scroll-wrap {
+    overflow: auto;
+    flex: 1;
+    padding-bottom: 8px;
+  }
+  .map-scroll-wrap::-webkit-scrollbar { height: 5px; width: 5px; }
+  .map-scroll-wrap::-webkit-scrollbar-thumb { background: #ccc; border-radius: 3px; }
+</style>
+</head>
+<body>
+
+<!-- TOP BAR -->
+<div class="topbar">
+  <div class="topbar-logo">GAME<span>CONNECTION</span></div>
+  <div class="topbar-title">Venue Map — Hall B, Ground Floor</div>
+  <div class="view-toggle">
+    <button id="btn-attendee" class="active" onclick="setView('attendee')">Attendee</button>
+    <button id="btn-organizer" onclick="setView('organizer')">Organizer</button>
+  </div>
+</div>
+
+<!-- APP -->
+<div class="app">
+
+  <!-- SIDEBAR -->
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <!-- Search -->
+      <div class="sidebar-section">
+        <h3>Search</h3>
+        <div class="search-box">
+          <input type="text" id="search-input" placeholder="Exhibitor or booth…" oninput="handleSearch(this.value)">
+          <span class="search-icon" id="search-icon">🔍</span>
+          <button class="search-clear" id="search-clear" onclick="clearSearch()">✕</button>
+        </div>
+      </div>
+
+      <!-- Legend -->
+      <div class="sidebar-section">
+        <h3>Legend</h3>
+        <div class="legend-items">
+          <div class="legend-item" onclick="filterByStatus('available')">
+            <div class="legend-dot dot-available"></div>
+            <span>Available</span>
+          </div>
+          <div class="legend-item" onclick="filterByStatus('sold')">
+            <div class="legend-dot dot-sold"></div>
+            <span>Sold</span>
+          </div>
+          <div class="legend-item" onclick="filterByStatus('reserved')">
+            <div class="legend-dot dot-reserved"></div>
+            <span>Reserved</span>
+          </div>
+          <div class="legend-item" onclick="filterByStatus('unavailable')">
+            <div class="legend-dot dot-unavail"></div>
+            <span>Unavailable</span>
+          </div>
+          <div class="legend-item" onclick="filterByStatus(null)" style="margin-top:4px; border-top:1px solid #f0ede6; padding-top:8px;">
+            <div class="legend-dot" style="background:#ddd;"></div>
+            <span style="color:#aaa;">Show All</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Booth List -->
+      <div class="booth-list-wrap" id="booth-list"></div>
+
+    </div>
+  </aside>
+
+  <!-- MAP AREA -->
+  <main class="map-area">
+
+    <!-- Zoom Controls -->
+    <div class="zoom-controls">
+      <button class="zoom-btn" onclick="zoom(0.1)">+</button>
+      <div class="zoom-label" id="zoom-label">100%</div>
+      <button class="zoom-btn" onclick="zoom(-0.1)">−</button>
+      <button class="zoom-btn" style="font-size:13px; margin-top:4px;" title="Reset zoom" onclick="resetZoom()">↺</button>
+    </div>
+
+    <div class="map-scroll-wrap">
+      <div class="floor-plan" id="floor-plan">
+
+        <!-- STAGE -->
+        <div class="stage-row">
+          <div class="stage-block">🎮 Stage</div>
+        </div>
+
+        <!-- MIDDLE -->
+        <div class="middle-row">
+
+          <!-- Pod Zone -->
+          <div class="pod-zone">
+            <div class="zone-label">Pod Zone</div>
+            <div class="pod-grid" id="pod-grid"></div>
+          </div>
+
+          <!-- Booth Zone -->
+          <div class="booth-zone" style="margin-left:10px;">
+            <div class="zone-label">Booth Zone</div>
+            <div class="booth-grid" id="booth-grid"></div>
+          </div>
+
+          <!-- Meet Rooms -->
+          <div class="meet-zone" style="margin-left:10px;">
+            <div class="zone-label">Let's Meet</div>
+            <div class="meet-rooms">
+              <div class="meet-room">
+                <span>🤝</span>
+                <span>Room A</span>
+                <span class="room-sub">Meetings</span>
+              </div>
+              <div class="meet-room">
+                <span>🤝</span>
+                <span>Room B</span>
+                <span class="room-sub">Meetings</span>
+              </div>
+              <div class="meet-room">
+                <span>🤝</span>
+                <span>Room C</span>
+                <span class="room-sub">Meetings</span>
+              </div>
+            </div>
+          </div>
+
+        </div>
+
+        <!-- BOTTOM ROW -->
+        <div class="bottom-row">
+          <div class="area-block">
+            <span class="area-icon">🍔</span>
+            <span>F&amp;B Area</span>
+          </div>
+          <div class="area-block">
+            <span class="area-icon">💬</span>
+            <span>Networking Lounge</span>
+          </div>
+          <div class="area-block entrance">
+            <span class="area-icon">🚪</span>
+            <div>
+              <div class="area-label">Registration + Entrance</div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </main>
+
+</div>
+
+<!-- INFO PANEL -->
+<div class="info-panel" id="info-panel">
+  <div class="info-panel-header">
+    <div>
+      <div class="info-panel-id" id="ip-id">P01</div>
+      <div class="info-panel-type" id="ip-type">Pod</div>
+    </div>
+    <button class="info-close" onclick="closePanel()">✕</button>
+  </div>
+  <div class="info-panel-body">
+    <div id="ip-badge" class="info-status-badge badge-sold">● Sold</div>
+    <div class="info-field">
+      <label>Company</label>
+      <div class="value" id="ip-company">—</div>
+    </div>
+    <div class="info-field">
+      <label>Game / Title</label>
+      <div class="value" id="ip-game">—</div>
+    </div>
+    <div class="info-field">
+      <label>Genre</label>
+      <div class="value" id="ip-genre">—</div>
+    </div>
+    <div class="info-field">
+      <label>Contact</label>
+      <div class="value" id="ip-contact">—</div>
+    </div>
+  </div>
+  <div class="edit-section" id="edit-section" style="display:none;">
+    <label>Edit Status</label>
+    <select class="status-select" id="status-select">
+      <option value="available">Available</option>
+      <option value="sold">Sold</option>
+      <option value="reserved">Reserved</option>
+      <option value="unavailable">Unavailable</option>
+    </select>
+    <button class="apply-btn" onclick="applyStatusChange()">Apply Change</button>
+  </div>
+</div>
+
+<script>
+/* ────────────────────────────────────────────
+   DATA
+──────────────────────────────────────────── */
+const exhibitorData = {
+  P01: { company: 'Indie Forge Studio', game: 'Pixel Quest', genre: 'Platformer / Indie', contact: 'hello@indieforge.io' },
+  P02: { company: 'Nordic Games',       game: 'Ice Realm',   genre: 'RPG / Adventure',    contact: 'press@nordicgames.se' },
+  P03: { company: 'PixelDream',         game: 'Neon City',   genre: 'Action / Cyberpunk', contact: 'bd@pixeldream.fr' },
+  P04: { company: 'CyberPlay',          game: 'Dark Horizon',genre: 'Sci-Fi / Shooter',   contact: 'info@cyberplay.io' },
+  P05: { company: 'GameCraft',          game: 'Forest Tales',genre: 'Puzzle / Family',    contact: 'team@gamecraft.com' },
+  P06: { company: 'NeonWave Studio',    game: 'Pulse Drive', genre: 'Racing / Arcade',    contact: 'nw@neonwave.io' },
+  P07: { company: 'Retro Republic',     game: 'Bit Heroes',  genre: 'Retro / Action',     contact: 'rr@retrorepublic.gg' },
+  P08: { company: 'CloudNine Games',    game: 'Sky Empire',  genre: 'Strategy',           contact: 'pr@cloudnine.games' },
+  P09: { company: 'MindSpark',          game: 'BrainGrid',   genre: 'Puzzle / Casual',    contact: 'hi@mindspark.io' },
+  P10: { company: 'Frontier Digital',   game: 'Wild Lands',  genre: 'Open World',         contact: 'fd@frontier.co' },
+  P11: { company: 'ArcLight Dev',       game: 'Void Runner', genre: 'Endless Runner',     contact: 'dev@arclight.io' },
+  P12: { company: 'ByteForge',          game: 'HexRealm',    genre: 'Turn-based Strategy',contact: 'bf@byteforge.eu' },
+  P13: { company: 'SonicPixel',         game: 'AudioQuest',  genre: 'Rhythm / Music',     contact: 'sp@sonicpixel.fm' },
+  P14: { company: 'Moonbase Studios',   game: 'Lunar Colony',genre: 'Simulation',         contact: 'moon@moonbase.game' },
+  P15: { company: 'TempestGames',       game: 'Storm Chain', genre: 'Tower Defense',      contact: 'tg@tempest.gg' },
+  B01: { company: 'Ubisoft',            game: 'Multiple titles', genre: 'AAA / Multi-genre', contact: 'bizdev@ubisoft.com' },
+  B02: { company: 'EA Sports',          game: 'FIFA Mobile', genre: 'Sports / Mobile',    contact: 'ea@ea.com' },
+  B03: { company: 'Supercell',          game: 'New Strategy Title', genre: 'Mobile / Strategy', contact: 'press@supercell.com' },
+  B04: { company: 'Riot Games',         game: 'Teamfight Tactics Mobile', genre: 'Strategy / Esports', contact: 'riot@riotgames.com' },
+  B05: { company: 'Bandai Namco',       game: 'Tales of Next', genre: 'JRPG',             contact: 'bn@bandainamco.eu' },
+  B06: { company: '505 Games',          game: 'Control 2',   genre: 'Action / Thriller',  contact: '505@505games.com' },
+  B07: { company: 'Devolver Digital',   game: 'TBA',         genre: 'Indie / Publisher',  contact: 'dd@devolverdigital.com' },
+};
+
+const initialStatus = {};
+// Pod status
+for (let i = 1; i <= 25; i++) {
+  const id = 'P' + String(i).padStart(2,'0');
+  if (i <= 15)      initialStatus[id] = 'sold';
+  else if (i <= 18) initialStatus[id] = 'reserved';
+  else              initialStatus[id] = 'available';
+}
+// Booth status
+for (let i = 1; i <= 12; i++) {
+  const id = 'B' + String(i).padStart(2,'0');
+  if (i <= 7)      initialStatus[id] = 'sold';
+  else if (i === 8) initialStatus[id] = 'reserved';
+  else              initialStatus[id] = 'available';
+}
+
+const statusLabel = { sold:'Sold', reserved:'Reserved', available:'Available', unavailable:'Unavailable' };
+const statusBadgeClass = { sold:'badge-sold', reserved:'badge-reserved', available:'badge-available', unavailable:'badge-unavailable' };
+const statusDot = { sold:'●', reserved:'●', available:'●', unavailable:'●' };
+
+// Mutable state copy
+const boothStatus = { ...initialStatus };
+
+let currentView   = 'attendee';
+let selectedId    = null;
+let zoomLevel     = 1;
+let activeFilter  = null;
+
+/* ────────────────────────────────────────────
+   BUILD GRIDS
+──────────────────────────────────────────── */
+function buildGrids() {
+  const podGrid   = document.getElementById('pod-grid');
+  const boothGrid = document.getElementById('booth-grid');
+  podGrid.innerHTML   = '';
+  boothGrid.innerHTML = '';
+
+  for (let i = 1; i <= 25; i++) {
+    const id   = 'P' + String(i).padStart(2,'0');
+    const div  = document.createElement('div');
+    div.className = 'pod-cell status-' + boothStatus[id];
+    div.id = 'cell-' + id;
+    div.dataset.bid = id;
+    div.textContent = id;
+    div.addEventListener('click', () => openPanel(id));
+    podGrid.appendChild(div);
+  }
+
+  for (let i = 1; i <= 12; i++) {
+    const id   = 'B' + String(i).padStart(2,'0');
+    const div  = document.createElement('div');
+    div.className = 'booth-cell status-' + boothStatus[id];
+    div.id = 'cell-' + id;
+    div.dataset.bid = id;
+    const num  = document.createElement('div');
+    num.textContent = id;
+    div.appendChild(num);
+    const info = exhibitorData[id];
+    if (info) {
+      const comp = document.createElement('div');
+      comp.className = 'bcell-company';
+      comp.textContent = info.company;
+      div.appendChild(comp);
+    }
+    div.addEventListener('click', () => openPanel(id));
+    boothGrid.appendChild(div);
+  }
+}
+
+/* ────────────────────────────────────────────
+   BUILD SIDEBAR LIST
+──────────────────────────────────────────── */
+function buildList(filter = '') {
+  const container = document.getElementById('booth-list');
+  container.innerHTML = '';
+
+  const allIds = [
+    ...Array.from({length:25}, (_,i) => 'P'+String(i+1).padStart(2,'0')),
+    ...Array.from({length:12}, (_,i) => 'B'+String(i+1).padStart(2,'0')),
+  ];
+
+  const q = filter.toLowerCase().trim();
+  const filtered = allIds.filter(id => {
+    const info = exhibitorData[id];
+    if (activeFilter && boothStatus[id] !== activeFilter) return false;
+    if (!q) return true;
+    return id.toLowerCase().includes(q) ||
+      (info && (info.company.toLowerCase().includes(q) || info.game.toLowerCase().includes(q)));
+  });
+
+  if (filtered.length === 0) {
+    container.innerHTML = '<div class="list-empty">No results found</div>';
+    return;
+  }
+
+  // Group by Pods / Booths
+  const pods   = filtered.filter(id => id.startsWith('P'));
+  const booths = filtered.filter(id => id.startsWith('B'));
+
+  if (pods.length) {
+    const gl = document.createElement('div');
+    gl.className = 'booth-group-label';
+    gl.textContent = 'Pods';
+    container.appendChild(gl);
+    pods.forEach(id => container.appendChild(makeListItem(id)));
+  }
+  if (booths.length) {
+    const gl = document.createElement('div');
+    gl.className = 'booth-group-label';
+    gl.textContent = 'Booths';
+    container.appendChild(gl);
+    booths.forEach(id => container.appendChild(makeListItem(id)));
+  }
+}
+
+function makeListItem(id) {
+  const div  = document.createElement('div');
+  div.className = 'booth-list-item' + (id === selectedId ? ' active' : '');
+  div.id = 'list-' + id;
+
+  const num  = document.createElement('div');
+  num.className = 'bnum';
+  num.textContent = id;
+
+  const info = document.createElement('div');
+  info.className = 'binfo';
+
+  const name = document.createElement('div');
+  name.className = 'bname';
+  const ex = exhibitorData[id];
+  name.textContent = ex ? ex.company : '(Available)';
+
+  const game = document.createElement('div');
+  game.className = 'bgame';
+  game.textContent = ex ? ex.game : statusLabel[boothStatus[id]];
+
+  info.appendChild(name);
+  info.appendChild(game);
+
+  const dot  = document.createElement('div');
+  dot.className = 'bstatus';
+  const st = boothStatus[id];
+  dot.style.background = st === 'sold' ? '#d95f2b' : st === 'reserved' ? '#4a90d9' : st === 'available' ? '#4caf7d' : '#c0bdb6';
+
+  div.appendChild(num);
+  div.appendChild(info);
+  div.appendChild(dot);
+
+  div.addEventListener('click', () => {
+    scrollToCell(id);
+    openPanel(id);
+  });
+
+  return div;
+}
+
+/* ────────────────────────────────────────────
+   INFO PANEL
+──────────────────────────────────────────── */
+function openPanel(id) {
+  if (selectedId) {
+    const prev = document.getElementById('cell-' + selectedId);
+    if (prev) prev.classList.remove('selected-cell');
+    const prevList = document.getElementById('list-' + selectedId);
+    if (prevList) prevList.classList.remove('active');
+  }
+
+  selectedId = id;
+  const cell = document.getElementById('cell-' + id);
+  if (cell) cell.classList.add('selected-cell');
+  const listItem = document.getElementById('list-' + id);
+  if (listItem) { listItem.classList.add('active'); listItem.scrollIntoView({block:'nearest', behavior:'smooth'}); }
+
+  const ex  = exhibitorData[id];
+  const st  = boothStatus[id];
+
+  document.getElementById('ip-id').textContent   = id;
+  document.getElementById('ip-type').textContent = id.startsWith('P') ? 'Pod' : 'Booth';
+
+  const badge = document.getElementById('ip-badge');
+  badge.className = 'info-status-badge ' + statusBadgeClass[st];
+  badge.textContent = statusDot[st] + ' ' + statusLabel[st];
+
+  document.getElementById('ip-company').textContent = ex ? ex.company : '—';
+  document.getElementById('ip-company').className   = 'value' + (ex ? '' : ' empty');
+  document.getElementById('ip-game').textContent    = ex ? ex.game    : '—';
+  document.getElementById('ip-game').className      = 'value' + (ex ? '' : ' empty');
+  document.getElementById('ip-genre').textContent   = ex ? ex.genre   : '—';
+  document.getElementById('ip-genre').className     = 'value' + (ex ? '' : ' empty');
+  document.getElementById('ip-contact').textContent = ex ? ex.contact : '—';
+  document.getElementById('ip-contact').className   = 'value' + (ex ? '' : ' empty');
+
+  // Edit section for organizer
+  const editSec = document.getElementById('edit-section');
+  editSec.style.display = currentView === 'organizer' ? 'block' : 'none';
+  if (currentView === 'organizer') {
+    document.getElementById('status-select').value = st;
+  }
+
+  document.getElementById('info-panel').classList.add('open');
+}
+
+function closePanel() {
+  document.getElementById('info-panel').classList.remove('open');
+  if (selectedId) {
+    const prev = document.getElementById('cell-' + selectedId);
+    if (prev) prev.classList.remove('selected-cell');
+    const prevList = document.getElementById('list-' + selectedId);
+    if (prevList) prevList.classList.remove('active');
+  }
+  selectedId = null;
+}
+
+function applyStatusChange() {
+  if (!selectedId) return;
+  const newStatus = document.getElementById('status-select').value;
+  boothStatus[selectedId] = newStatus;
+
+  // Update cell color
+  const cell = document.getElementById('cell-' + selectedId);
+  if (cell) {
+    cell.className = cell.className.replace(/status-\w+/, 'status-' + newStatus);
+  }
+
+  // Re-open to refresh badge
+  openPanel(selectedId);
+
+  // Rebuild list
+  buildList(document.getElementById('search-input').value);
+}
+
+/* ────────────────────────────────────────────
+   SEARCH
+──────────────────────────────────────────── */
+function handleSearch(val) {
+  document.getElementById('search-clear').style.display = val ? 'block' : 'none';
+  document.getElementById('search-icon').style.display  = val ? 'none'  : 'block';
+  buildList(val);
+
+  if (!val) { clearHighlights(); return; }
+
+  clearHighlights();
+
+  const q = val.toLowerCase().trim();
+  const allIds = [
+    ...Array.from({length:25}, (_,i) => 'P'+String(i+1).padStart(2,'0')),
+    ...Array.from({length:12}, (_,i) => 'B'+String(i+1).padStart(2,'0')),
+  ];
+
+  const matches = allIds.filter(id => {
+    const ex = exhibitorData[id];
+    return id.toLowerCase().includes(q) ||
+      (ex && (ex.company.toLowerCase().includes(q) || ex.game.toLowerCase().includes(q)));
+  });
+
+  matches.forEach(id => {
+    const cell = document.getElementById('cell-' + id);
+    if (cell) {
+      cell.classList.add('highlighted');
+      // Remove animation class after it finishes so it can re-trigger
+      cell.addEventListener('animationend', () => {
+        cell.classList.remove('highlighted');
+      }, { once: true });
+    }
+  });
+
+  if (matches.length === 1) {
+    scrollToCell(matches[0]);
+  }
+}
+
+function clearSearch() {
+  document.getElementById('search-input').value = '';
+  document.getElementById('search-clear').style.display = 'none';
+  document.getElementById('search-icon').style.display  = 'block';
+  clearHighlights();
+  buildList('');
+}
+
+function clearHighlights() {
+  document.querySelectorAll('.highlighted').forEach(el => el.classList.remove('highlighted'));
+}
+
+function scrollToCell(id) {
+  const cell = document.getElementById('cell-' + id);
+  if (cell) cell.scrollIntoView({ behavior: 'smooth', block: 'center' });
+}
+
+/* ────────────────────────────────────────────
+   FILTER BY STATUS (legend click)
+──────────────────────────────────────────── */
+function filterByStatus(status) {
+  activeFilter = status;
+  buildList(document.getElementById('search-input').value);
+}
+
+/* ────────────────────────────────────────────
+   VIEW TOGGLE
+──────────────────────────────────────────── */
+function setView(view) {
+  currentView = view;
+  document.getElementById('btn-attendee').classList.toggle('active', view === 'attendee');
+  document.getElementById('btn-organizer').classList.toggle('active', view === 'organizer');
+  // If panel is open, refresh it
+  if (selectedId) openPanel(selectedId);
+}
+
+/* ────────────────────────────────────────────
+   ZOOM
+──────────────────────────────────────────── */
+function zoom(delta) {
+  zoomLevel = Math.min(2, Math.max(0.4, zoomLevel + delta));
+  applyZoom();
+}
+function resetZoom() {
+  zoomLevel = 1;
+  applyZoom();
+}
+function applyZoom() {
+  document.getElementById('floor-plan').style.transform = `scale(${zoomLevel})`;
+  document.getElementById('zoom-label').textContent = Math.round(zoomLevel * 100) + '%';
+}
+
+/* ────────────────────────────────────────────
+   INIT
+──────────────────────────────────────────── */
+buildGrids();
+buildList();
+</script>
+</body>
+</html>
