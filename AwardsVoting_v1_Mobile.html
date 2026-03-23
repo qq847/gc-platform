@@ -1,0 +1,484 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>Game Connection Awards – Vote (Mobile)</title>
+<style>
+  :root {
+    --bg: #0d0e1a;
+    --surface: #161827;
+    --surface2: #1e2035;
+    --border: #2a2d4a;
+    --accent: #7c6af7;
+    --accent2: #f7526a;
+    --green: #22c97e;
+    --text: #e8e9f5;
+    --text-muted: #8890b8;
+    --card-radius: 14px;
+    --transition: .2s ease;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+  body { background: var(--bg); color: var(--text); font-family: 'Segoe UI', system-ui, sans-serif; min-height: 100vh; font-size: 15px; }
+
+  /* Mobile Header */
+  header {
+    background: linear-gradient(135deg, #1a1040 0%, #0d1535 100%);
+    border-bottom: 1px solid var(--border);
+    padding: 0 16px;
+    height: 56px;
+    display: flex; align-items: center; justify-content: space-between;
+    position: sticky; top: 0; z-index: 100;
+  }
+  .logo { display: flex; align-items: center; gap: 8px; font-weight: 700; font-size: 15px; }
+  .logo-icon { width: 28px; height: 28px; background: linear-gradient(135deg, var(--accent), var(--accent2)); border-radius: 7px;
+    display: flex; align-items: center; justify-content: center; font-size: 14px; }
+  .avatar { width: 30px; height: 30px; background: linear-gradient(135deg, var(--accent), var(--accent2)); border-radius: 50%;
+    display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 700; color: #fff; }
+
+  /* Hero */
+  .hero {
+    background: linear-gradient(135deg, #1a1040 0%, #0d1535 50%, #1a0d28 100%);
+    padding: 28px 16px 24px;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+  }
+  .hero::before {
+    content: '';
+    position: absolute; inset: 0;
+    background: radial-gradient(ellipse at 50% 0%, rgba(124,106,247,0.25) 0%, transparent 70%);
+  }
+  .hero-tag {
+    display: inline-flex; align-items: center; gap: 5px;
+    background: rgba(124,106,247,0.15); border: 1px solid rgba(124,106,247,0.4);
+    color: var(--accent); font-size: 11px; font-weight: 600; letter-spacing: 1px;
+    padding: 3px 10px; border-radius: 20px; text-transform: uppercase; margin-bottom: 12px;
+    position: relative;
+  }
+  .hero h1 { font-size: 24px; font-weight: 800; margin-bottom: 6px; position: relative;
+    background: linear-gradient(135deg, #fff 0%, #c4b8ff 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+  .hero p { color: var(--text-muted); font-size: 13px; margin-bottom: 20px; position: relative; }
+
+  /* Countdown - Mobile */
+  .countdown-wrap { display: flex; justify-content: center; gap: 8px; position: relative; margin-bottom: 6px; }
+  .countdown-box {
+    background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.12);
+    border-radius: 10px; padding: 10px 14px; min-width: 58px; text-align: center;
+  }
+  .countdown-num { font-size: 26px; font-weight: 800; color: #fff; line-height: 1; }
+  .countdown-label { font-size: 9px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1px; margin-top: 3px; }
+  .countdown-colon { font-size: 24px; font-weight: 800; color: rgba(255,255,255,0.3); align-self: center; padding-bottom: 14px; }
+  .countdown-note { color: var(--text-muted); font-size: 11px; position: relative; }
+
+  /* Progress Bar */
+  .progress-strip {
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    padding: 12px 16px;
+  }
+  .progress-strip-top { display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px; }
+  .progress-strip-label { font-size: 13px; color: var(--text-muted); }
+  .progress-strip-label strong { color: var(--text); }
+  .cat-dots-mobile { display: flex; gap: 5px; }
+  .cat-dot {
+    width: 24px; height: 24px; border-radius: 50%;
+    border: 2px solid var(--border);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 9px; font-weight: 700; transition: all var(--transition);
+  }
+  .cat-dot.voted { background: var(--green); border-color: var(--green); color: #fff; }
+  .cat-dot.pending { background: transparent; color: var(--text-muted); }
+  .progress-track { height: 5px; background: var(--border); border-radius: 3px; }
+  .progress-fill { height: 100%; background: linear-gradient(90deg, var(--green), #4aedb4); border-radius: 3px; transition: width 0.5s ease; }
+
+  /* Tabs - horizontal scroll */
+  .tabs-wrap {
+    background: var(--surface); border-bottom: 1px solid var(--border);
+    overflow-x: auto; scrollbar-width: none; -webkit-overflow-scrolling: touch;
+    position: sticky; top: 56px; z-index: 90;
+  }
+  .tabs-wrap::-webkit-scrollbar { display: none; }
+  .tabs { display: flex; padding: 0 8px; }
+  .tab-btn {
+    padding: 14px 16px; font-size: 12px; font-weight: 600;
+    color: var(--text-muted); background: none; border: none; cursor: pointer;
+    border-bottom: 3px solid transparent; transition: all var(--transition);
+    white-space: nowrap;
+  }
+  .tab-btn.active { color: var(--accent); border-bottom-color: var(--accent); }
+  .tab-voted-dot { display: inline-block; width: 6px; height: 6px; background: var(--green); border-radius: 50%; margin-left: 5px; vertical-align: middle; }
+
+  /* Main Content */
+  main { padding: 20px 16px; padding-bottom: 88px; }
+
+  .category-header { margin-bottom: 20px; }
+  .category-header h2 { font-size: 20px; font-weight: 700; margin-bottom: 4px; }
+  .category-header p { color: var(--text-muted); font-size: 12px; line-height: 1.5; }
+
+  /* Cards: single column on mobile */
+  .cards-grid { display: flex; flex-direction: column; gap: 16px; }
+
+  /* Game Card */
+  .game-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--card-radius);
+    overflow: hidden;
+    transition: border-color var(--transition);
+  }
+  .game-card.voted-card { border-color: rgba(34,201,126,0.4); }
+
+  .card-cover {
+    height: 140px; position: relative; overflow: hidden;
+    display: flex; align-items: flex-end;
+  }
+  .card-cover-overlay { position: absolute; inset: 0; background: linear-gradient(to top, rgba(0,0,0,0.8) 0%, transparent 60%); }
+  .nominee-num {
+    position: absolute; top: 8px; left: 8px;
+    background: rgba(0,0,0,0.7); backdrop-filter: blur(4px);
+    border: 1px solid rgba(255,255,255,0.2); border-radius: 5px;
+    padding: 2px 7px; font-size: 10px; font-weight: 700; color: rgba(255,255,255,0.8);
+  }
+  .game-title-on-cover {
+    position: relative; z-index: 1; padding: 10px 12px;
+    font-size: 13px; font-weight: 700; color: #fff;
+    text-shadow: 0 1px 4px rgba(0,0,0,0.8); line-height: 1.2;
+  }
+
+  .card-body { padding: 14px; }
+  .card-row { display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: 8px; }
+  .card-info .card-title { font-size: 15px; font-weight: 700; margin-bottom: 2px; }
+  .card-info .card-dev { font-size: 11px; color: var(--text-muted); }
+  .card-desc { font-size: 12px; color: var(--text-muted); line-height: 1.6; margin-bottom: 12px; }
+
+  .vote-bar-wrap { margin-bottom: 12px; display: none; }
+  .vote-bar-wrap.show { display: block; }
+  .vote-bar-info { display: flex; justify-content: space-between; font-size: 11px; color: var(--text-muted); margin-bottom: 4px; }
+  .vote-bar { height: 4px; background: var(--border); border-radius: 3px; }
+  .vote-bar-fill { height: 100%; background: linear-gradient(90deg, var(--accent), var(--accent2)); border-radius: 3px; transition: width 0.6s ease; }
+
+  .vote-btn {
+    width: 100%; padding: 12px; border-radius: 10px; font-size: 14px; font-weight: 700;
+    cursor: pointer; border: 2px solid var(--accent); background: transparent;
+    color: var(--accent); transition: all var(--transition); letter-spacing: 0.3px;
+    -webkit-appearance: none;
+  }
+  .vote-btn:active:not(.voted):not(:disabled) { background: var(--accent); color: #fff; transform: scale(0.98); }
+  .vote-btn.voted { background: rgba(34,201,126,0.12); border-color: var(--green); color: var(--green); cursor: default; }
+  .vote-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+
+  /* Tab Panel */
+  .tab-panel { display: none; }
+  .tab-panel.active { display: block; }
+
+  /* Footer Bar */
+  .footer-bar {
+    position: fixed; bottom: 0; left: 0; right: 0;
+    background: rgba(22, 24, 39, 0.97); border-top: 1px solid var(--border);
+    backdrop-filter: blur(12px);
+    padding: 10px 16px;
+    display: flex; align-items: center; justify-content: space-between; gap: 12px;
+    z-index: 100;
+  }
+  .footer-voted-text { font-size: 12px; color: var(--text-muted); white-space: nowrap; }
+  .footer-voted-text strong { color: var(--accent); font-size: 15px; display: block; }
+  .submit-all-btn {
+    padding: 10px 20px; border-radius: 10px; font-size: 13px; font-weight: 700;
+    background: linear-gradient(135deg, var(--accent), var(--accent2));
+    color: #fff; border: none; cursor: pointer; white-space: nowrap;
+    -webkit-appearance: none;
+  }
+
+  /* Gradient fills */
+  .grad-0 { background: linear-gradient(135deg, #6c3de8, #c040a0); }
+  .grad-1 { background: linear-gradient(135deg, #1a6ef5, #0ab8d8); }
+  .grad-2 { background: linear-gradient(135deg, #f55c1a, #f5c842); }
+  .grad-3 { background: linear-gradient(135deg, #2adc8e, #1a9ef5); }
+  .grad-4 { background: linear-gradient(135deg, #e83d6c, #f59a1a); }
+  .grad-5 { background: linear-gradient(135deg, #9c3de8, #3de8c0); }
+  .grad-6 { background: linear-gradient(135deg, #f5421a, #8c1af5); }
+  .grad-7 { background: linear-gradient(135deg, #1af554, #1a78f5); }
+  .grad-8 { background: linear-gradient(135deg, #f5c31a, #e83d6c); }
+  .grad-9 { background: linear-gradient(135deg, #1aecf5, #7c1af5); }
+  .grad-10 { background: linear-gradient(135deg, #f5821a, #f51a6e); }
+  .grad-11 { background: linear-gradient(135deg, #1af5a2, #5c1af5); }
+  .grad-12 { background: linear-gradient(135deg, #f51a1a, #f5c81a); }
+  .grad-13 { background: linear-gradient(135deg, #1a54f5, #c81af5); }
+  .grad-14 { background: linear-gradient(135deg, #3de88e, #e8bb3d); }
+  .grad-15 { background: linear-gradient(135deg, #e83d8e, #3d8ee8); }
+  .grad-16 { background: linear-gradient(135deg, #8ee83d, #3de8c0); }
+  .grad-17 { background: linear-gradient(135deg, #e8c83d, #3d72e8); }
+  .grad-18 { background: linear-gradient(135deg, #3de8e8, #e83d3d); }
+  .grad-19 { background: linear-gradient(135deg, #e83de8, #e8c03d); }
+
+  /* Toast */
+  .toast {
+    position: fixed; bottom: 72px; left: 16px; right: 16px;
+    background: var(--green); color: #fff; padding: 12px 16px; border-radius: 10px;
+    font-size: 13px; font-weight: 600; opacity: 0; transition: all 0.3s ease;
+    pointer-events: none; z-index: 200; text-align: center;
+    transform: translateY(10px);
+  }
+  .toast.show { opacity: 1; transform: translateY(0); }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo">
+    <div class="logo-icon">🎮</div>
+    Game Connection
+  </div>
+  <div class="avatar">JL</div>
+</header>
+
+<div class="hero">
+  <div class="hero-tag">⭐ GC Awards 2026</div>
+  <h1>🏆 Awards Voting</h1>
+  <p>Vote across 5 categories. Closes March 25.</p>
+  <div class="countdown-wrap">
+    <div class="countdown-box">
+      <div class="countdown-num" id="cd-hours">23</div>
+      <div class="countdown-label">HRS</div>
+    </div>
+    <div class="countdown-colon">:</div>
+    <div class="countdown-box">
+      <div class="countdown-num" id="cd-mins">47</div>
+      <div class="countdown-label">MIN</div>
+    </div>
+    <div class="countdown-colon">:</div>
+    <div class="countdown-box">
+      <div class="countdown-num" id="cd-secs">00</div>
+      <div class="countdown-label">SEC</div>
+    </div>
+  </div>
+  <div class="countdown-note" style="margin-top:6px;">Voting closes March 25, 2026 at 23:59 CET</div>
+</div>
+
+<div class="progress-strip">
+  <div class="progress-strip-top">
+    <span class="progress-strip-label"><strong id="vote-count-text">0 / 5</strong> categories voted</span>
+    <div class="cat-dots-mobile" id="cat-dots">
+      <div class="cat-dot pending" data-cat="0">M</div>
+      <div class="cat-dot pending" data-cat="1">I</div>
+      <div class="cat-dot pending" data-cat="2">A</div>
+      <div class="cat-dot pending" data-cat="3">N</div>
+      <div class="cat-dot pending" data-cat="4">★</div>
+    </div>
+  </div>
+  <div class="progress-track">
+    <div class="progress-fill" id="progress-fill" style="width:0%"></div>
+  </div>
+</div>
+
+<div class="tabs-wrap">
+  <div class="tabs">
+    <button class="tab-btn active" data-tab="0" onclick="switchTab(0)">🏅 Mobile</button>
+    <button class="tab-btn" data-tab="1" onclick="switchTab(1)">🕹️ Indie</button>
+    <button class="tab-btn" data-tab="2" onclick="switchTab(2)">🎨 Art</button>
+    <button class="tab-btn" data-tab="3" onclick="switchTab(3)">📖 Narrative</button>
+    <button class="tab-btn" data-tab="4" onclick="switchTab(4)">⭐ Audience</button>
+  </div>
+</div>
+
+<main>
+  <div class="tab-panel active" id="tab-panel-0">
+    <div class="category-header">
+      <h2>🏅 Best Mobile Game</h2>
+      <p>Outstanding achievement in mobile game development.</p>
+    </div>
+    <div class="cards-grid" id="grid-0"></div>
+  </div>
+  <div class="tab-panel" id="tab-panel-1">
+    <div class="category-header">
+      <h2>🕹️ Best Indie Game</h2>
+      <p>Celebrating independent studios that push creative boundaries.</p>
+    </div>
+    <div class="cards-grid" id="grid-1"></div>
+  </div>
+  <div class="tab-panel" id="tab-panel-2">
+    <div class="category-header">
+      <h2>🎨 Best Art Direction</h2>
+      <p>Honoring games with outstanding aesthetic vision.</p>
+    </div>
+    <div class="cards-grid" id="grid-2"></div>
+  </div>
+  <div class="tab-panel" id="tab-panel-3">
+    <div class="category-header">
+      <h2>📖 Best Narrative</h2>
+      <p>Storytelling that moves players.</p>
+    </div>
+    <div class="cards-grid" id="grid-3"></div>
+  </div>
+  <div class="tab-panel" id="tab-panel-4">
+    <div class="category-header">
+      <h2>⭐ Audience Choice</h2>
+      <p>The people's pick at Game Connection 2026.</p>
+    </div>
+    <div class="cards-grid" id="grid-4"></div>
+  </div>
+</main>
+
+<div class="footer-bar">
+  <div class="footer-voted-text">
+    <strong id="footer-count">0</strong>
+    /5 categories voted
+  </div>
+  <button class="submit-all-btn" onclick="submitAll()">Submit Votes →</button>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+const categories = [
+  {
+    id: 0, name: "Best Mobile Game",
+    nominees: [
+      { id: "m1", name: "Shadow Realm Mobile", dev: "Nexus Studio", desc: "A dark fantasy RPG built ground-up for mobile.", votes: 312, total: 850, grad: 0 },
+      { id: "m2", name: "Pocket Tactics Arena", dev: "GridPlay Ltd.", desc: "Turn-based strategy meets battle royale.", votes: 278, total: 850, grad: 5 },
+      { id: "m3", name: "Neon Run: Overdrive", dev: "FastLane Games", desc: "Hyper-casual meets precision platforming — 50M downloads.", votes: 195, total: 850, grad: 10 },
+      { id: "m4", name: "Flora & Ruins", dev: "Seedling Co.", desc: "A meditative exploration puzzle game.", votes: 65, total: 850, grad: 15 },
+    ]
+  },
+  {
+    id: 1, name: "Best Indie",
+    nominees: [
+      { id: "i1", name: "Voidwalker", dev: "Hollow Signal", desc: "A solo-dev atmospheric horror experience.", votes: 421, total: 900, grad: 6 },
+      { id: "i2", name: "Chrono Sprout", dev: "Late Bloom Studio", desc: "Time-manipulation platformer with hand-painted visuals.", votes: 310, total: 900, grad: 11 },
+      { id: "i3", name: "Binary Garden", dev: "Pixelroot", desc: "A cozy farming sim with procedural narrative.", votes: 169, total: 900, grad: 16 },
+    ]
+  },
+  {
+    id: 2, name: "Best Art Direction",
+    nominees: [
+      { id: "a1", name: "Ember Epoch", dev: "Cinderhaus Games", desc: "Hand-drawn animation meets isometric RPG.", votes: 507, total: 980, grad: 2 },
+      { id: "a2", name: "PRISM Protocol", dev: "Refract Studios", desc: "Neon-soaked cyberpunk racer with reactive visuals.", votes: 298, total: 980, grad: 7 },
+      { id: "a3", name: "Pale Mountain", dev: "Sumi Interactive", desc: "Ink-wash inspired open world adventure.", votes: 175, total: 980, grad: 12 },
+    ]
+  },
+  {
+    id: 3, name: "Best Narrative",
+    nominees: [
+      { id: "n1", name: "Letters from Orbit", dev: "Distant Signal", desc: "Epistolary space station survival told through messages.", votes: 389, total: 820, grad: 3 },
+      { id: "n2", name: "The Hollow King", dev: "Ashveil Games", desc: "Dark fantasy RPG with deep NPC backstories.", votes: 277, total: 820, grad: 8 },
+      { id: "n3", name: "Sunday Driver", dev: "Slowburn Interactive", desc: "Slice-of-life road trip about grief and healing.", votes: 154, total: 820, grad: 13 },
+      { id: "n4", name: "Redacted", dev: "Cipher Works", desc: "Text-based espionage thriller.", votes: 0, total: 820, grad: 18 },
+    ]
+  },
+  {
+    id: 4, name: "Audience Choice",
+    nominees: [
+      { id: "ac1", name: "Stardrift Chronicles", dev: "Nomad Arcade", desc: "Open-world space exploration with multiplayer.", votes: 645, total: 1200, grad: 4 },
+      { id: "ac2", name: "Glitch Dungeon", dev: "Breakpoint Labs", desc: "Fourth-wall-breaking roguelite where bugs are gameplay.", votes: 312, total: 1200, grad: 9 },
+      { id: "ac3", name: "Harmony Falls", dev: "Resonance Studio", desc: "Music-rhythm RPG with branching story.", votes: 198, total: 1200, grad: 14 },
+      { id: "ac4", name: "Iron Shepherd", dev: "Forge & Iron Co.", desc: "Gritty mech-combat strategy game.", votes: 45, total: 1200, grad: 19 },
+    ]
+  }
+];
+
+const voted = {};
+
+function renderGrids() {
+  categories.forEach(cat => {
+    const grid = document.getElementById(`grid-${cat.id}`);
+    grid.innerHTML = cat.nominees.map((nom, idx) => `
+      <div class="game-card ${voted[cat.id] === nom.id ? 'voted-card' : ''}">
+        <div class="card-cover grad-${nom.grad}">
+          <div class="card-cover-overlay"></div>
+          <div class="nominee-num">#${idx+1}</div>
+          <div class="game-title-on-cover">${nom.name}</div>
+        </div>
+        <div class="card-body">
+          <div class="card-info">
+            <div class="card-title">${nom.name}</div>
+            <div class="card-dev">by ${nom.dev}</div>
+          </div>
+          <div class="card-desc" style="margin-top:8px;">${nom.desc}</div>
+          <div class="vote-bar-wrap ${voted[cat.id] ? 'show' : ''}">
+            <div class="vote-bar-info">
+              <span>${voted[cat.id] === nom.id ? nom.votes + 1 : nom.votes} votes</span>
+              <span>${Math.round((voted[cat.id] === nom.id ? (nom.votes+1) : nom.votes) / nom.total * 100)}%</span>
+            </div>
+            <div class="vote-bar">
+              <div class="vote-bar-fill" style="width:${Math.round((voted[cat.id] === nom.id ? (nom.votes+1) : nom.votes) / nom.total * 100)}%"></div>
+            </div>
+          </div>
+          <button class="vote-btn ${voted[cat.id] === nom.id ? 'voted' : ''}"
+            onclick="castVote(${cat.id}, '${nom.id}')"
+            ${voted[cat.id] && voted[cat.id] !== nom.id ? 'disabled' : ''}
+          >${voted[cat.id] === nom.id ? 'Voted ✓' : 'Vote'}</button>
+        </div>
+      </div>
+    `).join('');
+  });
+}
+
+function castVote(catId, nomId) {
+  if (voted[catId]) return;
+  voted[catId] = nomId;
+  renderGrids();
+  updateProgress();
+  const nomName = categories[catId].nominees.find(n=>n.id===nomId).name;
+  showToast(`✓ Voted for ${nomName}!`);
+}
+
+function updateProgress() {
+  const count = Object.keys(voted).length;
+  document.getElementById('vote-count-text').textContent = `${count} / 5`;
+  document.getElementById('footer-count').textContent = count;
+  document.getElementById('progress-fill').style.width = `${count / 5 * 100}%`;
+
+  categories.forEach(cat => {
+    const dot = document.querySelector(`.cat-dot[data-cat="${cat.id}"]`);
+    if (voted[cat.id]) dot.classList.replace('pending', 'voted');
+  });
+
+  categories.forEach(cat => {
+    const btn = document.querySelector(`.tab-btn[data-tab="${cat.id}"]`);
+    if (voted[cat.id] && !btn.querySelector('.tab-voted-dot')) {
+      btn.insertAdjacentHTML('beforeend', '<span class="tab-voted-dot"></span>');
+    }
+  });
+}
+
+function switchTab(idx) {
+  document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById(`tab-panel-${idx}`).classList.add('active');
+  document.querySelector(`.tab-btn[data-tab="${idx}"]`).classList.add('active');
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+function submitAll() {
+  const count = Object.keys(voted).length;
+  if (count === 0) { showToast('⚠️ Vote in at least one category first!'); return; }
+  showToast(`🎉 ${count}/5 votes submitted!`);
+}
+
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2600);
+}
+
+// Countdown
+const deadline = new Date();
+deadline.setDate(deadline.getDate() + 1);
+deadline.setHours(23, 59, 0, 0);
+function tick() {
+  let diff = Math.max(0, deadline - new Date());
+  const h = Math.floor(diff / 3600000); diff %= 3600000;
+  const m = Math.floor(diff / 60000); diff %= 60000;
+  const s = Math.floor(diff / 1000);
+  document.getElementById('cd-hours').textContent = String(h).padStart(2,'0');
+  document.getElementById('cd-mins').textContent = String(m).padStart(2,'0');
+  document.getElementById('cd-secs').textContent = String(s).padStart(2,'0');
+}
+setInterval(tick, 1000);
+tick();
+renderGrids();
+</script>
+</body>
+</html>
