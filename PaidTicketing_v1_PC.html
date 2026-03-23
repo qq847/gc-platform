@@ -1,0 +1,1552 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Paid Ticketing — Game Connection B2B Organizer</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg: #e8e4da;
+    --orange: #d95f2b;
+    --orange-light: #f0784a;
+    --orange-dark: #b84d20;
+    --sidebar-bg: #1a1a1a;
+    --sidebar-text: #c8c4bc;
+    --sidebar-active: #d95f2b;
+    --card-bg: #ffffff;
+    --card-shadow: 0 2px 12px rgba(0,0,0,0.08);
+    --border: #ddd8ce;
+    --text-primary: #1a1a1a;
+    --text-secondary: #6b6560;
+    --text-muted: #9b958e;
+    --success: #2d9b5a;
+    --success-bg: #e8f7ef;
+    --warning: #b87a00;
+    --warning-bg: #fff8e1;
+    --danger: #c0392b;
+    --danger-bg: #fdecea;
+    --info: #1a6fb5;
+    --info-bg: #e3f0fb;
+    --draft-color: #7b6f5e;
+    --draft-bg: #f0ede7;
+    --radius: 10px;
+    --radius-sm: 6px;
+    --radius-lg: 14px;
+  }
+
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: var(--bg);
+    color: var(--text-primary);
+    min-height: 100vh;
+    display: flex;
+  }
+
+  /* ── SIDEBAR ── */
+  .sidebar {
+    width: 240px;
+    min-height: 100vh;
+    background: var(--sidebar-bg);
+    display: flex;
+    flex-direction: column;
+    flex-shrink: 0;
+    position: sticky;
+    top: 0;
+    height: 100vh;
+    overflow-y: auto;
+  }
+  .sidebar-logo {
+    padding: 28px 24px 20px;
+    border-bottom: 1px solid rgba(255,255,255,0.08);
+  }
+  .sidebar-logo .logo-text {
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--orange);
+    letter-spacing: 1.2px;
+    text-transform: uppercase;
+  }
+  .sidebar-logo .logo-sub {
+    font-size: 10px;
+    color: #666;
+    margin-top: 2px;
+    letter-spacing: 0.5px;
+  }
+  .sidebar-section {
+    padding: 20px 0 4px;
+  }
+  .sidebar-section-label {
+    font-size: 10px;
+    font-weight: 600;
+    color: #555;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    padding: 0 24px 8px;
+  }
+  .sidebar-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 10px 24px;
+    cursor: pointer;
+    color: var(--sidebar-text);
+    font-size: 13.5px;
+    font-weight: 450;
+    border-left: 3px solid transparent;
+    transition: all 0.18s;
+    text-decoration: none;
+  }
+  .sidebar-item:hover { background: rgba(255,255,255,0.05); color: #fff; }
+  .sidebar-item.active {
+    color: #fff;
+    background: rgba(217, 95, 43, 0.15);
+    border-left-color: var(--orange);
+    font-weight: 600;
+  }
+  .sidebar-item svg { flex-shrink: 0; opacity: 0.7; }
+  .sidebar-item.active svg { opacity: 1; }
+  .sidebar-bottom {
+    margin-top: auto;
+    padding: 16px 0;
+    border-top: 1px solid rgba(255,255,255,0.08);
+  }
+  .user-info {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 20px;
+  }
+  .user-avatar {
+    width: 32px; height: 32px;
+    background: var(--orange);
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 12px; font-weight: 700; color: #fff;
+    flex-shrink: 0;
+  }
+  .user-name { font-size: 12.5px; color: #ccc; font-weight: 500; }
+  .user-role { font-size: 11px; color: #666; }
+
+  /* ── MAIN CONTENT ── */
+  .main {
+    flex: 1;
+    max-width: calc(1400px - 240px);
+    padding: 32px 36px;
+    overflow-x: hidden;
+  }
+
+  .page-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    margin-bottom: 28px;
+  }
+  .page-title { font-size: 24px; font-weight: 700; color: var(--text-primary); }
+  .page-subtitle { font-size: 13px; color: var(--text-secondary); margin-top: 4px; }
+  .event-badge {
+    background: var(--orange);
+    color: #fff;
+    font-size: 11px;
+    font-weight: 600;
+    padding: 4px 12px;
+    border-radius: 20px;
+    letter-spacing: 0.3px;
+  }
+
+  /* ── TABS ── */
+  .tab-nav {
+    display: flex;
+    gap: 4px;
+    background: rgba(255,255,255,0.5);
+    border-radius: var(--radius);
+    padding: 4px;
+    width: fit-content;
+    margin-bottom: 28px;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+  }
+  .tab-btn {
+    padding: 9px 22px;
+    border: none;
+    background: transparent;
+    border-radius: calc(var(--radius) - 2px);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 13.5px;
+    font-weight: 500;
+    color: var(--text-secondary);
+    cursor: pointer;
+    transition: all 0.18s;
+    white-space: nowrap;
+  }
+  .tab-btn:hover { color: var(--text-primary); background: rgba(255,255,255,0.6); }
+  .tab-btn.active {
+    background: var(--orange);
+    color: #fff;
+    font-weight: 600;
+    box-shadow: 0 2px 8px rgba(217,95,43,0.3);
+  }
+  .tab-pane { display: none; }
+  .tab-pane.active { display: block; }
+
+  /* ── CARDS ── */
+  .card {
+    background: var(--card-bg);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--card-shadow);
+    padding: 24px;
+    margin-bottom: 20px;
+  }
+  .card-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 20px;
+  }
+  .card-title { font-size: 15px; font-weight: 700; }
+  .card-subtitle { font-size: 12px; color: var(--text-muted); margin-top: 2px; }
+
+  /* ── BUTTONS ── */
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 9px 18px;
+    border-radius: var(--radius-sm);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    border: none;
+    transition: all 0.18s;
+    white-space: nowrap;
+  }
+  .btn-primary { background: var(--orange); color: #fff; }
+  .btn-primary:hover { background: var(--orange-dark); }
+  .btn-secondary { background: transparent; border: 1.5px solid var(--border); color: var(--text-secondary); }
+  .btn-secondary:hover { border-color: #aaa; color: var(--text-primary); background: rgba(0,0,0,0.03); }
+  .btn-danger { background: var(--danger); color: #fff; font-size: 12px; padding: 6px 12px; }
+  .btn-danger:hover { background: #a93226; }
+  .btn-sm { padding: 6px 12px; font-size: 12px; }
+  .btn-icon {
+    width: 32px; height: 32px; padding: 0;
+    display: inline-flex; align-items: center; justify-content: center;
+    border-radius: var(--radius-sm);
+    background: transparent;
+    border: 1.5px solid var(--border);
+    color: var(--text-secondary);
+    cursor: pointer;
+    transition: all 0.18s;
+  }
+  .btn-icon:hover { border-color: #aaa; color: var(--text-primary); }
+  .btn-icon.danger:hover { border-color: var(--danger); color: var(--danger); }
+
+  /* ── STATUS BADGES ── */
+  .badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    padding: 3px 10px;
+    border-radius: 20px;
+    font-size: 11.5px;
+    font-weight: 600;
+  }
+  .badge::before { content: ''; width: 6px; height: 6px; border-radius: 50%; }
+  .badge-active { background: var(--success-bg); color: var(--success); }
+  .badge-active::before { background: var(--success); }
+  .badge-draft { background: var(--draft-bg); color: var(--draft-color); }
+  .badge-draft::before { background: var(--draft-color); }
+  .badge-paused { background: var(--warning-bg); color: var(--warning); }
+  .badge-paused::before { background: var(--warning); }
+  .badge-paid { background: var(--success-bg); color: var(--success); }
+  .badge-paid::before { background: var(--success); }
+  .badge-pending { background: var(--warning-bg); color: var(--warning); }
+  .badge-pending::before { background: var(--warning); }
+  .badge-refunded { background: var(--info-bg); color: var(--info); }
+  .badge-refunded::before { background: var(--info); }
+  .badge-cancelled { background: var(--danger-bg); color: var(--danger); }
+  .badge-cancelled::before { background: var(--danger); }
+
+  /* ── TICKET TYPE GRID ── */
+  .ticket-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 16px;
+    margin-bottom: 24px;
+  }
+  .ticket-card {
+    background: var(--card-bg);
+    border-radius: var(--radius-lg);
+    padding: 20px;
+    box-shadow: var(--card-shadow);
+    border: 2px solid transparent;
+    transition: border-color 0.18s, box-shadow 0.18s;
+    position: relative;
+    overflow: hidden;
+  }
+  .ticket-card:hover { border-color: var(--orange); box-shadow: 0 4px 20px rgba(217,95,43,0.12); }
+  .ticket-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 3px;
+    background: var(--orange);
+  }
+  .ticket-card.draft::before { background: var(--draft-color); }
+  .ticket-card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 14px;
+  }
+  .ticket-name { font-size: 16px; font-weight: 700; }
+  .ticket-price { font-size: 26px; font-weight: 700; color: var(--orange); line-height: 1; }
+  .ticket-price span { font-size: 14px; font-weight: 400; color: var(--text-muted); }
+  .ticket-stats {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    margin: 14px 0;
+    padding: 14px 0;
+    border-top: 1px solid var(--border);
+    border-bottom: 1px solid var(--border);
+  }
+  .ticket-stat { }
+  .ticket-stat-label { font-size: 10.5px; color: var(--text-muted); font-weight: 500; text-transform: uppercase; letter-spacing: 0.5px; }
+  .ticket-stat-value { font-size: 18px; font-weight: 700; color: var(--text-primary); margin-top: 2px; }
+  .ticket-progress {
+    background: var(--bg);
+    border-radius: 4px;
+    height: 6px;
+    margin-bottom: 14px;
+    overflow: hidden;
+  }
+  .ticket-progress-fill {
+    height: 100%;
+    background: var(--orange);
+    border-radius: 4px;
+    transition: width 0.4s;
+  }
+  .ticket-card-footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+  .ticket-actions { display: flex; gap: 6px; }
+
+  /* ── ADD FORM ── */
+  .add-form-wrapper {
+    background: var(--card-bg);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--card-shadow);
+    overflow: hidden;
+  }
+  .add-form-toggle {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 18px 24px;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--orange);
+    border: none;
+    background: transparent;
+    width: 100%;
+    font-family: 'DM Sans', sans-serif;
+    transition: background 0.15s;
+  }
+  .add-form-toggle:hover { background: rgba(217,95,43,0.04); }
+  .add-form-toggle .toggle-icon { transition: transform 0.25s; font-size: 20px; line-height: 1; }
+  .add-form-toggle.open .toggle-icon { transform: rotate(45deg); }
+  .add-form-body {
+    display: none;
+    padding: 0 24px 24px;
+    border-top: 1px solid var(--border);
+  }
+  .add-form-body.open { display: block; }
+  .form-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+    margin-top: 20px;
+  }
+  .form-group { display: flex; flex-direction: column; gap: 6px; }
+  .form-group.full { grid-column: 1 / -1; }
+  .form-label { font-size: 12.5px; font-weight: 600; color: var(--text-secondary); }
+  .form-control {
+    padding: 10px 14px;
+    border: 1.5px solid var(--border);
+    border-radius: var(--radius-sm);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 13.5px;
+    background: #fff;
+    color: var(--text-primary);
+    outline: none;
+    transition: border-color 0.18s;
+  }
+  .form-control:focus { border-color: var(--orange); }
+  .form-control-group { display: flex; gap: 0; }
+  .form-control-group .form-control { flex: 1; border-radius: var(--radius-sm) 0 0 var(--radius-sm); }
+  .form-control-group select { border-radius: 0 var(--radius-sm) var(--radius-sm) 0; border-left: none; padding: 10px 12px; min-width: 80px; }
+  textarea.form-control { min-height: 90px; resize: vertical; }
+  .radio-group { display: flex; gap: 12px; }
+  .radio-option {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    padding: 8px 14px;
+    border: 1.5px solid var(--border);
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+    font-size: 13px;
+    font-weight: 500;
+    transition: all 0.15s;
+    flex: 1;
+  }
+  .radio-option:hover { border-color: var(--orange); color: var(--orange); }
+  .radio-option input { accent-color: var(--orange); }
+  .toggle-switch {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+  }
+  .switch {
+    position: relative;
+    width: 38px;
+    height: 22px;
+    flex-shrink: 0;
+  }
+  .switch input { opacity: 0; width: 0; height: 0; }
+  .slider {
+    position: absolute;
+    inset: 0;
+    background: #d0ccc6;
+    border-radius: 22px;
+    transition: 0.25s;
+    cursor: pointer;
+  }
+  .slider::before {
+    content: '';
+    position: absolute;
+    height: 16px; width: 16px;
+    left: 3px; bottom: 3px;
+    background: white;
+    border-radius: 50%;
+    transition: 0.25s;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+  }
+  input:checked + .slider { background: var(--orange); }
+  input:checked + .slider::before { transform: translateX(16px); }
+  .form-actions { margin-top: 20px; display: flex; gap: 10px; }
+
+  /* ── STATS GRID ── */
+  .stats-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 16px;
+    margin-bottom: 24px;
+  }
+  .stat-card {
+    background: var(--card-bg);
+    border-radius: var(--radius-lg);
+    padding: 20px 22px;
+    box-shadow: var(--card-shadow);
+  }
+  .stat-label { font-size: 11.5px; font-weight: 600; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.6px; }
+  .stat-value { font-size: 30px; font-weight: 700; color: var(--text-primary); margin: 6px 0 4px; line-height: 1; }
+  .stat-change { font-size: 12px; color: var(--success); font-weight: 500; }
+  .stat-change.down { color: var(--danger); }
+  .stat-icon {
+    width: 36px; height: 36px;
+    border-radius: 8px;
+    display: flex; align-items: center; justify-content: center;
+    margin-bottom: 14px;
+    font-size: 18px;
+  }
+  .stat-icon.orange { background: rgba(217,95,43,0.12); color: var(--orange); }
+  .stat-icon.green { background: var(--success-bg); color: var(--success); }
+  .stat-icon.blue { background: var(--info-bg); color: var(--info); }
+  .stat-icon.yellow { background: var(--warning-bg); color: var(--warning); }
+
+  /* ── CHART AREA ── */
+  .charts-row { display: grid; grid-template-columns: 1.6fr 1fr; gap: 20px; margin-bottom: 24px; }
+
+  /* Line chart */
+  .line-chart-container { height: 200px; position: relative; padding: 0 0 30px 45px; }
+  .line-chart-svg { width: 100%; height: 170px; }
+  .chart-x-labels {
+    display: flex;
+    justify-content: space-between;
+    padding: 0 0 0 0;
+    font-size: 11px;
+    color: var(--text-muted);
+    margin-top: 4px;
+  }
+  .chart-y-labels {
+    position: absolute;
+    left: 0;
+    top: 0;
+    height: 170px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    font-size: 11px;
+    color: var(--text-muted);
+    text-align: right;
+    width: 40px;
+  }
+
+  /* Bar chart */
+  .bar-chart { padding: 8px 0; }
+  .bar-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 14px;
+  }
+  .bar-label { font-size: 12px; font-weight: 500; color: var(--text-secondary); width: 90px; flex-shrink: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .bar-track { flex: 1; background: var(--bg); border-radius: 4px; height: 24px; overflow: hidden; }
+  .bar-fill {
+    height: 100%;
+    border-radius: 4px;
+    background: var(--orange);
+    display: flex;
+    align-items: center;
+    padding-left: 8px;
+    font-size: 11px;
+    font-weight: 600;
+    color: #fff;
+    transition: width 0.5s;
+    white-space: nowrap;
+    min-width: 28px;
+  }
+  .bar-count { font-size: 12px; font-weight: 600; color: var(--text-primary); width: 28px; text-align: right; flex-shrink: 0; }
+
+  /* ── TABLE ── */
+  .table-wrapper { overflow-x: auto; }
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13px;
+  }
+  thead th {
+    padding: 11px 14px;
+    text-align: left;
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.6px;
+    border-bottom: 2px solid var(--border);
+    white-space: nowrap;
+    background: #faf9f6;
+  }
+  thead th:first-child { border-radius: var(--radius-sm) 0 0 0; }
+  thead th:last-child { border-radius: 0 var(--radius-sm) 0 0; }
+  tbody tr { border-bottom: 1px solid #f0ede7; transition: background 0.12s; }
+  tbody tr:last-child { border-bottom: none; }
+  tbody tr:hover { background: #faf9f6; }
+  tbody td { padding: 12px 14px; color: var(--text-primary); vertical-align: middle; }
+  .td-name { font-weight: 600; }
+  .td-meta { font-size: 11.5px; color: var(--text-muted); margin-top: 2px; }
+
+  /* ── ORDERS TAB ── */
+  .orders-toolbar {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 20px;
+    flex-wrap: wrap;
+  }
+  .filter-tabs { display: flex; gap: 4px; flex-wrap: wrap; }
+  .filter-tab {
+    padding: 7px 16px;
+    border-radius: 20px;
+    font-size: 12.5px;
+    font-weight: 600;
+    cursor: pointer;
+    border: 1.5px solid var(--border);
+    background: transparent;
+    color: var(--text-secondary);
+    font-family: 'DM Sans', sans-serif;
+    transition: all 0.15s;
+  }
+  .filter-tab:hover { border-color: var(--orange); color: var(--orange); }
+  .filter-tab.active { background: var(--orange); color: #fff; border-color: var(--orange); }
+  .search-box {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: var(--card-bg);
+    border: 1.5px solid var(--border);
+    border-radius: var(--radius-sm);
+    padding: 8px 14px;
+    flex: 1;
+    min-width: 200px;
+    max-width: 320px;
+  }
+  .search-box input {
+    border: none;
+    background: transparent;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 13.5px;
+    color: var(--text-primary);
+    outline: none;
+    flex: 1;
+    width: 100%;
+  }
+  .search-box input::placeholder { color: var(--text-muted); }
+  .ml-auto { margin-left: auto; }
+
+  /* Modal */
+  .modal-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.45);
+    z-index: 1000;
+    align-items: center;
+    justify-content: center;
+  }
+  .modal-overlay.open { display: flex; }
+  .modal {
+    background: #fff;
+    border-radius: var(--radius-lg);
+    padding: 28px 32px;
+    max-width: 440px;
+    width: 90%;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.2);
+    animation: modalIn 0.2s ease;
+  }
+  @keyframes modalIn { from { transform: scale(0.95); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+  .modal-title { font-size: 17px; font-weight: 700; margin-bottom: 10px; }
+  .modal-body { font-size: 13.5px; color: var(--text-secondary); line-height: 1.6; margin-bottom: 24px; }
+  .modal-actions { display: flex; gap: 10px; justify-content: flex-end; }
+
+  /* Toast */
+  .toast-container {
+    position: fixed;
+    bottom: 28px;
+    right: 28px;
+    z-index: 2000;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+  .toast {
+    background: #1a1a1a;
+    color: #fff;
+    padding: 12px 20px;
+    border-radius: var(--radius);
+    font-size: 13.5px;
+    font-weight: 500;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.2);
+    animation: toastIn 0.2s ease;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    max-width: 320px;
+  }
+  .toast.success { border-left: 4px solid var(--success); }
+  .toast.info { border-left: 4px solid var(--info); }
+  .toast.danger { border-left: 4px solid var(--danger); }
+  @keyframes toastIn { from { transform: translateX(30px); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+
+  /* Utility */
+  .flex { display: flex; }
+  .flex-center { display: flex; align-items: center; }
+  .gap-8 { gap: 8px; }
+  .gap-12 { gap: 12px; }
+  .text-muted { color: var(--text-muted); font-size: 12px; }
+  .font-mono { font-family: 'Courier New', monospace; font-size: 12px; letter-spacing: 0.5px; }
+
+  /* Divider */
+  hr { border: none; border-top: 1px solid var(--border); margin: 20px 0; }
+
+  /* Scrollbar */
+  ::-webkit-scrollbar { width: 6px; height: 6px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: #ccc9c3; border-radius: 3px; }
+  ::-webkit-scrollbar-thumb:hover { background: #aaa; }
+</style>
+</head>
+<body>
+
+<!-- SIDEBAR -->
+<aside class="sidebar">
+  <div class="sidebar-logo">
+    <div class="logo-text">Game Connection</div>
+    <div class="logo-sub">B2B ORGANIZER PORTAL</div>
+  </div>
+
+  <div class="sidebar-section">
+    <div class="sidebar-section-label">Dashboard</div>
+    <a class="sidebar-item" href="#">
+      <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+      Overview
+    </a>
+    <a class="sidebar-item" href="#">
+      <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+      Attendees
+    </a>
+  </div>
+
+  <div class="sidebar-section">
+    <div class="sidebar-section-label">Event</div>
+    <a class="sidebar-item" href="#">
+      <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+      Schedule
+    </a>
+    <a class="sidebar-item" href="#">
+      <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+      Venue & Logistics
+    </a>
+    <a class="sidebar-item active" href="#">
+      <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M20 12V22H4V12"/><path d="M22 7H2v5h20V7z"/><path d="M12 22V7"/><path d="M12 7H7.5a2.5 2.5 0 0 1 0-5C11 2 12 7 12 7z"/><path d="M12 7h4.5a2.5 2.5 0 0 0 0-5C13 2 12 7 12 7z"/></svg>
+      Paid Ticketing
+    </a>
+    <a class="sidebar-item" href="#">
+      <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
+      Matchmaking
+    </a>
+  </div>
+
+  <div class="sidebar-section">
+    <div class="sidebar-section-label">Finance</div>
+    <a class="sidebar-item" href="#">
+      <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+      Revenue
+    </a>
+    <a class="sidebar-item" href="#">
+      <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+      Invoices
+    </a>
+  </div>
+
+  <div class="sidebar-section">
+    <div class="sidebar-section-label">Settings</div>
+    <a class="sidebar-item" href="#">
+      <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+      Settings
+    </a>
+  </div>
+
+  <div class="sidebar-bottom">
+    <div class="user-info">
+      <div class="user-avatar">QQ</div>
+      <div>
+        <div class="user-name">Qiang Qiang</div>
+        <div class="user-role">Event Organizer</div>
+      </div>
+    </div>
+  </div>
+</aside>
+
+<!-- MAIN -->
+<main class="main">
+  <div class="page-header">
+    <div>
+      <div class="page-title">Paid Ticketing</div>
+      <div class="page-subtitle">Manage ticket types, track sales, and handle orders</div>
+    </div>
+    <div style="display:flex;align-items:center;gap:10px;">
+      <span class="event-badge">🎮 Game Connection 2025</span>
+      <span style="font-size:12px;color:var(--text-muted);">Nice, France · June 18-20</span>
+    </div>
+  </div>
+
+  <!-- TABS -->
+  <div class="tab-nav">
+    <button class="tab-btn active" onclick="switchTab('ticket-types', this)">🎟 Ticket Types</button>
+    <button class="tab-btn" onclick="switchTab('sales-overview', this)">📊 Sales Overview</button>
+    <button class="tab-btn" onclick="switchTab('orders', this)">📋 Orders</button>
+  </div>
+
+  <!-- ====== TAB 1: TICKET TYPES ====== -->
+  <div id="ticket-types" class="tab-pane active">
+
+    <div class="ticket-grid" id="ticketGrid">
+
+      <!-- Early Bird -->
+      <div class="ticket-card" id="tc-earlybird">
+        <div class="ticket-card-header">
+          <div>
+            <div class="ticket-name">Early Bird</div>
+            <div class="text-muted" style="margin-top:3px;">🗓 Sale ends Mar 31</div>
+          </div>
+          <span class="badge badge-active">Active</span>
+        </div>
+        <div class="ticket-price">€99 <span>/ ticket</span></div>
+        <div class="ticket-stats">
+          <div class="ticket-stat">
+            <div class="ticket-stat-label">Inventory</div>
+            <div class="ticket-stat-value">50</div>
+          </div>
+          <div class="ticket-stat">
+            <div class="ticket-stat-label">Sold</div>
+            <div class="ticket-stat-value" style="color:var(--orange)">23</div>
+          </div>
+          <div class="ticket-stat">
+            <div class="ticket-stat-label">Remaining</div>
+            <div class="ticket-stat-value">27</div>
+          </div>
+          <div class="ticket-stat">
+            <div class="ticket-stat-label">Revenue</div>
+            <div class="ticket-stat-value" style="font-size:15px">€2,277</div>
+          </div>
+        </div>
+        <div class="ticket-progress">
+          <div class="ticket-progress-fill" style="width:46%"></div>
+        </div>
+        <div style="font-size:11px;color:var(--text-muted);margin-bottom:14px;">46% sold · 27 remaining</div>
+        <div class="ticket-card-footer">
+          <div class="ticket-actions">
+            <button class="btn-icon" title="Edit" onclick="editTicket('earlybird')">
+              <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+            </button>
+            <button class="btn-icon" title="Pause" onclick="pauseTicket(this)">
+              <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/></svg>
+            </button>
+            <button class="btn-icon danger" title="Delete" onclick="deleteTicket('earlybird', 'Early Bird')">
+              <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4h6v2"/></svg>
+            </button>
+          </div>
+          <span style="font-size:11px;color:var(--text-muted);">No approval needed</span>
+        </div>
+      </div>
+
+      <!-- Standard -->
+      <div class="ticket-card" id="tc-standard">
+        <div class="ticket-card-header">
+          <div>
+            <div class="ticket-name">Standard</div>
+            <div class="text-muted" style="margin-top:3px;">🗓 Sale ends Jun 10</div>
+          </div>
+          <span class="badge badge-active">Active</span>
+        </div>
+        <div class="ticket-price">€149 <span>/ ticket</span></div>
+        <div class="ticket-stats">
+          <div class="ticket-stat">
+            <div class="ticket-stat-label">Inventory</div>
+            <div class="ticket-stat-value">200</div>
+          </div>
+          <div class="ticket-stat">
+            <div class="ticket-stat-label">Sold</div>
+            <div class="ticket-stat-value" style="color:var(--orange)">67</div>
+          </div>
+          <div class="ticket-stat">
+            <div class="ticket-stat-label">Remaining</div>
+            <div class="ticket-stat-value">133</div>
+          </div>
+          <div class="ticket-stat">
+            <div class="ticket-stat-label">Revenue</div>
+            <div class="ticket-stat-value" style="font-size:15px">€9,983</div>
+          </div>
+        </div>
+        <div class="ticket-progress">
+          <div class="ticket-progress-fill" style="width:33.5%"></div>
+        </div>
+        <div style="font-size:11px;color:var(--text-muted);margin-bottom:14px;">33.5% sold · 133 remaining</div>
+        <div class="ticket-card-footer">
+          <div class="ticket-actions">
+            <button class="btn-icon" title="Edit" onclick="editTicket('standard')">
+              <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+            </button>
+            <button class="btn-icon" title="Pause" onclick="pauseTicket(this)">
+              <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/></svg>
+            </button>
+            <button class="btn-icon danger" title="Delete" onclick="deleteTicket('standard', 'Standard')">
+              <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4h6v2"/></svg>
+            </button>
+          </div>
+          <span style="font-size:11px;color:var(--text-muted);">No approval needed</span>
+        </div>
+      </div>
+
+      <!-- VIP -->
+      <div class="ticket-card" id="tc-vip">
+        <div class="ticket-card-header">
+          <div>
+            <div class="ticket-name">VIP</div>
+            <div class="text-muted" style="margin-top:3px;">🗓 Sale ends May 31</div>
+          </div>
+          <span class="badge badge-active">Active</span>
+        </div>
+        <div class="ticket-price">€299 <span>/ ticket</span></div>
+        <div class="ticket-stats">
+          <div class="ticket-stat">
+            <div class="ticket-stat-label">Inventory</div>
+            <div class="ticket-stat-value">20</div>
+          </div>
+          <div class="ticket-stat">
+            <div class="ticket-stat-label">Sold</div>
+            <div class="ticket-stat-value" style="color:var(--orange)">8</div>
+          </div>
+          <div class="ticket-stat">
+            <div class="ticket-stat-label">Remaining</div>
+            <div class="ticket-stat-value">12</div>
+          </div>
+          <div class="ticket-stat">
+            <div class="ticket-stat-label">Revenue</div>
+            <div class="ticket-stat-value" style="font-size:15px">€2,392</div>
+          </div>
+        </div>
+        <div class="ticket-progress">
+          <div class="ticket-progress-fill" style="width:40%"></div>
+        </div>
+        <div style="font-size:11px;color:var(--text-muted);margin-bottom:14px;">40% sold · 12 remaining</div>
+        <div class="ticket-card-footer">
+          <div class="ticket-actions">
+            <button class="btn-icon" title="Edit" onclick="editTicket('vip')">
+              <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+            </button>
+            <button class="btn-icon" title="Pause" onclick="pauseTicket(this)">
+              <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/></svg>
+            </button>
+            <button class="btn-icon danger" title="Delete" onclick="deleteTicket('vip', 'VIP')">
+              <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4h6v2"/></svg>
+            </button>
+          </div>
+          <span style="font-size:11px;color:var(--orange);font-weight:600;">⚡ Approval required</span>
+        </div>
+      </div>
+
+      <!-- Industry Pro -->
+      <div class="ticket-card draft" id="tc-industrypro">
+        <div class="ticket-card-header">
+          <div>
+            <div class="ticket-name">Industry Pro</div>
+            <div class="text-muted" style="margin-top:3px;">🗓 Not published yet</div>
+          </div>
+          <span class="badge badge-draft">Draft</span>
+        </div>
+        <div class="ticket-price" style="color:var(--draft-color)">€199 <span>/ ticket</span></div>
+        <div class="ticket-stats">
+          <div class="ticket-stat">
+            <div class="ticket-stat-label">Inventory</div>
+            <div class="ticket-stat-value">100</div>
+          </div>
+          <div class="ticket-stat">
+            <div class="ticket-stat-label">Sold</div>
+            <div class="ticket-stat-value">0</div>
+          </div>
+          <div class="ticket-stat">
+            <div class="ticket-stat-label">Remaining</div>
+            <div class="ticket-stat-value">100</div>
+          </div>
+          <div class="ticket-stat">
+            <div class="ticket-stat-label">Revenue</div>
+            <div class="ticket-stat-value" style="font-size:15px">€0</div>
+          </div>
+        </div>
+        <div class="ticket-progress">
+          <div class="ticket-progress-fill" style="width:0%;background:var(--draft-color)"></div>
+        </div>
+        <div style="font-size:11px;color:var(--text-muted);margin-bottom:14px;">0% sold · Draft — not yet live</div>
+        <div class="ticket-card-footer">
+          <div class="ticket-actions">
+            <button class="btn-icon" title="Edit" onclick="editTicket('industrypro')">
+              <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+            </button>
+            <button class="btn btn-sm btn-primary" onclick="publishTicket(this)">Publish</button>
+            <button class="btn-icon danger" title="Delete" onclick="deleteTicket('industrypro', 'Industry Pro')">
+              <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4h6v2"/></svg>
+            </button>
+          </div>
+          <span style="font-size:11px;color:var(--orange);font-weight:600;">⚡ Approval required</span>
+        </div>
+      </div>
+
+    </div><!-- /ticketGrid -->
+
+    <!-- ADD TICKET FORM -->
+    <div class="add-form-wrapper">
+      <button class="add-form-toggle" id="addFormToggle" onclick="toggleAddForm()">
+        <span class="toggle-icon">+</span>
+        Add New Ticket Type
+      </button>
+      <div class="add-form-body" id="addFormBody">
+        <div class="form-grid">
+          <div class="form-group">
+            <label class="form-label">Ticket Name *</label>
+            <input type="text" class="form-control" id="newName" placeholder="e.g. Premium Pass">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Price *</label>
+            <div class="form-control-group">
+              <input type="number" class="form-control" id="newPrice" placeholder="0.00">
+              <select class="form-control" id="newCurrency">
+                <option>EUR</option>
+                <option>USD</option>
+                <option>GBP</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Inventory</label>
+            <div class="radio-group">
+              <label class="radio-option">
+                <input type="radio" name="inventory" value="unlimited" onchange="toggleInventory(this)"> Unlimited
+              </label>
+              <label class="radio-option">
+                <input type="radio" name="inventory" value="limited" onchange="toggleInventory(this)" checked> Limited
+              </label>
+            </div>
+          </div>
+          <div class="form-group" id="inventoryField">
+            <label class="form-label">Quantity *</label>
+            <input type="number" class="form-control" id="newQty" placeholder="e.g. 100">
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Sale Start Date</label>
+            <input type="date" class="form-control" id="newStart">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Sale End Date</label>
+            <input type="date" class="form-control" id="newEnd">
+          </div>
+
+          <div class="form-group full">
+            <label class="form-label">Description / Benefits</label>
+            <textarea class="form-control" id="newDesc" placeholder="Describe what's included with this ticket type: access to sessions, networking events, meals, etc."></textarea>
+          </div>
+
+          <div class="form-group full">
+            <label class="form-label">Approval Required</label>
+            <label class="toggle-switch">
+              <label class="switch">
+                <input type="checkbox" id="newApproval">
+                <span class="slider"></span>
+              </label>
+              <span id="approvalLabel">Purchasers do not need manual approval</span>
+            </label>
+          </div>
+        </div>
+        <div class="form-actions">
+          <button class="btn btn-secondary" onclick="toggleAddForm()">Cancel</button>
+          <button class="btn btn-secondary" onclick="saveTicketDraft()">Save as Draft</button>
+          <button class="btn btn-primary" onclick="saveTicket()">
+            <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>
+            Publish Ticket
+          </button>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- /ticket-types -->
+
+
+  <!-- ====== TAB 2: SALES OVERVIEW ====== -->
+  <div id="sales-overview" class="tab-pane">
+
+    <!-- Stats -->
+    <div class="stats-grid">
+      <div class="stat-card">
+        <div class="stat-icon orange">💰</div>
+        <div class="stat-label">Total Revenue</div>
+        <div class="stat-value">€18,450</div>
+        <div class="stat-change">↑ +€3,200 this week</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon green">🎟</div>
+        <div class="stat-label">Tickets Sold</div>
+        <div class="stat-value">98</div>
+        <div class="stat-change">↑ +12 this week</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon blue">📦</div>
+        <div class="stat-label">Remaining Inventory</div>
+        <div class="stat-value">272</div>
+        <div class="stat-change" style="color:var(--text-muted)">Out of 370 total</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon yellow">📈</div>
+        <div class="stat-label">Conversion Rate</div>
+        <div class="stat-value">34%</div>
+        <div class="stat-change">↑ +2.4% vs last week</div>
+      </div>
+    </div>
+
+    <!-- Charts Row -->
+    <div class="charts-row">
+
+      <!-- Line Chart -->
+      <div class="card">
+        <div class="card-header">
+          <div>
+            <div class="card-title">Revenue Over Time</div>
+            <div class="card-subtitle">Daily revenue — last 14 days</div>
+          </div>
+          <select class="form-control" style="width:auto;font-size:12px;padding:6px 10px;">
+            <option>Last 14 days</option>
+            <option>Last 30 days</option>
+            <option>This month</option>
+          </select>
+        </div>
+        <div class="line-chart-container">
+          <div class="chart-y-labels">
+            <span>€2k</span>
+            <span>€1.5k</span>
+            <span>€1k</span>
+            <span>€0.5k</span>
+            <span>€0</span>
+          </div>
+          <svg class="line-chart-svg" viewBox="0 0 600 160" preserveAspectRatio="none">
+            <!-- Grid lines -->
+            <line x1="0" y1="0" x2="600" y2="0" stroke="#f0ede7" stroke-width="1"/>
+            <line x1="0" y1="40" x2="600" y2="40" stroke="#f0ede7" stroke-width="1"/>
+            <line x1="0" y1="80" x2="600" y2="80" stroke="#f0ede7" stroke-width="1"/>
+            <line x1="0" y1="120" x2="600" y2="120" stroke="#f0ede7" stroke-width="1"/>
+            <line x1="0" y1="160" x2="600" y2="160" stroke="#f0ede7" stroke-width="1"/>
+            <!-- Area fill -->
+            <defs>
+              <linearGradient id="areaGrad" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0%" stop-color="#d95f2b" stop-opacity="0.15"/>
+                <stop offset="100%" stop-color="#d95f2b" stop-opacity="0"/>
+              </linearGradient>
+            </defs>
+            <path d="M0,140 L43,130 L86,120 L129,100 L172,108 L215,90 L258,75 L301,82 L344,60 L387,45 L430,50 L473,35 L516,28 L559,20 L600,15 L600,160 L0,160 Z" fill="url(#areaGrad)"/>
+            <!-- Line -->
+            <polyline points="0,140 43,130 86,120 129,100 172,108 215,90 258,75 301,82 344,60 387,45 430,50 473,35 516,28 559,20 600,15"
+              fill="none" stroke="#d95f2b" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round"/>
+            <!-- Dots -->
+            <circle cx="43" cy="130" r="3.5" fill="#d95f2b"/>
+            <circle cx="129" cy="100" r="3.5" fill="#d95f2b"/>
+            <circle cx="215" cy="90" r="3.5" fill="#d95f2b"/>
+            <circle cx="344" cy="60" r="3.5" fill="#d95f2b"/>
+            <circle cx="473" cy="35" r="3.5" fill="#d95f2b"/>
+            <circle cx="600" cy="15" r="4.5" fill="#d95f2b" stroke="#fff" stroke-width="2"/>
+          </svg>
+          <div class="chart-x-labels">
+            <span>Mar 10</span>
+            <span>Mar 12</span>
+            <span>Mar 14</span>
+            <span>Mar 16</span>
+            <span>Mar 18</span>
+            <span>Mar 20</span>
+            <span>Mar 22</span>
+            <span>Today</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Bar Chart -->
+      <div class="card">
+        <div class="card-header">
+          <div>
+            <div class="card-title">Sales by Ticket Type</div>
+            <div class="card-subtitle">Units sold comparison</div>
+          </div>
+        </div>
+        <div class="bar-chart">
+          <div class="bar-row">
+            <div class="bar-label">Standard</div>
+            <div class="bar-track">
+              <div class="bar-fill" style="width:68%">67</div>
+            </div>
+            <div class="bar-count">67</div>
+          </div>
+          <div class="bar-row">
+            <div class="bar-label">Early Bird</div>
+            <div class="bar-track">
+              <div class="bar-fill" style="width:23%;background:#e8843f">23</div>
+            </div>
+            <div class="bar-count">23</div>
+          </div>
+          <div class="bar-row">
+            <div class="bar-label">VIP</div>
+            <div class="bar-track">
+              <div class="bar-fill" style="width:8%;background:#f0a070">8</div>
+            </div>
+            <div class="bar-count">8</div>
+          </div>
+          <div class="bar-row">
+            <div class="bar-label">Industry Pro</div>
+            <div class="bar-track">
+              <div class="bar-fill" style="width:0%;background:#ccc;min-width:0"></div>
+            </div>
+            <div class="bar-count" style="color:var(--text-muted)">0</div>
+          </div>
+        </div>
+        <hr>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+          <div style="text-align:center;padding:10px 0;background:#faf9f6;border-radius:8px;">
+            <div style="font-size:10px;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.6px;font-weight:600;">Avg. Ticket Price</div>
+            <div style="font-size:20px;font-weight:700;color:var(--orange);margin-top:4px;">€188</div>
+          </div>
+          <div style="text-align:center;padding:10px 0;background:#faf9f6;border-radius:8px;">
+            <div style="font-size:10px;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.6px;font-weight:600;">Top Seller</div>
+            <div style="font-size:15px;font-weight:700;margin-top:4px;">Standard</div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Recent Purchases Table -->
+    <div class="card">
+      <div class="card-header">
+        <div>
+          <div class="card-title">Recent Purchases</div>
+          <div class="card-subtitle">Latest 10 ticket purchases</div>
+        </div>
+        <button class="btn btn-secondary btn-sm" onclick="exportCSV()">
+          <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+          Export
+        </button>
+      </div>
+      <div class="table-wrapper">
+        <table>
+          <thead>
+            <tr>
+              <th>Name</th>
+              <th>Ticket Type</th>
+              <th>Amount</th>
+              <th>Purchase Time</th>
+              <th>Status</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr><td><div class="td-name">Alexandre Dupont</div><div class="td-meta">a.dupont@ubisoft.com</div></td><td>Standard</td><td><strong>€149</strong></td><td>Mar 23, 14:32</td><td><span class="badge badge-paid">Paid</span></td></tr>
+            <tr><td><div class="td-name">Sarah Mitchell</div><div class="td-meta">s.mitchell@ea.com</div></td><td>VIP</td><td><strong>€299</strong></td><td>Mar 23, 12:17</td><td><span class="badge badge-paid">Paid</span></td></tr>
+            <tr><td><div class="td-name">Lucas Fernandez</div><div class="td-meta">l.fernandez@konami.eu</div></td><td>Early Bird</td><td><strong>€99</strong></td><td>Mar 23, 11:05</td><td><span class="badge badge-paid">Paid</span></td></tr>
+            <tr><td><div class="td-name">Yuki Tanaka</div><div class="td-meta">y.tanaka@square-enix.com</div></td><td>Standard</td><td><strong>€149</strong></td><td>Mar 22, 18:44</td><td><span class="badge badge-paid">Paid</span></td></tr>
+            <tr><td><div class="td-name">Maria Kowalski</div><div class="td-meta">m.kowalski@cdprojekt.com</div></td><td>VIP</td><td><strong>€299</strong></td><td>Mar 22, 15:20</td><td><span class="badge badge-pending">Pending</span></td></tr>
+            <tr><td><div class="td-name">Thibault Moreau</div><div class="td-meta">t.moreau@focus-home.com</div></td><td>Standard</td><td><strong>€149</strong></td><td>Mar 22, 10:38</td><td><span class="badge badge-paid">Paid</span></td></tr>
+            <tr><td><div class="td-name">James O'Brien</div><div class="td-meta">j.obrien@deep-silver.com</div></td><td>Early Bird</td><td><strong>€99</strong></td><td>Mar 21, 16:55</td><td><span class="badge badge-paid">Paid</span></td></tr>
+            <tr><td><div class="td-name">Nina Petrov</div><div class="td-meta">n.petrov@4a-games.com</div></td><td>Standard</td><td><strong>€149</strong></td><td>Mar 21, 14:12</td><td><span class="badge badge-refunded">Refunded</span></td></tr>
+            <tr><td><div class="td-name">Chen Wei</div><div class="td-meta">c.wei@netease-games.com</div></td><td>VIP</td><td><strong>€299</strong></td><td>Mar 21, 09:30</td><td><span class="badge badge-paid">Paid</span></td></tr>
+            <tr><td><div class="td-name">Emma Larsson</div><div class="td-meta">e.larsson@paradox.com</div></td><td>Standard</td><td><strong>€149</strong></td><td>Mar 20, 17:48</td><td><span class="badge badge-paid">Paid</span></td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+  </div><!-- /sales-overview -->
+
+
+  <!-- ====== TAB 3: ORDERS ====== -->
+  <div id="orders" class="tab-pane">
+
+    <div class="orders-toolbar">
+      <div class="filter-tabs">
+        <button class="filter-tab active" onclick="filterOrders('all', this)">All <span style="margin-left:4px;background:rgba(0,0,0,0.1);padding:1px 7px;border-radius:10px;font-size:11px;">24</span></button>
+        <button class="filter-tab" onclick="filterOrders('paid', this)">Paid <span style="margin-left:4px;background:rgba(0,0,0,0.1);padding:1px 7px;border-radius:10px;font-size:11px;">18</span></button>
+        <button class="filter-tab" onclick="filterOrders('pending', this)">Pending <span style="margin-left:4px;background:rgba(0,0,0,0.1);padding:1px 7px;border-radius:10px;font-size:11px;">3</span></button>
+        <button class="filter-tab" onclick="filterOrders('refunded', this)">Refunded <span style="margin-left:4px;background:rgba(0,0,0,0.1);padding:1px 7px;border-radius:10px;font-size:11px;">2</span></button>
+        <button class="filter-tab" onclick="filterOrders('cancelled', this)">Cancelled <span style="margin-left:4px;background:rgba(0,0,0,0.1);padding:1px 7px;border-radius:10px;font-size:11px;">1</span></button>
+      </div>
+      <div class="search-box">
+        <svg width="14" height="14" fill="none" stroke="#999" stroke-width="2" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+        <input type="text" id="orderSearch" placeholder="Search by name, order ID, email..." oninput="searchOrders(this.value)">
+      </div>
+      <button class="btn btn-secondary btn-sm ml-auto" onclick="exportCSV()">
+        <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+        Export CSV
+      </button>
+    </div>
+
+    <div class="card" style="padding:0;overflow:hidden;">
+      <div class="table-wrapper">
+        <table id="ordersTable">
+          <thead>
+            <tr>
+              <th>Order #</th>
+              <th>Buyer</th>
+              <th>Ticket Type</th>
+              <th>Qty</th>
+              <th>Amount</th>
+              <th>Purchase Time</th>
+              <th>Status</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody id="ordersBody">
+            <!-- filled by JS -->
+          </tbody>
+        </table>
+      </div>
+      <div style="padding:16px 20px;border-top:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;">
+        <span style="font-size:12.5px;color:var(--text-muted);" id="orderCount">Showing 24 orders</span>
+        <div style="display:flex;gap:6px;">
+          <button class="btn btn-secondary btn-sm" onclick="showToast('← Previous page', 'info')">← Prev</button>
+          <button class="btn btn-sm btn-primary">1</button>
+          <button class="btn btn-secondary btn-sm" onclick="showToast('Page 2 coming soon', 'info')">2</button>
+          <button class="btn btn-secondary btn-sm" onclick="showToast('Next page →', 'info')">Next →</button>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- /orders -->
+
+</main><!-- /main -->
+
+<!-- DELETE CONFIRM MODAL -->
+<div class="modal-overlay" id="deleteModal">
+  <div class="modal">
+    <div class="modal-title">🗑 Delete Ticket Type</div>
+    <div class="modal-body" id="deleteModalBody">Are you sure you want to delete this ticket type? This action cannot be undone.</div>
+    <div class="modal-actions">
+      <button class="btn btn-secondary" onclick="closeModal('deleteModal')">Cancel</button>
+      <button class="btn btn-danger" id="confirmDeleteBtn">Delete</button>
+    </div>
+  </div>
+</div>
+
+<!-- REFUND CONFIRM MODAL -->
+<div class="modal-overlay" id="refundModal">
+  <div class="modal">
+    <div class="modal-title">↩ Process Refund</div>
+    <div class="modal-body" id="refundModalBody">Are you sure you want to refund this order? The amount will be returned to the buyer within 3–5 business days.</div>
+    <div class="modal-actions">
+      <button class="btn btn-secondary" onclick="closeModal('refundModal')">Cancel</button>
+      <button class="btn" style="background:#1a6fb5;color:#fff;" id="confirmRefundBtn">Process Refund</button>
+    </div>
+  </div>
+</div>
+
+<!-- TOAST CONTAINER -->
+<div class="toast-container" id="toastContainer"></div>
+
+<script>
+// ── TAB SWITCHING ──────────────────────────────────────────
+function switchTab(id, btn) {
+  document.querySelectorAll('.tab-pane').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  btn.classList.add('active');
+}
+
+// ── ADD FORM TOGGLE ────────────────────────────────────────
+function toggleAddForm() {
+  const body = document.getElementById('addFormBody');
+  const toggle = document.getElementById('addFormToggle');
+  const isOpen = body.classList.contains('open');
+  body.classList.toggle('open');
+  toggle.classList.toggle('open');
+}
+
+function toggleInventory(radio) {
+  document.getElementById('inventoryField').style.display = radio.value === 'unlimited' ? 'none' : 'flex';
+}
+
+document.getElementById('newApproval').addEventListener('change', function() {
+  document.getElementById('approvalLabel').textContent = this.checked
+    ? 'Each purchase requires manual approval by organizer'
+    : 'Purchasers do not need manual approval';
+});
+
+// ── SAVE TICKET ────────────────────────────────────────────
+function saveTicket(draft = false) {
+  const name = document.getElementById('newName').value.trim();
+  const price = document.getElementById('newPrice').value.trim();
+  const currency = document.getElementById('newCurrency').value;
+  if (!name || !price) { showToast('Please fill in ticket name and price', 'danger'); return; }
+  showToast(draft ? `"${name}" saved as draft` : `"${name}" published successfully! 🎟`, 'success');
+  toggleAddForm();
+  document.getElementById('newName').value = '';
+  document.getElementById('newPrice').value = '';
+  document.getElementById('newDesc').value = '';
+}
+function saveTicketDraft() { saveTicket(true); }
+
+// ── TICKET ACTIONS ─────────────────────────────────────────
+function editTicket(id) {
+  showToast('Opening edit panel for this ticket type…', 'info');
+}
+
+function pauseTicket(btn) {
+  const card = btn.closest('.ticket-card');
+  const badge = card.querySelector('.badge');
+  if (badge.classList.contains('badge-active')) {
+    badge.className = 'badge badge-paused';
+    badge.lastChild.textContent && (badge.textContent = '');
+    badge.innerHTML = 'Paused';
+    badge.classList.add('badge-paused');
+    showToast('Ticket type paused — sales halted', 'info');
+  } else {
+    badge.className = 'badge badge-active';
+    badge.textContent = 'Active';
+    showToast('Ticket type resumed — now on sale', 'success');
+  }
+}
+
+let pendingDeleteId = null;
+function deleteTicket(id, name) {
+  pendingDeleteId = id;
+  document.getElementById('deleteModalBody').textContent =
+    `Are you sure you want to delete "${name}"? This action cannot be undone.`;
+  document.getElementById('deleteModal').classList.add('open');
+  document.getElementById('confirmDeleteBtn').onclick = function() {
+    const card = document.getElementById('tc-' + pendingDeleteId.toLowerCase().replace(' ', ''));
+    if (card) card.remove();
+    closeModal('deleteModal');
+    showToast(`Ticket type deleted`, 'danger');
+  };
+}
+
+function publishTicket(btn) {
+  const card = btn.closest('.ticket-card');
+  const badge = card.querySelector('.badge');
+  badge.className = 'badge badge-active';
+  badge.textContent = 'Active';
+  card.classList.remove('draft');
+  card.querySelector('.ticket-price').style.color = 'var(--orange)';
+  card.querySelector('.ticket-progress-fill').style.background = 'var(--orange)';
+  btn.remove();
+  showToast('Industry Pro ticket is now live! 🚀', 'success');
+}
+
+// ── ORDERS DATA ────────────────────────────────────────────
+const ordersData = [
+  { id: 'GC-2025-001', buyer: 'Alexandre Dupont', email: 'a.dupont@ubisoft.com', type: 'Standard', qty: 1, amount: 149, time: 'Mar 23, 14:32', status: 'paid' },
+  { id: 'GC-2025-002', buyer: 'Sarah Mitchell', email: 's.mitchell@ea.com', type: 'VIP', qty: 1, amount: 299, time: 'Mar 23, 12:17', status: 'paid' },
+  { id: 'GC-2025-003', buyer: 'Lucas Fernandez', email: 'l.fernandez@konami.eu', type: 'Early Bird', qty: 2, amount: 198, time: 'Mar 23, 11:05', status: 'paid' },
+  { id: 'GC-2025-004', buyer: 'Yuki Tanaka', email: 'y.tanaka@square-enix.com', type: 'Standard', qty: 1, amount: 149, time: 'Mar 22, 18:44', status: 'paid' },
+  { id: 'GC-2025-005', buyer: 'Maria Kowalski', email: 'm.kowalski@cdprojekt.com', type: 'VIP', qty: 1, amount: 299, time: 'Mar 22, 15:20', status: 'pending' },
+  { id: 'GC-2025-006', buyer: 'Thibault Moreau', email: 't.moreau@focus-home.com', type: 'Standard', qty: 1, amount: 149, time: 'Mar 22, 10:38', status: 'paid' },
+  { id: 'GC-2025-007', buyer: 'James O\'Brien', email: 'j.obrien@deep-silver.com', type: 'Early Bird', qty: 1, amount: 99, time: 'Mar 21, 16:55', status: 'paid' },
+  { id: 'GC-2025-008', buyer: 'Nina Petrov', email: 'n.petrov@4a-games.com', type: 'Standard', qty: 2, amount: 298, time: 'Mar 21, 14:12', status: 'refunded' },
+  { id: 'GC-2025-009', buyer: 'Chen Wei', email: 'c.wei@netease-games.com', type: 'VIP', qty: 1, amount: 299, time: 'Mar 21, 09:30', status: 'paid' },
+  { id: 'GC-2025-010', buyer: 'Emma Larsson', email: 'e.larsson@paradox.com', type: 'Standard', qty: 1, amount: 149, time: 'Mar 20, 17:48', status: 'paid' },
+  { id: 'GC-2025-011', buyer: 'Pablo Ramos', email: 'p.ramos@gameloft.com', type: 'Early Bird', qty: 1, amount: 99, time: 'Mar 20, 15:22', status: 'paid' },
+  { id: 'GC-2025-012', buyer: 'Ingrid Svensson', email: 'i.svensson@mojang.com', type: 'Standard', qty: 3, amount: 447, time: 'Mar 20, 12:04', status: 'paid' },
+  { id: 'GC-2025-013', buyer: 'Dmitri Volkov', email: 'd.volkov@wargaming.net', type: 'VIP', qty: 1, amount: 299, time: 'Mar 19, 18:30', status: 'pending' },
+  { id: 'GC-2025-014', buyer: 'Anya Sharma', email: 'a.sharma@supercell.com', type: 'Standard', qty: 1, amount: 149, time: 'Mar 19, 14:15', status: 'paid' },
+  { id: 'GC-2025-015', buyer: 'Marco Bianchi', email: 'm.bianchi@milestone.it', type: 'Early Bird', qty: 2, amount: 198, time: 'Mar 19, 11:50', status: 'paid' },
+  { id: 'GC-2025-016', buyer: 'Céline Dubois', email: 'c.dubois@nacon.com', type: 'Standard', qty: 1, amount: 149, time: 'Mar 18, 16:40', status: 'paid' },
+  { id: 'GC-2025-017', buyer: 'Tom Hendricks', email: 't.hendricks@2k.com', type: 'VIP', qty: 1, amount: 299, time: 'Mar 18, 13:25', status: 'refunded' },
+  { id: 'GC-2025-018', buyer: 'Hana Novák', email: 'h.novak@2kczech.com', type: 'Early Bird', qty: 1, amount: 99, time: 'Mar 18, 10:08', status: 'paid' },
+  { id: 'GC-2025-019', buyer: 'Jean-Paul Girard', email: 'jp.girard@bigbengames.com', type: 'Standard', qty: 2, amount: 298, time: 'Mar 17, 17:55', status: 'paid' },
+  { id: 'GC-2025-020', buyer: 'Olga Nikitin', email: 'o.nikitin@mail.ru', type: 'Standard', qty: 1, amount: 149, time: 'Mar 17, 14:30', status: 'pending' },
+  { id: 'GC-2025-021', buyer: 'Felix Wagner', email: 'f.wagner@crytek.com', type: 'VIP', qty: 1, amount: 299, time: 'Mar 17, 11:10', status: 'paid' },
+  { id: 'GC-2025-022', buyer: 'Rosa Almeida', email: 'r.almeida@bandainamco.eu', type: 'Early Bird', qty: 1, amount: 99, time: 'Mar 16, 18:00', status: 'paid' },
+  { id: 'GC-2025-023', buyer: 'Kevin Park', email: 'k.park@nexon.com', type: 'Standard', qty: 1, amount: 149, time: 'Mar 16, 14:45', status: 'cancelled' },
+  { id: 'GC-2025-024', buyer: 'Isabelle Laurent', email: 'i.laurent@ankama.com', type: 'Standard', qty: 2, amount: 298, time: 'Mar 15, 16:20', status: 'paid' },
+];
+
+function statusBadge(status) {
+  const map = { paid: 'badge-paid', pending: 'badge-pending', refunded: 'badge-refunded', cancelled: 'badge-cancelled' };
+  const labels = { paid: 'Paid', pending: 'Pending', refunded: 'Refunded', cancelled: 'Cancelled' };
+  return `<span class="badge ${map[status]}">${labels[status]}</span>`;
+}
+
+function renderOrders(data) {
+  const tbody = document.getElementById('ordersBody');
+  tbody.innerHTML = data.map(o => `
+    <tr data-status="${o.status}" data-search="${(o.buyer + o.email + o.id + o.type).toLowerCase()}">
+      <td><span class="font-mono">${o.id}</span></td>
+      <td>
+        <div class="td-name">${o.buyer}</div>
+        <div class="td-meta">${o.email}</div>
+      </td>
+      <td>${o.type}</td>
+      <td style="text-align:center">${o.qty}</td>
+      <td><strong>€${o.amount}</strong></td>
+      <td style="color:var(--text-secondary)">${o.time}</td>
+      <td>${statusBadge(o.status)}</td>
+      <td>
+        <div style="display:flex;gap:6px;">
+          ${o.status !== 'refunded' && o.status !== 'cancelled' ? `<button class="btn btn-secondary btn-sm" onclick="openRefundModal('${o.id}', '${o.buyer}', ${o.amount})">↩ Refund</button>` : ''}
+          <button class="btn btn-secondary btn-sm" onclick="viewOrder('${o.id}')">👁 View</button>
+        </div>
+      </td>
+    </tr>
+  `).join('');
+  document.getElementById('orderCount').textContent = `Showing ${data.length} orders`;
+}
+
+renderOrders(ordersData);
+
+// ── FILTER ORDERS ──────────────────────────────────────────
+let currentFilter = 'all';
+let currentSearch = '';
+
+function applyFilters() {
+  let filtered = ordersData;
+  if (currentFilter !== 'all') filtered = filtered.filter(o => o.status === currentFilter);
+  if (currentSearch) filtered = filtered.filter(o =>
+    (o.buyer + o.email + o.id + o.type).toLowerCase().includes(currentSearch)
+  );
+  renderOrders(filtered);
+}
+
+function filterOrders(status, btn) {
+  currentFilter = status;
+  document.querySelectorAll('.filter-tab').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  applyFilters();
+}
+
+function searchOrders(val) {
+  currentSearch = val.toLowerCase();
+  applyFilters();
+}
+
+// ── REFUND MODAL ───────────────────────────────────────────
+function openRefundModal(id, buyer, amount) {
+  document.getElementById('refundModalBody').innerHTML =
+    `Refund order <strong>${id}</strong> for <strong>${buyer}</strong>?<br><br>Amount: <strong>€${amount}</strong> will be returned within 3–5 business days.`;
+  document.getElementById('refundModal').classList.add('open');
+  document.getElementById('confirmRefundBtn').onclick = function() {
+    const idx = ordersData.findIndex(o => o.id === id);
+    if (idx !== -1) ordersData[idx].status = 'refunded';
+    applyFilters();
+    closeModal('refundModal');
+    showToast(`Refund processed for ${buyer} — €${amount}`, 'info');
+  };
+}
+
+function viewOrder(id) {
+  const o = ordersData.find(x => x.id === id);
+  showToast(`Order ${id}: ${o.buyer} · ${o.type} · €${o.amount} · ${o.status}`, 'info');
+}
+
+// ── MODAL UTILS ────────────────────────────────────────────
+function closeModal(id) {
+  document.getElementById(id).classList.remove('open');
+}
+document.querySelectorAll('.modal-overlay').forEach(overlay => {
+  overlay.addEventListener('click', function(e) {
+    if (e.target === this) this.classList.remove('open');
+  });
+});
+
+// ── EXPORT CSV ─────────────────────────────────────────────
+function exportCSV() {
+  const headers = ['Order ID', 'Buyer', 'Email', 'Ticket Type', 'Qty', 'Amount (EUR)', 'Purchase Time', 'Status'];
+  const rows = ordersData.map(o => [o.id, o.buyer, o.email, o.type, o.qty, o.amount, o.time, o.status]);
+  const csv = [headers, ...rows].map(r => r.map(v => `"${v}"`).join(',')).join('\n');
+  const blob = new Blob([csv], { type: 'text/csv' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url; a.download = 'game-connection-orders.csv';
+  a.click(); URL.revokeObjectURL(url);
+  showToast('CSV exported — orders downloaded 📁', 'success');
+}
+
+// ── TOAST ──────────────────────────────────────────────────
+function showToast(msg, type = 'info') {
+  const container = document.getElementById('toastContainer');
+  const toast = document.createElement('div');
+  toast.className = `toast ${type}`;
+  const icon = { success: '✅', info: 'ℹ️', danger: '🗑' }[type] || 'ℹ️';
+  toast.innerHTML = `<span>${icon}</span><span>${msg}</span>`;
+  container.appendChild(toast);
+  setTimeout(() => { toast.style.opacity = '0'; toast.style.transform = 'translateX(30px)'; toast.style.transition = 'all 0.3s'; setTimeout(() => toast.remove(), 300); }, 3000);
+}
+
+// ── KEYBOARD ESC ───────────────────────────────────────────
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape') document.querySelectorAll('.modal-overlay.open').forEach(m => m.classList.remove('open'));
+});
+</script>
+</body>
+</html>

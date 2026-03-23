@@ -1,0 +1,2139 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Sponsorship Management — Game Connection B2B</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg: #e8e4da;
+    --primary: #d95f2b;
+    --primary-dark: #b84e22;
+    --primary-light: #f5e8e1;
+    --sidebar-bg: #1a1a2e;
+    --sidebar-text: #a8a8c0;
+    --sidebar-active: #d95f2b;
+    --card-bg: #ffffff;
+    --card-border: #e0dbd0;
+    --text-main: #1e1e2e;
+    --text-muted: #7a7a8c;
+    --gold: #f5a623;
+    --silver: #8e9aaf;
+    --bronze: #b87333;
+    --green: #27ae60;
+    --red: #e74c3c;
+    --blue: #2980b9;
+    --yellow: #f39c12;
+    --radius: 12px;
+    --shadow: 0 2px 12px rgba(0,0,0,0.08);
+    --shadow-lg: 0 8px 32px rgba(0,0,0,0.12);
+  }
+
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: var(--bg);
+    color: var(--text-main);
+    min-height: 100vh;
+    display: flex;
+  }
+
+  /* SIDEBAR */
+  .sidebar {
+    width: 240px;
+    min-height: 100vh;
+    background: var(--sidebar-bg);
+    display: flex;
+    flex-direction: column;
+    position: fixed;
+    left: 0; top: 0; bottom: 0;
+    z-index: 100;
+    padding: 0;
+  }
+
+  .sidebar-logo {
+    padding: 24px 20px;
+    border-bottom: 1px solid rgba(255,255,255,0.08);
+  }
+
+  .sidebar-logo .logo-mark {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .logo-icon {
+    width: 36px; height: 36px;
+    background: var(--primary);
+    border-radius: 8px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 18px;
+    font-weight: 700;
+    color: white;
+  }
+
+  .logo-text {
+    font-size: 14px;
+    font-weight: 600;
+    color: white;
+    line-height: 1.3;
+  }
+  .logo-text span {
+    display: block;
+    font-size: 11px;
+    font-weight: 400;
+    color: var(--sidebar-text);
+  }
+
+  .sidebar-event {
+    margin: 16px 12px;
+    background: rgba(217,95,43,0.15);
+    border: 1px solid rgba(217,95,43,0.3);
+    border-radius: 8px;
+    padding: 10px 12px;
+  }
+  .sidebar-event .event-label {
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+    color: var(--primary);
+    font-weight: 600;
+    margin-bottom: 3px;
+  }
+  .sidebar-event .event-name {
+    font-size: 13px;
+    color: white;
+    font-weight: 500;
+  }
+  .sidebar-event .event-date {
+    font-size: 11px;
+    color: var(--sidebar-text);
+    margin-top: 2px;
+  }
+
+  .sidebar-nav {
+    flex: 1;
+    padding: 8px 0;
+  }
+
+  .nav-section-label {
+    padding: 12px 20px 4px;
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: rgba(168,168,192,0.5);
+    font-weight: 600;
+  }
+
+  .nav-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 20px;
+    color: var(--sidebar-text);
+    text-decoration: none;
+    font-size: 13.5px;
+    font-weight: 400;
+    cursor: pointer;
+    transition: all 0.2s;
+    border-left: 3px solid transparent;
+  }
+  .nav-item:hover { background: rgba(255,255,255,0.05); color: white; }
+  .nav-item.active {
+    color: white;
+    background: rgba(217,95,43,0.15);
+    border-left-color: var(--primary);
+    font-weight: 500;
+  }
+  .nav-item .nav-icon { font-size: 16px; width: 20px; text-align: center; }
+  .nav-badge {
+    margin-left: auto;
+    background: var(--primary);
+    color: white;
+    font-size: 10px;
+    font-weight: 600;
+    padding: 2px 6px;
+    border-radius: 10px;
+    min-width: 18px;
+    text-align: center;
+  }
+
+  .sidebar-bottom {
+    padding: 16px;
+    border-top: 1px solid rgba(255,255,255,0.08);
+  }
+  .sidebar-user {
+    display: flex; align-items: center; gap: 10px;
+  }
+  .user-avatar {
+    width: 32px; height: 32px;
+    background: var(--primary);
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 13px; font-weight: 600; color: white;
+  }
+  .user-info { flex: 1; }
+  .user-name { font-size: 12px; color: white; font-weight: 500; }
+  .user-role { font-size: 11px; color: var(--sidebar-text); }
+
+  /* MAIN CONTENT */
+  .main {
+    margin-left: 240px;
+    flex: 1;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .topbar {
+    background: white;
+    border-bottom: 1px solid var(--card-border);
+    padding: 0 32px;
+    height: 60px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    position: sticky;
+    top: 0;
+    z-index: 50;
+  }
+
+  .topbar-left h1 {
+    font-size: 18px;
+    font-weight: 600;
+    color: var(--text-main);
+  }
+  .topbar-left .breadcrumb {
+    font-size: 12px;
+    color: var(--text-muted);
+    margin-top: 1px;
+  }
+  .breadcrumb span { color: var(--primary); }
+
+  .topbar-right {
+    display: flex; align-items: center; gap: 12px;
+  }
+
+  .btn {
+    display: inline-flex; align-items: center; gap: 6px;
+    padding: 8px 16px;
+    border-radius: 8px;
+    font-size: 13px;
+    font-weight: 500;
+    font-family: 'DM Sans', sans-serif;
+    cursor: pointer;
+    transition: all 0.2s;
+    border: none;
+    text-decoration: none;
+  }
+  .btn-primary {
+    background: var(--primary);
+    color: white;
+  }
+  .btn-primary:hover { background: var(--primary-dark); }
+
+  .btn-secondary {
+    background: white;
+    color: var(--text-main);
+    border: 1.5px solid var(--card-border);
+  }
+  .btn-secondary:hover { border-color: var(--primary); color: var(--primary); }
+
+  .btn-ghost {
+    background: transparent;
+    color: var(--text-muted);
+    border: none;
+    padding: 6px 10px;
+  }
+  .btn-ghost:hover { background: var(--bg); color: var(--text-main); }
+
+  .btn-sm { padding: 5px 10px; font-size: 12px; border-radius: 6px; }
+  .btn-icon { padding: 6px 8px; }
+
+  .btn-danger { background: #fef2f2; color: var(--red); border: 1.5px solid #fecaca; }
+  .btn-danger:hover { background: #fee2e2; }
+
+  .btn-success { background: #f0fdf4; color: var(--green); border: 1.5px solid #bbf7d0; }
+  .btn-success:hover { background: #dcfce7; }
+
+  .btn-info { background: #eff6ff; color: var(--blue); border: 1.5px solid #bfdbfe; }
+  .btn-info:hover { background: #dbeafe; }
+
+  /* PAGE CONTENT */
+  .page-content {
+    padding: 28px 32px;
+    max-width: 1400px;
+    width: 100%;
+  }
+
+  /* STATS ROW */
+  .stats-row {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 16px;
+    margin-bottom: 24px;
+  }
+
+  .stat-card {
+    background: white;
+    border-radius: var(--radius);
+    padding: 20px;
+    box-shadow: var(--shadow);
+    border: 1px solid var(--card-border);
+  }
+  .stat-label {
+    font-size: 12px;
+    color: var(--text-muted);
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 8px;
+  }
+  .stat-value {
+    font-size: 26px;
+    font-weight: 700;
+    color: var(--text-main);
+    line-height: 1;
+    margin-bottom: 6px;
+  }
+  .stat-sub {
+    font-size: 12px;
+    color: var(--text-muted);
+  }
+  .stat-badge {
+    display: inline-flex; align-items: center; gap: 4px;
+    font-size: 11px; font-weight: 500;
+    padding: 2px 7px;
+    border-radius: 20px;
+  }
+  .stat-badge.up { background: #f0fdf4; color: var(--green); }
+  .stat-badge.warn { background: #fffbeb; color: var(--yellow); }
+
+  .stat-card .stat-icon {
+    width: 40px; height: 40px;
+    border-radius: 10px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 20px;
+    margin-bottom: 12px;
+  }
+  .stat-icon.orange { background: #fff4ee; }
+  .stat-icon.green { background: #f0fdf4; }
+  .stat-icon.blue { background: #eff6ff; }
+  .stat-icon.yellow { background: #fffbeb; }
+
+  /* TABS */
+  .tabs-container {
+    background: white;
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+    border: 1px solid var(--card-border);
+    overflow: hidden;
+  }
+
+  .tabs-header {
+    display: flex;
+    border-bottom: 1px solid var(--card-border);
+    padding: 0 24px;
+    background: white;
+  }
+
+  .tab-btn {
+    display: flex; align-items: center; gap: 8px;
+    padding: 16px 20px;
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--text-muted);
+    cursor: pointer;
+    border: none;
+    background: none;
+    font-family: 'DM Sans', sans-serif;
+    border-bottom: 2px solid transparent;
+    margin-bottom: -1px;
+    transition: all 0.2s;
+    white-space: nowrap;
+  }
+  .tab-btn:hover { color: var(--text-main); }
+  .tab-btn.active {
+    color: var(--primary);
+    border-bottom-color: var(--primary);
+    font-weight: 600;
+  }
+  .tab-count {
+    background: var(--bg);
+    color: var(--text-muted);
+    font-size: 11px;
+    font-weight: 600;
+    padding: 2px 7px;
+    border-radius: 10px;
+  }
+  .tab-btn.active .tab-count {
+    background: var(--primary-light);
+    color: var(--primary);
+  }
+
+  .tab-panel { display: none; padding: 24px; }
+  .tab-panel.active { display: block; }
+
+  /* PACKAGE CARDS */
+  .packages-toolbar {
+    display: flex; align-items: center; justify-content: space-between;
+    margin-bottom: 20px;
+  }
+  .packages-toolbar h3 { font-size: 15px; font-weight: 600; color: var(--text-main); }
+  .packages-toolbar p { font-size: 13px; color: var(--text-muted); margin-top: 2px; }
+
+  .packages-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 20px;
+    margin-bottom: 24px;
+  }
+
+  .package-card {
+    border-radius: var(--radius);
+    border: 2px solid var(--card-border);
+    overflow: hidden;
+    background: white;
+    transition: box-shadow 0.2s, transform 0.2s;
+    position: relative;
+  }
+  .package-card:hover { box-shadow: var(--shadow-lg); transform: translateY(-2px); }
+
+  .package-card.gold { border-color: #f5a623; }
+  .package-card.silver { border-color: #8e9aaf; }
+  .package-card.bronze { border-color: #b87333; }
+
+  .package-header {
+    padding: 20px 20px 16px;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .package-header.gold { background: linear-gradient(135deg, #fff8ec, #fef3c7); }
+  .package-header.silver { background: linear-gradient(135deg, #f1f3f6, #e8ecf0); }
+  .package-header.bronze { background: linear-gradient(135deg, #fdf0e7, #f5e0cc); }
+
+  .package-tier-badge {
+    display: inline-flex; align-items: center; gap: 6px;
+    font-size: 11px; font-weight: 700;
+    text-transform: uppercase; letter-spacing: 1px;
+    padding: 4px 10px;
+    border-radius: 20px;
+    margin-bottom: 12px;
+    width: fit-content;
+  }
+  .package-tier-badge.gold { background: #f5a623; color: white; }
+  .package-tier-badge.silver { background: #8e9aaf; color: white; }
+  .package-tier-badge.bronze { background: #b87333; color: white; }
+
+  .package-name {
+    font-size: 18px;
+    font-weight: 700;
+    color: var(--text-main);
+    margin-bottom: 4px;
+  }
+
+  .package-price {
+    font-size: 28px;
+    font-weight: 700;
+    color: var(--text-main);
+    margin-bottom: 2px;
+  }
+  .package-price .currency { font-size: 16px; font-weight: 500; }
+
+  .package-body { padding: 16px 20px 20px; }
+
+  .benefits-list {
+    list-style: none;
+    margin-bottom: 16px;
+  }
+  .benefits-list li {
+    display: flex;
+    align-items: flex-start;
+    gap: 8px;
+    font-size: 13px;
+    color: var(--text-main);
+    padding: 5px 0;
+    border-bottom: 1px solid #f5f5f5;
+  }
+  .benefits-list li:last-child { border-bottom: none; }
+  .benefit-check {
+    width: 16px; height: 16px;
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 9px;
+    flex-shrink: 0;
+    margin-top: 1px;
+  }
+  .benefit-check.gold { background: #fef3c7; color: #d97706; }
+  .benefit-check.silver { background: #e8ecf0; color: #6b7280; }
+  .benefit-check.bronze { background: #f5e0cc; color: #92400e; }
+
+  .availability-bar {
+    margin-top: 16px;
+    margin-bottom: 16px;
+  }
+  .avail-header {
+    display: flex; justify-content: space-between; align-items: center;
+    font-size: 12px; color: var(--text-muted);
+    margin-bottom: 6px;
+  }
+  .avail-header .sold-count { font-weight: 600; color: var(--text-main); }
+  .progress-bar {
+    height: 6px;
+    background: #f0ede6;
+    border-radius: 4px;
+    overflow: hidden;
+  }
+  .progress-fill {
+    height: 100%;
+    border-radius: 4px;
+    transition: width 0.4s ease;
+  }
+  .progress-fill.gold { background: linear-gradient(90deg, #f5a623, #f59e0b); }
+  .progress-fill.silver { background: linear-gradient(90deg, #8e9aaf, #6b7280); }
+  .progress-fill.bronze { background: linear-gradient(90deg, #b87333, #92400e); }
+
+  .package-status {
+    display: inline-flex; align-items: center; gap: 5px;
+    font-size: 11px; font-weight: 600;
+    padding: 3px 9px; border-radius: 20px;
+    margin-bottom: 12px;
+  }
+  .package-status.active { background: #f0fdf4; color: var(--green); }
+  .package-status.paused { background: #fef2f2; color: var(--red); }
+  .package-status .dot { width: 6px; height: 6px; border-radius: 50%; background: currentColor; }
+
+  .package-actions {
+    display: flex; gap: 6px;
+    padding-top: 12px;
+    border-top: 1px solid #f5f5f5;
+  }
+
+  /* ADD PACKAGE FORM */
+  .add-package-section {
+    border: 2px dashed var(--card-border);
+    border-radius: var(--radius);
+    overflow: hidden;
+    background: white;
+  }
+
+  .add-package-trigger {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    padding: 24px;
+    cursor: pointer;
+    color: var(--text-muted);
+    font-size: 14px;
+    font-weight: 500;
+    transition: all 0.2s;
+  }
+  .add-package-trigger:hover { background: var(--bg); color: var(--primary); border-color: var(--primary); }
+  .add-package-trigger .plus-icon {
+    width: 32px; height: 32px;
+    border-radius: 50%;
+    background: var(--bg);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 18px;
+    transition: all 0.2s;
+  }
+  .add-package-trigger:hover .plus-icon { background: var(--primary); color: white; }
+
+  .add-package-form {
+    display: none;
+    padding: 24px;
+    border-top: 1px solid var(--card-border);
+  }
+  .add-package-form.visible { display: block; }
+
+  /* FORMS */
+  .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  .form-grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px; }
+  .form-group { margin-bottom: 16px; }
+  .form-group label {
+    display: block;
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 6px;
+  }
+  .form-control {
+    width: 100%;
+    padding: 10px 12px;
+    border: 1.5px solid var(--card-border);
+    border-radius: 8px;
+    font-size: 13.5px;
+    font-family: 'DM Sans', sans-serif;
+    color: var(--text-main);
+    background: white;
+    transition: border-color 0.2s;
+    outline: none;
+  }
+  .form-control:focus { border-color: var(--primary); }
+  select.form-control { cursor: pointer; }
+  textarea.form-control { resize: vertical; min-height: 80px; }
+
+  .form-hint { font-size: 11px; color: var(--text-muted); margin-top: 4px; }
+
+  .benefits-editor {
+    border: 1.5px solid var(--card-border);
+    border-radius: 8px;
+    overflow: hidden;
+  }
+  .benefit-row {
+    display: flex; align-items: center; gap: 8px;
+    padding: 8px 10px;
+    border-bottom: 1px solid #f5f5f5;
+  }
+  .benefit-row:last-child { border-bottom: none; }
+  .benefit-row input {
+    flex: 1;
+    border: none;
+    outline: none;
+    font-size: 13px;
+    font-family: 'DM Sans', sans-serif;
+    color: var(--text-main);
+    background: transparent;
+  }
+  .benefit-row .remove-btn {
+    color: #ccc;
+    cursor: pointer;
+    font-size: 16px;
+    background: none; border: none;
+    transition: color 0.2s;
+    padding: 0 4px;
+  }
+  .benefit-row .remove-btn:hover { color: var(--red); }
+  .add-benefit-btn {
+    display: flex; align-items: center; gap: 6px;
+    padding: 8px 12px;
+    color: var(--primary);
+    cursor: pointer;
+    font-size: 12px; font-weight: 600;
+    background: none; border: none;
+    font-family: 'DM Sans', sans-serif;
+    border-top: 1px dashed var(--card-border);
+    width: 100%;
+    transition: background 0.2s;
+  }
+  .add-benefit-btn:hover { background: var(--primary-light); }
+
+  .form-actions {
+    display: flex; align-items: center; gap: 10px;
+    padding-top: 16px;
+    border-top: 1px solid var(--card-border);
+    margin-top: 16px;
+  }
+
+  /* ALACARTE */
+  .alacarte-header {
+    display: flex; align-items: center; justify-content: space-between;
+    margin-bottom: 20px;
+  }
+
+  .alacarte-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13.5px;
+  }
+  .alacarte-table thead tr {
+    background: var(--bg);
+  }
+  .alacarte-table th {
+    padding: 10px 16px;
+    text-align: left;
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.6px;
+    color: var(--text-muted);
+    border-bottom: 1px solid var(--card-border);
+  }
+  .alacarte-table td {
+    padding: 14px 16px;
+    border-bottom: 1px solid #f5f5f5;
+    vertical-align: middle;
+  }
+  .alacarte-table tbody tr:last-child td { border-bottom: none; }
+  .alacarte-table tbody tr:hover { background: #fafaf8; }
+
+  .item-name { font-weight: 600; color: var(--text-main); }
+  .item-desc { font-size: 11px; color: var(--text-muted); margin-top: 2px; }
+
+  .price-tag {
+    font-size: 15px;
+    font-weight: 700;
+    color: var(--primary);
+  }
+
+  .avail-indicator {
+    display: flex; align-items: center; gap: 8px;
+  }
+  .avail-pill {
+    font-size: 12px; font-weight: 600;
+    padding: 3px 10px; border-radius: 20px;
+  }
+  .avail-pill.available { background: #f0fdf4; color: var(--green); }
+  .avail-pill.partial { background: #fffbeb; color: var(--yellow); }
+  .avail-pill.sold-out { background: #fef2f2; color: var(--red); }
+
+  .sold-ratio { font-size: 12px; color: var(--text-muted); }
+
+  /* ADD ITEM FORM */
+  .add-item-form {
+    display: none;
+    background: var(--bg);
+    border-radius: 10px;
+    padding: 20px;
+    margin-top: 20px;
+    border: 1.5px dashed var(--card-border);
+  }
+  .add-item-form.visible { display: block; }
+
+  /* SPONSORS */
+  .sponsors-summary {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 16px;
+    margin-bottom: 24px;
+  }
+
+  .summary-card {
+    background: white;
+    border-radius: var(--radius);
+    padding: 20px;
+    border: 1px solid var(--card-border);
+    box-shadow: var(--shadow);
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+  .summary-card .s-label { font-size: 12px; color: var(--text-muted); font-weight: 500; }
+  .summary-card .s-value { font-size: 28px; font-weight: 700; color: var(--text-main); }
+  .summary-card .s-sub { font-size: 12px; }
+  .summary-card.total .s-value { color: var(--primary); }
+  .summary-card.paid .s-value { color: var(--green); }
+  .summary-card.pending .s-value { color: var(--yellow); }
+
+  .sponsors-toolbar {
+    display: flex; align-items: center; justify-content: space-between;
+    margin-bottom: 16px;
+  }
+
+  .search-box {
+    display: flex; align-items: center; gap: 8px;
+    background: white;
+    border: 1.5px solid var(--card-border);
+    border-radius: 8px;
+    padding: 8px 12px;
+    width: 260px;
+    transition: border-color 0.2s;
+  }
+  .search-box:focus-within { border-color: var(--primary); }
+  .search-box input {
+    border: none; outline: none;
+    font-size: 13px; font-family: 'DM Sans', sans-serif;
+    color: var(--text-main);
+    width: 100%;
+    background: transparent;
+  }
+  .search-icon { color: var(--text-muted); font-size: 15px; }
+
+  .sponsors-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13.5px;
+  }
+  .sponsors-table thead tr { background: var(--bg); }
+  .sponsors-table th {
+    padding: 11px 16px;
+    text-align: left;
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.6px;
+    color: var(--text-muted);
+    border-bottom: 1px solid var(--card-border);
+  }
+  .sponsors-table td {
+    padding: 14px 16px;
+    border-bottom: 1px solid #f5f5f5;
+    vertical-align: middle;
+  }
+  .sponsors-table tbody tr:last-child td { border-bottom: none; }
+  .sponsors-table tbody tr:hover { background: #fafaf8; }
+
+  .company-cell { display: flex; align-items: center; gap: 12px; }
+  .company-logo {
+    width: 38px; height: 38px;
+    border-radius: 8px;
+    background: var(--bg);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 14px; font-weight: 700;
+    color: var(--text-muted);
+    flex-shrink: 0;
+    border: 1px solid var(--card-border);
+    overflow: hidden;
+  }
+  .company-name { font-weight: 600; color: var(--text-main); font-size: 14px; }
+  .company-contact { font-size: 11px; color: var(--text-muted); margin-top: 2px; }
+
+  .tier-badge {
+    display: inline-flex; align-items: center; gap: 5px;
+    font-size: 11px; font-weight: 600;
+    padding: 3px 9px; border-radius: 20px;
+    text-transform: uppercase; letter-spacing: 0.5px;
+  }
+  .tier-badge.gold { background: #fef3c7; color: #b45309; }
+  .tier-badge.silver { background: #f1f3f6; color: #4b5563; }
+  .tier-badge.bronze { background: #fdf0e7; color: #92400e; }
+  .tier-badge.alacarte { background: #eff6ff; color: #1d4ed8; }
+
+  .payment-status {
+    display: inline-flex; align-items: center; gap: 5px;
+    font-size: 12px; font-weight: 600;
+    padding: 4px 10px; border-radius: 20px;
+  }
+  .payment-status.paid { background: #f0fdf4; color: var(--green); }
+  .payment-status.partial { background: #fffbeb; color: var(--yellow); }
+  .payment-status.pending { background: #f5f5f5; color: var(--text-muted); }
+  .payment-status.overdue { background: #fef2f2; color: var(--red); }
+  .payment-status .psdot { width: 6px; height: 6px; border-radius: 50%; background: currentColor; flex-shrink: 0; }
+
+  .action-btns { display: flex; gap: 6px; flex-wrap: nowrap; }
+
+  /* EDIT MODAL */
+  .modal-overlay {
+    display: none;
+    position: fixed; inset: 0;
+    background: rgba(0,0,0,0.5);
+    z-index: 200;
+    align-items: center;
+    justify-content: center;
+  }
+  .modal-overlay.visible { display: flex; }
+
+  .modal {
+    background: white;
+    border-radius: 16px;
+    padding: 0;
+    width: 640px;
+    max-width: 90vw;
+    max-height: 90vh;
+    overflow-y: auto;
+    box-shadow: var(--shadow-lg);
+    animation: modalIn 0.2s ease;
+  }
+  @keyframes modalIn {
+    from { transform: translateY(-16px) scale(0.97); opacity: 0; }
+    to { transform: none; opacity: 1; }
+  }
+
+  .modal-header {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 20px 24px;
+    border-bottom: 1px solid var(--card-border);
+    position: sticky; top: 0; background: white; z-index: 5;
+    border-radius: 16px 16px 0 0;
+  }
+  .modal-header h2 { font-size: 17px; font-weight: 700; }
+  .modal-close {
+    width: 32px; height: 32px;
+    border-radius: 50%;
+    background: var(--bg);
+    border: none; cursor: pointer;
+    font-size: 18px; color: var(--text-muted);
+    display: flex; align-items: center; justify-content: center;
+    transition: all 0.2s;
+  }
+  .modal-close:hover { background: #e0dbd0; color: var(--text-main); }
+  .modal-body { padding: 24px; }
+  .modal-footer {
+    display: flex; align-items: center; justify-content: flex-end; gap: 10px;
+    padding: 16px 24px;
+    border-top: 1px solid var(--card-border);
+    background: var(--bg);
+    border-radius: 0 0 16px 16px;
+  }
+
+  /* TOAST */
+  .toast-container {
+    position: fixed;
+    bottom: 24px; right: 24px;
+    z-index: 1000;
+    display: flex; flex-direction: column; gap: 8px;
+  }
+  .toast {
+    background: #1e1e2e;
+    color: white;
+    padding: 12px 18px;
+    border-radius: 10px;
+    font-size: 13px;
+    font-weight: 500;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.25);
+    display: flex; align-items: center; gap: 8px;
+    animation: toastIn 0.3s ease, toastOut 0.3s ease 2.7s forwards;
+    max-width: 320px;
+  }
+  .toast.success { border-left: 3px solid var(--green); }
+  .toast.error { border-left: 3px solid var(--red); }
+  .toast.info { border-left: 3px solid var(--blue); }
+  @keyframes toastIn {
+    from { transform: translateY(16px); opacity: 0; }
+    to { transform: none; opacity: 1; }
+  }
+  @keyframes toastOut {
+    to { transform: translateY(16px); opacity: 0; }
+  }
+
+  /* RESPONSIVE TWEAKS */
+  @media (max-width: 1100px) {
+    .packages-grid { grid-template-columns: repeat(2, 1fr); }
+    .sponsors-summary { grid-template-columns: repeat(3, 1fr); }
+  }
+
+  /* DRAG HANDLE */
+  .drag-handle { cursor: grab; color: #ccc; font-size: 14px; padding: 0 4px; }
+
+  /* TOOLTIP */
+  [data-tip] { position: relative; }
+  [data-tip]:hover::after {
+    content: attr(data-tip);
+    position: absolute;
+    bottom: calc(100% + 6px);
+    left: 50%;
+    transform: translateX(-50%);
+    background: #1e1e2e;
+    color: white;
+    font-size: 11px;
+    padding: 4px 8px;
+    border-radius: 5px;
+    white-space: nowrap;
+    pointer-events: none;
+    z-index: 99;
+  }
+
+  .divider { height: 1px; background: var(--card-border); margin: 20px 0; }
+
+  .empty-state {
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    padding: 48px 20px;
+    color: var(--text-muted);
+    text-align: center;
+  }
+  .empty-state .empty-icon { font-size: 48px; margin-bottom: 12px; }
+  .empty-state h3 { font-size: 16px; font-weight: 600; color: var(--text-main); margin-bottom: 6px; }
+  .empty-state p { font-size: 13px; }
+
+  /* FILTER TABS */
+  .filter-tabs {
+    display: flex; gap: 4px;
+  }
+  .filter-tab {
+    padding: 6px 14px;
+    border-radius: 20px;
+    font-size: 12px; font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s;
+    background: white;
+    border: 1.5px solid var(--card-border);
+    color: var(--text-muted);
+    font-family: 'DM Sans', sans-serif;
+  }
+  .filter-tab:hover { border-color: var(--primary); color: var(--primary); }
+  .filter-tab.active { background: var(--primary); border-color: var(--primary); color: white; }
+
+  .col-sticky { position: sticky; right: 0; background: white; }
+  .sponsors-table tbody tr:hover .col-sticky { background: #fafaf8; }
+
+  /* PROGRESS CIRCLE */
+  .circle-wrap {
+    display: flex; align-items: center; gap: 10px;
+  }
+  .mini-progress {
+    width: 36px; height: 36px;
+    border-radius: 50%;
+    position: relative;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .mini-progress svg {
+    position: absolute; top: 0; left: 0;
+    transform: rotate(-90deg);
+  }
+  .mini-progress .pct {
+    font-size: 10px; font-weight: 700;
+    color: var(--text-main);
+    position: relative; z-index: 1;
+  }
+
+</style>
+</head>
+<body>
+
+<!-- SIDEBAR -->
+<aside class="sidebar">
+  <div class="sidebar-logo">
+    <div class="logo-mark">
+      <div class="logo-icon">GC</div>
+      <div class="logo-text">
+        Game Connection
+        <span>B2B Organizer</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="sidebar-event">
+    <div class="event-label">Current Event</div>
+    <div class="event-name">GC Europe 2026</div>
+    <div class="event-date">📅 Mar 18–20, 2026 · Lyon</div>
+  </div>
+
+  <nav class="sidebar-nav">
+    <div class="nav-section-label">Event</div>
+    <div class="nav-item"><span class="nav-icon">📊</span> Dashboard</div>
+    <div class="nav-item"><span class="nav-icon">📅</span> Schedule</div>
+    <div class="nav-item"><span class="nav-icon">👥</span> Attendees</div>
+    <div class="nav-item"><span class="nav-icon">🤝</span> Meetings</div>
+
+    <div class="nav-section-label">Revenue</div>
+    <div class="nav-item active"><span class="nav-icon">💎</span> Sponsorship <span class="nav-badge">14</span></div>
+    <div class="nav-item"><span class="nav-icon">🎫</span> Tickets</div>
+    <div class="nav-item"><span class="nav-icon">🏪</span> Exhibitors</div>
+
+    <div class="nav-section-label">Operations</div>
+    <div class="nav-item"><span class="nav-icon">📧</span> Communications</div>
+    <div class="nav-item"><span class="nav-icon">📄</span> Documents</div>
+    <div class="nav-item"><span class="nav-icon">📈</span> Analytics</div>
+    <div class="nav-item"><span class="nav-icon">⚙️</span> Settings</div>
+  </nav>
+
+  <div class="sidebar-bottom">
+    <div class="sidebar-user">
+      <div class="user-avatar">QQ</div>
+      <div class="user-info">
+        <div class="user-name">Qiang Qiang</div>
+        <div class="user-role">Event Organizer</div>
+      </div>
+    </div>
+  </div>
+</aside>
+
+<!-- MAIN -->
+<div class="main">
+  <!-- TOPBAR -->
+  <div class="topbar">
+    <div class="topbar-left">
+      <h1>Sponsorship Management</h1>
+      <div class="breadcrumb">GC Europe 2026 › Revenue › <span>Sponsorship</span></div>
+    </div>
+    <div class="topbar-right">
+      <button class="btn btn-secondary" onclick="showToast('Sponsorship brochure exported!', 'success')">
+        📤 Export Brochure
+      </button>
+      <button class="btn btn-secondary" onclick="showToast('Sharing link copied!', 'info')">
+        🔗 Share Prospectus
+      </button>
+      <button class="btn btn-primary" onclick="switchTab('sponsors'); showToast('New sponsor form opened', 'info')">
+        + Add Sponsor
+      </button>
+    </div>
+  </div>
+
+  <!-- PAGE CONTENT -->
+  <div class="page-content">
+
+    <!-- STATS ROW -->
+    <div class="stats-row">
+      <div class="stat-card">
+        <div class="stat-icon orange">💎</div>
+        <div class="stat-label">Total Revenue</div>
+        <div class="stat-value">€24,500</div>
+        <div class="stat-sub"><span class="stat-badge up">↑ 18%</span> vs last event</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon green">✅</div>
+        <div class="stat-label">Collected</div>
+        <div class="stat-value">€18,000</div>
+        <div class="stat-sub" style="color: var(--green); font-weight: 500;">73.5% collection rate</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon yellow">⏳</div>
+        <div class="stat-label">Pending</div>
+        <div class="stat-value">€6,500</div>
+        <div class="stat-sub"><span class="stat-badge warn">3 invoices</span> outstanding</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon blue">🏢</div>
+        <div class="stat-label">Active Sponsors</div>
+        <div class="stat-value">8</div>
+        <div class="stat-sub">3 packages · 5 à la carte</div>
+      </div>
+    </div>
+
+    <!-- TABS CONTAINER -->
+    <div class="tabs-container">
+      <div class="tabs-header">
+        <button class="tab-btn active" onclick="switchTab('packages')">
+          📦 Packages <span class="tab-count">3</span>
+        </button>
+        <button class="tab-btn" onclick="switchTab('alacarte')">
+          🧩 À la Carte <span class="tab-count">6</span>
+        </button>
+        <button class="tab-btn" onclick="switchTab('sponsors')">
+          🤝 Sponsors <span class="tab-count">8</span>
+        </button>
+      </div>
+
+      <!-- TAB 1: PACKAGES -->
+      <div class="tab-panel active" id="tab-packages">
+        <div class="packages-toolbar">
+          <div>
+            <h3>Sponsorship Packages</h3>
+            <p>Configure tiered sponsorship packages for your event</p>
+          </div>
+          <div style="display:flex; gap:8px; align-items:center;">
+            <button class="btn btn-secondary btn-sm">📊 Revenue Forecast</button>
+            <button class="btn btn-secondary btn-sm">🔄 Reorder</button>
+          </div>
+        </div>
+
+        <div class="packages-grid">
+          <!-- GOLD -->
+          <div class="package-card gold" id="card-gold">
+            <div class="package-header gold">
+              <div class="package-tier-badge gold">⭐ Gold</div>
+              <div class="package-name">Gold Sponsor</div>
+              <div class="package-price"><span class="currency">€</span>5,000</div>
+              <div style="margin-top:8px; display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
+                <div class="package-status active"><span class="dot"></span> Active</div>
+                <div style="font-size:12px; color:var(--text-muted);">Premium package</div>
+              </div>
+            </div>
+            <div class="package-body">
+              <ul class="benefits-list">
+                <li><span class="benefit-check gold">✓</span> Logo on main stage backdrop</li>
+                <li><span class="benefit-check gold">✓</span> Full-page ad in program book</li>
+                <li><span class="benefit-check gold">✓</span> 10 VIP tickets</li>
+                <li><span class="benefit-check gold">✓</span> Dedicated session slot (30min)</li>
+                <li><span class="benefit-check gold">✓</span> Social media mentions (5 posts)</li>
+                <li><span class="benefit-check gold">✓</span> Booth space (6×6m)</li>
+              </ul>
+              <div class="availability-bar">
+                <div class="avail-header">
+                  <span>Availability</span>
+                  <span class="sold-count">2 / 3 sold</span>
+                </div>
+                <div class="progress-bar">
+                  <div class="progress-fill gold" style="width: 66.6%"></div>
+                </div>
+              </div>
+              <div style="font-size:12px; color:var(--text-muted);">💡 1 slot remaining · Est. revenue: €15,000</div>
+              <div class="package-actions">
+                <button class="btn btn-secondary btn-sm" onclick="openEditModal('Gold Sponsor', 5000, 'gold')" data-tip="Edit package">✏️ Edit</button>
+                <button class="btn btn-secondary btn-sm" onclick="showToast('Gold package duplicated!', 'success')" data-tip="Duplicate">📋 Copy</button>
+                <button class="btn btn-secondary btn-sm btn-danger" onclick="showToast('Gold package paused', 'info')" data-tip="Pause selling">⏸ Pause</button>
+              </div>
+            </div>
+          </div>
+
+          <!-- SILVER -->
+          <div class="package-card silver" id="card-silver">
+            <div class="package-header silver">
+              <div class="package-tier-badge silver">🥈 Silver</div>
+              <div class="package-name">Silver Sponsor</div>
+              <div class="package-price"><span class="currency">€</span>2,500</div>
+              <div style="margin-top:8px; display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
+                <div class="package-status active"><span class="dot"></span> Active</div>
+                <div style="font-size:12px; color:var(--text-muted);">Standard package</div>
+              </div>
+            </div>
+            <div class="package-body">
+              <ul class="benefits-list">
+                <li><span class="benefit-check silver">✓</span> Logo on signage</li>
+                <li><span class="benefit-check silver">✓</span> Half-page ad in program book</li>
+                <li><span class="benefit-check silver">✓</span> 5 Standard tickets</li>
+                <li><span class="benefit-check silver">✓</span> Social media mentions (3 posts)</li>
+                <li><span class="benefit-check silver">✓</span> Booth space (3×3m)</li>
+              </ul>
+              <div class="availability-bar">
+                <div class="avail-header">
+                  <span>Availability</span>
+                  <span class="sold-count">4 / 5 sold</span>
+                </div>
+                <div class="progress-bar">
+                  <div class="progress-fill silver" style="width: 80%"></div>
+                </div>
+              </div>
+              <div style="font-size:12px; color:#d97706; font-weight:500;">⚠️ Only 1 slot left! · Est. revenue: €12,500</div>
+              <div class="package-actions">
+                <button class="btn btn-secondary btn-sm" onclick="openEditModal('Silver Sponsor', 2500, 'silver')" data-tip="Edit package">✏️ Edit</button>
+                <button class="btn btn-secondary btn-sm" onclick="showToast('Silver package duplicated!', 'success')" data-tip="Duplicate">📋 Copy</button>
+                <button class="btn btn-secondary btn-sm btn-danger" onclick="showToast('Silver package paused', 'info')" data-tip="Pause selling">⏸ Pause</button>
+              </div>
+            </div>
+          </div>
+
+          <!-- BRONZE -->
+          <div class="package-card bronze" id="card-bronze">
+            <div class="package-header bronze">
+              <div class="package-tier-badge bronze">🥉 Bronze</div>
+              <div class="package-name">Bronze Sponsor</div>
+              <div class="package-price"><span class="currency">€</span>1,000</div>
+              <div style="margin-top:8px; display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
+                <div class="package-status active"><span class="dot"></span> Active</div>
+                <div style="font-size:12px; color:var(--text-muted);">Entry package</div>
+              </div>
+            </div>
+            <div class="package-body">
+              <ul class="benefits-list">
+                <li><span class="benefit-check bronze">✓</span> Logo on website</li>
+                <li><span class="benefit-check bronze">✓</span> 2 Standard tickets</li>
+                <li><span class="benefit-check bronze">✓</span> Social media mentions (1 post)</li>
+              </ul>
+              <div class="availability-bar">
+                <div class="avail-header">
+                  <span>Availability</span>
+                  <span class="sold-count">7 / 10 sold</span>
+                </div>
+                <div class="progress-bar">
+                  <div class="progress-fill bronze" style="width: 70%"></div>
+                </div>
+              </div>
+              <div style="font-size:12px; color:var(--text-muted);">💡 3 slots remaining · Est. revenue: €10,000</div>
+              <div class="package-actions">
+                <button class="btn btn-secondary btn-sm" onclick="openEditModal('Bronze Sponsor', 1000, 'bronze')" data-tip="Edit package">✏️ Edit</button>
+                <button class="btn btn-secondary btn-sm" onclick="showToast('Bronze package duplicated!', 'success')" data-tip="Duplicate">📋 Copy</button>
+                <button class="btn btn-secondary btn-sm btn-danger" onclick="showToast('Bronze package paused', 'info')" data-tip="Pause selling">⏸ Pause</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ADD PACKAGE -->
+        <div class="add-package-section" id="addPackageSection">
+          <div class="add-package-trigger" onclick="toggleAddPackageForm()">
+            <span class="plus-icon" id="addPkgIcon">+</span>
+            <span id="addPkgLabel">Add New Package</span>
+          </div>
+          <div class="add-package-form" id="addPackageForm">
+            <h3 style="font-size:15px; font-weight:600; margin-bottom:20px; color:var(--text-main);">Create New Sponsorship Package</h3>
+            <div class="form-grid">
+              <div class="form-group">
+                <label>Package Name</label>
+                <input type="text" class="form-control" placeholder="e.g. Platinum Sponsor" id="newPkgName">
+              </div>
+              <div class="form-group">
+                <label>Price (€)</label>
+                <input type="number" class="form-control" placeholder="e.g. 8000" id="newPkgPrice">
+              </div>
+            </div>
+            <div class="form-grid-3">
+              <div class="form-group">
+                <label>Tier / Color</label>
+                <select class="form-control" id="newPkgTier">
+                  <option value="gold">⭐ Gold</option>
+                  <option value="silver">🥈 Silver</option>
+                  <option value="bronze">🥉 Bronze</option>
+                  <option value="custom">🎨 Custom</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label>Total Slots Available</label>
+                <input type="number" class="form-control" placeholder="e.g. 2" value="2" id="newPkgSlots">
+              </div>
+              <div class="form-group">
+                <label>Status</label>
+                <select class="form-control" id="newPkgStatus">
+                  <option value="active">✅ Active</option>
+                  <option value="draft">📝 Draft</option>
+                  <option value="paused">⏸ Paused</option>
+                </select>
+              </div>
+            </div>
+            <div class="form-group">
+              <label>Benefits / Deliverables</label>
+              <div class="benefits-editor" id="newBenefitsList">
+                <div class="benefit-row">
+                  <input type="text" placeholder="Enter a benefit..." value="Logo placement on event materials">
+                  <button class="remove-btn" onclick="removeBenefit(this)">×</button>
+                </div>
+                <div class="benefit-row">
+                  <input type="text" placeholder="Enter a benefit..." value="">
+                  <button class="remove-btn" onclick="removeBenefit(this)">×</button>
+                </div>
+                <button class="add-benefit-btn" onclick="addBenefitRow()">+ Add benefit</button>
+              </div>
+            </div>
+            <div class="form-group">
+              <label>Package Description (optional)</label>
+              <textarea class="form-control" placeholder="Brief description for the sponsorship brochure..." rows="2" id="newPkgDesc"></textarea>
+            </div>
+            <div class="form-actions">
+              <button class="btn btn-primary" onclick="saveNewPackage()">💾 Save Package</button>
+              <button class="btn btn-secondary" onclick="toggleAddPackageForm()">Cancel</button>
+              <button class="btn btn-ghost" onclick="showToast('Draft saved!', 'info')">Save as Draft</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- TAB 2: À LA CARTE -->
+      <div class="tab-panel" id="tab-alacarte">
+        <div class="alacarte-header">
+          <div>
+            <h3 style="font-size:15px; font-weight:600;">À la Carte Items</h3>
+            <p style="font-size:13px; color:var(--text-muted); margin-top:2px;">Individual sponsorship opportunities sold separately</p>
+          </div>
+          <div style="display:flex; gap:8px;">
+            <button class="btn btn-secondary btn-sm">📊 Sales Report</button>
+            <button class="btn btn-primary btn-sm" onclick="toggleAddItemForm()">+ Add Item</button>
+          </div>
+        </div>
+
+        <table class="alacarte-table">
+          <thead>
+            <tr>
+              <th style="width:40%">Item</th>
+              <th>Price</th>
+              <th>Availability</th>
+              <th>Sold</th>
+              <th>Revenue</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody id="alacarteTableBody">
+            <tr>
+              <td>
+                <div class="item-name">🎤 Opening Keynote Naming</div>
+                <div class="item-desc">Your brand name in the keynote title · Premium visibility</div>
+              </td>
+              <td><span class="price-tag">€3,000</span></td>
+              <td>
+                <span class="avail-pill available">Available</span>
+              </td>
+              <td><span class="sold-ratio">0 / 1</span></td>
+              <td><span style="font-weight:600;">€0</span></td>
+              <td>
+                <div style="display:flex; gap:5px;">
+                  <button class="btn btn-secondary btn-sm" onclick="showToast('Item edited', 'info')">✏️</button>
+                  <button class="btn btn-danger btn-sm" onclick="showToast('Item removed', 'error')">🗑</button>
+                </div>
+              </td>
+            </tr>
+            <tr>
+              <td>
+                <div class="item-name">🎗 Lanyard Sponsor</div>
+                <div class="item-desc">Logo on all attendee lanyards · High visibility</div>
+              </td>
+              <td><span class="price-tag">€800</span></td>
+              <td>
+                <span class="avail-pill available">Available</span>
+              </td>
+              <td><span class="sold-ratio">0 / 1</span></td>
+              <td><span style="font-weight:600;">€0</span></td>
+              <td>
+                <div style="display:flex; gap:5px;">
+                  <button class="btn btn-secondary btn-sm" onclick="showToast('Item edited', 'info')">✏️</button>
+                  <button class="btn btn-danger btn-sm" onclick="showToast('Item removed', 'error')">🗑</button>
+                </div>
+              </td>
+            </tr>
+            <tr>
+              <td>
+                <div class="item-name">☕ Coffee Break Sponsor</div>
+                <div class="item-desc">Branding at coffee break stations · Networking exposure</div>
+              </td>
+              <td><span class="price-tag">€500</span></td>
+              <td>
+                <span class="avail-pill partial">1 left</span>
+              </td>
+              <td><span class="sold-ratio">1 / 2</span></td>
+              <td><span style="font-weight:600;">€500</span></td>
+              <td>
+                <div style="display:flex; gap:5px;">
+                  <button class="btn btn-secondary btn-sm" onclick="showToast('Item edited', 'info')">✏️</button>
+                  <button class="btn btn-danger btn-sm" onclick="showToast('Item removed', 'error')">🗑</button>
+                </div>
+              </td>
+            </tr>
+            <tr>
+              <td>
+                <div class="item-name">📶 WiFi Password Sponsor</div>
+                <div class="item-desc">Your brand name as the event WiFi password</div>
+              </td>
+              <td><span class="price-tag">€300</span></td>
+              <td>
+                <span class="avail-pill available">Available</span>
+              </td>
+              <td><span class="sold-ratio">0 / 1</span></td>
+              <td><span style="font-weight:600;">€0</span></td>
+              <td>
+                <div style="display:flex; gap:5px;">
+                  <button class="btn btn-secondary btn-sm" onclick="showToast('Item edited', 'info')">✏️</button>
+                  <button class="btn btn-danger btn-sm" onclick="showToast('Item removed', 'error')">🗑</button>
+                </div>
+              </td>
+            </tr>
+            <tr>
+              <td>
+                <div class="item-name">📱 App Push Notification</div>
+                <div class="item-desc">Sponsored push notification to all app users</div>
+              </td>
+              <td><span class="price-tag">€200</span></td>
+              <td>
+                <span class="avail-pill partial">3 left</span>
+              </td>
+              <td><span class="sold-ratio">2 / 5</span></td>
+              <td><span style="font-weight:600;">€400</span></td>
+              <td>
+                <div style="display:flex; gap:5px;">
+                  <button class="btn btn-secondary btn-sm" onclick="showToast('Item edited', 'info')">✏️</button>
+                  <button class="btn btn-danger btn-sm" onclick="showToast('Item removed', 'error')">🗑</button>
+                </div>
+              </td>
+            </tr>
+            <tr>
+              <td>
+                <div class="item-name">📣 Social Media Post</div>
+                <div class="item-desc">Dedicated branded post on official event channels</div>
+              </td>
+              <td><span class="price-tag">€150</span></td>
+              <td>
+                <span class="avail-pill partial">6 left</span>
+              </td>
+              <td><span class="sold-ratio">4 / 10</span></td>
+              <td><span style="font-weight:600;">€600</span></td>
+              <td>
+                <div style="display:flex; gap:5px;">
+                  <button class="btn btn-secondary btn-sm" onclick="showToast('Item edited', 'info')">✏️</button>
+                  <button class="btn btn-danger btn-sm" onclick="showToast('Item removed', 'error')">🗑</button>
+                </div>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+
+        <!-- ADD ITEM FORM -->
+        <div class="add-item-form" id="addItemForm">
+          <h3 style="font-size:14px; font-weight:600; margin-bottom:16px;">Add New À la Carte Item</h3>
+          <div class="form-grid">
+            <div class="form-group">
+              <label>Item Name</label>
+              <input type="text" class="form-control" placeholder="e.g. Badge Sponsor" id="newItemName">
+            </div>
+            <div class="form-group">
+              <label>Price (€)</label>
+              <input type="number" class="form-control" placeholder="e.g. 600" id="newItemPrice">
+            </div>
+          </div>
+          <div class="form-grid">
+            <div class="form-group">
+              <label>Total Available</label>
+              <input type="number" class="form-control" placeholder="e.g. 1" value="1" id="newItemQty">
+            </div>
+            <div class="form-group">
+              <label>Description</label>
+              <input type="text" class="form-control" placeholder="Short description of what's included" id="newItemDesc">
+            </div>
+          </div>
+          <div class="form-actions">
+            <button class="btn btn-primary" onclick="saveNewItem()">💾 Add Item</button>
+            <button class="btn btn-secondary" onclick="toggleAddItemForm()">Cancel</button>
+          </div>
+        </div>
+
+        <div class="divider"></div>
+
+        <div style="background: var(--bg); border-radius: 10px; padding: 16px 20px; display:flex; justify-content: space-between; align-items:center;">
+          <div>
+            <div style="font-size:13px; font-weight:600; color:var(--text-main);">À la Carte Summary</div>
+            <div style="font-size:12px; color:var(--text-muted); margin-top:2px;">6 items · 7 sold · €1,500 revenue generated</div>
+          </div>
+          <div style="display:flex; gap:24px;">
+            <div style="text-align:center;">
+              <div style="font-size:20px; font-weight:700; color:var(--primary);">€1,500</div>
+              <div style="font-size:11px; color:var(--text-muted);">À la Carte Revenue</div>
+            </div>
+            <div style="text-align:center;">
+              <div style="font-size:20px; font-weight:700; color:var(--text-main);">7</div>
+              <div style="font-size:11px; color:var(--text-muted);">Items Sold</div>
+            </div>
+            <div style="text-align:center;">
+              <div style="font-size:20px; font-weight:700; color:var(--text-main);">13</div>
+              <div style="font-size:11px; color:var(--text-muted);">Still Available</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- TAB 3: SPONSORS -->
+      <div class="tab-panel" id="tab-sponsors">
+        <!-- SUMMARY CARDS -->
+        <div class="sponsors-summary">
+          <div class="summary-card total">
+            <div class="s-label">Total Sponsorship Revenue</div>
+            <div class="s-value">€24,500</div>
+            <div class="s-sub" style="color:var(--text-muted);">8 confirmed sponsors</div>
+          </div>
+          <div class="summary-card paid">
+            <div class="s-label">Collected</div>
+            <div class="s-value">€18,000</div>
+            <div class="s-sub" style="color:var(--green);">73.5% — 5 invoices paid</div>
+          </div>
+          <div class="summary-card pending">
+            <div class="s-label">Pending / Outstanding</div>
+            <div class="s-value">€6,500</div>
+            <div class="s-sub" style="color:var(--yellow);">3 invoices pending</div>
+          </div>
+        </div>
+
+        <!-- TOOLBAR -->
+        <div class="sponsors-toolbar">
+          <div class="search-box">
+            <span class="search-icon">🔍</span>
+            <input type="text" placeholder="Search sponsors..." oninput="filterSponsors(this.value)" id="sponsorSearch">
+          </div>
+          <div style="display:flex; gap:8px; align-items:center;">
+            <div class="filter-tabs">
+              <button class="filter-tab active" onclick="setFilter(this, 'all')">All</button>
+              <button class="filter-tab" onclick="setFilter(this, 'paid')">Paid</button>
+              <button class="filter-tab" onclick="setFilter(this, 'pending')">Pending</button>
+              <button class="filter-tab" onclick="setFilter(this, 'overdue')">Overdue</button>
+            </div>
+            <button class="btn btn-secondary btn-sm" onclick="showToast('CSV exported!', 'success')">📥 Export</button>
+            <button class="btn btn-primary btn-sm" onclick="openAddSponsorModal()">+ Add Sponsor</button>
+          </div>
+        </div>
+
+        <!-- SPONSORS TABLE -->
+        <table class="sponsors-table" id="sponsorsTable">
+          <thead>
+            <tr>
+              <th>Company</th>
+              <th>Package / Item</th>
+              <th>Amount</th>
+              <th>Payment</th>
+              <th>Signed</th>
+              <th style="text-align:right;">Actions</th>
+            </tr>
+          </thead>
+          <tbody id="sponsorsTableBody">
+            <tr data-status="paid">
+              <td>
+                <div class="company-cell">
+                  <div class="company-logo" style="background:#fff4ee; color:#d95f2b; font-size:13px; font-weight:800;">UB</div>
+                  <div>
+                    <div class="company-name">Ubisoft</div>
+                    <div class="company-contact">marc.dupont@ubisoft.com</div>
+                  </div>
+                </div>
+              </td>
+              <td><span class="tier-badge gold">⭐ Gold</span></td>
+              <td><span style="font-size:15px; font-weight:700;">€5,000</span></td>
+              <td><span class="payment-status paid"><span class="psdot"></span> Paid</span></td>
+              <td><span style="color:var(--green); font-size:13px;">✅ 15 Jan</span></td>
+              <td>
+                <div class="action-btns" style="justify-content:flex-end;">
+                  <button class="btn btn-info btn-sm" onclick="showToast('Contract sent to Ubisoft', 'success')">📄 Contract</button>
+                  <button class="btn btn-success btn-sm" onclick="showToast('Invoice sent!', 'success')">🧾 Invoice</button>
+                  <button class="btn btn-secondary btn-sm" onclick="showToast('Compose email opened', 'info')">✉️</button>
+                </div>
+              </td>
+            </tr>
+            <tr data-status="paid">
+              <td>
+                <div class="company-cell">
+                  <div class="company-logo" style="background:#f0fdf4; color:#27ae60; font-size:13px; font-weight:800;">EA</div>
+                  <div>
+                    <div class="company-name">Electronic Arts</div>
+                    <div class="company-contact">partnerships@ea.com</div>
+                  </div>
+                </div>
+              </td>
+              <td><span class="tier-badge gold">⭐ Gold</span></td>
+              <td><span style="font-size:15px; font-weight:700;">€5,000</span></td>
+              <td><span class="payment-status paid"><span class="psdot"></span> Paid</span></td>
+              <td><span style="color:var(--green); font-size:13px;">✅ 18 Jan</span></td>
+              <td>
+                <div class="action-btns" style="justify-content:flex-end;">
+                  <button class="btn btn-info btn-sm" onclick="showToast('Contract sent to EA', 'success')">📄 Contract</button>
+                  <button class="btn btn-success btn-sm" onclick="showToast('Invoice sent!', 'success')">🧾 Invoice</button>
+                  <button class="btn btn-secondary btn-sm" onclick="showToast('Compose email opened', 'info')">✉️</button>
+                </div>
+              </td>
+            </tr>
+            <tr data-status="pending">
+              <td>
+                <div class="company-cell">
+                  <div class="company-logo" style="background:#eff6ff; color:#2980b9; font-size:13px; font-weight:800;">EP</div>
+                  <div>
+                    <div class="company-name">Epic Games</div>
+                    <div class="company-contact">biz@epicgames.com</div>
+                  </div>
+                </div>
+              </td>
+              <td><span class="tier-badge silver">🥈 Silver</span></td>
+              <td><span style="font-size:15px; font-weight:700;">€2,500</span></td>
+              <td><span class="payment-status partial"><span class="psdot"></span> 50% paid</span></td>
+              <td><span style="color:var(--green); font-size:13px;">✅ 22 Jan</span></td>
+              <td>
+                <div class="action-btns" style="justify-content:flex-end;">
+                  <button class="btn btn-info btn-sm" onclick="showToast('Contract sent to Epic', 'success')">📄 Contract</button>
+                  <button class="btn btn-success btn-sm" onclick="showToast('Invoice sent!', 'success')">🧾 Invoice</button>
+                  <button class="btn btn-secondary btn-sm" onclick="showToast('Compose email opened', 'info')">✉️</button>
+                </div>
+              </td>
+            </tr>
+            <tr data-status="paid">
+              <td>
+                <div class="company-cell">
+                  <div class="company-logo" style="background:#fef3c7; color:#b45309; font-size:11px; font-weight:800;">SEGA</div>
+                  <div>
+                    <div class="company-name">SEGA Europe</div>
+                    <div class="company-contact">events@sega-europe.com</div>
+                  </div>
+                </div>
+              </td>
+              <td><span class="tier-badge silver">🥈 Silver</span></td>
+              <td><span style="font-size:15px; font-weight:700;">€2,500</span></td>
+              <td><span class="payment-status paid"><span class="psdot"></span> Paid</span></td>
+              <td><span style="color:var(--green); font-size:13px;">✅ 25 Jan</span></td>
+              <td>
+                <div class="action-btns" style="justify-content:flex-end;">
+                  <button class="btn btn-info btn-sm" onclick="showToast('Contract sent to SEGA', 'success')">📄 Contract</button>
+                  <button class="btn btn-success btn-sm" onclick="showToast('Invoice sent!', 'success')">🧾 Invoice</button>
+                  <button class="btn btn-secondary btn-sm" onclick="showToast('Compose email opened', 'info')">✉️</button>
+                </div>
+              </td>
+            </tr>
+            <tr data-status="paid">
+              <td>
+                <div class="company-cell">
+                  <div class="company-logo" style="background:#fdf0e7; color:#92400e; font-size:11px; font-weight:800;">KOGI</div>
+                  <div>
+                    <div class="company-name">Konami Digital</div>
+                    <div class="company-contact">sponsor@konami.eu</div>
+                  </div>
+                </div>
+              </td>
+              <td><span class="tier-badge bronze">🥉 Bronze</span></td>
+              <td><span style="font-size:15px; font-weight:700;">€1,000</span></td>
+              <td><span class="payment-status paid"><span class="psdot"></span> Paid</span></td>
+              <td><span style="color:var(--green); font-size:13px;">✅ 02 Feb</span></td>
+              <td>
+                <div class="action-btns" style="justify-content:flex-end;">
+                  <button class="btn btn-info btn-sm" onclick="showToast('Contract sent to Konami', 'success')">📄 Contract</button>
+                  <button class="btn btn-success btn-sm" onclick="showToast('Invoice sent!', 'success')">🧾 Invoice</button>
+                  <button class="btn btn-secondary btn-sm" onclick="showToast('Compose email opened', 'info')">✉️</button>
+                </div>
+              </td>
+            </tr>
+            <tr data-status="overdue">
+              <td>
+                <div class="company-cell">
+                  <div class="company-logo" style="background:#fef2f2; color:#e74c3c; font-size:13px; font-weight:800;">NM</div>
+                  <div>
+                    <div class="company-name">Namco Bandai</div>
+                    <div class="company-contact">events@bandai.fr</div>
+                  </div>
+                </div>
+              </td>
+              <td><span class="tier-badge bronze">🥉 Bronze</span></td>
+              <td><span style="font-size:15px; font-weight:700;">€1,000</span></td>
+              <td><span class="payment-status overdue"><span class="psdot"></span> Overdue</span></td>
+              <td><span style="color:var(--yellow); font-size:13px;">⏳ Pending</span></td>
+              <td>
+                <div class="action-btns" style="justify-content:flex-end;">
+                  <button class="btn btn-danger btn-sm" onclick="showToast('Payment reminder sent!', 'success')">⚠️ Remind</button>
+                  <button class="btn btn-success btn-sm" onclick="showToast('Invoice resent!', 'success')">🧾 Invoice</button>
+                  <button class="btn btn-secondary btn-sm" onclick="showToast('Compose email opened', 'info')">✉️</button>
+                </div>
+              </td>
+            </tr>
+            <tr data-status="pending">
+              <td>
+                <div class="company-cell">
+                  <div class="company-logo" style="background:#eff6ff; color:#1d4ed8; font-size:11px; font-weight:800;">GCGF</div>
+                  <div>
+                    <div class="company-name">GamesFactory</div>
+                    <div class="company-contact">hi@gamesfactory.io</div>
+                  </div>
+                </div>
+              </td>
+              <td><span class="tier-badge alacarte">☕ Coffee Break ×2</span></td>
+              <td><span style="font-size:15px; font-weight:700;">€1,000</span></td>
+              <td><span class="payment-status pending"><span class="psdot"></span> Pending</span></td>
+              <td><span style="color:var(--green); font-size:13px;">✅ 10 Feb</span></td>
+              <td>
+                <div class="action-btns" style="justify-content:flex-end;">
+                  <button class="btn btn-info btn-sm" onclick="showToast('Contract sent!', 'success')">📄 Contract</button>
+                  <button class="btn btn-success btn-sm" onclick="showToast('Invoice sent!', 'success')">🧾 Invoice</button>
+                  <button class="btn btn-secondary btn-sm" onclick="showToast('Compose email opened', 'info')">✉️</button>
+                </div>
+              </td>
+            </tr>
+            <tr data-status="paid">
+              <td>
+                <div class="company-cell">
+                  <div class="company-logo" style="background:#f0fdf4; color:#27ae60; font-size:11px; font-weight:800;">INRD</div>
+                  <div>
+                    <div class="company-name">Insomniac Digital</div>
+                    <div class="company-contact">press@insomniac.com</div>
+                  </div>
+                </div>
+              </td>
+              <td><span class="tier-badge alacarte">📱 Push Notif ×2 · 📣 Social ×4</span></td>
+              <td><span style="font-size:15px; font-weight:700;">€1,000</span></td>
+              <td><span class="payment-status paid"><span class="psdot"></span> Paid</span></td>
+              <td><span style="color:var(--green); font-size:13px;">✅ 14 Feb</span></td>
+              <td>
+                <div class="action-btns" style="justify-content:flex-end;">
+                  <button class="btn btn-info btn-sm" onclick="showToast('Contract sent!', 'success')">📄 Contract</button>
+                  <button class="btn btn-success btn-sm" onclick="showToast('Invoice sent!', 'success')">🧾 Invoice</button>
+                  <button class="btn btn-secondary btn-sm" onclick="showToast('Compose email opened', 'info')">✉️</button>
+                </div>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+
+        <div class="divider"></div>
+
+        <!-- PIPELINE / PROGRESS -->
+        <div style="background: var(--bg); border-radius:10px; padding:20px;">
+          <div style="font-size:14px; font-weight:600; color:var(--text-main); margin-bottom:16px;">Revenue Collection Progress</div>
+          <div style="display:flex; gap:12px; align-items:center; margin-bottom:12px;">
+            <div style="flex:1;">
+              <div style="display:flex; justify-content:space-between; font-size:12px; color:var(--text-muted); margin-bottom:6px;">
+                <span>€18,000 collected of €24,500</span>
+                <span style="font-weight:600; color:var(--text-main);">73.5%</span>
+              </div>
+              <div class="progress-bar" style="height:10px;">
+                <div class="progress-fill gold" style="width:73.5%; background: linear-gradient(90deg, var(--primary), #f5a623);"></div>
+              </div>
+            </div>
+          </div>
+          <div style="display:grid; grid-template-columns: repeat(3, 1fr); gap:12px; margin-top:16px;">
+            <div style="text-align:center; padding:12px; background:white; border-radius:8px; border:1px solid var(--card-border);">
+              <div style="font-size:18px; font-weight:700; color:var(--green);">5</div>
+              <div style="font-size:11px; color:var(--text-muted);">Fully Paid</div>
+            </div>
+            <div style="text-align:center; padding:12px; background:white; border-radius:8px; border:1px solid var(--card-border);">
+              <div style="font-size:18px; font-weight:700; color:var(--yellow);">2</div>
+              <div style="font-size:11px; color:var(--text-muted);">Partially Paid</div>
+            </div>
+            <div style="text-align:center; padding:12px; background:white; border-radius:8px; border:1px solid var(--card-border);">
+              <div style="font-size:18px; font-weight:700; color:var(--red);">1</div>
+              <div style="font-size:11px; color:var(--text-muted);">Overdue</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div><!-- end tabs-container -->
+  </div><!-- end page-content -->
+</div><!-- end main -->
+
+<!-- EDIT PACKAGE MODAL -->
+<div class="modal-overlay" id="editModal">
+  <div class="modal">
+    <div class="modal-header">
+      <h2>✏️ Edit Package — <span id="editModalTitle">Gold Sponsor</span></h2>
+      <button class="modal-close" onclick="closeEditModal()">×</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-grid">
+        <div class="form-group">
+          <label>Package Name</label>
+          <input type="text" class="form-control" id="editPkgName" value="Gold Sponsor">
+        </div>
+        <div class="form-group">
+          <label>Price (€)</label>
+          <input type="number" class="form-control" id="editPkgPrice" value="5000">
+        </div>
+      </div>
+      <div class="form-grid-3">
+        <div class="form-group">
+          <label>Tier</label>
+          <select class="form-control" id="editPkgTier">
+            <option value="gold" selected>⭐ Gold</option>
+            <option value="silver">🥈 Silver</option>
+            <option value="bronze">🥉 Bronze</option>
+            <option value="custom">🎨 Custom</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Total Slots</label>
+          <input type="number" class="form-control" id="editPkgSlots" value="3">
+        </div>
+        <div class="form-group">
+          <label>Status</label>
+          <select class="form-control" id="editPkgStatus">
+            <option value="active" selected>✅ Active</option>
+            <option value="draft">📝 Draft</option>
+            <option value="paused">⏸ Paused</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-group">
+        <label>Benefits</label>
+        <div class="benefits-editor" id="editBenefitsList">
+          <div class="benefit-row">
+            <input type="text" value="Logo on main stage backdrop">
+            <button class="remove-btn" onclick="removeBenefit(this)">×</button>
+          </div>
+          <div class="benefit-row">
+            <input type="text" value="Full-page ad in program book">
+            <button class="remove-btn" onclick="removeBenefit(this)">×</button>
+          </div>
+          <div class="benefit-row">
+            <input type="text" value="10 VIP tickets">
+            <button class="remove-btn" onclick="removeBenefit(this)">×</button>
+          </div>
+          <div class="benefit-row">
+            <input type="text" value="Dedicated session slot (30min)">
+            <button class="remove-btn" onclick="removeBenefit(this)">×</button>
+          </div>
+          <div class="benefit-row">
+            <input type="text" value="Social media mentions (5 posts)">
+            <button class="remove-btn" onclick="removeBenefit(this)">×</button>
+          </div>
+          <div class="benefit-row">
+            <input type="text" value="Booth space (6×6m)">
+            <button class="remove-btn" onclick="removeBenefit(this)">×</button>
+          </div>
+          <button class="add-benefit-btn" onclick="addEditBenefitRow()">+ Add benefit</button>
+        </div>
+      </div>
+      <div class="form-group">
+        <label>Package Notes</label>
+        <textarea class="form-control" rows="2" placeholder="Internal notes..."></textarea>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeEditModal()">Cancel</button>
+      <button class="btn btn-secondary" onclick="showToast('Draft saved!', 'info'); closeEditModal()">Save as Draft</button>
+      <button class="btn btn-primary" onclick="showToast('Package updated successfully!', 'success'); closeEditModal()">💾 Save Changes</button>
+    </div>
+  </div>
+</div>
+
+<!-- ADD SPONSOR MODAL -->
+<div class="modal-overlay" id="addSponsorModal">
+  <div class="modal">
+    <div class="modal-header">
+      <h2>🤝 Add New Sponsor</h2>
+      <button class="modal-close" onclick="closeAddSponsorModal()">×</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-grid">
+        <div class="form-group">
+          <label>Company Name</label>
+          <input type="text" class="form-control" placeholder="e.g. Activision Blizzard" id="newSponsorCompany">
+        </div>
+        <div class="form-group">
+          <label>Contact Email</label>
+          <input type="email" class="form-control" placeholder="contact@company.com" id="newSponsorEmail">
+        </div>
+      </div>
+      <div class="form-grid">
+        <div class="form-group">
+          <label>Contact Name</label>
+          <input type="text" class="form-control" placeholder="Full name" id="newSponsorContact">
+        </div>
+        <div class="form-group">
+          <label>Phone</label>
+          <input type="text" class="form-control" placeholder="+33 6..." id="newSponsorPhone">
+        </div>
+      </div>
+      <div class="form-grid">
+        <div class="form-group">
+          <label>Sponsorship Package</label>
+          <select class="form-control" id="newSponsorPackage">
+            <option value="">— Select a package —</option>
+            <option value="gold">⭐ Gold Sponsor — €5,000</option>
+            <option value="silver">🥈 Silver Sponsor — €2,500</option>
+            <option value="bronze">🥉 Bronze Sponsor — €1,000</option>
+            <option value="alacarte">🧩 À la Carte items</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Payment Status</label>
+          <select class="form-control" id="newSponsorPayment">
+            <option value="pending">⏳ Pending</option>
+            <option value="partial">🔶 Partial (50%)</option>
+            <option value="paid">✅ Fully Paid</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-group">
+        <label>Notes</label>
+        <textarea class="form-control" rows="2" placeholder="Any special requirements or notes..."></textarea>
+      </div>
+      <div style="background:#fffbeb; border:1px solid #fde68a; border-radius:8px; padding:12px 14px; font-size:12px; color:#92400e; display:flex; gap:8px; align-items:flex-start;">
+        <span>💡</span>
+        <span>After adding a sponsor, you can send them a contract and invoice directly from the Sponsors tab.</span>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeAddSponsorModal()">Cancel</button>
+      <button class="btn btn-primary" onclick="saveNewSponsor()">🤝 Add Sponsor</button>
+    </div>
+  </div>
+</div>
+
+<!-- TOAST CONTAINER -->
+<div class="toast-container" id="toastContainer"></div>
+
+<script>
+  // TAB SWITCHING
+  function switchTab(tabName) {
+    document.querySelectorAll('.tab-btn').forEach((btn, i) => {
+      btn.classList.remove('active');
+    });
+    document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+
+    const panels = { packages: 0, alacarte: 1, sponsors: 2 };
+    const idx = panels[tabName];
+    document.querySelectorAll('.tab-btn')[idx].classList.add('active');
+    document.getElementById('tab-' + tabName).classList.add('active');
+  }
+
+  // ADD PACKAGE FORM
+  let addPkgOpen = false;
+  function toggleAddPackageForm() {
+    addPkgOpen = !addPkgOpen;
+    const form = document.getElementById('addPackageForm');
+    const icon = document.getElementById('addPkgIcon');
+    const label = document.getElementById('addPkgLabel');
+    if (addPkgOpen) {
+      form.classList.add('visible');
+      icon.textContent = '×';
+      label.textContent = 'Cancel';
+    } else {
+      form.classList.remove('visible');
+      icon.textContent = '+';
+      label.textContent = 'Add New Package';
+    }
+  }
+
+  function saveNewPackage() {
+    const name = document.getElementById('newPkgName').value.trim();
+    const price = document.getElementById('newPkgPrice').value.trim();
+    if (!name || !price) {
+      showToast('Please fill in the package name and price', 'error');
+      return;
+    }
+    showToast(`Package "${name}" created successfully!`, 'success');
+    toggleAddPackageForm();
+    document.getElementById('newPkgName').value = '';
+    document.getElementById('newPkgPrice').value = '';
+  }
+
+  // BENEFIT ROWS
+  function addBenefitRow() {
+    const list = document.getElementById('newBenefitsList');
+    const addBtn = list.querySelector('.add-benefit-btn');
+    const row = document.createElement('div');
+    row.className = 'benefit-row';
+    row.innerHTML = '<input type="text" placeholder="Enter a benefit..."><button class="remove-btn" onclick="removeBenefit(this)">×</button>';
+    list.insertBefore(row, addBtn);
+    row.querySelector('input').focus();
+  }
+
+  function addEditBenefitRow() {
+    const list = document.getElementById('editBenefitsList');
+    const addBtn = list.querySelector('.add-benefit-btn');
+    const row = document.createElement('div');
+    row.className = 'benefit-row';
+    row.innerHTML = '<input type="text" placeholder="Enter a benefit..."><button class="remove-btn" onclick="removeBenefit(this)">×</button>';
+    list.insertBefore(row, addBtn);
+    row.querySelector('input').focus();
+  }
+
+  function removeBenefit(btn) {
+    const row = btn.closest('.benefit-row');
+    const list = row.parentElement;
+    if (list.querySelectorAll('.benefit-row').length > 1) {
+      row.remove();
+    } else {
+      showToast('At least one benefit is required', 'error');
+    }
+  }
+
+  // TOGGLE ADD ITEM FORM
+  let addItemOpen = false;
+  function toggleAddItemForm() {
+    addItemOpen = !addItemOpen;
+    const form = document.getElementById('addItemForm');
+    form.classList.toggle('visible', addItemOpen);
+  }
+
+  function saveNewItem() {
+    const name = document.getElementById('newItemName').value.trim();
+    const price = document.getElementById('newItemPrice').value.trim();
+    if (!name || !price) {
+      showToast('Please fill in the item name and price', 'error');
+      return;
+    }
+    const qty = document.getElementById('newItemQty').value || 1;
+    const desc = document.getElementById('newItemDesc').value.trim();
+
+    const tbody = document.getElementById('alacarteTableBody');
+    const row = document.createElement('tr');
+    row.innerHTML = `
+      <td>
+        <div class="item-name">🎯 ${name}</div>
+        <div class="item-desc">${desc || 'Custom à la carte item'}</div>
+      </td>
+      <td><span class="price-tag">€${parseInt(price).toLocaleString()}</span></td>
+      <td><span class="avail-pill available">Available</span></td>
+      <td><span class="sold-ratio">0 / ${qty}</span></td>
+      <td><span style="font-weight:600;">€0</span></td>
+      <td>
+        <div style="display:flex; gap:5px;">
+          <button class="btn btn-secondary btn-sm" onclick="showToast('Item edited', 'info')">✏️</button>
+          <button class="btn btn-danger btn-sm" onclick="this.closest('tr').remove(); showToast('Item removed', 'error')">🗑</button>
+        </div>
+      </td>
+    `;
+    tbody.appendChild(row);
+    showToast(`"${name}" added successfully!`, 'success');
+    toggleAddItemForm();
+    document.getElementById('newItemName').value = '';
+    document.getElementById('newItemPrice').value = '';
+    document.getElementById('newItemDesc').value = '';
+  }
+
+  // EDIT MODAL
+  function openEditModal(name, price, tier) {
+    document.getElementById('editModalTitle').textContent = name;
+    document.getElementById('editPkgName').value = name;
+    document.getElementById('editPkgPrice').value = price;
+    document.getElementById('editPkgTier').value = tier;
+    document.getElementById('editModal').classList.add('visible');
+  }
+  function closeEditModal() {
+    document.getElementById('editModal').classList.remove('visible');
+  }
+
+  // ADD SPONSOR MODAL
+  function openAddSponsorModal() {
+    document.getElementById('addSponsorModal').classList.add('visible');
+  }
+  function closeAddSponsorModal() {
+    document.getElementById('addSponsorModal').classList.remove('visible');
+  }
+
+  function saveNewSponsor() {
+    const company = document.getElementById('newSponsorCompany').value.trim();
+    const email = document.getElementById('newSponsorEmail').value.trim();
+    const pkg = document.getElementById('newSponsorPackage').value;
+    if (!company || !pkg) {
+      showToast('Please fill in company name and package', 'error');
+      return;
+    }
+    const pkgLabels = {
+      gold: '<span class="tier-badge gold">⭐ Gold</span>',
+      silver: '<span class="tier-badge silver">🥈 Silver</span>',
+      bronze: '<span class="tier-badge bronze">🥉 Bronze</span>',
+      alacarte: '<span class="tier-badge alacarte">🧩 À la Carte</span>'
+    };
+    const pkgAmounts = { gold: '€5,000', silver: '€2,500', bronze: '€1,000', alacarte: '—' };
+    const initials = company.split(' ').map(w => w[0]).join('').toUpperCase().slice(0,3);
+
+    const tbody = document.getElementById('sponsorsTableBody');
+    const row = document.createElement('tr');
+    row.setAttribute('data-status', 'pending');
+    row.innerHTML = `
+      <td>
+        <div class="company-cell">
+          <div class="company-logo" style="background:var(--bg); font-size:11px;">${initials}</div>
+          <div>
+            <div class="company-name">${company}</div>
+            <div class="company-contact">${email || '—'}</div>
+          </div>
+        </div>
+      </td>
+      <td>${pkgLabels[pkg]}</td>
+      <td><span style="font-size:15px; font-weight:700;">${pkgAmounts[pkg]}</span></td>
+      <td><span class="payment-status pending"><span class="psdot"></span> Pending</span></td>
+      <td><span style="color:var(--text-muted); font-size:13px;">—</span></td>
+      <td>
+        <div class="action-btns" style="justify-content:flex-end;">
+          <button class="btn btn-info btn-sm" onclick="showToast('Contract sent!', 'success')">📄 Contract</button>
+          <button class="btn btn-success btn-sm" onclick="showToast('Invoice sent!', 'success')">🧾 Invoice</button>
+          <button class="btn btn-secondary btn-sm" onclick="showToast('Compose email opened', 'info')">✉️</button>
+        </div>
+      </td>
+    `;
+    tbody.appendChild(row);
+    showToast(`${company} added as sponsor!`, 'success');
+    closeAddSponsorModal();
+    document.getElementById('newSponsorCompany').value = '';
+    document.getElementById('newSponsorEmail').value = '';
+    document.getElementById('newSponsorContact').value = '';
+  }
+
+  // FILTER SPONSORS
+  function setFilter(btn, status) {
+    document.querySelectorAll('.filter-tab').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    filterByStatus(status);
+  }
+
+  function filterByStatus(status) {
+    const rows = document.querySelectorAll('#sponsorsTableBody tr');
+    rows.forEach(row => {
+      if (status === 'all' || row.getAttribute('data-status') === status) {
+        row.style.display = '';
+      } else {
+        row.style.display = 'none';
+      }
+    });
+  }
+
+  function filterSponsors(query) {
+    const q = query.toLowerCase();
+    const rows = document.querySelectorAll('#sponsorsTableBody tr');
+    rows.forEach(row => {
+      const text = row.textContent.toLowerCase();
+      row.style.display = text.includes(q) ? '' : 'none';
+    });
+  }
+
+  // TOAST
+  function showToast(message, type = 'info') {
+    const container = document.getElementById('toastContainer');
+    const icons = { success: '✅', error: '❌', info: 'ℹ️' };
+    const toast = document.createElement('div');
+    toast.className = `toast ${type}`;
+    toast.innerHTML = `<span>${icons[type]}</span><span>${message}</span>`;
+    container.appendChild(toast);
+    setTimeout(() => toast.remove(), 3100);
+  }
+
+  // CLOSE MODAL ON OVERLAY CLICK
+  document.getElementById('editModal').addEventListener('click', function(e) {
+    if (e.target === this) closeEditModal();
+  });
+  document.getElementById('addSponsorModal').addEventListener('click', function(e) {
+    if (e.target === this) closeAddSponsorModal();
+  });
+
+  // KEYBOARD ESC
+  document.addEventListener('keydown', e => {
+    if (e.key === 'Escape') {
+      closeEditModal();
+      closeAddSponsorModal();
+    }
+  });
+</script>
+</body>
+</html>
