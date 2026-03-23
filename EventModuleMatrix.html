@@ -1,0 +1,316 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Game Connection — Event Module Matrix</title>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'DM Sans', sans-serif;
+      background: #e8e4da;
+      min-height: 100vh;
+      padding: 40px 24px 60px;
+      color: #1a1a1a;
+    }
+
+    .page-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      max-width: 900px;
+      margin: 0 auto 32px;
+    }
+
+    .page-title {
+      font-size: 22px;
+      font-weight: 700;
+      color: #1a1a1a;
+      letter-spacing: -0.3px;
+    }
+
+    .page-title span {
+      color: #d95f2b;
+    }
+
+    .btn-reset {
+      background: #d95f2b;
+      color: #fff;
+      border: none;
+      border-radius: 8px;
+      padding: 9px 20px;
+      font-family: 'DM Sans', sans-serif;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.15s, transform 0.1s;
+      letter-spacing: 0.1px;
+    }
+
+    .btn-reset:hover { background: #c0521f; }
+    .btn-reset:active { transform: scale(0.97); }
+
+    .card {
+      max-width: 900px;
+      margin: 0 auto;
+      background: #fff;
+      border-radius: 16px;
+      overflow: hidden;
+      box-shadow: 0 2px 16px rgba(0,0,0,0.07);
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+
+    thead th {
+      background: #fff;
+      padding: 16px 10px 12px;
+      text-align: center;
+      font-size: 13px;
+      font-weight: 600;
+      color: #555;
+      border-bottom: 2px solid #f0ede7;
+      position: sticky;
+      top: 0;
+      z-index: 2;
+    }
+
+    thead th.col-label {
+      text-align: left;
+      padding-left: 20px;
+      min-width: 200px;
+      color: #888;
+      font-size: 12px;
+      font-weight: 500;
+    }
+
+    thead th .col-size {
+      display: block;
+      font-size: 16px;
+      font-weight: 700;
+      color: #1a1a1a;
+      margin-bottom: 2px;
+    }
+
+    thead th .col-range {
+      display: block;
+      font-size: 11px;
+      font-weight: 400;
+      color: #999;
+    }
+
+    tbody tr {
+      border-bottom: 1px solid #f5f3ef;
+      transition: background 0.1s;
+    }
+
+    tbody tr:last-child { border-bottom: none; }
+    tbody tr:hover { background: #faf9f7; }
+
+    tbody td.row-label {
+      padding: 14px 12px 14px 20px;
+      min-width: 200px;
+      vertical-align: middle;
+    }
+
+    .row-zh {
+      font-size: 14px;
+      font-weight: 600;
+      color: #1a1a1a;
+      display: block;
+    }
+
+    .row-en {
+      font-size: 11px;
+      font-weight: 400;
+      color: #aaa;
+      display: block;
+      margin-top: 1px;
+    }
+
+    tbody td.cell {
+      text-align: center;
+      vertical-align: middle;
+      padding: 8px 6px;
+      width: 100px;
+    }
+
+    .toggle {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 44px;
+      height: 38px;
+      border-radius: 9px;
+      cursor: pointer;
+      font-size: 18px;
+      transition: background 0.15s, transform 0.1s;
+      user-select: none;
+      border: none;
+      outline: none;
+    }
+
+    .toggle.checked {
+      background: #27ae60;
+      color: #fff;
+    }
+
+    .toggle.unchecked {
+      background: #ede9e0;
+      color: transparent;
+    }
+
+    .toggle:hover.checked { background: #219653; }
+    .toggle:hover.unchecked { background: #e0dbd0; }
+    .toggle:active { transform: scale(0.93); }
+
+    tfoot td {
+      text-align: center;
+      padding: 12px 6px;
+      font-size: 13px;
+      font-weight: 600;
+      color: #d95f2b;
+      background: #fdf9f6;
+      border-top: 2px solid #f0ede7;
+    }
+
+    tfoot td.foot-label {
+      text-align: left;
+      padding-left: 20px;
+      color: #aaa;
+      font-size: 12px;
+      font-weight: 500;
+    }
+
+    .count-badge {
+      display: inline-block;
+      background: #fde8db;
+      color: #d95f2b;
+      border-radius: 20px;
+      padding: 2px 10px;
+      font-size: 13px;
+      font-weight: 700;
+    }
+  </style>
+</head>
+<body>
+
+<div class="page-header">
+  <div class="page-title">Game Connection — <span>Event Module Matrix</span></div>
+  <button class="btn-reset" onclick="resetToDefault()">↺ Reset</button>
+</div>
+
+<div class="card">
+  <table id="matrix">
+    <thead>
+      <tr>
+        <th class="col-label">Module</th>
+        <th><span class="col-size">XS</span><span class="col-range">20–100 人</span></th>
+        <th><span class="col-size">S</span><span class="col-range">100–500 人</span></th>
+        <th><span class="col-size">M</span><span class="col-range">500–2000 人</span></th>
+        <th><span class="col-size">L</span><span class="col-range">2000–10000 人</span></th>
+        <th><span class="col-size">XL</span><span class="col-range">10000+ 人</span></th>
+      </tr>
+    </thead>
+    <tbody id="matrix-body"></tbody>
+    <tfoot>
+      <tr id="count-row">
+        <td class="foot-label">已勾选模块数</td>
+        <td id="cnt-0">—</td>
+        <td id="cnt-1">—</td>
+        <td id="cnt-2">—</td>
+        <td id="cnt-3">—</td>
+        <td id="cnt-4">—</td>
+      </tr>
+    </tfoot>
+  </table>
+</div>
+
+<script>
+  // Columns: 0=XS, 1=S, 2=M, 3=L, 4=XL
+  const modules = [
+    { zh: '活动发布', en: 'Event Publishing',      default: [1,1,1,1,1] },
+    { zh: '免费报名', en: 'Free Registration',     default: [1,1,1,1,1] },
+    { zh: '付费票务', en: 'Paid Ticketing',        default: [0,1,1,1,1] },
+    { zh: 'Pod / 小展位', en: 'Pod Booth',         default: [0,1,1,1,1] },
+    { zh: '赞助套餐', en: 'Sponsorship',           default: [0,1,1,1,1] },
+    { zh: 'Awards 评奖', en: 'Awards',             default: [0,1,1,1,1] },
+    { zh: '标准展位', en: 'Standard Booth',        default: [0,0,1,1,1] },
+    { zh: 'Session / Panel', en: 'Session / Panel',default: [0,0,1,1,1] },
+    { zh: "Let's Meet 配对", en: "Let's Meet",     default: [0,0,1,1,1] },
+    { zh: 'Game Showcase', en: 'Game Showcase',    default: [0,0,1,1,1] },
+    { zh: '买家邀请', en: 'Buyer Invitation',      default: [0,0,1,1,1] },
+    { zh: '展会地图', en: 'Venue Map',             default: [0,0,0,1,1] },
+    { zh: '媒体管理', en: 'Press Management',      default: [0,0,0,1,1] },
+    { zh: '多场地',   en: 'Multi-Venue',           default: [0,0,0,0,1] },
+  ];
+
+  // State: deep copy of defaults
+  let state = modules.map(m => [...m.default]);
+
+  function buildTable() {
+    const tbody = document.getElementById('matrix-body');
+    tbody.innerHTML = '';
+    modules.forEach((mod, ri) => {
+      const tr = document.createElement('tr');
+      // Row label
+      const tdLabel = document.createElement('td');
+      tdLabel.className = 'row-label';
+      tdLabel.innerHTML = `<span class="row-zh">${mod.zh}</span><span class="row-en">${mod.en}</span>`;
+      tr.appendChild(tdLabel);
+
+      // Cells
+      for (let ci = 0; ci < 5; ci++) {
+        const td = document.createElement('td');
+        td.className = 'cell';
+        const btn = document.createElement('button');
+        btn.className = 'toggle ' + (state[ri][ci] ? 'checked' : 'unchecked');
+        btn.textContent = state[ri][ci] ? '✅' : '';
+        btn.setAttribute('aria-label', `${mod.zh} ${['XS','S','M','L','XL'][ci]}`);
+        btn.dataset.row = ri;
+        btn.dataset.col = ci;
+        btn.addEventListener('click', toggleCell);
+        td.appendChild(btn);
+        tr.appendChild(td);
+      }
+      tbody.appendChild(tr);
+    });
+    updateCounts();
+  }
+
+  function toggleCell(e) {
+    const ri = parseInt(e.currentTarget.dataset.row);
+    const ci = parseInt(e.currentTarget.dataset.col);
+    state[ri][ci] = state[ri][ci] ? 0 : 1;
+    const btn = e.currentTarget;
+    if (state[ri][ci]) {
+      btn.className = 'toggle checked';
+      btn.textContent = '✅';
+    } else {
+      btn.className = 'toggle unchecked';
+      btn.textContent = '';
+    }
+    updateCounts();
+  }
+
+  function updateCounts() {
+    for (let ci = 0; ci < 5; ci++) {
+      const count = state.reduce((sum, row) => sum + row[ci], 0);
+      const el = document.getElementById('cnt-' + ci);
+      el.innerHTML = `<span class="count-badge">${count}</span>`;
+    }
+  }
+
+  function resetToDefault() {
+    state = modules.map(m => [...m.default]);
+    buildTable();
+  }
+
+  buildTable();
+</script>
+</body>
+</html>
