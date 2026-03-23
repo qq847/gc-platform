@@ -1,0 +1,464 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Sponsorship Management — Game Connection</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: #e8e4da;
+    color: #1a1a1a;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+  .app {
+    width: 100%;
+    max-width: 480px;
+    min-height: 100vh;
+    background: #e8e4da;
+  }
+
+  /* TOP NAV */
+  .top-nav {
+    position: fixed; top: 0; left: 50%; transform: translateX(-50%);
+    width: 100%; max-width: 480px;
+    background: #1a1a1a; color: #fff;
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 14px 20px; z-index: 100; height: 56px;
+  }
+  .top-nav .event-name { font-size: 15px; font-weight: 700; }
+  .hamburger { display: flex; flex-direction: column; gap: 5px; cursor: pointer; padding: 4px; }
+  .hamburger span { display: block; width: 22px; height: 2px; background: #fff; border-radius: 2px; }
+
+  /* DRAWER */
+  .drawer-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.4); z-index: 200; }
+  .drawer-overlay.open { display: block; }
+  .drawer { position: fixed; top: 0; right: -280px; width: 260px; height: 100%; background: #fff; z-index: 300; transition: right 0.28s ease; padding: 60px 24px 24px; }
+  .drawer.open { right: 0; }
+  .drawer h3 { font-size: 16px; font-weight: 700; margin-bottom: 20px; }
+  .drawer a { display: block; padding: 12px 0; border-bottom: 1px solid #eee; color: #333; text-decoration: none; font-size: 15px; font-weight: 500; }
+
+  /* CONTENT */
+  .content { margin-top: 56px; margin-bottom: 72px; padding: 20px 16px; }
+
+  /* PAGE HEADER */
+  .page-header { margin-bottom: 18px; }
+  .page-header h1 { font-size: 22px; font-weight: 700; }
+  .page-header p { font-size: 13px; color: #888; margin-top: 2px; }
+
+  /* SECTION */
+  .section-title {
+    font-size: 13px; font-weight: 700; letter-spacing: 1px;
+    text-transform: uppercase; color: #888; margin-bottom: 10px;
+  }
+
+  /* PAYMENT OVERVIEW */
+  .payment-card {
+    background: #1a1a1a;
+    border-radius: 18px;
+    padding: 22px 20px;
+    color: #fff;
+    margin-bottom: 20px;
+  }
+  .payment-card h3 {
+    font-size: 13px;
+    font-weight: 600;
+    opacity: 0.6;
+    margin-bottom: 16px;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+  }
+  .payment-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 0;
+  }
+  .payment-item {
+    text-align: center;
+    padding: 0 8px;
+  }
+  .payment-item + .payment-item {
+    border-left: 1px solid rgba(255,255,255,0.12);
+  }
+  .payment-item .pay-num {
+    font-size: 22px;
+    font-weight: 700;
+    line-height: 1.1;
+  }
+  .payment-item .pay-label {
+    font-size: 10px;
+    opacity: 0.55;
+    font-weight: 600;
+    letter-spacing: 0.3px;
+    text-transform: uppercase;
+    margin-top: 5px;
+  }
+  .pay-total { color: #d95f2b; }
+  .pay-received { color: #4ade80; }
+  .pay-pending { color: #fbbf24; }
+
+  /* OVERALL PROGRESS */
+  .progress-overview {
+    background: #fff;
+    border-radius: 14px;
+    padding: 16px 18px;
+    margin-bottom: 20px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+  }
+  .progress-label {
+    display: flex;
+    justify-content: space-between;
+    font-size: 13px;
+    font-weight: 600;
+    margin-bottom: 8px;
+  }
+  .progress-label span:last-child { color: #d95f2b; }
+  .progress-track {
+    height: 10px;
+    background: #f0ede8;
+    border-radius: 5px;
+    overflow: hidden;
+  }
+  .progress-fill {
+    height: 100%;
+    border-radius: 5px;
+    background: linear-gradient(90deg, #d95f2b, #f08c5b);
+  }
+
+  /* PACKAGE CARDS */
+  .package-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 10px;
+    margin-bottom: 20px;
+  }
+  .package-card {
+    background: #fff;
+    border-radius: 14px;
+    padding: 16px 12px;
+    text-align: center;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+    position: relative;
+    overflow: hidden;
+  }
+  .package-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 4px;
+    border-radius: 14px 14px 0 0;
+  }
+  .pkg-gold::before { background: linear-gradient(90deg, #f59e0b, #fcd34d); }
+  .pkg-silver::before { background: linear-gradient(90deg, #6b7280, #d1d5db); }
+  .pkg-bronze::before { background: linear-gradient(90deg, #b45309, #d97706); }
+
+  .pkg-medal { font-size: 26px; margin-bottom: 6px; }
+  .pkg-name { font-size: 13px; font-weight: 700; margin-bottom: 6px; color: #1a1a1a; }
+  .pkg-price { font-size: 12px; font-weight: 700; color: #d95f2b; margin-bottom: 10px; }
+  .pkg-sold-label { font-size: 10px; color: #aaa; font-weight: 600; text-transform: uppercase; margin-bottom: 3px; }
+  .pkg-sold-num { font-size: 20px; font-weight: 700; line-height: 1; }
+  .pkg-total { font-size: 11px; color: #bbb; }
+  .pkg-mini-bar {
+    margin-top: 8px;
+    height: 5px;
+    background: #f0ede8;
+    border-radius: 3px;
+    overflow: hidden;
+  }
+  .pkg-mini-fill { height: 100%; border-radius: 3px; }
+  .fill-gold { background: #f59e0b; }
+  .fill-silver { background: #9ca3af; }
+  .fill-bronze { background: #b45309; }
+
+  /* SPONSOR LIST */
+  .sponsor-card {
+    background: #fff;
+    border-radius: 14px;
+    padding: 16px;
+    margin-bottom: 10px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+  }
+  .sponsor-top {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 8px;
+  }
+  .sponsor-info { display: flex; align-items: center; gap: 12px; }
+  .sponsor-logo {
+    width: 42px; height: 42px;
+    border-radius: 10px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 15px; font-weight: 700; color: #fff;
+    flex-shrink: 0;
+  }
+  .sponsor-name { font-size: 15px; font-weight: 700; }
+  .sponsor-pkg { font-size: 12px; color: #888; margin-top: 2px; }
+  .sponsor-amount { text-align: right; }
+  .sponsor-amount .amount { font-size: 16px; font-weight: 700; color: #1a1a1a; }
+  .sponsor-amount .due-date { font-size: 11px; color: #aaa; margin-top: 2px; }
+
+  /* BADGES */
+  .badge {
+    display: inline-flex;
+    align-items: center;
+    padding: 4px 10px;
+    border-radius: 20px;
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.3px;
+  }
+  .badge-paid { background: #dcfce7; color: #16a34a; }
+  .badge-pending { background: #fef9c3; color: #ca8a04; }
+  .badge-overdue { background: #fee2e2; color: #dc2626; }
+  .badge-partial { background: #dbeafe; color: #1d4ed8; }
+
+  .badge-gold-pkg { background: #fef3c7; color: #92400e; }
+  .badge-silver-pkg { background: #f3f4f6; color: #374151; }
+  .badge-bronze-pkg { background: #fef3c7; color: #78350f; }
+
+  /* BOTTOM TAB */
+  .bottom-tab {
+    position: fixed; bottom: 0; left: 50%; transform: translateX(-50%);
+    width: 100%; max-width: 480px;
+    background: #fff; border-top: 1px solid #e0ddd8;
+    display: flex; height: 68px; z-index: 100;
+  }
+  .tab-item {
+    flex: 1; display: flex; flex-direction: column;
+    align-items: center; justify-content: center; gap: 3px;
+    cursor: pointer; color: #999; font-size: 10px; font-weight: 600;
+    text-decoration: none; padding: 8px 0;
+  }
+  .tab-item .tab-icon { font-size: 22px; line-height: 1; }
+  .tab-item.active { color: #d95f2b; }
+</style>
+</head>
+<body>
+<div class="app">
+
+  <!-- TOP NAV -->
+  <nav class="top-nav">
+    <span class="event-name">Game Connection 2025</span>
+    <div class="hamburger" onclick="openDrawer()">
+      <span></span><span></span><span></span>
+    </div>
+  </nav>
+
+  <!-- DRAWER -->
+  <div class="drawer-overlay" id="drawerOverlay" onclick="closeDrawer()"></div>
+  <div class="drawer" id="drawer">
+    <h3>Menu</h3>
+    <a href="#">Dashboard</a>
+    <a href="#">Export Report</a>
+    <a href="#">Send Invoice</a>
+    <a href="#">Package Settings</a>
+    <a href="#">Help</a>
+  </div>
+
+  <!-- CONTENT -->
+  <div class="content">
+
+    <div class="page-header">
+      <h1>Sponsorship</h1>
+      <p>Game Connection B2B Summit 2025</p>
+    </div>
+
+    <!-- Payment Overview -->
+    <div class="payment-card">
+      <h3>💰 Payment Overview</h3>
+      <div class="payment-grid">
+        <div class="payment-item">
+          <div class="pay-num pay-total">€285K</div>
+          <div class="pay-label">Total Value</div>
+        </div>
+        <div class="payment-item">
+          <div class="pay-num pay-received">€198K</div>
+          <div class="pay-label">Received</div>
+        </div>
+        <div class="payment-item">
+          <div class="pay-num pay-pending">€87K</div>
+          <div class="pay-label">Outstanding</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Collection Rate -->
+    <div class="progress-overview">
+      <div class="progress-label">
+        <span>Collection Rate</span>
+        <span>69.5%</span>
+      </div>
+      <div class="progress-track">
+        <div class="progress-fill" style="width:69.5%"></div>
+      </div>
+    </div>
+
+    <!-- Packages -->
+    <p class="section-title">Package Status</p>
+    <div class="package-grid">
+      <div class="package-card pkg-gold">
+        <div class="pkg-medal">🥇</div>
+        <div class="pkg-name">Gold</div>
+        <div class="pkg-price">€25K</div>
+        <div class="pkg-sold-label">Sold</div>
+        <div class="pkg-sold-num">5</div>
+        <div class="pkg-total">of 6 slots</div>
+        <div class="pkg-mini-bar"><div class="pkg-mini-fill fill-gold" style="width:83%"></div></div>
+      </div>
+      <div class="package-card pkg-silver">
+        <div class="pkg-medal">🥈</div>
+        <div class="pkg-name">Silver</div>
+        <div class="pkg-price">€12K</div>
+        <div class="pkg-sold-label">Sold</div>
+        <div class="pkg-sold-num">8</div>
+        <div class="pkg-total">of 10 slots</div>
+        <div class="pkg-mini-bar"><div class="pkg-mini-fill fill-silver" style="width:80%"></div></div>
+      </div>
+      <div class="package-card pkg-bronze">
+        <div class="pkg-medal">🥉</div>
+        <div class="pkg-name">Bronze</div>
+        <div class="pkg-price">€5K</div>
+        <div class="pkg-sold-label">Sold</div>
+        <div class="pkg-sold-num">12</div>
+        <div class="pkg-total">of 15 slots</div>
+        <div class="pkg-mini-bar"><div class="pkg-mini-fill fill-bronze" style="width:80%"></div></div>
+      </div>
+    </div>
+
+    <!-- Sponsors -->
+    <p class="section-title">Sponsors</p>
+
+    <div class="sponsor-card">
+      <div class="sponsor-top">
+        <div class="sponsor-info">
+          <div class="sponsor-logo" style="background:#f59e0b;">EA</div>
+          <div>
+            <div class="sponsor-name">Electronic Arts</div>
+            <div class="sponsor-pkg">🥇 Gold Package</div>
+          </div>
+        </div>
+        <div class="sponsor-amount">
+          <div class="amount">€25,000</div>
+          <div class="due-date">Paid Jun 10</div>
+        </div>
+      </div>
+      <span class="badge badge-paid">Paid</span>
+    </div>
+
+    <div class="sponsor-card">
+      <div class="sponsor-top">
+        <div class="sponsor-info">
+          <div class="sponsor-logo" style="background:#1a1a1a;">AC</div>
+          <div>
+            <div class="sponsor-name">Activision Blizzard</div>
+            <div class="sponsor-pkg">🥇 Gold Package</div>
+          </div>
+        </div>
+        <div class="sponsor-amount">
+          <div class="amount">€25,000</div>
+          <div class="due-date">Due Sep 1</div>
+        </div>
+      </div>
+      <span class="badge badge-pending">Pending</span>
+    </div>
+
+    <div class="sponsor-card">
+      <div class="sponsor-top">
+        <div class="sponsor-info">
+          <div class="sponsor-logo" style="background:#9ca3af;">NK</div>
+          <div>
+            <div class="sponsor-name">Naughty Dog</div>
+            <div class="sponsor-pkg">🥈 Silver Package</div>
+          </div>
+        </div>
+        <div class="sponsor-amount">
+          <div class="amount">€12,000</div>
+          <div class="due-date">Paid Jun 20</div>
+        </div>
+      </div>
+      <span class="badge badge-paid">Paid</span>
+    </div>
+
+    <div class="sponsor-card">
+      <div class="sponsor-top">
+        <div class="sponsor-info">
+          <div class="sponsor-logo" style="background:#ef4444;">2K</div>
+          <div>
+            <div class="sponsor-name">2K Games</div>
+            <div class="sponsor-pkg">🥈 Silver Package</div>
+          </div>
+        </div>
+        <div class="sponsor-amount">
+          <div class="amount">€12,000</div>
+          <div class="due-date">Was Jul 15</div>
+        </div>
+      </div>
+      <span class="badge badge-overdue">Overdue</span>
+    </div>
+
+    <div class="sponsor-card">
+      <div class="sponsor-top">
+        <div class="sponsor-info">
+          <div class="sponsor-logo" style="background:#3b82f6;">FO</div>
+          <div>
+            <div class="sponsor-name">Focus Entertainment</div>
+            <div class="sponsor-pkg">🥉 Bronze Package</div>
+          </div>
+        </div>
+        <div class="sponsor-amount">
+          <div class="amount">€5,000</div>
+          <div class="due-date">€2,500 received</div>
+        </div>
+      </div>
+      <span class="badge badge-partial">Partial</span>
+    </div>
+
+    <div class="sponsor-card">
+      <div class="sponsor-top">
+        <div class="sponsor-info">
+          <div class="sponsor-logo" style="background:#8b5cf6;">DV</div>
+          <div>
+            <div class="sponsor-name">Devolver Digital</div>
+            <div class="sponsor-pkg">🥉 Bronze Package</div>
+          </div>
+        </div>
+        <div class="sponsor-amount">
+          <div class="amount">€5,000</div>
+          <div class="due-date">Paid Aug 3</div>
+        </div>
+      </div>
+      <span class="badge badge-paid">Paid</span>
+    </div>
+
+  </div>
+
+  <!-- BOTTOM TAB -->
+  <nav class="bottom-tab">
+    <a class="tab-item" href="#"><span class="tab-icon">🏠</span>Dashboard</a>
+    <a class="tab-item" href="#"><span class="tab-icon">📋</span>Events</a>
+    <a class="tab-item active" href="#"><span class="tab-icon">🎟</span>Sales</a>
+    <a class="tab-item" href="#"><span class="tab-icon">👥</span>Attendees</a>
+    <a class="tab-item" href="#"><span class="tab-icon">⚙️</span>Settings</a>
+  </nav>
+
+</div>
+
+<script>
+  function openDrawer() {
+    document.getElementById('drawer').classList.add('open');
+    document.getElementById('drawerOverlay').classList.add('open');
+  }
+  function closeDrawer() {
+    document.getElementById('drawer').classList.remove('open');
+    document.getElementById('drawerOverlay').classList.remove('open');
+  }
+</script>
+</body>
+</html>
