@@ -1,0 +1,2324 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Event Setup Wizard — Game Connection</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg: #e8e4da;
+    --orange: #d95f2b;
+    --orange-light: #f4e8e1;
+    --orange-hover: #c2521f;
+    --teal: #0a7fa8;
+    --teal-light: #e0f3fa;
+    --green: #0d9b72;
+    --green-light: #e0f5ee;
+    --white: #fff;
+    --card-radius: 10px;
+    --gray-100: #f5f4f0;
+    --gray-200: #e8e4da;
+    --gray-300: #d4cfc4;
+    --gray-400: #b0a99a;
+    --gray-500: #857e72;
+    --gray-600: #5c5850;
+    --gray-800: #2e2b26;
+    --shadow-sm: 0 1px 4px rgba(0,0,0,0.07);
+    --shadow-md: 0 4px 16px rgba(0,0,0,0.10);
+    --shadow-lg: 0 8px 32px rgba(0,0,0,0.13);
+  }
+
+  html, body {
+    min-height: 100vh;
+    background: var(--bg);
+    font-family: 'DM Sans', sans-serif;
+    color: var(--gray-800);
+    font-size: 15px;
+    line-height: 1.6;
+  }
+
+  /* ── Layout ── */
+  .app-shell {
+    display: flex;
+    min-height: 100vh;
+    max-width: 1400px;
+    margin: 0 auto;
+  }
+
+  /* ── Sidebar ── */
+  .sidebar {
+    width: 260px;
+    flex-shrink: 0;
+    background: var(--white);
+    border-right: 1px solid var(--gray-300);
+    display: flex;
+    flex-direction: column;
+    position: sticky;
+    top: 0;
+    height: 100vh;
+    overflow-y: auto;
+  }
+
+  .sidebar-logo {
+    padding: 28px 24px 20px;
+    border-bottom: 1px solid var(--gray-200);
+  }
+
+  .sidebar-logo .logo-mark {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .logo-icon {
+    width: 36px;
+    height: 36px;
+    background: var(--orange);
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-weight: 700;
+    font-size: 16px;
+    letter-spacing: -1px;
+  }
+
+  .logo-text {
+    font-size: 15px;
+    font-weight: 700;
+    color: var(--gray-800);
+    line-height: 1.2;
+  }
+
+  .logo-sub {
+    font-size: 11px;
+    color: var(--gray-400);
+    font-weight: 400;
+  }
+
+  .sidebar-section {
+    padding: 16px 12px 8px;
+  }
+
+  .sidebar-section-label {
+    font-size: 10px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: var(--gray-400);
+    padding: 0 12px;
+    margin-bottom: 6px;
+  }
+
+  .sidebar-nav-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 9px 12px;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: background 0.15s, color 0.15s;
+    color: var(--gray-500);
+    font-size: 14px;
+    font-weight: 500;
+    text-decoration: none;
+    user-select: none;
+  }
+
+  .sidebar-nav-item:hover {
+    background: var(--gray-100);
+    color: var(--gray-800);
+  }
+
+  .sidebar-nav-item.active {
+    background: var(--orange-light);
+    color: var(--orange);
+  }
+
+  .sidebar-nav-item .nav-icon {
+    width: 20px;
+    height: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 16px;
+    flex-shrink: 0;
+  }
+
+  .sidebar-footer {
+    margin-top: auto;
+    padding: 16px;
+    border-top: 1px solid var(--gray-200);
+  }
+
+  .user-pill {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 8px 12px;
+    border-radius: 8px;
+    background: var(--gray-100);
+  }
+
+  .user-avatar {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    background: var(--teal);
+    color: white;
+    font-weight: 700;
+    font-size: 13px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+  }
+
+  .user-info { flex: 1; min-width: 0; }
+  .user-name { font-size: 13px; font-weight: 600; color: var(--gray-800); }
+  .user-role { font-size: 11px; color: var(--gray-400); }
+
+  /* ── Main Content ── */
+  .main-content {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+    padding: 32px 40px;
+    overflow-y: auto;
+  }
+
+  /* ── Page Header ── */
+  .page-header {
+    margin-bottom: 28px;
+  }
+
+  .breadcrumb {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 13px;
+    color: var(--gray-400);
+    margin-bottom: 8px;
+  }
+
+  .breadcrumb a { color: var(--teal); text-decoration: none; }
+  .breadcrumb a:hover { text-decoration: underline; }
+
+  .page-title {
+    font-size: 26px;
+    font-weight: 700;
+    color: var(--gray-800);
+    line-height: 1.2;
+  }
+
+  .page-subtitle {
+    font-size: 14px;
+    color: var(--gray-500);
+    margin-top: 4px;
+  }
+
+  /* ── Step Indicator ── */
+  .steps-indicator {
+    display: flex;
+    align-items: center;
+    background: var(--white);
+    border-radius: var(--card-radius);
+    padding: 0 8px;
+    margin-bottom: 28px;
+    box-shadow: var(--shadow-sm);
+    overflow: hidden;
+  }
+
+  .step-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 18px 20px;
+    cursor: pointer;
+    transition: background 0.15s;
+    flex: 1;
+    border-bottom: 3px solid transparent;
+    position: relative;
+  }
+
+  .step-item:hover:not(.active) {
+    background: var(--gray-100);
+  }
+
+  .step-item.active {
+    border-bottom-color: var(--orange);
+  }
+
+  .step-item.completed {
+    border-bottom-color: var(--green);
+  }
+
+  .step-circle {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    border: 2px solid var(--gray-300);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--gray-400);
+    flex-shrink: 0;
+    transition: all 0.2s;
+    background: var(--white);
+  }
+
+  .step-item.active .step-circle {
+    border-color: var(--orange);
+    background: var(--orange);
+    color: white;
+  }
+
+  .step-item.completed .step-circle {
+    border-color: var(--green);
+    background: var(--green);
+    color: white;
+  }
+
+  .step-info {}
+  .step-label { font-size: 11px; color: var(--gray-400); font-weight: 500; text-transform: uppercase; letter-spacing: 0.5px; }
+  .step-name { font-size: 14px; font-weight: 600; color: var(--gray-600); line-height: 1.2; }
+  .step-item.active .step-name { color: var(--orange); }
+  .step-item.completed .step-name { color: var(--green); }
+
+  .step-divider {
+    width: 1px;
+    height: 40px;
+    background: var(--gray-200);
+    flex-shrink: 0;
+  }
+
+  /* ── Form Step Panels ── */
+  .step-panel { display: none; }
+  .step-panel.active { display: block; }
+
+  /* ── Card ── */
+  .card {
+    background: var(--white);
+    border-radius: var(--card-radius);
+    padding: 28px;
+    box-shadow: var(--shadow-sm);
+    margin-bottom: 20px;
+  }
+
+  .card-title {
+    font-size: 17px;
+    font-weight: 700;
+    color: var(--gray-800);
+    margin-bottom: 20px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .card-title-icon {
+    width: 32px;
+    height: 32px;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 17px;
+    flex-shrink: 0;
+  }
+
+  /* ── Form ── */
+  .form-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+  }
+
+  .form-grid.col-3 {
+    grid-template-columns: 1fr 1fr 1fr;
+  }
+
+  .form-field {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+
+  .form-field.full-width {
+    grid-column: 1 / -1;
+  }
+
+  .form-label {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--gray-600);
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .form-label .required {
+    color: var(--orange);
+  }
+
+  .form-label .optional {
+    font-size: 11px;
+    font-weight: 400;
+    color: var(--gray-400);
+  }
+
+  .form-input, .form-select, .form-textarea {
+    width: 100%;
+    padding: 10px 14px;
+    border: 1.5px solid var(--gray-300);
+    border-radius: 8px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 14px;
+    color: var(--gray-800);
+    background: var(--white);
+    transition: border-color 0.15s, box-shadow 0.15s;
+    outline: none;
+  }
+
+  .form-input:focus, .form-select:focus, .form-textarea:focus {
+    border-color: var(--teal);
+    box-shadow: 0 0 0 3px rgba(10, 127, 168, 0.1);
+  }
+
+  .form-input.error, .form-select.error, .form-textarea.error {
+    border-color: #e53e3e;
+  }
+
+  .form-input::placeholder, .form-textarea::placeholder {
+    color: var(--gray-400);
+  }
+
+  .form-textarea {
+    resize: vertical;
+    min-height: 120px;
+  }
+
+  .form-hint {
+    font-size: 12px;
+    color: var(--gray-400);
+  }
+
+  .form-error {
+    font-size: 12px;
+    color: #e53e3e;
+    display: none;
+  }
+
+  .form-error.show { display: block; }
+
+  /* ── Radio / Toggle Groups ── */
+  .radio-group {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+  }
+
+  .radio-option {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 9px 16px;
+    border: 1.5px solid var(--gray-300);
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.15s;
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--gray-600);
+    background: var(--white);
+    user-select: none;
+  }
+
+  .radio-option:hover {
+    border-color: var(--gray-400);
+    background: var(--gray-100);
+  }
+
+  .radio-option.selected {
+    border-color: var(--orange);
+    background: var(--orange-light);
+    color: var(--orange);
+  }
+
+  .radio-option input[type="radio"] { display: none; }
+
+  .radio-dot {
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    border: 2px solid currentColor;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+  }
+
+  .radio-option.selected .radio-dot::after {
+    content: '';
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: var(--orange);
+    display: block;
+  }
+
+  /* Location Toggle */
+  .location-toggle {
+    display: flex;
+    background: var(--gray-100);
+    border-radius: 8px;
+    padding: 4px;
+    gap: 2px;
+  }
+
+  .loc-btn {
+    flex: 1;
+    padding: 8px 16px;
+    border: none;
+    border-radius: 6px;
+    background: transparent;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--gray-500);
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+
+  .loc-btn.active {
+    background: var(--white);
+    color: var(--orange);
+    box-shadow: var(--shadow-sm);
+    font-weight: 600;
+  }
+
+  /* Location sub-form */
+  .location-sub {
+    margin-top: 12px;
+    display: none;
+  }
+
+  .location-sub.show { display: block; }
+
+  /* ── Image Upload ── */
+  .image-upload-zone {
+    border: 2px dashed var(--gray-300);
+    border-radius: 10px;
+    padding: 36px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.15s;
+    text-align: center;
+    background: var(--gray-100);
+    position: relative;
+  }
+
+  .image-upload-zone:hover, .image-upload-zone.dragover {
+    border-color: var(--orange);
+    background: var(--orange-light);
+  }
+
+  .image-upload-zone.has-image {
+    border-style: solid;
+    border-color: var(--green);
+    background: var(--green-light);
+    padding: 16px;
+  }
+
+  .upload-icon { font-size: 36px; margin-bottom: 10px; }
+  .upload-text { font-size: 14px; font-weight: 500; color: var(--gray-600); }
+  .upload-sub { font-size: 12px; color: var(--gray-400); margin-top: 4px; }
+  .upload-browse { color: var(--teal); font-weight: 600; }
+
+  .upload-preview {
+    display: none;
+    align-items: center;
+    gap: 12px;
+    width: 100%;
+  }
+
+  .upload-preview.show { display: flex; }
+
+  .preview-thumb {
+    width: 80px;
+    height: 60px;
+    border-radius: 6px;
+    object-fit: cover;
+    background: var(--gray-300);
+  }
+
+  .preview-info { flex: 1; text-align: left; }
+  .preview-name { font-size: 14px; font-weight: 600; color: var(--gray-800); }
+  .preview-size { font-size: 12px; color: var(--gray-400); }
+  .preview-remove {
+    background: none;
+    border: none;
+    color: var(--gray-400);
+    cursor: pointer;
+    font-size: 20px;
+    padding: 4px;
+    transition: color 0.15s;
+  }
+  .preview-remove:hover { color: #e53e3e; }
+
+  /* ── Module Cards (Step 2) ── */
+  .modules-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 16px;
+  }
+
+  .module-card {
+    border: 1.5px solid var(--gray-300);
+    border-radius: var(--card-radius);
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    transition: all 0.2s;
+    background: var(--white);
+    position: relative;
+  }
+
+  .module-card.enabled {
+    border-color: var(--teal);
+    box-shadow: 0 0 0 2px rgba(10,127,168,0.1);
+  }
+
+  .module-card.required-module {
+    border-color: var(--gray-300);
+    background: var(--gray-100);
+  }
+
+  .module-card-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 8px;
+  }
+
+  .module-icon {
+    width: 44px;
+    height: 44px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 22px;
+    flex-shrink: 0;
+  }
+
+  .module-toggle-wrap { margin-top: 2px; }
+
+  .module-name {
+    font-size: 15px;
+    font-weight: 700;
+    color: var(--gray-800);
+    line-height: 1.3;
+  }
+
+  .module-desc {
+    font-size: 13px;
+    color: var(--gray-500);
+    line-height: 1.5;
+  }
+
+  .module-badges {
+    display: flex;
+    gap: 6px;
+    flex-wrap: wrap;
+  }
+
+  .badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 3px 8px;
+    border-radius: 20px;
+    font-size: 11px;
+    font-weight: 600;
+  }
+
+  .badge-required {
+    background: var(--gray-200);
+    color: var(--gray-500);
+  }
+
+  .badge-exclusive {
+    background: linear-gradient(135deg, #6a35d9, #d95f2b);
+    color: white;
+  }
+
+  /* ── Toggle Switch ── */
+  .toggle-switch {
+    position: relative;
+    width: 42px;
+    height: 24px;
+    flex-shrink: 0;
+  }
+
+  .toggle-switch input { opacity: 0; width: 0; height: 0; position: absolute; }
+
+  .toggle-slider {
+    position: absolute;
+    inset: 0;
+    border-radius: 12px;
+    background: var(--gray-300);
+    cursor: pointer;
+    transition: background 0.2s;
+  }
+
+  .toggle-slider::before {
+    content: '';
+    position: absolute;
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    background: white;
+    top: 3px;
+    left: 3px;
+    transition: transform 0.2s;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+  }
+
+  .toggle-switch input:checked + .toggle-slider {
+    background: var(--teal);
+  }
+
+  .toggle-switch input:checked + .toggle-slider::before {
+    transform: translateX(18px);
+  }
+
+  .toggle-switch input:disabled + .toggle-slider {
+    cursor: not-allowed;
+    opacity: 0.6;
+  }
+
+  /* ── Checkboxes (Step 3) ── */
+  .checkbox-group {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+
+  .checkbox-option {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 16px;
+    border: 1.5px solid var(--gray-300);
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.15s;
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--gray-600);
+    background: var(--white);
+    user-select: none;
+  }
+
+  .checkbox-option:hover {
+    border-color: var(--gray-400);
+  }
+
+  .checkbox-option.checked {
+    border-color: var(--teal);
+    background: var(--teal-light);
+    color: var(--teal);
+  }
+
+  .checkbox-option input { display: none; }
+
+  .check-box {
+    width: 16px;
+    height: 16px;
+    border-radius: 4px;
+    border: 2px solid currentColor;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    font-size: 10px;
+  }
+
+  .checkbox-option.checked .check-box::after {
+    content: '✓';
+    color: var(--teal);
+    font-weight: 700;
+  }
+
+  /* Badge Types List */
+  .badge-list {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .badge-list-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 14px;
+    border: 1.5px solid var(--gray-300);
+    border-radius: 8px;
+    background: var(--gray-100);
+  }
+
+  .badge-color-dot {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    flex-shrink: 0;
+  }
+
+  .badge-list-name {
+    flex: 1;
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--gray-800);
+  }
+
+  .badge-list-action {
+    font-size: 12px;
+    color: var(--teal);
+    cursor: pointer;
+    font-weight: 500;
+  }
+
+  .badge-list-action:hover { text-decoration: underline; }
+
+  /* ── Publishing (Step 4) ── */
+  .url-preview-wrap {
+    display: flex;
+    align-items: center;
+    border: 1.5px solid var(--gray-300);
+    border-radius: 8px;
+    overflow: hidden;
+    background: var(--white);
+    transition: border-color 0.15s, box-shadow 0.15s;
+  }
+
+  .url-preview-wrap:focus-within {
+    border-color: var(--teal);
+    box-shadow: 0 0 0 3px rgba(10, 127, 168, 0.1);
+  }
+
+  .url-prefix {
+    padding: 10px 14px;
+    background: var(--gray-100);
+    border-right: 1.5px solid var(--gray-300);
+    font-size: 13px;
+    color: var(--gray-500);
+    white-space: nowrap;
+    font-family: monospace;
+  }
+
+  .url-slug-input {
+    flex: 1;
+    padding: 10px 14px;
+    border: none;
+    outline: none;
+    font-family: monospace;
+    font-size: 14px;
+    color: var(--teal);
+    font-weight: 600;
+    background: transparent;
+  }
+
+  /* Social Preview Card */
+  .social-preview-card {
+    border: 1.5px solid var(--gray-300);
+    border-radius: 10px;
+    overflow: hidden;
+    max-width: 480px;
+    background: var(--white);
+    box-shadow: var(--shadow-md);
+  }
+
+  .social-preview-image {
+    height: 160px;
+    background: linear-gradient(135deg, var(--teal) 0%, var(--orange) 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 32px;
+  }
+
+  .social-preview-body {
+    padding: 14px 16px;
+  }
+
+  .social-preview-domain {
+    font-size: 11px;
+    color: var(--gray-400);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 4px;
+  }
+
+  .social-preview-title {
+    font-size: 16px;
+    font-weight: 700;
+    color: var(--gray-800);
+    line-height: 1.3;
+    margin-bottom: 4px;
+  }
+
+  .social-preview-desc {
+    font-size: 13px;
+    color: var(--gray-500);
+    line-height: 1.5;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+
+  /* Checklist */
+  .checklist {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .checklist-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 16px;
+    border-radius: 8px;
+    border: 1.5px solid var(--gray-200);
+    background: var(--gray-100);
+    transition: all 0.2s;
+  }
+
+  .checklist-item.done {
+    border-color: var(--green);
+    background: var(--green-light);
+  }
+
+  .checklist-item.warn {
+    border-color: #e0a800;
+    background: #fffbeb;
+  }
+
+  .checklist-status { font-size: 18px; flex-shrink: 0; }
+  .checklist-label { font-size: 14px; font-weight: 500; color: var(--gray-700); }
+  .checklist-label span { color: var(--gray-400); font-size: 12px; font-weight: 400; margin-left: 8px; }
+
+  /* ── Action Bar ── */
+  .action-bar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 20px 28px;
+    background: var(--white);
+    border-radius: var(--card-radius);
+    box-shadow: var(--shadow-sm);
+    margin-top: 8px;
+  }
+
+  .action-bar-left, .action-bar-right {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+
+  /* ── Buttons ── */
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 22px;
+    border-radius: 8px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    border: none;
+    transition: all 0.15s;
+    text-decoration: none;
+    white-space: nowrap;
+  }
+
+  .btn-primary {
+    background: var(--orange);
+    color: white;
+  }
+  .btn-primary:hover { background: var(--orange-hover); transform: translateY(-1px); box-shadow: 0 4px 12px rgba(217, 95, 43, 0.3); }
+  .btn-primary:active { transform: translateY(0); }
+
+  .btn-secondary {
+    background: var(--white);
+    color: var(--gray-600);
+    border: 1.5px solid var(--gray-300);
+  }
+  .btn-secondary:hover { background: var(--gray-100); border-color: var(--gray-400); }
+
+  .btn-ghost {
+    background: transparent;
+    color: var(--gray-500);
+    border: 1.5px solid transparent;
+    padding: 10px 14px;
+  }
+  .btn-ghost:hover { background: var(--gray-100); color: var(--gray-800); }
+
+  .btn-teal {
+    background: var(--teal);
+    color: white;
+  }
+  .btn-teal:hover { background: #0868a0; transform: translateY(-1px); box-shadow: 0 4px 12px rgba(10,127,168,0.25); }
+
+  .btn-green {
+    background: var(--green);
+    color: white;
+  }
+  .btn-green:hover { background: #0a7f5c; transform: translateY(-1px); box-shadow: 0 4px 12px rgba(13,155,114,0.25); }
+
+  .btn-lg {
+    padding: 13px 28px;
+    font-size: 15px;
+    border-radius: 10px;
+  }
+
+  .btn-icon { font-size: 16px; }
+
+  /* ── Visibility Selector ── */
+  .visibility-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 12px;
+  }
+
+  .visibility-card {
+    border: 1.5px solid var(--gray-300);
+    border-radius: 10px;
+    padding: 16px;
+    cursor: pointer;
+    transition: all 0.15s;
+    text-align: center;
+    background: var(--white);
+  }
+
+  .visibility-card:hover { border-color: var(--gray-400); }
+
+  .visibility-card.selected {
+    border-color: var(--orange);
+    background: var(--orange-light);
+  }
+
+  .visibility-icon { font-size: 28px; margin-bottom: 8px; }
+  .visibility-name { font-size: 14px; font-weight: 700; color: var(--gray-800); margin-bottom: 4px; }
+  .visibility-desc { font-size: 12px; color: var(--gray-400); }
+  .visibility-card.selected .visibility-name { color: var(--orange); }
+
+  /* Reg Mode selector */
+  .reg-mode-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 12px;
+  }
+
+  .reg-mode-card {
+    border: 1.5px solid var(--gray-300);
+    border-radius: 10px;
+    padding: 16px;
+    cursor: pointer;
+    transition: all 0.15s;
+    background: var(--white);
+  }
+
+  .reg-mode-card:hover { border-color: var(--gray-400); }
+  .reg-mode-card.selected { border-color: var(--teal); background: var(--teal-light); }
+  .reg-mode-icon { font-size: 24px; margin-bottom: 6px; }
+  .reg-mode-name { font-size: 14px; font-weight: 700; color: var(--gray-800); margin-bottom: 4px; }
+  .reg-mode-card.selected .reg-mode-name { color: var(--teal); }
+  .reg-mode-desc { font-size: 12px; color: var(--gray-400); }
+
+  /* Yes/No selector */
+  .yn-group { display: flex; gap: 10px; }
+  .yn-btn {
+    flex: 1;
+    padding: 10px;
+    border: 1.5px solid var(--gray-300);
+    border-radius: 8px;
+    text-align: center;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--gray-500);
+    transition: all 0.15s;
+    background: var(--white);
+  }
+  .yn-btn:hover { border-color: var(--gray-400); }
+  .yn-btn.selected { border-color: var(--teal); background: var(--teal-light); color: var(--teal); }
+
+  /* Platform select */
+  .platform-select {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  .platform-chip {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 7px 14px;
+    border: 1.5px solid var(--gray-300);
+    border-radius: 20px;
+    cursor: pointer;
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--gray-600);
+    background: var(--white);
+    transition: all 0.15s;
+  }
+
+  .platform-chip:hover { border-color: var(--gray-400); }
+  .platform-chip.selected { border-color: var(--teal); background: var(--teal-light); color: var(--teal); }
+  .platform-chip .platform-icon { font-size: 16px; }
+
+  /* ── Toast ── */
+  .toast-container {
+    position: fixed;
+    top: 24px;
+    right: 24px;
+    z-index: 1000;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    pointer-events: none;
+  }
+
+  .toast {
+    padding: 12px 20px;
+    border-radius: 10px;
+    font-size: 14px;
+    font-weight: 500;
+    box-shadow: var(--shadow-lg);
+    pointer-events: all;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    animation: slideIn 0.3s ease;
+    max-width: 340px;
+  }
+
+  @keyframes slideIn {
+    from { transform: translateX(100%); opacity: 0; }
+    to { transform: translateX(0); opacity: 1; }
+  }
+
+  @keyframes fadeOut {
+    from { opacity: 1; transform: translateX(0); }
+    to { opacity: 0; transform: translateX(30px); }
+  }
+
+  .toast.fadeout { animation: fadeOut 0.3s ease forwards; }
+
+  .toast-success { background: var(--green); color: white; }
+  .toast-error { background: #e53e3e; color: white; }
+  .toast-info { background: var(--teal); color: white; }
+
+  /* Section divider */
+  .section-divider {
+    border: none;
+    border-top: 1px solid var(--gray-200);
+    margin: 24px 0;
+  }
+
+  .section-subtitle {
+    font-size: 13px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: var(--gray-400);
+    margin-bottom: 12px;
+  }
+
+  /* Scrollbar */
+  ::-webkit-scrollbar { width: 6px; height: 6px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: var(--gray-300); border-radius: 3px; }
+  ::-webkit-scrollbar-thumb:hover { background: var(--gray-400); }
+
+  /* Date inputs */
+  input[type="date"], input[type="number"] {
+    width: 100%;
+    padding: 10px 14px;
+    border: 1.5px solid var(--gray-300);
+    border-radius: 8px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 14px;
+    color: var(--gray-800);
+    background: var(--white);
+    transition: border-color 0.15s, box-shadow 0.15s;
+    outline: none;
+  }
+
+  input[type="date"]:focus, input[type="number"]:focus {
+    border-color: var(--teal);
+    box-shadow: 0 0 0 3px rgba(10, 127, 168, 0.1);
+  }
+
+  .two-col-layout {
+    display: grid;
+    grid-template-columns: 1fr 420px;
+    gap: 20px;
+    align-items: start;
+  }
+
+  /* Step 4 publish buttons */
+  .publish-action-row {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    margin-top: 24px;
+  }
+
+  /* Progress bar subtle */
+  .progress-bar-wrap {
+    height: 3px;
+    background: var(--gray-200);
+    border-radius: 2px;
+    margin-bottom: 28px;
+    overflow: hidden;
+  }
+
+  .progress-bar-fill {
+    height: 100%;
+    background: var(--orange);
+    border-radius: 2px;
+    transition: width 0.3s ease;
+  }
+</style>
+</head>
+<body>
+
+<div class="app-shell">
+
+  <!-- ═══ SIDEBAR ═══ -->
+  <aside class="sidebar">
+    <div class="sidebar-logo">
+      <div class="logo-mark">
+        <div class="logo-icon">GC</div>
+        <div>
+          <div class="logo-text">Game Connection</div>
+          <div class="logo-sub">Event Platform</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="sidebar-section">
+      <div class="sidebar-section-label">Main</div>
+      <a class="sidebar-nav-item" href="#">
+        <span class="nav-icon">🏠</span> Dashboard
+      </a>
+      <a class="sidebar-nav-item active" href="#">
+        <span class="nav-icon">📅</span> Events
+      </a>
+      <a class="sidebar-nav-item" href="#">
+        <span class="nav-icon">👥</span> Attendees
+      </a>
+      <a class="sidebar-nav-item" href="#">
+        <span class="nav-icon">🤝</span> Matchmaking
+      </a>
+      <a class="sidebar-nav-item" href="#">
+        <span class="nav-icon">🏆</span> Awards
+      </a>
+    </div>
+
+    <div class="sidebar-section">
+      <div class="sidebar-section-label">Management</div>
+      <a class="sidebar-nav-item" href="#">
+        <span class="nav-icon">📊</span> Analytics
+      </a>
+      <a class="sidebar-nav-item" href="#">
+        <span class="nav-icon">💼</span> Sponsors
+      </a>
+      <a class="sidebar-nav-item" href="#">
+        <span class="nav-icon">🎮</span> Showcases
+      </a>
+      <a class="sidebar-nav-item" href="#">
+        <span class="nav-icon">⚙️</span> Settings
+      </a>
+    </div>
+
+    <div class="sidebar-footer">
+      <div class="user-pill">
+        <div class="user-avatar">QQ</div>
+        <div class="user-info">
+          <div class="user-name">Qiang Qiang</div>
+          <div class="user-role">Admin</div>
+        </div>
+      </div>
+    </div>
+  </aside>
+
+  <!-- ═══ MAIN CONTENT ═══ -->
+  <main class="main-content">
+
+    <!-- Page Header -->
+    <div class="page-header">
+      <div class="breadcrumb">
+        <a href="#">Events</a>
+        <span>›</span>
+        <span>New Event</span>
+      </div>
+      <div class="page-title">Create New Event</div>
+      <div class="page-subtitle">Set up your event in 4 simple steps — basic info, features, registration, and publishing.</div>
+    </div>
+
+    <!-- Progress Bar -->
+    <div class="progress-bar-wrap">
+      <div class="progress-bar-fill" id="progressBar" style="width:25%"></div>
+    </div>
+
+    <!-- Steps Indicator -->
+    <div class="steps-indicator">
+      <div class="step-item active" id="stepTab1" onclick="goToStep(1)">
+        <div class="step-circle" id="stepCircle1">1</div>
+        <div class="step-info">
+          <div class="step-label">Step 1</div>
+          <div class="step-name">Basic Information</div>
+        </div>
+      </div>
+      <div class="step-divider"></div>
+      <div class="step-item" id="stepTab2" onclick="goToStep(2)">
+        <div class="step-circle" id="stepCircle2">2</div>
+        <div class="step-info">
+          <div class="step-label">Step 2</div>
+          <div class="step-name">Feature Modules</div>
+        </div>
+      </div>
+      <div class="step-divider"></div>
+      <div class="step-item" id="stepTab3" onclick="goToStep(3)">
+        <div class="step-circle" id="stepCircle3">3</div>
+        <div class="step-info">
+          <div class="step-label">Step 3</div>
+          <div class="step-name">Registration Settings</div>
+        </div>
+      </div>
+      <div class="step-divider"></div>
+      <div class="step-item" id="stepTab4" onclick="goToStep(4)">
+        <div class="step-circle" id="stepCircle4">4</div>
+        <div class="step-info">
+          <div class="step-label">Step 4</div>
+          <div class="step-name">Publishing</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ─────────────────────────────────────────── -->
+    <!-- STEP 1: Basic Information                   -->
+    <!-- ─────────────────────────────────────────── -->
+    <div class="step-panel active" id="panel1">
+
+      <div class="card">
+        <div class="card-title">
+          <div class="card-title-icon" style="background:#fff3ec;">📋</div>
+          Event Details
+        </div>
+
+        <div class="form-grid">
+          <div class="form-field full-width">
+            <label class="form-label">Event Name <span class="required">*</span></label>
+            <input type="text" class="form-input" id="eventName" placeholder="e.g. Game Connection Europe 2025" oninput="syncEventName()">
+            <div class="form-error" id="eventNameErr">Event name is required.</div>
+          </div>
+
+          <div class="form-field full-width">
+            <label class="form-label">Event Type <span class="required">*</span></label>
+            <div class="radio-group" id="eventTypeGroup">
+              <label class="radio-option selected" onclick="selectRadio('eventTypeGroup', this, 'Conference')">
+                <input type="radio" name="eventType" value="Conference" checked>
+                <span class="radio-dot"></span> 🎤 Conference
+              </label>
+              <label class="radio-option" onclick="selectRadio('eventTypeGroup', this, 'Expo')">
+                <input type="radio" name="eventType" value="Expo">
+                <span class="radio-dot"></span> 🏛️ Expo
+              </label>
+              <label class="radio-option" onclick="selectRadio('eventTypeGroup', this, 'Meetup')">
+                <input type="radio" name="eventType" value="Meetup">
+                <span class="radio-dot"></span> 🤝 Meetup
+              </label>
+              <label class="radio-option" onclick="selectRadio('eventTypeGroup', this, 'Online')">
+                <input type="radio" name="eventType" value="Online">
+                <span class="radio-dot"></span> 💻 Online
+              </label>
+            </div>
+          </div>
+
+          <div class="form-field">
+            <label class="form-label">Start Date <span class="required">*</span></label>
+            <input type="date" id="startDate" onchange="validateDates()">
+            <div class="form-error" id="startDateErr">Please select a start date.</div>
+          </div>
+
+          <div class="form-field">
+            <label class="form-label">End Date <span class="required">*</span></label>
+            <input type="date" id="endDate" onchange="validateDates()">
+            <div class="form-error" id="endDateErr">End date must be on or after start date.</div>
+          </div>
+        </div>
+
+        <hr class="section-divider">
+
+        <div class="form-field" style="margin-bottom:16px;">
+          <label class="form-label">Location Type <span class="required">*</span></label>
+          <div class="location-toggle">
+            <button class="loc-btn active" id="locPhysical" onclick="setLocation('physical')">📍 Physical</button>
+            <button class="loc-btn" id="locOnline" onclick="setLocation('online')">🌐 Online</button>
+            <button class="loc-btn" id="locHybrid" onclick="setLocation('hybrid')">🔀 Hybrid</button>
+          </div>
+        </div>
+
+        <!-- Physical Address -->
+        <div class="location-sub show" id="subPhysical">
+          <div class="form-grid col-3">
+            <div class="form-field">
+              <label class="form-label">Venue Name</label>
+              <input type="text" class="form-input" placeholder="Convention Center">
+            </div>
+            <div class="form-field">
+              <label class="form-label">City</label>
+              <input type="text" class="form-input" placeholder="Lyon">
+            </div>
+            <div class="form-field">
+              <label class="form-label">Country</label>
+              <input type="text" class="form-input" placeholder="France">
+            </div>
+            <div class="form-field full-width">
+              <label class="form-label">Full Address <span class="optional">(optional)</span></label>
+              <input type="text" class="form-input" placeholder="123 Rue de la Paix, 75001 Paris">
+            </div>
+          </div>
+        </div>
+
+        <!-- Online Platform -->
+        <div class="location-sub" id="subOnline">
+          <label class="form-label" style="margin-bottom:8px;">Streaming Platform</label>
+          <div class="platform-select" id="platformSelect">
+            <div class="platform-chip selected" onclick="togglePlatform(this)"><span class="platform-icon">🎮</span> Steam</div>
+            <div class="platform-chip" onclick="togglePlatform(this)"><span class="platform-icon">📺</span> Twitch</div>
+            <div class="platform-chip" onclick="togglePlatform(this)"><span class="platform-icon">▶️</span> YouTube Live</div>
+            <div class="platform-chip" onclick="togglePlatform(this)"><span class="platform-icon">💬</span> Discord</div>
+            <div class="platform-chip" onclick="togglePlatform(this)"><span class="platform-icon">🔵</span> Zoom</div>
+            <div class="platform-chip" onclick="togglePlatform(this)"><span class="platform-icon">🌐</span> Custom URL</div>
+          </div>
+        </div>
+
+        <!-- Hybrid shows both -->
+        <div class="location-sub" id="subHybrid">
+          <div class="form-grid col-3" style="margin-bottom:12px;">
+            <div class="form-field">
+              <label class="form-label">Venue Name</label>
+              <input type="text" class="form-input" placeholder="Convention Center">
+            </div>
+            <div class="form-field">
+              <label class="form-label">City</label>
+              <input type="text" class="form-input" placeholder="Lyon">
+            </div>
+            <div class="form-field">
+              <label class="form-label">Country</label>
+              <input type="text" class="form-input" placeholder="France">
+            </div>
+          </div>
+          <label class="form-label" style="margin-bottom:8px;">Online Platform</label>
+          <div class="platform-select">
+            <div class="platform-chip selected" onclick="togglePlatform(this)"><span class="platform-icon">📺</span> Twitch</div>
+            <div class="platform-chip" onclick="togglePlatform(this)"><span class="platform-icon">▶️</span> YouTube Live</div>
+            <div class="platform-chip" onclick="togglePlatform(this)"><span class="platform-icon">🔵</span> Zoom</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Cover Image & Description -->
+      <div class="card">
+        <div class="card-title">
+          <div class="card-title-icon" style="background:#fff3ec;">🖼️</div>
+          Media & Description
+        </div>
+
+        <div class="two-col-layout" style="grid-template-columns:1fr 1fr; gap:24px;">
+          <div>
+            <div class="form-field" style="margin-bottom:20px;">
+              <label class="form-label">Cover Image</label>
+              <div class="image-upload-zone" id="uploadZone"
+                onclick="document.getElementById('coverImageInput').click()"
+                ondragover="handleDragOver(event)"
+                ondragleave="handleDragLeave(event)"
+                ondrop="handleDrop(event)">
+                <div id="uploadDefault">
+                  <div class="upload-icon">🖼️</div>
+                  <div class="upload-text">Drag & drop or <span class="upload-browse">browse</span></div>
+                  <div class="upload-sub">Recommended: 1920×1080px, JPG or PNG, max 5MB</div>
+                </div>
+                <div class="upload-preview" id="uploadPreview">
+                  <img class="preview-thumb" id="previewImg" src="" alt="Preview">
+                  <div class="preview-info">
+                    <div class="preview-name" id="previewName">image.jpg</div>
+                    <div class="preview-size" id="previewSize">2.4 MB</div>
+                  </div>
+                  <button class="preview-remove" onclick="removeImage(event)">✕</button>
+                </div>
+                <input type="file" id="coverImageInput" accept="image/*" style="display:none" onchange="handleFileSelect(event)">
+              </div>
+              <div class="form-hint" style="margin-top:6px;">This will appear in event listings and social shares.</div>
+            </div>
+
+            <div class="form-field">
+              <label class="form-label">Expected Attendees</label>
+              <input type="number" id="expectedAttendees" placeholder="e.g. 500" min="1">
+            </div>
+          </div>
+
+          <div class="form-field">
+            <label class="form-label">Event Description <span class="required">*</span></label>
+            <textarea class="form-textarea" id="eventDesc" style="min-height:220px;" placeholder="Describe your event — agenda highlights, who should attend, what participants will gain..."></textarea>
+            <div class="form-error" id="eventDescErr">Please add an event description.</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="action-bar">
+        <div class="action-bar-left">
+          <button class="btn btn-ghost" onclick="saveDraft()">💾 Save Draft</button>
+        </div>
+        <div class="action-bar-right">
+          <button class="btn btn-primary" onclick="nextStep(1)">Next Step <span class="btn-icon">→</span></button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ─────────────────────────────────────────── -->
+    <!-- STEP 2: Feature Modules                     -->
+    <!-- ─────────────────────────────────────────── -->
+    <div class="step-panel" id="panel2">
+
+      <div class="card">
+        <div class="card-title">
+          <div class="card-title-icon" style="background:#e8f5fe;">🧩</div>
+          Select Feature Modules
+        </div>
+        <p style="color:var(--gray-500); font-size:14px; margin-bottom:20px;">
+          Choose the modules to enable for your event. Live Schedule is always included. You can configure each module in detail after publishing.
+        </p>
+
+        <div class="modules-grid" id="modulesGrid">
+
+          <!-- Live Schedule – required -->
+          <div class="module-card required-module enabled" id="mod-schedule">
+            <div class="module-card-header">
+              <div class="module-icon" style="background:#e0f3fa;">📅</div>
+              <div class="module-toggle-wrap">
+                <label class="toggle-switch">
+                  <input type="checkbox" checked disabled>
+                  <span class="toggle-slider"></span>
+                </label>
+              </div>
+            </div>
+            <div class="module-name">Live Schedule</div>
+            <div class="module-desc">Full-featured agenda management with sessions, speakers, and real-time updates.</div>
+            <div class="module-badges">
+              <span class="badge badge-required">🔒 Required</span>
+            </div>
+          </div>
+
+          <!-- Let's Meet Matchmaking -->
+          <div class="module-card" id="mod-matchmaking" onclick="toggleModule('mod-matchmaking', this)">
+            <div class="module-card-header">
+              <div class="module-icon" style="background:#f0e8ff;">🤝</div>
+              <div class="module-toggle-wrap">
+                <label class="toggle-switch" onclick="event.stopPropagation()">
+                  <input type="checkbox" class="mod-toggle" onchange="toggleModule('mod-matchmaking', this.closest('.module-card'))">
+                  <span class="toggle-slider"></span>
+                </label>
+              </div>
+            </div>
+            <div class="module-name">Let's Meet Matchmaking</div>
+            <div class="module-desc">AI-powered meeting scheduling between developers, publishers, and investors.</div>
+            <div class="module-badges">
+              <span class="badge badge-exclusive">✨ Game Connection Exclusive</span>
+            </div>
+          </div>
+
+          <!-- Market & Sponsorship -->
+          <div class="module-card" id="mod-market" onclick="toggleModule('mod-market', this)">
+            <div class="module-card-header">
+              <div class="module-icon" style="background:#fff3e0;">💼</div>
+              <div class="module-toggle-wrap">
+                <label class="toggle-switch" onclick="event.stopPropagation()">
+                  <input type="checkbox" class="mod-toggle" onchange="toggleModule('mod-market', this.closest('.module-card'))">
+                  <span class="toggle-slider"></span>
+                </label>
+              </div>
+            </div>
+            <div class="module-name">Market & Sponsorship</div>
+            <div class="module-desc">Sponsor packages, marketplace listings, and promotional opportunities for exhibitors.</div>
+          </div>
+
+          <!-- Awards & Competition -->
+          <div class="module-card" id="mod-awards" onclick="toggleModule('mod-awards', this)">
+            <div class="module-card-header">
+              <div class="module-icon" style="background:#fffde0;">🏆</div>
+              <div class="module-toggle-wrap">
+                <label class="toggle-switch" onclick="event.stopPropagation()">
+                  <input type="checkbox" class="mod-toggle" onchange="toggleModule('mod-awards', this.closest('.module-card'))">
+                  <span class="toggle-slider"></span>
+                </label>
+              </div>
+            </div>
+            <div class="module-name">Awards & Competition</div>
+            <div class="module-desc">Run game awards, indie competitions, and community voting with customizable categories.</div>
+          </div>
+
+          <!-- Game Showcase -->
+          <div class="module-card" id="mod-showcase" onclick="toggleModule('mod-showcase', this)">
+            <div class="module-card-header">
+              <div class="module-icon" style="background:#e8f5e9;">🎮</div>
+              <div class="module-toggle-wrap">
+                <label class="toggle-switch" onclick="event.stopPropagation()">
+                  <input type="checkbox" class="mod-toggle" onchange="toggleModule('mod-showcase', this.closest('.module-card'))">
+                  <span class="toggle-slider"></span>
+                </label>
+              </div>
+            </div>
+            <div class="module-name">Game Showcase</div>
+            <div class="module-desc">Dedicated space for developers to present their titles with demo slots, trailers, and press kits.</div>
+          </div>
+
+          <!-- Buyer Invitation -->
+          <div class="module-card" id="mod-buyer" onclick="toggleModule('mod-buyer', this)">
+            <div class="module-card-header">
+              <div class="module-icon" style="background:#fce4ec;">🎫</div>
+              <div class="module-toggle-wrap">
+                <label class="toggle-switch" onclick="event.stopPropagation()">
+                  <input type="checkbox" class="mod-toggle" onchange="toggleModule('mod-buyer', this.closest('.module-card'))">
+                  <span class="toggle-slider"></span>
+                </label>
+              </div>
+            </div>
+            <div class="module-name">Buyer Invitation</div>
+            <div class="module-desc">Curated buyer program with exclusive access, private lounges, and priority meeting slots.</div>
+          </div>
+
+        </div>
+      </div>
+
+      <div class="action-bar">
+        <div class="action-bar-left">
+          <button class="btn btn-secondary" onclick="prevStep(2)"><span class="btn-icon">←</span> Back</button>
+          <button class="btn btn-ghost" onclick="saveDraft()">💾 Save Draft</button>
+        </div>
+        <div class="action-bar-right">
+          <button class="btn btn-primary" onclick="nextStep(2)">Next Step <span class="btn-icon">→</span></button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ─────────────────────────────────────────── -->
+    <!-- STEP 3: Registration Settings               -->
+    <!-- ─────────────────────────────────────────── -->
+    <div class="step-panel" id="panel3">
+
+      <div class="card">
+        <div class="card-title">
+          <div class="card-title-icon" style="background:#e8f5e9;">👥</div>
+          Participant Types
+        </div>
+        <p style="font-size:13px; color:var(--gray-500); margin-bottom:14px;">Select all participant categories that may register for this event.</p>
+        <div class="checkbox-group" id="participantTypes">
+          <label class="checkbox-option checked" onclick="toggleCheckbox(this)">
+            <input type="checkbox" checked>
+            <span class="check-box"></span> 🧑‍💻 Developer
+          </label>
+          <label class="checkbox-option checked" onclick="toggleCheckbox(this)">
+            <input type="checkbox" checked>
+            <span class="check-box"></span> 🏢 Publisher
+          </label>
+          <label class="checkbox-option" onclick="toggleCheckbox(this)">
+            <input type="checkbox">
+            <span class="check-box"></span> 💰 Investor
+          </label>
+          <label class="checkbox-option" onclick="toggleCheckbox(this)">
+            <input type="checkbox">
+            <span class="check-box"></span> 📰 Press
+          </label>
+          <label class="checkbox-option" onclick="toggleCheckbox(this)">
+            <input type="checkbox">
+            <span class="check-box"></span> 🎟️ General Attendee
+          </label>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">
+          <div class="card-title-icon" style="background:#e8f5fe;">📝</div>
+          Registration Configuration
+        </div>
+
+        <div class="form-field" style="margin-bottom:20px;">
+          <label class="form-label">Registration Mode <span class="required">*</span></label>
+          <div class="reg-mode-grid">
+            <div class="reg-mode-card selected" onclick="selectRegMode(this)">
+              <div class="reg-mode-icon">🔓</div>
+              <div class="reg-mode-name">Open</div>
+              <div class="reg-mode-desc">Anyone can register without approval</div>
+            </div>
+            <div class="reg-mode-card" onclick="selectRegMode(this)">
+              <div class="reg-mode-icon">✉️</div>
+              <div class="reg-mode-name">Invite Only</div>
+              <div class="reg-mode-desc">Only invited participants can register</div>
+            </div>
+            <div class="reg-mode-card" onclick="selectRegMode(this)">
+              <div class="reg-mode-icon">📋</div>
+              <div class="reg-mode-name">Application Required</div>
+              <div class="reg-mode-desc">Attendees apply and await approval</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="form-grid" style="margin-bottom:20px;">
+          <div class="form-field">
+            <label class="form-label">Registration Deadline <span class="optional">(optional)</span></label>
+            <input type="date" id="regDeadline">
+          </div>
+          <div class="form-field">
+            <label class="form-label">Max Attendees <span class="optional">(optional)</span></label>
+            <input type="number" id="maxAttendees" placeholder="Leave blank for unlimited" min="1">
+          </div>
+        </div>
+
+        <div class="form-field">
+          <label class="form-label">Require Profile Completion Before Registering?</label>
+          <div class="yn-group">
+            <div class="yn-btn selected" onclick="selectYN(this, 'requireProfile')">✅ Yes — require complete profile</div>
+            <div class="yn-btn" onclick="selectYN(this, 'requireProfile')">❌ No — allow incomplete profiles</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">
+          <div class="card-title-icon" style="background:#fff3e0;">🪪</div>
+          Badge Types
+        </div>
+        <p style="font-size:13px; color:var(--gray-500); margin-bottom:14px;">Configure the badge types for on-site check-in and identification.</p>
+
+        <div class="badge-list" id="badgeList">
+          <div class="badge-list-item">
+            <div class="badge-color-dot" style="background:#0a7fa8;"></div>
+            <span class="badge-list-name">Developer</span>
+            <span class="badge-list-action" onclick="editBadge(this)">Edit</span>
+            <span class="badge-list-action" onclick="removeBadge(this)" style="color:var(--gray-400); margin-left:8px;">Remove</span>
+          </div>
+          <div class="badge-list-item">
+            <div class="badge-color-dot" style="background:#d95f2b;"></div>
+            <span class="badge-list-name">Publisher</span>
+            <span class="badge-list-action" onclick="editBadge(this)">Edit</span>
+            <span class="badge-list-action" onclick="removeBadge(this)" style="color:var(--gray-400); margin-left:8px;">Remove</span>
+          </div>
+          <div class="badge-list-item">
+            <div class="badge-color-dot" style="background:#0d9b72;"></div>
+            <span class="badge-list-name">Speaker</span>
+            <span class="badge-list-action" onclick="editBadge(this)">Edit</span>
+            <span class="badge-list-action" onclick="removeBadge(this)" style="color:var(--gray-400); margin-left:8px;">Remove</span>
+          </div>
+          <div class="badge-list-item">
+            <div class="badge-color-dot" style="background:#9b3d0d;"></div>
+            <span class="badge-list-name">VIP / Buyer</span>
+            <span class="badge-list-action" onclick="editBadge(this)">Edit</span>
+            <span class="badge-list-action" onclick="removeBadge(this)" style="color:var(--gray-400); margin-left:8px;">Remove</span>
+          </div>
+          <div class="badge-list-item">
+            <div class="badge-color-dot" style="background:#6a35d9;"></div>
+            <span class="badge-list-name">Press / Media</span>
+            <span class="badge-list-action" onclick="editBadge(this)">Edit</span>
+            <span class="badge-list-action" onclick="removeBadge(this)" style="color:var(--gray-400); margin-left:8px;">Remove</span>
+          </div>
+        </div>
+
+        <button class="btn btn-secondary" style="margin-top:14px;" onclick="addBadge()">+ Add Badge Type</button>
+      </div>
+
+      <div class="action-bar">
+        <div class="action-bar-left">
+          <button class="btn btn-secondary" onclick="prevStep(3)"><span class="btn-icon">←</span> Back</button>
+          <button class="btn btn-ghost" onclick="saveDraft()">💾 Save Draft</button>
+        </div>
+        <div class="action-bar-right">
+          <button class="btn btn-primary" onclick="nextStep(3)">Next Step <span class="btn-icon">→</span></button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ─────────────────────────────────────────── -->
+    <!-- STEP 4: Publishing                          -->
+    <!-- ─────────────────────────────────────────── -->
+    <div class="step-panel" id="panel4">
+
+      <div class="two-col-layout">
+        <div>
+
+          <div class="card">
+            <div class="card-title">
+              <div class="card-title-icon" style="background:#e8f5fe;">🌍</div>
+              Visibility
+            </div>
+            <div class="visibility-grid">
+              <div class="visibility-card selected" onclick="selectVisibility(this)">
+                <div class="visibility-icon">🌐</div>
+                <div class="visibility-name">Public</div>
+                <div class="visibility-desc">Listed in directory, discoverable by all</div>
+              </div>
+              <div class="visibility-card" onclick="selectVisibility(this)">
+                <div class="visibility-icon">🔒</div>
+                <div class="visibility-name">Private</div>
+                <div class="visibility-desc">Only accessible with direct link or invitation</div>
+              </div>
+              <div class="visibility-card" onclick="selectVisibility(this)">
+                <div class="visibility-icon">👁️</div>
+                <div class="visibility-name">Unlisted</div>
+                <div class="visibility-desc">Accessible via URL, not listed in directory</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="card-title">
+              <div class="card-title-icon" style="background:#fff3ec;">🔗</div>
+              Custom URL
+            </div>
+            <div class="form-field" style="margin-bottom:16px;">
+              <label class="form-label">Event URL Slug</label>
+              <div class="url-preview-wrap">
+                <span class="url-prefix">gameconnection.com/events/</span>
+                <input class="url-slug-input" type="text" id="urlSlug" placeholder="your-event-slug" oninput="updateSocialPreview()">
+              </div>
+              <div class="form-hint" style="margin-top:6px;" id="urlHint">Enter a URL-friendly slug (letters, numbers, hyphens only)</div>
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="card-title">
+              <div class="card-title-icon" style="background:#e8f5e9;">🔍</div>
+              SEO Settings
+            </div>
+            <div class="form-field" style="margin-bottom:14px;">
+              <label class="form-label">SEO Title</label>
+              <input type="text" class="form-input" id="seoTitle" placeholder="Game Connection Europe 2025 | The Premier Gaming B2B Event"
+                oninput="updateSocialPreview()" maxlength="70">
+              <div class="form-hint"><span id="seoTitleCount">0</span>/70 characters</div>
+            </div>
+            <div class="form-field">
+              <label class="form-label">SEO Description</label>
+              <textarea class="form-textarea" style="min-height:80px;" id="seoDesc"
+                placeholder="Where developers, publishers, and investors converge to forge the future of gaming..."
+                oninput="updateSocialPreview(); countSeoDesc()" maxlength="160"></textarea>
+              <div class="form-hint"><span id="seoDescCount">0</span>/160 characters</div>
+            </div>
+          </div>
+
+        </div>
+
+        <!-- Right column -->
+        <div>
+
+          <div class="card">
+            <div class="card-title">
+              <div class="card-title-icon" style="background:#e8f5fe;">📲</div>
+              Social Share Preview
+            </div>
+            <div class="social-preview-card" id="socialPreview">
+              <div class="social-preview-image" id="socialPreviewImg">🎮</div>
+              <div class="social-preview-body">
+                <div class="social-preview-domain">GAMECONNECTION.COM</div>
+                <div class="social-preview-title" id="socialTitle">Your Event Name</div>
+                <div class="social-preview-desc" id="socialDesc">Add an SEO description to see it previewed here. This text will appear when your event is shared on social media.</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="card-title">
+              <div class="card-title-icon" style="background:#fffde0;">✅</div>
+              Launch Checklist
+            </div>
+            <div class="checklist" id="launchChecklist">
+              <div class="checklist-item done" id="check-basicInfo">
+                <span class="checklist-status">✅</span>
+                <div>
+                  <div class="checklist-label">Basic info complete</div>
+                </div>
+              </div>
+              <div class="checklist-item done" id="check-modules">
+                <span class="checklist-status">✅</span>
+                <div>
+                  <div class="checklist-label">Modules configured</div>
+                </div>
+              </div>
+              <div class="checklist-item done" id="check-registration">
+                <span class="checklist-status">✅</span>
+                <div>
+                  <div class="checklist-label">Registration open</div>
+                </div>
+              </div>
+              <div class="checklist-item warn" id="check-cover">
+                <span class="checklist-status">⚠️</span>
+                <div>
+                  <div class="checklist-label">Cover image <span>No image uploaded yet</span></div>
+                </div>
+              </div>
+            </div>
+
+            <div class="publish-action-row">
+              <button class="btn btn-primary btn-lg" onclick="publishEvent()">🚀 Publish Event</button>
+              <button class="btn btn-secondary" onclick="saveDraft()">💾 Save as Draft</button>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+      <div class="action-bar">
+        <div class="action-bar-left">
+          <button class="btn btn-secondary" onclick="prevStep(4)"><span class="btn-icon">←</span> Back</button>
+          <button class="btn btn-ghost" onclick="saveDraft()">💾 Save Draft</button>
+        </div>
+        <div class="action-bar-right">
+          <button class="btn btn-green btn-lg" onclick="publishEvent()">🚀 Publish Event</button>
+        </div>
+      </div>
+    </div>
+
+  </main>
+</div>
+
+<!-- Toast Container -->
+<div class="toast-container" id="toastContainer"></div>
+
+<script>
+  // ══════════════════════════════════════
+  // State
+  // ══════════════════════════════════════
+  let currentStep = 1;
+  const completedSteps = new Set();
+  let hasImage = false;
+
+  // ══════════════════════════════════════
+  // Step Navigation
+  // ══════════════════════════════════════
+  function goToStep(step) {
+    if (step > currentStep && !validateStep(currentStep)) return;
+
+    // Update panels
+    document.querySelectorAll('.step-panel').forEach(p => p.classList.remove('active'));
+    document.getElementById('panel' + step).classList.add('active');
+
+    // Update tabs
+    document.querySelectorAll('.step-item').forEach((t, i) => {
+      t.classList.remove('active', 'completed');
+      const circle = t.querySelector('.step-circle');
+      if (i + 1 < step || completedSteps.has(i + 1)) {
+        t.classList.add('completed');
+        circle.textContent = '✓';
+      } else if (i + 1 === step) {
+        t.classList.add('active');
+        circle.textContent = i + 1;
+      } else {
+        circle.textContent = i + 1;
+      }
+    });
+
+    // Progress bar
+    const pct = (step / 4) * 100;
+    document.getElementById('progressBar').style.width = pct + '%';
+
+    currentStep = step;
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+
+    // Update checklist if on step 4
+    if (step === 4) updateChecklist();
+  }
+
+  function nextStep(from) {
+    if (!validateStep(from)) return;
+    completedSteps.add(from);
+    goToStep(from + 1);
+  }
+
+  function prevStep(from) {
+    goToStep(from - 1);
+  }
+
+  // ══════════════════════════════════════
+  // Validation
+  // ══════════════════════════════════════
+  function validateStep(step) {
+    if (step === 1) {
+      let valid = true;
+      const name = document.getElementById('eventName').value.trim();
+      const desc = document.getElementById('eventDesc').value.trim();
+      const start = document.getElementById('startDate').value;
+      const end = document.getElementById('endDate').value;
+
+      showError('eventNameErr', !name);
+      if (!name) valid = false;
+
+      showError('eventDescErr', !desc);
+      if (!desc) valid = false;
+
+      showError('startDateErr', !start);
+      if (!start) valid = false;
+
+      if (end && start && end < start) {
+        showError('endDateErr', true);
+        valid = false;
+      } else {
+        showError('endDateErr', false);
+      }
+
+      if (!valid) {
+        showToast('Please fill in all required fields.', 'error');
+      }
+      return valid;
+    }
+    return true;
+  }
+
+  function showError(id, show) {
+    const el = document.getElementById(id);
+    if (el) {
+      el.classList.toggle('show', show);
+      const input = el.previousElementSibling;
+      if (input && (input.tagName === 'INPUT' || input.tagName === 'TEXTAREA')) {
+        input.classList.toggle('error', show);
+      }
+    }
+  }
+
+  function validateDates() {
+    const start = document.getElementById('startDate').value;
+    const end = document.getElementById('endDate').value;
+    if (start && end && end < start) {
+      showError('endDateErr', true);
+    } else {
+      showError('endDateErr', false);
+    }
+  }
+
+  // ══════════════════════════════════════
+  // Radio Selection
+  // ══════════════════════════════════════
+  function selectRadio(groupId, el, value) {
+    const group = document.getElementById(groupId);
+    group.querySelectorAll('.radio-option').forEach(o => o.classList.remove('selected'));
+    el.classList.add('selected');
+  }
+
+  // ══════════════════════════════════════
+  // Location Toggle
+  // ══════════════════════════════════════
+  function setLocation(type) {
+    ['physical', 'online', 'hybrid'].forEach(t => {
+      document.getElementById('loc' + t.charAt(0).toUpperCase() + t.slice(1)).classList.remove('active');
+      document.getElementById('sub' + t.charAt(0).toUpperCase() + t.slice(1)).classList.remove('show');
+    });
+    document.getElementById('loc' + type.charAt(0).toUpperCase() + type.slice(1)).classList.add('active');
+    document.getElementById('sub' + type.charAt(0).toUpperCase() + type.slice(1)).classList.add('show');
+  }
+
+  // ══════════════════════════════════════
+  // Platform Chips
+  // ══════════════════════════════════════
+  function togglePlatform(el) {
+    el.classList.toggle('selected');
+  }
+
+  // ══════════════════════════════════════
+  // Image Upload
+  // ══════════════════════════════════════
+  function handleFileSelect(e) {
+    const file = e.target.files[0];
+    if (file) showImagePreview(file);
+  }
+
+  function handleDragOver(e) {
+    e.preventDefault();
+    document.getElementById('uploadZone').classList.add('dragover');
+  }
+
+  function handleDragLeave(e) {
+    document.getElementById('uploadZone').classList.remove('dragover');
+  }
+
+  function handleDrop(e) {
+    e.preventDefault();
+    document.getElementById('uploadZone').classList.remove('dragover');
+    const file = e.dataTransfer.files[0];
+    if (file && file.type.startsWith('image/')) {
+      showImagePreview(file);
+    } else {
+      showToast('Please drop an image file.', 'error');
+    }
+  }
+
+  function showImagePreview(file) {
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      document.getElementById('previewImg').src = e.target.result;
+      document.getElementById('previewName').textContent = file.name;
+      document.getElementById('previewSize').textContent = (file.size / 1024 / 1024).toFixed(2) + ' MB';
+      document.getElementById('uploadDefault').style.display = 'none';
+      document.getElementById('uploadPreview').classList.add('show');
+      document.getElementById('uploadZone').classList.add('has-image');
+      hasImage = true;
+      updateChecklist();
+      showToast('Cover image uploaded ✓', 'success');
+    };
+    reader.readAsDataURL(file);
+  }
+
+  function removeImage(e) {
+    e.stopPropagation();
+    document.getElementById('uploadDefault').style.display = '';
+    document.getElementById('uploadPreview').classList.remove('show');
+    document.getElementById('uploadZone').classList.remove('has-image');
+    document.getElementById('coverImageInput').value = '';
+    hasImage = false;
+    updateChecklist();
+  }
+
+  // ══════════════════════════════════════
+  // Module Toggle
+  // ══════════════════════════════════════
+  function toggleModule(id, card) {
+    const toggle = card.querySelector('.mod-toggle');
+    const isEnabled = toggle.checked;
+    // When card body clicked (not toggle itself), flip
+    if (card === card) {
+      // We check if toggle was the source via click on card
+    }
+    card.classList.toggle('enabled', toggle.checked);
+    if (toggle.checked) {
+      showToast('Module enabled', 'info');
+    }
+  }
+
+  // Init: listen for change on all mod toggles
+  document.querySelectorAll('.mod-toggle').forEach(toggle => {
+    toggle.addEventListener('change', function() {
+      const card = this.closest('.module-card');
+      card.classList.toggle('enabled', this.checked);
+    });
+  });
+
+  // ══════════════════════════════════════
+  // Checkbox Options
+  // ══════════════════════════════════════
+  function toggleCheckbox(el) {
+    el.classList.toggle('checked');
+    const cb = el.querySelector('input[type="checkbox"]');
+    if (cb) cb.checked = el.classList.contains('checked');
+  }
+
+  // ══════════════════════════════════════
+  // Registration Mode
+  // ══════════════════════════════════════
+  function selectRegMode(el) {
+    document.querySelectorAll('.reg-mode-card').forEach(c => c.classList.remove('selected'));
+    el.classList.add('selected');
+  }
+
+  // ══════════════════════════════════════
+  // Yes/No
+  // ══════════════════════════════════════
+  function selectYN(el, group) {
+    const parent = el.closest('.yn-group');
+    parent.querySelectorAll('.yn-btn').forEach(b => b.classList.remove('selected'));
+    el.classList.add('selected');
+  }
+
+  // ══════════════════════════════════════
+  // Visibility
+  // ══════════════════════════════════════
+  function selectVisibility(el) {
+    document.querySelectorAll('.visibility-card').forEach(c => c.classList.remove('selected'));
+    el.classList.add('selected');
+  }
+
+  // ══════════════════════════════════════
+  // Badge List
+  // ══════════════════════════════════════
+  function editBadge(el) {
+    const item = el.closest('.badge-list-item');
+    const nameEl = item.querySelector('.badge-list-name');
+    const newName = prompt('Edit badge name:', nameEl.textContent);
+    if (newName && newName.trim()) {
+      nameEl.textContent = newName.trim();
+      showToast('Badge updated', 'success');
+    }
+  }
+
+  function removeBadge(el) {
+    const item = el.closest('.badge-list-item');
+    item.style.transition = 'opacity 0.2s';
+    item.style.opacity = '0';
+    setTimeout(() => item.remove(), 200);
+    showToast('Badge removed', 'info');
+  }
+
+  function addBadge() {
+    const name = prompt('New badge name:');
+    if (!name || !name.trim()) return;
+    const colors = ['#e53e3e', '#805ad5', '#0bc5ea', '#68d391', '#f6ad55'];
+    const color = colors[Math.floor(Math.random() * colors.length)];
+    const list = document.getElementById('badgeList');
+    const item = document.createElement('div');
+    item.className = 'badge-list-item';
+    item.innerHTML = `
+      <div class="badge-color-dot" style="background:${color};"></div>
+      <span class="badge-list-name">${name.trim()}</span>
+      <span class="badge-list-action" onclick="editBadge(this)">Edit</span>
+      <span class="badge-list-action" onclick="removeBadge(this)" style="color:var(--gray-400); margin-left:8px;">Remove</span>
+    `;
+    list.appendChild(item);
+    showToast('Badge type added', 'success');
+  }
+
+  // ══════════════════════════════════════
+  // Social Preview & SEO
+  // ══════════════════════════════════════
+  function syncEventName() {
+    const name = document.getElementById('eventName').value;
+    const seoTitle = document.getElementById('seoTitle');
+    if (!seoTitle.dataset.custom) {
+      seoTitle.value = name;
+      document.getElementById('seoTitleCount').textContent = name.length;
+    }
+    updateSocialPreview();
+  }
+
+  function updateSocialPreview() {
+    const title = document.getElementById('seoTitle').value || document.getElementById('eventName').value || 'Your Event Name';
+    const desc = document.getElementById('seoDesc').value || 'Add an SEO description to see it previewed here.';
+    document.getElementById('socialTitle').textContent = title;
+    document.getElementById('socialDesc').textContent = desc;
+    document.getElementById('seoTitleCount').textContent = document.getElementById('seoTitle').value.length;
+  }
+
+  function countSeoDesc() {
+    document.getElementById('seoDescCount').textContent = document.getElementById('seoDesc').value.length;
+  }
+
+  document.getElementById('seoTitle').addEventListener('input', function() {
+    this.dataset.custom = '1';
+    document.getElementById('seoTitleCount').textContent = this.value.length;
+    updateSocialPreview();
+  });
+
+  // Sanitize slug input
+  document.getElementById('urlSlug').addEventListener('input', function() {
+    let val = this.value.toLowerCase().replace(/[^a-z0-9-]/g, '-').replace(/-+/g, '-');
+    this.value = val;
+    document.getElementById('urlHint').textContent = val
+      ? 'Preview: gameconnection.com/events/' + val
+      : 'Enter a URL-friendly slug (letters, numbers, hyphens only)';
+  });
+
+  // ══════════════════════════════════════
+  // Checklist
+  // ══════════════════════════════════════
+  function updateChecklist() {
+    const eventName = document.getElementById('eventName').value.trim();
+    const eventDesc = document.getElementById('eventDesc').value.trim();
+    const startDate = document.getElementById('startDate').value;
+    const basicDone = eventName && eventDesc && startDate;
+
+    setChecklistItem('check-basicInfo', !!basicDone);
+    setChecklistItem('check-modules', true); // modules always have live schedule
+    setChecklistItem('check-registration', true); // registration has defaults
+    setChecklistItem('check-cover', hasImage);
+  }
+
+  function setChecklistItem(id, done) {
+    const el = document.getElementById(id);
+    if (!el) return;
+    const statusEl = el.querySelector('.checklist-status');
+    el.classList.toggle('done', done);
+    el.classList.toggle('warn', !done);
+    if (statusEl) statusEl.textContent = done ? '✅' : '⚠️';
+  }
+
+  // ══════════════════════════════════════
+  // Publish / Save
+  // ══════════════════════════════════════
+  function publishEvent() {
+    updateChecklist();
+    setTimeout(() => {
+      const warnItems = document.querySelectorAll('.checklist-item.warn');
+      if (warnItems.length > 0) {
+        showToast('Some checklist items need attention before publishing.', 'error');
+      } else {
+        showToast('🎉 Event published successfully!', 'success');
+        setTimeout(() => showToast('Your event is now live on gameconnection.com', 'info'), 1200);
+      }
+    }, 100);
+  }
+
+  function saveDraft() {
+    showToast('Draft saved ✓', 'success');
+  }
+
+  // ══════════════════════════════════════
+  // Toast
+  // ══════════════════════════════════════
+  function showToast(message, type = 'info') {
+    const container = document.getElementById('toastContainer');
+    const toast = document.createElement('div');
+    toast.className = `toast toast-${type}`;
+    toast.textContent = message;
+    container.appendChild(toast);
+
+    setTimeout(() => {
+      toast.classList.add('fadeout');
+      setTimeout(() => toast.remove(), 300);
+    }, 3200);
+  }
+
+  // ══════════════════════════════════════
+  // Init
+  // ══════════════════════════════════════
+  document.addEventListener('DOMContentLoaded', () => {
+    // Set default dates
+    const today = new Date();
+    const nextMonth = new Date(today);
+    nextMonth.setMonth(nextMonth.getMonth() + 2);
+    document.getElementById('startDate').valueAsDate = nextMonth;
+    const endD = new Date(nextMonth);
+    endD.setDate(endD.getDate() + 3);
+    document.getElementById('endDate').valueAsDate = endD;
+
+    updateSocialPreview();
+  });
+</script>
+
+</body>
+</html>
