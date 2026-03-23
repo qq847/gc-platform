@@ -1,0 +1,289 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Conference Schedule Builder v2</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'DM Sans',sans-serif;background:#e8e4da;color:#1a1a1a;min-height:100vh;display:flex;flex-direction:column}
+header{background:#fff;border-bottom:1px solid #ddd;padding:0 24px;display:flex;align-items:center;justify-content:space-between;height:60px;position:sticky;top:0;z-index:100}
+.logo{font-weight:700;font-size:18px;color:#d95f2b;letter-spacing:-0.5px}
+.logo span{color:#1a1a1a}
+.tabs{display:flex;gap:4px;background:#f3f0ea;padding:4px;border-radius:10px}
+.tab{padding:6px 20px;border:none;background:transparent;border-radius:7px;font-family:'DM Sans',sans-serif;font-size:14px;font-weight:500;cursor:pointer;color:#666;transition:all .2s}
+.tab.active{background:#fff;color:#d95f2b;box-shadow:0 1px 4px rgba(0,0,0,.1)}
+.btn-add{background:#d95f2b;color:#fff;border:none;padding:8px 18px;border-radius:8px;font-family:'DM Sans',sans-serif;font-size:14px;font-weight:600;cursor:pointer;transition:background .2s}
+.btn-add:hover{background:#c04f20}
+.layout{display:flex;flex:1;gap:0}
+.sidebar{width:220px;min-width:220px;padding:20px 16px;border-right:1px solid #ddd;background:#faf9f6}
+.sidebar h3{font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:#999;margin-bottom:12px}
+.legend-item{display:flex;align-items:center;gap:8px;margin-bottom:8px;font-size:13px;font-weight:500}
+.legend-dot{width:10px;height:10px;border-radius:50%;flex-shrink:0}
+.export-section{margin-top:24px;border-top:1px solid #e8e4da;padding-top:20px}
+.btn-export{width:100%;padding:9px;border:2px solid #d95f2b;background:transparent;color:#d95f2b;border-radius:8px;font-family:'DM Sans',sans-serif;font-size:13px;font-weight:600;cursor:pointer;transition:all .2s}
+.btn-export:hover{background:#d95f2b;color:#fff}
+.stats{margin-top:16px}
+.stat{display:flex;justify-content:space-between;font-size:12px;color:#888;margin-bottom:4px}
+.stat strong{color:#333}
+main{flex:1;padding:24px;overflow-y:auto}
+.timeline{display:flex;flex-direction:column;gap:0}
+.time-row{display:flex;align-items:flex-start;min-height:72px;position:relative}
+.time-row:not(:last-child)::after{content:'';position:absolute;left:64px;top:36px;bottom:-36px;width:1px;background:#e0dbd2}
+.time-label{width:60px;min-width:60px;font-size:13px;color:#999;font-weight:500;padding-top:10px;flex-shrink:0}
+.sessions-col{flex:1;padding:4px 0 4px 16px;display:flex;flex-direction:column;gap:6px}
+.session-card{background:#fff;border-radius:10px;padding:12px 14px;display:flex;align-items:center;gap:12px;box-shadow:0 1px 3px rgba(0,0,0,.06);border-left:4px solid #ccc;transition:box-shadow .2s;position:relative}
+.session-card:hover{box-shadow:0 3px 10px rgba(0,0,0,.1)}
+.badge{display:inline-flex;align-items:center;gap:4px;padding:3px 9px;border-radius:20px;font-size:11px;font-weight:600;white-space:nowrap;flex-shrink:0}
+.session-meta{flex:1;min-width:0}
+.session-title{font-size:14px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.session-sub{font-size:12px;color:#888;margin-top:2px;display:flex;gap:8px}
+.session-sub span{display:flex;align-items:center;gap:3px}
+.card-actions{display:flex;gap:4px;opacity:0;transition:opacity .2s;flex-shrink:0}
+.session-card:hover .card-actions{opacity:1}
+.btn-icon{background:none;border:1px solid #e0dbd2;padding:4px 8px;border-radius:6px;cursor:pointer;font-size:12px;font-family:'DM Sans',sans-serif;color:#666;transition:all .2s}
+.btn-icon:hover{background:#f5f3ef;border-color:#ccc}
+.btn-icon.del:hover{background:#fff0ee;border-color:#d95f2b;color:#d95f2b}
+.empty-state{color:#bbb;font-size:13px;padding:10px 0}
+.modal-bg{display:none;position:fixed;inset:0;background:rgba(0,0,0,.4);z-index:200;align-items:center;justify-content:center}
+.modal-bg.open{display:flex}
+.modal{background:#fff;border-radius:16px;width:460px;padding:28px;box-shadow:0 20px 60px rgba(0,0,0,.2)}
+.modal h2{font-size:18px;font-weight:700;margin-bottom:20px;color:#1a1a1a}
+.form-row{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px}
+.form-group{display:flex;flex-direction:column;gap:5px;margin-bottom:12px}
+.form-group label{font-size:12px;font-weight:600;color:#666;text-transform:uppercase;letter-spacing:.5px}
+.form-group input,.form-group select{padding:9px 12px;border:1.5px solid #e0dbd2;border-radius:8px;font-family:'DM Sans',sans-serif;font-size:14px;background:#faf9f6;color:#1a1a1a;outline:none;transition:border .2s}
+.form-group input:focus,.form-group select:focus{border-color:#d95f2b}
+.modal-actions{display:flex;gap:10px;margin-top:20px;justify-content:flex-end}
+.btn-cancel{padding:9px 20px;border:1.5px solid #e0dbd2;background:transparent;border-radius:8px;font-family:'DM Sans',sans-serif;font-size:14px;font-weight:500;cursor:pointer;color:#666}
+.btn-cancel:hover{background:#f5f3ef}
+.btn-save{padding:9px 24px;background:#d95f2b;color:#fff;border:none;border-radius:8px;font-family:'DM Sans',sans-serif;font-size:14px;font-weight:600;cursor:pointer}
+.btn-save:hover{background:#c04f20}
+</style>
+</head>
+<body>
+<header>
+  <div class="logo">Conference<span>Schedule</span></div>
+  <div class="tabs">
+    <button class="tab active" onclick="switchDay(1,this)">Day 1</button>
+    <button class="tab" onclick="switchDay(2,this)">Day 2</button>
+    <button class="tab" onclick="switchDay(3,this)">Day 3</button>
+  </div>
+  <button class="btn-add" onclick="openModal()">+ Add Session</button>
+</header>
+<div class="layout">
+  <aside class="sidebar">
+    <h3>Session Types</h3>
+    <div id="legend"></div>
+    <div class="export-section">
+      <button class="btn-export" onclick="exportSchedule()">⬇ Export JSON</button>
+      <div class="stats" id="stats"></div>
+    </div>
+  </aside>
+  <main>
+    <div class="timeline" id="timeline"></div>
+  </main>
+</div>
+
+<div class="modal-bg" id="modalBg">
+  <div class="modal">
+    <h2 id="modalTitle">Add Session</h2>
+    <div class="form-group">
+      <label>Title</label>
+      <input type="text" id="fTitle" placeholder="Session title">
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label>Type</label>
+        <select id="fType"></select>
+      </div>
+      <div class="form-group">
+        <label>Room</label>
+        <input type="text" id="fRoom" placeholder="e.g. Main Stage">
+      </div>
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label>Time (HH:MM)</label>
+        <input type="time" id="fTime" value="09:00">
+      </div>
+      <div class="form-group">
+        <label>Duration (min)</label>
+        <input type="number" id="fDuration" value="60" min="15" step="15">
+      </div>
+    </div>
+    <div class="form-group">
+      <label>Speaker(s)</label>
+      <input type="text" id="fSpeaker" placeholder="Speaker name or —">
+    </div>
+    <div class="modal-actions">
+      <button class="btn-cancel" onclick="closeModal()">Cancel</button>
+      <button class="btn-save" onclick="saveSession()">Save</button>
+    </div>
+  </div>
+</div>
+
+<script>
+const TYPES={
+  Keynote:{emoji:'🎤',color:'#d95f2b',bg:'#fff0ea'},
+  Panel:{emoji:'👥',color:'#6c5ce7',bg:'#f0eeff'},
+  Workshop:{emoji:'🔧',color:'#00b894',bg:'#e6faf6'},
+  Talk:{emoji:'💬',color:'#0984e3',bg:'#e8f4ff'},
+  Demo:{emoji:'🎮',color:'#e17055',bg:'#fff3f0'},
+  Networking:{emoji:'🤝',color:'#fdcb6e',bg:'#fffbea'},
+  Break:{emoji:'☕',color:'#b2bec3',bg:'#f5f6f7'}
+};
+
+const HOURS=Array.from({length:12},(_,i)=>i+9);
+let currentDay=1;
+let editId=null;
+let sessions={
+  1:[
+    {id:1,time:'09:00',room:'Main Stage',type:'Keynote',title:'Opening Address',speaker:'Alex Chen',duration:30},
+    {id:2,time:'10:00',room:'Room A',type:'Workshop',title:'Unreal 5 Basics',speaker:'James Park',duration:90},
+    {id:3,time:'10:00',room:'Main Stage',type:'Panel',title:'Mobile Gaming 2026',speaker:'3 speakers',duration:60},
+    {id:4,time:'12:00',room:'All',type:'Break',title:'Lunch',speaker:'—',duration:60},
+    {id:5,time:'14:00',room:'Main Stage',type:'Talk',title:'From Prototype to Launch',speaker:'Emma Wilson',duration:30},
+    {id:6,time:'15:00',room:'All',type:'Networking',title:'Networking Session',speaker:'—',duration:60}
+  ],
+  2:[],3:[]
+};
+let nextId=100;
+
+function pad(n){return String(n).padStart(2,'0')}
+function timeStr(h){return `${pad(h)}:00`}
+
+function renderLegend(){
+  const el=document.getElementById('legend');
+  el.innerHTML=Object.entries(TYPES).map(([k,v])=>
+    `<div class="legend-item"><div class="legend-dot" style="background:${v.color}"></div>${v.emoji} ${k}</div>`
+  ).join('');
+}
+
+function renderStats(){
+  const s=sessions[currentDay];
+  const el=document.getElementById('stats');
+  el.innerHTML=`<div class="stat"><span>Total sessions</span><strong>${s.length}</strong></div>
+  <div class="stat"><span>Day ${currentDay}</span><strong>${s.filter(x=>x.type!=='Break').length} talks</strong></div>`;
+}
+
+function renderTimeline(){
+  const el=document.getElementById('timeline');
+  const daySessions=sessions[currentDay];
+  el.innerHTML=HOURS.map(h=>{
+    const t=timeStr(h);
+    const rows=daySessions.filter(s=>s.time===t);
+    return `<div class="time-row">
+      <div class="time-label">${t}</div>
+      <div class="sessions-col">
+        ${rows.length?rows.map(cardHTML).join(''):'<div class="empty-state">–</div>'}
+      </div>
+    </div>`;
+  }).join('');
+  renderStats();
+}
+
+function cardHTML(s){
+  const t=TYPES[s.type]||TYPES.Talk;
+  return `<div class="session-card" style="border-left-color:${t.color}">
+    <div class="badge" style="background:${t.bg};color:${t.color}">${t.emoji} ${s.type}</div>
+    <div class="session-meta">
+      <div class="session-title">${s.title}</div>
+      <div class="session-sub">
+        <span>🕐 ${s.time}</span>
+        <span>📍 ${s.room}</span>
+        ${s.speaker&&s.speaker!=='—'?`<span>🎙 ${s.speaker}</span>`:''}
+        <span>⏱ ${s.duration}min</span>
+      </div>
+    </div>
+    <div class="card-actions">
+      <button class="btn-icon" onclick="editSession(${s.id})">Edit</button>
+      <button class="btn-icon del" onclick="deleteSession(${s.id})">✕</button>
+    </div>
+  </div>`;
+}
+
+function switchDay(d,btn){
+  currentDay=d;
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+  btn.classList.add('active');
+  renderTimeline();
+}
+
+function openModal(id=null){
+  editId=id;
+  const modal=document.getElementById('modalBg');
+  document.getElementById('modalTitle').textContent=id?'Edit Session':'Add Session';
+  if(id){
+    const s=sessions[currentDay].find(x=>x.id===id);
+    document.getElementById('fTitle').value=s.title;
+    document.getElementById('fType').value=s.type;
+    document.getElementById('fRoom').value=s.room;
+    document.getElementById('fTime').value=s.time;
+    document.getElementById('fDuration').value=s.duration;
+    document.getElementById('fSpeaker').value=s.speaker;
+  } else {
+    document.getElementById('fTitle').value='';
+    document.getElementById('fType').value='Talk';
+    document.getElementById('fRoom').value='';
+    document.getElementById('fTime').value='09:00';
+    document.getElementById('fDuration').value=60;
+    document.getElementById('fSpeaker').value='';
+  }
+  modal.classList.add('open');
+}
+
+function closeModal(){document.getElementById('modalBg').classList.remove('open')}
+
+function saveSession(){
+  const title=document.getElementById('fTitle').value.trim();
+  if(!title){alert('Please enter a title');return}
+  const obj={
+    id:editId||nextId++,
+    title,
+    type:document.getElementById('fType').value,
+    room:document.getElementById('fRoom').value||'TBD',
+    time:document.getElementById('fTime').value,
+    duration:parseInt(document.getElementById('fDuration').value)||60,
+    speaker:document.getElementById('fSpeaker').value||'—'
+  };
+  if(editId){
+    const idx=sessions[currentDay].findIndex(x=>x.id===editId);
+    sessions[currentDay][idx]=obj;
+  } else {
+    sessions[currentDay].push(obj);
+  }
+  sessions[currentDay].sort((a,b)=>a.time.localeCompare(b.time));
+  closeModal();
+  renderTimeline();
+}
+
+function editSession(id){openModal(id)}
+function deleteSession(id){
+  if(confirm('Delete this session?')){
+    sessions[currentDay]=sessions[currentDay].filter(x=>x.id!==id);
+    renderTimeline();
+  }
+}
+
+function exportSchedule(){
+  const data=JSON.stringify(sessions,null,2);
+  const a=document.createElement('a');
+  a.href='data:application/json;charset=utf-8,'+encodeURIComponent(data);
+  a.download='schedule.json';
+  a.click();
+}
+
+function initTypeSelect(){
+  const sel=document.getElementById('fType');
+  sel.innerHTML=Object.keys(TYPES).map(k=>`<option value="${k}">${TYPES[k].emoji} ${k}</option>`).join('');
+}
+
+initTypeSelect();
+renderLegend();
+renderTimeline();
+document.getElementById('modalBg').addEventListener('click',e=>{if(e.target===e.currentTarget)closeModal()});
+</script>
+</body>
+</html>
