@@ -1,0 +1,900 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Phantom Circuit — Business Profile</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&display=swap" rel="stylesheet">
+<style>
+/* ─── Reset & Base ─── */
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+html,body{height:100%;overflow:hidden}
+body{font-family:'DM Sans',sans-serif;background:#e8e4da;color:#1c1a17;font-size:15px;line-height:1.5}
+
+/* ─── App Shell ─── */
+.app{display:flex;flex-direction:column;height:100vh;max-width:430px;margin:0 auto;position:relative;background:#e8e4da;box-shadow:0 0 40px rgba(0,0,0,.12)}
+
+/* ─── Top Bar ─── */
+.topbar{flex-shrink:0;height:52px;background:#fff;border-bottom:1px solid #e0dbd0;display:flex;align-items:center;justify-content:space-between;padding:0 16px;position:relative;z-index:50}
+.topbar-back{width:36px;height:36px;border:none;background:#f5f3ef;border-radius:9px;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:17px}
+.topbar-title{font-size:15px;font-weight:700;color:#1c1a17;letter-spacing:.1px}
+.topbar-actions{display:flex;gap:8px}
+.topbar-icon-btn{width:36px;height:36px;border:none;background:#f5f3ef;border-radius:9px;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:16px;position:relative}
+.notif-dot{position:absolute;top:6px;right:6px;width:7px;height:7px;background:#d95f2b;border-radius:50%;border:1.5px solid #fff}
+
+/* ─── Scroll Area ─── */
+.scroll-area{flex:1;overflow-y:auto;overflow-x:hidden;-webkit-overflow-scrolling:touch;padding-bottom:140px}
+.scroll-area::-webkit-scrollbar{display:none}
+
+/* ─── Cover Hero ─── */
+.hero{position:relative;height:220px;background:linear-gradient(135deg,#6b48c0,#9b6fd4);overflow:hidden;flex-shrink:0}
+.hero-img{width:100%;height:100%;object-fit:cover;display:block}
+.hero-emoji{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);font-size:64px;opacity:.4}
+.hero-overlay{position:absolute;inset:0;background:linear-gradient(to bottom,transparent 30%,rgba(28,26,23,.75) 100%)}
+.hero-badges{position:absolute;top:14px;left:14px;display:flex;gap:6px;flex-wrap:wrap}
+.hero-badge{padding:3px 10px;border-radius:12px;font-size:11px;font-weight:700;backdrop-filter:blur(6px)}
+.badge-featured{background:rgba(217,95,43,.9);color:#fff}
+.badge-genre{background:rgba(255,255,255,.22);color:#fff;border:1px solid rgba(255,255,255,.35)}
+.hero-share{position:absolute;top:14px;right:14px;width:36px;height:36px;background:rgba(255,255,255,.18);backdrop-filter:blur(6px);border:1px solid rgba(255,255,255,.25);border-radius:9px;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:17px}
+.hero-bottom{position:absolute;bottom:0;left:0;right:0;padding:14px 16px 16px}
+.hero-title{font-size:22px;font-weight:700;color:#fff;line-height:1.2;margin-bottom:4px}
+.hero-dev{font-size:13px;color:rgba(255,255,255,.8);display:flex;align-items:center;gap:6px}
+.hero-dev-dot{width:4px;height:4px;background:rgba(255,255,255,.5);border-radius:50%}
+
+/* ─── Quick Stats Strip ─── */
+.quick-stats{background:#fff;display:flex;border-bottom:1px solid #f0ece4}
+.qs-item{flex:1;padding:12px 0;text-align:center;border-right:1px solid #f0ece4;cursor:default}
+.qs-item:last-child{border-right:none}
+.qs-val{font-size:17px;font-weight:700;color:#1c1a17;line-height:1}
+.qs-label{font-size:10px;color:#a09890;margin-top:3px;font-weight:500;letter-spacing:.3px;text-transform:uppercase}
+.qs-val.accent{color:#d95f2b}
+
+/* ─── Content Tabs ─── */
+.tabs-bar{background:#fff;border-bottom:1px solid #e0dbd0;display:flex;overflow-x:auto;-webkit-overflow-scrolling:touch;flex-shrink:0;position:sticky;top:0;z-index:40}
+.tabs-bar::-webkit-scrollbar{display:none}
+.tab-btn{flex-shrink:0;padding:12px 18px;font-size:13.5px;font-weight:500;color:#6b6660;cursor:pointer;border:none;background:none;font-family:'DM Sans',sans-serif;border-bottom:2.5px solid transparent;transition:all .15s;white-space:nowrap;display:flex;align-items:center;gap:5px}
+.tab-btn.active{color:#d95f2b;border-bottom-color:#d95f2b;font-weight:600}
+.tab-lock{font-size:12px;opacity:.7}
+
+/* ─── Section Containers ─── */
+.tab-content{display:none;padding:16px}
+.tab-content.active{display:block}
+
+/* ─── Cards ─── */
+.card{background:#fff;border-radius:14px;padding:16px;margin-bottom:12px;box-shadow:0 1px 4px rgba(0,0,0,.06)}
+.card-title{font-size:12px;font-weight:700;color:#a09890;text-transform:uppercase;letter-spacing:.5px;margin-bottom:12px;display:flex;align-items:center;gap:6px}
+
+/* ─── Info Rows ─── */
+.info-row{display:flex;justify-content:space-between;align-items:flex-start;padding:8px 0;border-bottom:1px solid #f5f3ef;font-size:13.5px}
+.info-row:last-child{border-bottom:none;padding-bottom:0}
+.info-label{color:#6b6660;font-weight:400;flex-shrink:0;min-width:110px}
+.info-val{color:#1c1a17;font-weight:500;text-align:right;flex:1}
+.info-val.link{color:#0a7fa8}
+
+/* ─── Platform Pills ─── */
+.plat-pills{display:flex;gap:6px;flex-wrap:wrap;margin-top:2px}
+.plat-pill{padding:3px 10px;background:#f0ece4;border-radius:20px;font-size:11px;font-weight:600;color:#6b6660;display:flex;align-items:center;gap:3px}
+
+/* ─── Description ─── */
+.desc-text{font-size:14px;color:#3a3530;line-height:1.65}
+.desc-text.clipped{display:-webkit-box;-webkit-line-clamp:4;-webkit-box-orient:vertical;overflow:hidden}
+.read-more{font-size:13px;color:#d95f2b;font-weight:600;cursor:pointer;margin-top:8px;display:inline-block}
+
+/* ─── Tags ─── */
+.tags{display:flex;flex-wrap:wrap;gap:6px;margin-top:4px}
+.tag{padding:4px 10px;background:#f0ece4;border-radius:20px;font-size:12px;font-weight:500;color:#6b6660}
+
+/* ─── Screenshots row ─── */
+.screenshots{display:flex;gap:10px;overflow-x:auto;-webkit-overflow-scrolling:touch;padding-bottom:4px;margin:0 -16px;padding-left:16px;padding-right:16px}
+.screenshots::-webkit-scrollbar{display:none}
+.screenshot{width:150px;height:100px;border-radius:10px;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:28px;color:rgba(255,255,255,.6)}
+
+/* ─── Timeline ─── */
+.timeline{position:relative;padding-left:24px}
+.timeline::before{content:'';position:absolute;left:6px;top:6px;bottom:6px;width:2px;background:#f0ece4;border-radius:1px}
+.tl-item{position:relative;margin-bottom:16px}
+.tl-item:last-child{margin-bottom:0}
+.tl-dot{position:absolute;left:-24px;top:4px;width:13px;height:13px;border-radius:50%;background:#d95f2b;border:2.5px solid #fff;box-shadow:0 0 0 1.5px #d95f2b}
+.tl-dot.grey{background:#d0cbc0;box-shadow:0 0 0 1.5px #d0cbc0}
+.tl-date{font-size:11px;color:#a09890;font-weight:500;margin-bottom:2px}
+.tl-text{font-size:13.5px;color:#1c1a17;font-weight:500}
+.tl-sub{font-size:12px;color:#6b6660;margin-top:2px}
+
+/* ─── Business Data — Lock Overlay ─── */
+.biz-section{position:relative}
+.biz-locked-mask{position:absolute;inset:0;border-radius:14px;background:rgba(232,228,218,.88);backdrop-filter:blur(5px);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;z-index:10;cursor:pointer}
+.lock-icon{width:52px;height:52px;background:#fff;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:24px;box-shadow:0 2px 12px rgba(0,0,0,.12)}
+.lock-title{font-size:14px;font-weight:700;color:#1c1a17}
+.lock-sub{font-size:12px;color:#6b6660;text-align:center;max-width:200px;line-height:1.5}
+.lock-btn{padding:9px 22px;background:#d95f2b;color:#fff;border-radius:9px;font-size:13px;font-weight:700;border:none;cursor:pointer;font-family:'DM Sans',sans-serif;margin-top:2px}
+
+/* ─── Metric Cards ─── */
+.metric-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px}
+.metric-card{background:#f5f3ef;border-radius:12px;padding:14px}
+.metric-val{font-size:22px;font-weight:700;color:#1c1a17;line-height:1}
+.metric-change{font-size:11px;font-weight:600;margin-top:3px}
+.metric-change.up{color:#0d9b72}
+.metric-change.down{color:#dc2626}
+.metric-label{font-size:11px;color:#a09890;margin-top:4px;font-weight:500;text-transform:uppercase;letter-spacing:.3px}
+
+/* ─── Progress Bars ─── */
+.prog-row{margin-bottom:12px}
+.prog-row:last-child{margin-bottom:0}
+.prog-header{display:flex;justify-content:space-between;font-size:12.5px;margin-bottom:5px}
+.prog-header span:first-child{color:#6b6660}
+.prog-header span:last-child{font-weight:600;color:#1c1a17}
+.prog-bg{height:6px;background:#f0ece4;border-radius:3px;overflow:hidden}
+.prog-fill{height:6px;border-radius:3px;background:#d95f2b;transition:width .4s ease}
+.prog-fill.green{background:#0d9b72}
+.prog-fill.blue{background:#0a7fa8}
+
+/* ─── Chart Placeholder ─── */
+.chart-placeholder{height:100px;background:#f5f3ef;border-radius:10px;display:flex;align-items:center;justify-content:center;color:#a09890;font-size:13px;font-weight:500;margin-bottom:8px;position:relative;overflow:hidden}
+.chart-bars{display:flex;align-items:flex-end;gap:6px;height:70px;padding:0 16px}
+.chart-bar{flex:1;border-radius:4px 4px 0 0;background:#d95f2b;opacity:.7;transition:opacity .2s}
+.chart-bar:nth-child(odd){background:#0a7fa8;opacity:.5}
+.chart-bar:hover{opacity:1}
+
+/* ─── Attachments ─── */
+.attach-item{display:flex;align-items:center;gap:12px;padding:12px 0;border-bottom:1px solid #f0ece4}
+.attach-item:last-child{border-bottom:none;padding-bottom:0}
+.attach-icon{width:42px;height:42px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0}
+.attach-icon.pdf{background:#fee2e2}
+.attach-icon.video{background:#fde8dc}
+.attach-icon.zip{background:#fef3e2}
+.attach-icon.img{background:#e8f5e9}
+.attach-icon.doc{background:#e3f2fd}
+.attach-meta{flex:1;min-width:0}
+.attach-name{font-size:13.5px;font-weight:600;color:#1c1a17;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.attach-info{font-size:11px;color:#a09890;margin-top:2px}
+.attach-locked{display:flex;align-items:center;gap:4px;font-size:11px;color:#d97706;font-weight:600}
+.attach-dl{width:32px;height:32px;border:none;background:#f0ece4;border-radius:8px;cursor:pointer;font-size:15px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.attach-dl:disabled{opacity:.4;cursor:not-allowed}
+.nda-banner{background:#fef3e2;border:1px solid #fcd77a;border-radius:10px;padding:12px 14px;margin-bottom:12px;display:flex;gap:10px;align-items:flex-start}
+.nda-banner-icon{font-size:20px;flex-shrink:0;margin-top:1px}
+.nda-banner-text{font-size:12.5px;color:#92400e;line-height:1.5}
+.nda-banner-text strong{color:#78350f}
+
+/* ─── Interaction Feed ─── */
+.feed-item{display:flex;gap:11px;padding:12px 0;border-bottom:1px solid #f0ece4}
+.feed-item:last-child{border-bottom:none;padding-bottom:0}
+.feed-avatar{width:36px;height:36px;border-radius:50%;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:700;color:#fff}
+.feed-content{flex:1;min-width:0}
+.feed-header{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:3px}
+.feed-name{font-size:13.5px;font-weight:600;color:#1c1a17}
+.feed-time{font-size:11px;color:#a09890}
+.feed-text{font-size:13px;color:#3a3530;line-height:1.5}
+.feed-tag{display:inline-block;padding:2px 8px;border-radius:4px;font-size:11px;font-weight:600;margin-top:5px}
+.feed-tag.interest{background:#fde8dc;color:#d95f2b}
+.feed-tag.nda{background:#e3f2fd;color:#0a7fa8}
+.feed-tag.view{background:#f0ece4;color:#6b6660}
+.feed-tag.note{background:#d4f5e7;color:#0d9b72}
+.feed-reply{margin-top:8px;padding:8px 12px;background:#f5f3ef;border-radius:8px;font-size:12.5px;color:#6b6660;border-left:3px solid #d0cbc0}
+.compose-bar{display:flex;gap:8px;align-items:flex-end;margin-top:4px}
+.compose-input{flex:1;padding:10px 12px;background:#f5f3ef;border:1.5px solid #e0dbd0;border-radius:10px;font-size:14px;font-family:'DM Sans',sans-serif;color:#1c1a17;outline:none;resize:none;min-height:42px;max-height:100px}
+.compose-input:focus{border-color:#d95f2b;background:#fff}
+.compose-send{width:40px;height:40px;background:#d95f2b;border:none;border-radius:10px;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:17px;flex-shrink:0}
+
+/* ─── Fixed Bottom CTA ─── */
+.bottom-cta{position:absolute;bottom:60px;left:0;right:0;background:linear-gradient(to top,rgba(232,228,218,1) 70%,rgba(232,228,218,0));padding:16px 16px 10px;display:flex;gap:10px;z-index:35}
+.cta-btn{flex:1;padding:13px 10px;border-radius:12px;font-size:14px;font-weight:700;cursor:pointer;border:none;font-family:'DM Sans',sans-serif;transition:all .15s;text-align:center;display:flex;align-items:center;justify-content:center;gap:6px}
+.cta-primary{background:#d95f2b;color:#fff;box-shadow:0 4px 14px rgba(217,95,43,.35)}
+.cta-primary:active{background:#c4521f;transform:scale(.98)}
+.cta-secondary{background:#fff;color:#1c1a17;border:1.5px solid #d0cbc0;box-shadow:0 2px 8px rgba(0,0,0,.06)}
+.cta-secondary:active{background:#f5f3ef;transform:scale(.98)}
+
+/* ─── Bottom Tab Nav ─── */
+.bottom-nav{flex-shrink:0;height:60px;background:#fff;border-top:1px solid #e0dbd0;display:flex;align-items:stretch;z-index:60;position:relative}
+.bn-item{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;cursor:pointer;border:none;background:none;font-family:'DM Sans',sans-serif;color:#a09890;transition:color .15s;padding:0;position:relative}
+.bn-item.active{color:#d95f2b}
+.bn-icon{font-size:20px;line-height:1}
+.bn-label{font-size:10px;font-weight:600;letter-spacing:.2px}
+.bn-badge{position:absolute;top:6px;right:calc(50% - 14px);background:#d95f2b;color:#fff;font-size:9px;font-weight:700;min-width:16px;height:16px;border-radius:8px;display:flex;align-items:center;justify-content:center;padding:0 3px}
+
+/* ─── Login Modal ─── */
+.modal-bg{position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:200;display:flex;align-items:flex-end;justify-content:center;opacity:0;pointer-events:none;transition:opacity .2s}
+.modal-bg.open{opacity:1;pointer-events:all}
+.modal-sheet{background:#fff;border-radius:22px 22px 0 0;width:100%;max-width:430px;padding:24px 24px 36px;transform:translateY(100%);transition:transform .25s ease}
+.modal-bg.open .modal-sheet{transform:translateY(0)}
+.modal-drag{width:40px;height:4px;background:#e0dbd0;border-radius:2px;margin:0 auto 20px}
+.modal-title{font-size:20px;font-weight:700;color:#1c1a17;margin-bottom:6px}
+.modal-sub{font-size:13.5px;color:#6b6660;margin-bottom:22px;line-height:1.5}
+.modal-field{margin-bottom:14px}
+.modal-field label{font-size:12px;font-weight:600;color:#6b6660;display:block;margin-bottom:6px;text-transform:uppercase;letter-spacing:.3px}
+.modal-field input{width:100%;padding:12px 14px;border:1.5px solid #d0cbc0;border-radius:10px;font-size:14.5px;font-family:'DM Sans',sans-serif;color:#1c1a17;outline:none;background:#fafaf8}
+.modal-field input:focus{border-color:#d95f2b;background:#fff}
+.modal-login-btn{width:100%;padding:14px;background:#d95f2b;color:#fff;border:none;border-radius:12px;font-size:15px;font-weight:700;cursor:pointer;font-family:'DM Sans',sans-serif;margin-top:4px;transition:background .15s}
+.modal-login-btn:active{background:#c4521f}
+.modal-divider{text-align:center;font-size:12.5px;color:#a09890;margin:16px 0}
+.modal-access-info{background:#f5f3ef;border-radius:10px;padding:12px 14px;font-size:12.5px;color:#6b6660;line-height:1.6;margin-bottom:16px}
+.modal-access-info strong{color:#1c1a17}
+.modal-close{position:absolute;top:18px;right:18px;width:32px;height:32px;border:none;background:#f5f3ef;border-radius:8px;cursor:pointer;font-size:15px;display:flex;align-items:center;justify-content:center}
+
+/* ─── Toast ─── */
+.toast{position:fixed;bottom:130px;left:50%;transform:translateX(-50%) translateY(20px);background:#1c1a17;color:#fff;padding:10px 20px;border-radius:24px;font-size:13.5px;font-weight:500;z-index:300;opacity:0;transition:all .25s;white-space:nowrap;pointer-events:none}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+
+/* ─── Interest Confirmation ─── */
+.confirm-badge{display:inline-flex;align-items:center;gap:6px;padding:8px 14px;background:#fde8dc;color:#d95f2b;border-radius:24px;font-size:13px;font-weight:600;margin-top:8px}
+
+/* ─── Responsive safety ─── */
+@media (min-width:430px){
+  .app{border-left:1px solid #d0cbc0;border-right:1px solid #d0cbc0}
+}
+</style>
+</head>
+<body>
+
+<div class="app">
+
+  <!-- ─── Top Bar ─── -->
+  <header class="topbar">
+    <button class="topbar-back" onclick="history.back()">←</button>
+    <span class="topbar-title">Project Profile</span>
+    <div class="topbar-actions">
+      <button class="topbar-icon-btn" onclick="showToast('Saved to Watchlist ✓')">🔖</button>
+      <button class="topbar-icon-btn">
+        ⋯
+      </button>
+    </div>
+  </header>
+
+  <!-- ─── Scroll Area ─── -->
+  <div class="scroll-area" id="scrollArea">
+
+    <!-- ─── Hero Cover ─── -->
+    <div class="hero">
+      <svg width="100%" height="220" viewBox="0 0 430 220" preserveAspectRatio="xMidYMid slice">
+        <defs>
+          <linearGradient id="hg" x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%" style="stop-color:#6b48c0"/>
+            <stop offset="100%" style="stop-color:#9b6fd4"/>
+          </linearGradient>
+        </defs>
+        <rect width="430" height="220" fill="url(#hg)"/>
+        <!-- Abstract decorative shapes -->
+        <circle cx="340" cy="60" r="80" fill="rgba(255,255,255,.06)"/>
+        <circle cx="80" cy="180" r="110" fill="rgba(0,0,0,.08)"/>
+        <circle cx="215" cy="110" r="130" fill="rgba(255,255,255,.04)"/>
+        <!-- Grid lines -->
+        <line x1="0" y1="40" x2="430" y2="40" stroke="rgba(255,255,255,.06)" stroke-width="1"/>
+        <line x1="0" y1="80" x2="430" y2="80" stroke="rgba(255,255,255,.06)" stroke-width="1"/>
+        <line x1="0" y1="120" x2="430" y2="120" stroke="rgba(255,255,255,.06)" stroke-width="1"/>
+        <line x1="0" y1="160" x2="430" y2="160" stroke="rgba(255,255,255,.06)" stroke-width="1"/>
+        <line x1="86" y1="0" x2="86" y2="220" stroke="rgba(255,255,255,.04)" stroke-width="1"/>
+        <line x1="172" y1="0" x2="172" y2="220" stroke="rgba(255,255,255,.04)" stroke-width="1"/>
+        <line x1="258" y1="0" x2="258" y2="220" stroke="rgba(255,255,255,.04)" stroke-width="1"/>
+        <line x1="344" y1="0" x2="344" y2="220" stroke="rgba(255,255,255,.04)" stroke-width="1"/>
+        <!-- Ghost icon -->
+        <text x="215" y="125" dominant-baseline="middle" text-anchor="middle" font-size="72" opacity=".28">👻</text>
+      </svg>
+      <div class="hero-overlay"></div>
+      <div class="hero-badges">
+        <span class="hero-badge badge-featured">⭐ Featured</span>
+        <span class="hero-badge badge-genre">Puzzle / Horror</span>
+      </div>
+      <button class="hero-share" onclick="shareProject()">↗</button>
+      <div class="hero-bottom">
+        <div class="hero-title">Phantom Circuit</div>
+        <div class="hero-dev">
+          <span>Akihabara Studio</span>
+          <span class="hero-dev-dot"></span>
+          <span>🇯🇵 Japan</span>
+          <span class="hero-dev-dot"></span>
+          <span>2026</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- ─── Quick Stats Strip ─── -->
+    <div class="quick-stats">
+      <div class="qs-item">
+        <div class="qs-val">PC · NS</div>
+        <div class="qs-label">Platform</div>
+      </div>
+      <div class="qs-item">
+        <div class="qs-val">Q3 2026</div>
+        <div class="qs-label">Release</div>
+      </div>
+      <div class="qs-item">
+        <div class="qs-val accent">$2.8M</div>
+        <div class="qs-label">Budget</div>
+      </div>
+      <div class="qs-item">
+        <div class="qs-val">Unity</div>
+        <div class="qs-label">Engine</div>
+      </div>
+    </div>
+
+    <!-- ─── Content Tabs ─── -->
+    <div class="tabs-bar" id="tabsBar">
+      <button class="tab-btn active" onclick="switchTab(this,'overview')">Overview</button>
+      <button class="tab-btn" onclick="switchTab(this,'bizdata')">Biz Data <span class="tab-lock">🔒</span></button>
+      <button class="tab-btn" onclick="switchTab(this,'attachments')">Attachments</button>
+      <button class="tab-btn" onclick="switchTab(this,'interactions')">Activity</button>
+    </div>
+
+    <!-- ──────────────── TAB: Overview ──────────────── -->
+    <div class="tab-content active" id="tab-overview">
+
+      <!-- Description -->
+      <div class="card">
+        <div class="card-title">📝 About This Game</div>
+        <p class="desc-text clipped" id="descText">Phantom Circuit is a psychological horror puzzle game that blurs the line between the digital and the paranormal. Players navigate through a crumbling virtual cityscape, deciphering corrupted code and solving environmental puzzles while confronting the ghost of an AI gone rogue. Featuring a rich adaptive soundtrack and hand-drawn cel-shaded art direction, the game targets M-rated audiences on PC and Nintendo Switch.</p>
+        <span class="read-more" onclick="toggleDesc(this)">Read more</span>
+      </div>
+
+      <!-- Key Info -->
+      <div class="card">
+        <div class="card-title">🎮 Project Details</div>
+        <div class="info-row">
+          <span class="info-label">Developer</span>
+          <span class="info-val">Akihabara Studio</span>
+        </div>
+        <div class="info-row">
+          <span class="info-label">Studio Founded</span>
+          <span class="info-val">2018 · Tokyo, Japan</span>
+        </div>
+        <div class="info-row">
+          <span class="info-label">Genre</span>
+          <span class="info-val">Puzzle / Psychological Horror</span>
+        </div>
+        <div class="info-row">
+          <span class="info-label">Engine</span>
+          <span class="info-val">Unity 2023 LTS</span>
+        </div>
+        <div class="info-row">
+          <span class="info-label">Platforms</span>
+          <span class="info-val">
+            <div class="plat-pills">
+              <span class="plat-pill">🖥 PC</span>
+              <span class="plat-pill">🎮 Nintendo Switch</span>
+            </div>
+          </span>
+        </div>
+        <div class="info-row">
+          <span class="info-label">Target Rating</span>
+          <span class="info-val">M (Mature 17+)</span>
+        </div>
+        <div class="info-row">
+          <span class="info-label">Languages</span>
+          <span class="info-val">EN · JA · ZH · KO · FR</span>
+        </div>
+        <div class="info-row">
+          <span class="info-label">Release Target</span>
+          <span class="info-val">Q3 2026 (Global)</span>
+        </div>
+        <div class="info-row">
+          <span class="info-label">Website</span>
+          <span class="info-val link">akihabara.studio</span>
+        </div>
+      </div>
+
+      <!-- Tags -->
+      <div class="card">
+        <div class="card-title">🏷 Tags</div>
+        <div class="tags">
+          <span class="tag">Horror</span>
+          <span class="tag">Puzzle</span>
+          <span class="tag">Cyberpunk</span>
+          <span class="tag">Indie</span>
+          <span class="tag">Single-player</span>
+          <span class="tag">Atmospheric</span>
+          <span class="tag">Narrative-driven</span>
+          <span class="tag">Cel-shaded</span>
+        </div>
+      </div>
+
+      <!-- Screenshots -->
+      <div class="card">
+        <div class="card-title">🖼 Screenshots</div>
+        <div class="screenshots">
+          <div class="screenshot" style="background:linear-gradient(135deg,#1a0a30,#4a2080)">🌆</div>
+          <div class="screenshot" style="background:linear-gradient(135deg,#0a1a30,#204080)">💀</div>
+          <div class="screenshot" style="background:linear-gradient(135deg,#200a30,#602090)">🔮</div>
+          <div class="screenshot" style="background:linear-gradient(135deg,#0a2020,#204040)">🌐</div>
+          <div class="screenshot" style="background:linear-gradient(135deg,#1a0820,#501860)">👁</div>
+        </div>
+      </div>
+
+      <!-- Team -->
+      <div class="card">
+        <div class="card-title">👥 Team</div>
+        <div class="info-row">
+          <span class="info-label">Team Size</span>
+          <span class="info-val">12 members</span>
+        </div>
+        <div class="info-row">
+          <span class="info-label">Director</span>
+          <span class="info-val">Kenji Watanabe</span>
+        </div>
+        <div class="info-row">
+          <span class="info-label">Lead Programmer</span>
+          <span class="info-val">Yui Tanaka</span>
+        </div>
+        <div class="info-row">
+          <span class="info-label">Art Director</span>
+          <span class="info-val">Miho Suzuki</span>
+        </div>
+        <div class="info-row">
+          <span class="info-label">Contact</span>
+          <span class="info-val link">biz@akihabara.studio</span>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- ──────────────── TAB: Business Data ──────────────── -->
+    <div class="tab-content" id="tab-bizdata">
+
+      <!-- Login Prompt Card -->
+      <div id="bizLoginCard" class="card" style="text-align:center;padding:28px 20px">
+        <div style="font-size:42px;margin-bottom:14px">🔐</div>
+        <div style="font-size:17px;font-weight:700;color:#1c1a17;margin-bottom:8px">Access Required</div>
+        <div style="font-size:13.5px;color:#6b6660;margin-bottom:20px;line-height:1.6">Business data is only visible to verified buyers and publishers with approved access.</div>
+        <button class="cta-btn cta-primary" style="display:inline-flex;width:auto;padding:12px 28px" onclick="openLoginModal()">🔑 Sign In to View</button>
+        <div style="font-size:12px;color:#a09890;margin-top:14px">Don't have access? <span style="color:#d95f2b;font-weight:600;cursor:pointer" onclick="showToast('Access request sent to organizer 📩')">Request Access →</span></div>
+      </div>
+
+      <!-- Locked Biz Data (visible but blurred) -->
+      <div class="biz-section" style="position:relative">
+        <div class="biz-locked-mask" id="bizMask" onclick="openLoginModal()">
+          <div class="lock-icon">🔒</div>
+          <div class="lock-title">Business Data Locked</div>
+          <div class="lock-sub">Sign in with verified buyer credentials to unlock financial & market data</div>
+          <button class="lock-btn">Sign In →</button>
+        </div>
+
+        <!-- Blurred preview content below -->
+        <div style="filter:blur(4px);pointer-events:none;user-select:none">
+          <div class="metric-grid">
+            <div class="metric-card">
+              <div class="metric-val">$1.8M</div>
+              <div class="metric-change up">▲ 18% YoY</div>
+              <div class="metric-label">Revenue Proj.</div>
+            </div>
+            <div class="metric-card">
+              <div class="metric-val">380K</div>
+              <div class="metric-change up">▲ 24%</div>
+              <div class="metric-label">Unit Target</div>
+            </div>
+            <div class="metric-card">
+              <div class="metric-val">$4.70</div>
+              <div class="metric-change down">▼ 3%</div>
+              <div class="metric-label">Avg. CPI</div>
+            </div>
+            <div class="metric-card">
+              <div class="metric-val">68%</div>
+              <div class="metric-change up">▲ 5pts</div>
+              <div class="metric-label">D30 Retention</div>
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="card-title">📈 Market Performance</div>
+            <div class="chart-placeholder">
+              <div class="chart-bars">
+                <div class="chart-bar" style="height:40%"></div>
+                <div class="chart-bar" style="height:55%"></div>
+                <div class="chart-bar" style="height:48%"></div>
+                <div class="chart-bar" style="height:70%"></div>
+                <div class="chart-bar" style="height:62%"></div>
+                <div class="chart-bar" style="height:85%"></div>
+                <div class="chart-bar" style="height:78%"></div>
+                <div class="chart-bar" style="height:90%"></div>
+              </div>
+            </div>
+            <div style="font-size:11px;color:#a09890;text-align:center">Monthly Projected Revenue (2025–2026)</div>
+          </div>
+
+          <div class="card">
+            <div class="card-title">🌍 Market Distribution</div>
+            <div class="prog-row">
+              <div class="prog-header"><span>Asia Pacific</span><span>42%</span></div>
+              <div class="prog-bg"><div class="prog-fill" style="width:42%"></div></div>
+            </div>
+            <div class="prog-row">
+              <div class="prog-header"><span>North America</span><span>28%</span></div>
+              <div class="prog-bg"><div class="prog-fill blue" style="width:28%"></div></div>
+            </div>
+            <div class="prog-row">
+              <div class="prog-header"><span>Europe</span><span>22%</span></div>
+              <div class="prog-bg"><div class="prog-fill green" style="width:22%"></div></div>
+            </div>
+            <div class="prog-row">
+              <div class="prog-header"><span>Rest of World</span><span>8%</span></div>
+              <div class="prog-bg"><div class="prog-fill" style="width:8%;background:#d0cbc0"></div></div>
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="card-title">💰 Deal Terms (Preview)</div>
+            <div class="info-row"><span class="info-label">Seeking</span><span class="info-val">Publisher / Co-dev</span></div>
+            <div class="info-row"><span class="info-label">Min. Deal Size</span><span class="info-val">$500K</span></div>
+            <div class="info-row"><span class="info-label">Revenue Share</span><span class="info-val">70/30 Dev-Pub</span></div>
+            <div class="info-row"><span class="info-label">Rights</span><span class="info-val">IP retained by Dev</span></div>
+            <div class="info-row"><span class="info-label">NDA Required</span><span class="info-val" style="color:#d97706">⚠️ Yes</span></div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- ──────────────── TAB: Attachments ──────────────── -->
+    <div class="tab-content" id="tab-attachments">
+
+      <div class="nda-banner">
+        <span class="nda-banner-icon">📜</span>
+        <span class="nda-banner-text"><strong>Some files require NDA.</strong> Protected documents are only available after an NDA is signed. <span style="color:#d95f2b;font-weight:600;cursor:pointer" onclick="showToast('NDA Request sent! 📩')">Request NDA →</span></span>
+      </div>
+
+      <!-- Public Attachments -->
+      <div class="card">
+        <div class="card-title">📂 Public Documents</div>
+        <div class="attach-item">
+          <div class="attach-icon pdf">📄</div>
+          <div class="attach-meta">
+            <div class="attach-name">Project One-Pager.pdf</div>
+            <div class="attach-info">PDF · 1.2 MB · Added Mar 8</div>
+          </div>
+          <button class="attach-dl" onclick="showToast('Downloading... ⬇️')">⬇</button>
+        </div>
+        <div class="attach-item">
+          <div class="attach-icon video">🎬</div>
+          <div class="attach-meta">
+            <div class="attach-name">Pitch Trailer (90s).mp4</div>
+            <div class="attach-info">MP4 · 48 MB · Added Mar 8</div>
+          </div>
+          <button class="attach-dl" onclick="showToast('Opening video... ▶️')">▶</button>
+        </div>
+        <div class="attach-item">
+          <div class="attach-icon img">🖼</div>
+          <div class="attach-meta">
+            <div class="attach-name">Press Kit (Screenshots).zip</div>
+            <div class="attach-info">ZIP · 22 MB · Added Mar 10</div>
+          </div>
+          <button class="attach-dl" onclick="showToast('Downloading... ⬇️')">⬇</button>
+        </div>
+      </div>
+
+      <!-- NDA-Protected -->
+      <div class="card">
+        <div class="card-title">🔒 NDA-Protected Files</div>
+        <div class="attach-item">
+          <div class="attach-icon pdf">📄</div>
+          <div class="attach-meta">
+            <div class="attach-name">Full Business Plan 2026.pdf</div>
+            <div class="attach-info">PDF · 3.8 MB · Added Mar 9</div>
+            <div class="attach-locked">🔒 NDA Required</div>
+          </div>
+          <button class="attach-dl" disabled>⬇</button>
+        </div>
+        <div class="attach-item">
+          <div class="attach-icon doc">📊</div>
+          <div class="attach-meta">
+            <div class="attach-name">Financial Projections.xlsx</div>
+            <div class="attach-info">XLSX · 840 KB · Added Mar 9</div>
+            <div class="attach-locked">🔒 NDA Required</div>
+          </div>
+          <button class="attach-dl" disabled>⬇</button>
+        </div>
+        <div class="attach-item">
+          <div class="attach-icon zip">🎮</div>
+          <div class="attach-meta">
+            <div class="attach-name">Prototype Build v0.8.zip</div>
+            <div class="attach-info">ZIP · 1.4 GB · Added Mar 12</div>
+            <div class="attach-locked">🔒 NDA Required</div>
+          </div>
+          <button class="attach-dl" disabled>⬇</button>
+        </div>
+        <div class="attach-item" style="border-bottom:none;padding-bottom:0">
+          <div class="attach-icon video">🎬</div>
+          <div class="attach-meta">
+            <div class="attach-name">Gameplay Demo (Internal).mp4</div>
+            <div class="attach-info">MP4 · 124 MB · Added Mar 14</div>
+            <div class="attach-locked">🔒 NDA Required</div>
+          </div>
+          <button class="attach-dl" disabled>⬇</button>
+        </div>
+      </div>
+
+      <div style="text-align:center;padding:8px 0 4px">
+        <button class="cta-btn cta-secondary" style="display:inline-flex;width:auto;padding:11px 24px;font-size:13px" onclick="showToast('NDA Request submitted! 📩')">📜 Request NDA Access</button>
+      </div>
+
+    </div>
+
+    <!-- ──────────────── TAB: Interactions ──────────────── -->
+    <div class="tab-content" id="tab-interactions">
+
+      <!-- My Status -->
+      <div class="card" style="background:linear-gradient(135deg,#fde8dc,#fff4f0)">
+        <div class="card-title">✅ My Status</div>
+        <div style="display:flex;justify-content:space-between;align-items:center">
+          <div>
+            <div style="font-size:14px;font-weight:600;color:#1c1a17">Viewing as Guest</div>
+            <div style="font-size:12.5px;color:#6b6660;margin-top:2px">Sign in to track your interest & history</div>
+          </div>
+          <button class="cta-btn cta-primary" style="display:inline-flex;width:auto;padding:9px 16px;font-size:13px" onclick="openLoginModal()">Sign In</button>
+        </div>
+      </div>
+
+      <!-- Activity Feed -->
+      <div class="card">
+        <div class="card-title">💬 Recent Activity</div>
+
+        <div class="feed-item">
+          <div class="feed-avatar" style="background:linear-gradient(135deg,#0a7fa8,#2eb5e0)">NX</div>
+          <div class="feed-content">
+            <div class="feed-header">
+              <span class="feed-name">NexGen Publishing</span>
+              <span class="feed-time">2h ago</span>
+            </div>
+            <div class="feed-text">Requested a follow-up meeting to discuss co-publishing terms for EU market.</div>
+            <span class="feed-tag interest">Expressed Interest</span>
+          </div>
+        </div>
+
+        <div class="feed-item">
+          <div class="feed-avatar" style="background:linear-gradient(135deg,#2d8a3e,#52c041)">GC</div>
+          <div class="feed-content">
+            <div class="feed-header">
+              <span class="feed-name">GreenChip Studios</span>
+              <span class="feed-time">5h ago</span>
+            </div>
+            <div class="feed-text">Downloaded the press kit and requested NDA documents.</div>
+            <span class="feed-tag nda">NDA Requested</span>
+          </div>
+        </div>
+
+        <div class="feed-item">
+          <div class="feed-avatar" style="background:linear-gradient(135deg,#d95f2b,#f08040)">PF</div>
+          <div class="feed-content">
+            <div class="feed-header">
+              <span class="feed-name">PlayForge Inc.</span>
+              <span class="feed-time">Yesterday</span>
+            </div>
+            <div class="feed-text">Great puzzle mechanics. We love the horror-cyber aesthetic. Would like to see a Switch build demo.</div>
+            <div class="feed-reply">Developer replied: "We can arrange a demo session at our booth on Day 2! Contact biz@akihabara.studio"</div>
+            <span class="feed-tag note">Note Sent</span>
+          </div>
+        </div>
+
+        <div class="feed-item">
+          <div class="feed-avatar" style="background:linear-gradient(135deg,#6b48c0,#9b6fd4)">KW</div>
+          <div class="feed-content">
+            <div class="feed-header">
+              <span class="feed-name">Kenji Watanabe</span>
+              <span class="feed-time">2 days ago</span>
+            </div>
+            <div class="feed-text">Updated game description and added new gameplay screenshots to the showcase.</div>
+            <span class="feed-tag view">Profile Updated</span>
+          </div>
+        </div>
+
+        <div class="feed-item" style="border:none;padding-bottom:0">
+          <div class="feed-avatar" style="background:linear-gradient(135deg,#4a6fa5,#7695c9)">TF</div>
+          <div class="feed-content">
+            <div class="feed-header">
+              <span class="feed-name">TechFusion Capital</span>
+              <span class="feed-time">3 days ago</span>
+            </div>
+            <div class="feed-text">Viewed the project page. Added to watchlist for Q2 review.</div>
+            <span class="feed-tag view">Viewed</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Leave a Note -->
+      <div class="card">
+        <div class="card-title">✉️ Send a Message</div>
+        <div style="font-size:13px;color:#6b6660;margin-bottom:12px">Leave a note for the developer. Sign in to send.</div>
+        <textarea class="compose-input" placeholder="Write a message to Akihabara Studio..." rows="3" onclick="openLoginModal()" readonly style="cursor:pointer;width:100%;display:block"></textarea>
+        <div style="margin-top:10px;display:flex;justify-content:flex-end">
+          <button class="cta-btn cta-primary" style="display:inline-flex;width:auto;padding:10px 20px;font-size:13px" onclick="openLoginModal()">Sign In to Send</button>
+        </div>
+      </div>
+
+    </div>
+
+  </div><!-- end scroll-area -->
+
+  <!-- ─── Fixed Bottom CTA ─── -->
+  <div class="bottom-cta">
+    <button class="cta-btn cta-secondary" onclick="handleNDA()">📜 Request NDA</button>
+    <button class="cta-btn cta-primary" onclick="handleInterest()">💼 Express Interest</button>
+  </div>
+
+  <!-- ─── Bottom Tab Navigation ─── -->
+  <nav class="bottom-nav">
+    <button class="bn-item" onclick="switchBnTab(this,'discover')">
+      <span class="bn-icon">🔍</span>
+      <span class="bn-label">Discover</span>
+    </button>
+    <button class="bn-item active" onclick="switchBnTab(this,'projects')">
+      <span class="bn-icon">🎮</span>
+      <span class="bn-label">Projects</span>
+      <span class="bn-badge">18</span>
+    </button>
+    <button class="bn-item" onclick="switchBnTab(this,'meetings')">
+      <span class="bn-icon">📅</span>
+      <span class="bn-label">Meetings</span>
+    </button>
+    <button class="bn-item" onclick="switchBnTab(this,'messages')">
+      <span class="bn-icon">💬</span>
+      <span class="bn-label">Messages</span>
+      <span class="bn-badge">3</span>
+    </button>
+    <button class="bn-item" onclick="switchBnTab(this,'profile')">
+      <span class="bn-icon">👤</span>
+      <span class="bn-label">Profile</span>
+    </button>
+  </nav>
+
+</div><!-- end .app -->
+
+<!-- ─── Login / Access Modal ─── -->
+<div class="modal-bg" id="loginModal" onclick="closeModalOutside(event)">
+  <div class="modal-sheet" style="position:relative">
+    <button class="modal-close" onclick="closeLoginModal()">✕</button>
+    <div class="modal-drag"></div>
+    <div class="modal-title">Sign In</div>
+    <div class="modal-sub">Access verified business data, download protected files, and connect with developers.</div>
+
+    <div class="modal-access-info">
+      <strong>🏢 Business Access Required</strong><br>
+      This platform is for verified event attendees. Your account must be approved by the event organizer.
+    </div>
+
+    <div class="modal-field">
+      <label>Email Address</label>
+      <input type="email" id="loginEmail" placeholder="you@company.com">
+    </div>
+    <div class="modal-field">
+      <label>Password</label>
+      <input type="password" id="loginPass" placeholder="••••••••">
+    </div>
+    <button class="modal-login-btn" onclick="doLogin()">Sign In →</button>
+    <div class="modal-divider">— or —</div>
+    <button class="modal-login-btn" style="background:#fff;color:#1c1a17;border:1.5px solid #d0cbc0" onclick="showToast('Badge scan coming soon 📱')">🪪 Scan Event Badge</button>
+    <div style="text-align:center;font-size:12.5px;color:#a09890;margin-top:16px">
+      Need access? <span style="color:#d95f2b;font-weight:600;cursor:pointer" onclick="showToast('Access request sent to organizer 📩');closeLoginModal()">Contact event organizer →</span>
+    </div>
+  </div>
+</div>
+
+<!-- ─── Toast ─── -->
+<div class="toast" id="toast"></div>
+
+<script>
+// ─── Tab Switching ───
+function switchTab(el, tabId) {
+  document.querySelectorAll('.tab-btn').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+  el.classList.add('active');
+  document.getElementById('tab-' + tabId).classList.add('active');
+  document.getElementById('scrollArea').scrollTo({top: 0, behavior: 'smooth'});
+}
+
+// ─── Bottom Nav ───
+function switchBnTab(el, section) {
+  document.querySelectorAll('.bn-item').forEach(b => b.classList.remove('active'));
+  el.classList.add('active');
+  if (section !== 'projects') {
+    showToast('Opening ' + section.charAt(0).toUpperCase() + section.slice(1) + '…');
+  }
+}
+
+// ─── Description Toggle ───
+function toggleDesc(btn) {
+  const t = document.getElementById('descText');
+  if (t.classList.contains('clipped')) {
+    t.classList.remove('clipped');
+    btn.textContent = 'Show less';
+  } else {
+    t.classList.add('clipped');
+    btn.textContent = 'Read more';
+  }
+}
+
+// ─── Login Modal ───
+function openLoginModal() {
+  document.getElementById('loginModal').classList.add('open');
+  setTimeout(() => {
+    const email = document.getElementById('loginEmail');
+    if (email) email.focus();
+  }, 300);
+}
+function closeLoginModal() {
+  document.getElementById('loginModal').classList.remove('open');
+}
+function closeModalOutside(e) {
+  if (e.target === document.getElementById('loginModal')) closeLoginModal();
+}
+
+function doLogin() {
+  const email = document.getElementById('loginEmail').value.trim();
+  const pass = document.getElementById('loginPass').value;
+  if (!email || !pass) {
+    showToast('Please fill in all fields ⚠️'); return;
+  }
+  closeLoginModal();
+  setTimeout(() => {
+    showToast('Welcome back! Access granted ✓');
+    unlockBizData();
+  }, 400);
+}
+
+function unlockBizData() {
+  // Remove login card and mask
+  const card = document.getElementById('bizLoginCard');
+  if (card) card.style.display = 'none';
+  const mask = document.getElementById('bizMask');
+  if (mask) {
+    mask.style.opacity = '0';
+    mask.style.transition = 'opacity .4s';
+    setTimeout(() => mask.remove(), 400);
+  }
+  // Unblur content
+  const bizSection = document.querySelector('.biz-section > div[style*="filter"]');
+  if (bizSection) {
+    bizSection.style.filter = 'none';
+    bizSection.style.pointerEvents = 'all';
+    bizSection.style.userSelect = 'auto';
+  }
+  // Update tab label
+  document.querySelectorAll('.tab-btn')[1].innerHTML = 'Biz Data ✓';
+}
+
+// ─── CTA Handlers ───
+let interestExpressed = false;
+function handleInterest() {
+  if (interestExpressed) {
+    showToast('Interest already registered ✓'); return;
+  }
+  openLoginModal();
+  // Simulate flow: after login the interest would be tracked
+  interestExpressed = true;
+  setTimeout(() => {
+    document.querySelectorAll('.cta-btn')[1].textContent = '✅ Interest Sent';
+    document.querySelectorAll('.cta-btn')[1].style.background = '#0d9b72';
+  }, 1200);
+}
+
+function handleNDA() {
+  openLoginModal();
+  setTimeout(() => showToast('NDA Request will be sent after sign-in 📜'), 400);
+}
+
+// ─── Share ───
+function shareProject() {
+  if (navigator.share) {
+    navigator.share({
+      title: 'Phantom Circuit — Akihabara Studio',
+      text: 'Check out this project at Indie Game Fest 2026',
+      url: 'https://gc.events/ign2026/phantom-circuit'
+    }).catch(() => {});
+  } else {
+    if (navigator.clipboard) {
+      navigator.clipboard.writeText('https://gc.events/ign2026/phantom-circuit');
+    }
+    showToast('Link copied! 🔗');
+  }
+}
+
+// ─── Toast ───
+let toastTimer;
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => t.classList.remove('show'), 2800);
+}
+
+// ─── Sticky tabs on scroll ───
+const scrollArea = document.getElementById('scrollArea');
+const tabsBar = document.getElementById('tabsBar');
+</script>
+</body>
+</html>
