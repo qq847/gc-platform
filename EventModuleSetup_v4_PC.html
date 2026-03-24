@@ -1,0 +1,1095 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Module Setup — GAME CONNECTION Event HQ</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg: #e8e4da;
+    --white: #fff;
+    --orange: #d95f2b;
+    --orange-light: #fdf0ea;
+    --teal: #0a7fa8;
+    --teal-light: #e6f4f9;
+    --teal-glow: rgba(10,127,168,0.08);
+    --green: #0d9b72;
+    --green-light: #eaf7f1;
+    --gray-50: #faf9f7;
+    --gray-100: #f3f1ec;
+    --gray-200: #e4e0d7;
+    --gray-300: #d0cbc0;
+    --gray-400: #ada89d;
+    --gray-500: #8a8578;
+    --gray-600: #5e5a52;
+    --gray-700: #3b3833;
+    --gray-800: #1a1a1a;
+    --radius: 12px;
+    --shadow-sm: 0 1px 4px rgba(0,0,0,0.05);
+    --shadow-md: 0 4px 20px rgba(0,0,0,0.08);
+    --shadow-lg: 0 8px 32px rgba(0,0,0,0.12);
+  }
+
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: var(--bg);
+    color: var(--gray-800);
+    min-height: 100vh;
+    line-height: 1.5;
+  }
+
+  /* ═══ NAV ═══ */
+  .nav {
+    background: var(--gray-800);
+    padding: 0 32px;
+    height: 54px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+  }
+
+  .nav-brand { font-size: 14px; font-weight: 700; color: #fff; letter-spacing: 0.3px; }
+  .nav-brand span { color: var(--orange); }
+
+  .nav-right { display: flex; align-items: center; gap: 14px; }
+
+  .nav-event {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 5px 12px 5px 10px;
+    background: rgba(255,255,255,0.08);
+    border-radius: 20px;
+    font-size: 13px;
+    color: #ccc;
+  }
+
+  .nav-event-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--green); flex-shrink: 0; }
+
+  .nav-avatar {
+    width: 30px; height: 30px; border-radius: 50%;
+    background: var(--orange);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 12px; font-weight: 700; color: #fff;
+  }
+
+  /* ═══ MAIN ═══ */
+  .main {
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 32px 20px 100px;
+  }
+
+  /* ═══ PAGE HEADER ═══ */
+  .page-header {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    margin-bottom: 28px;
+  }
+
+  .page-header h1 {
+    font-size: 26px;
+    font-weight: 700;
+    letter-spacing: -0.3px;
+    line-height: 1.2;
+  }
+
+  .page-header p {
+    font-size: 14px;
+    color: var(--gray-500);
+    margin-top: 3px;
+  }
+
+  .page-header-right {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 13px;
+    color: var(--gray-500);
+  }
+
+  /* ═══ STEPPER ═══ */
+  .stepper {
+    display: flex;
+    align-items: center;
+    background: var(--white);
+    border-radius: var(--radius);
+    padding: 16px 24px;
+    box-shadow: var(--shadow-sm);
+    margin-bottom: 24px;
+  }
+
+  .step {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex: 1;
+  }
+
+  .step-dot {
+    width: 28px; height: 28px;
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 12px; font-weight: 700; flex-shrink: 0;
+  }
+
+  .step-dot.done { background: var(--green); color: #fff; }
+  .step-dot.active { background: var(--orange); color: #fff; }
+  .step-dot.todo { background: var(--gray-200); color: var(--gray-400); }
+
+  .step-label { font-size: 13px; font-weight: 600; color: var(--gray-700); }
+  .step-label.active { color: var(--orange); }
+  .step-label.todo { color: var(--gray-400); }
+
+  .step-line {
+    flex: 0 0 32px;
+    height: 2px;
+    background: var(--gray-200);
+    margin: 0 6px;
+  }
+
+  .step-line.done { background: var(--green); }
+
+  /* ═══ SCALE SELECTOR ═══ */
+  .scale-bar {
+    background: var(--white);
+    border-radius: var(--radius);
+    padding: 20px 24px;
+    box-shadow: var(--shadow-sm);
+    margin-bottom: 20px;
+  }
+
+  .scale-bar-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 14px;
+  }
+
+  .scale-bar-title {
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--gray-700);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .scale-bar-hint {
+    font-size: 12px;
+    color: var(--gray-400);
+  }
+
+  .scale-pills {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 10px;
+  }
+
+  .scale-pill {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 14px 18px;
+    border: 2px solid var(--gray-200);
+    border-radius: 10px;
+    cursor: pointer;
+    transition: all 0.2s;
+    background: var(--white);
+    user-select: none;
+  }
+
+  .scale-pill:hover {
+    border-color: var(--gray-300);
+    box-shadow: var(--shadow-sm);
+  }
+
+  .scale-pill.active {
+    border-color: var(--teal);
+    background: var(--teal-light);
+  }
+
+  .scale-pill-icon {
+    width: 40px; height: 40px;
+    border-radius: 10px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 20px;
+    flex-shrink: 0;
+    background: var(--gray-100);
+    transition: background 0.2s;
+  }
+
+  .scale-pill.active .scale-pill-icon { background: rgba(10,127,168,0.12); }
+
+  .scale-pill-text { flex: 1; }
+  .scale-pill-name { font-size: 15px; font-weight: 700; color: var(--gray-800); line-height: 1.2; }
+  .scale-pill.active .scale-pill-name { color: var(--teal); }
+  .scale-pill-sub { font-size: 12px; color: var(--gray-400); margin-top: 1px; }
+
+  .scale-pill-count {
+    font-size: 11px; font-weight: 700;
+    color: var(--gray-400);
+    background: var(--gray-100);
+    padding: 2px 8px;
+    border-radius: 20px;
+    white-space: nowrap;
+    transition: all 0.2s;
+  }
+
+  .scale-pill.active .scale-pill-count {
+    color: var(--teal);
+    background: rgba(10,127,168,0.12);
+  }
+
+  /* ═══ SUMMARY STRIP (sticky) ═══ */
+  .summary-strip {
+    background: var(--white);
+    border-radius: var(--radius);
+    padding: 14px 24px;
+    box-shadow: var(--shadow-sm);
+    margin-bottom: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    position: sticky;
+    top: 54px;
+    z-index: 50;
+    border: 1px solid var(--gray-200);
+    transition: box-shadow 0.2s;
+  }
+
+  .summary-strip.scrolled {
+    box-shadow: var(--shadow-md);
+  }
+
+  .summary-left {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+  }
+
+  .summary-chip {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .summary-num {
+    font-size: 22px;
+    font-weight: 700;
+    line-height: 1;
+  }
+
+  .summary-num.mod-num { color: var(--teal); }
+  .summary-num.spon-num { color: var(--orange); }
+
+  .summary-label {
+    font-size: 12px;
+    color: var(--gray-500);
+    line-height: 1.2;
+  }
+
+  .summary-divider {
+    width: 1px;
+    height: 28px;
+    background: var(--gray-200);
+  }
+
+  .summary-right {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .summary-preset {
+    font-size: 11px;
+    font-weight: 600;
+    padding: 4px 10px;
+    border-radius: 20px;
+    background: var(--teal-light);
+    color: var(--teal);
+    letter-spacing: 0.2px;
+  }
+
+  .summary-reset {
+    font-size: 12px;
+    color: var(--gray-400);
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-family: 'DM Sans', sans-serif;
+    font-weight: 500;
+    padding: 4px 8px;
+    border-radius: 6px;
+    transition: all 0.15s;
+  }
+
+  .summary-reset:hover { background: var(--gray-100); color: var(--gray-600); }
+
+  /* ═══ SECTION LABEL ═══ */
+  .section-label {
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--gray-400);
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    margin-bottom: 12px;
+    padding-left: 4px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .section-label-line {
+    flex: 1;
+    height: 1px;
+    background: var(--gray-200);
+  }
+
+  /* ═══ MODULE CARDS ═══ */
+  .mod-list {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin-bottom: 28px;
+  }
+
+  .mod-card {
+    background: var(--white);
+    border-radius: var(--radius);
+    border: 2px solid transparent;
+    padding: 18px 22px;
+    display: flex;
+    align-items: flex-start;
+    gap: 16px;
+    transition: all 0.25s;
+    box-shadow: var(--shadow-sm);
+    cursor: pointer;
+    position: relative;
+    user-select: none;
+  }
+
+  .mod-card:hover {
+    box-shadow: var(--shadow-md);
+    transform: translateY(-1px);
+  }
+
+  .mod-card.on {
+    border-color: var(--teal);
+    background: linear-gradient(135deg, var(--white) 60%, var(--teal-glow));
+  }
+
+  .mod-card.off {
+    border-color: var(--gray-200);
+    background: var(--gray-50);
+  }
+
+  .mod-card.off .mod-icon { opacity: 0.4; }
+  .mod-card.off .mod-name { color: var(--gray-400); }
+  .mod-card.off .mod-desc { color: var(--gray-300); }
+  .mod-card.off .mod-meta-item { color: var(--gray-300); }
+
+  /* Exclusive card */
+  .mod-card.exclusive.on {
+    border-color: var(--orange);
+    background: linear-gradient(135deg, var(--white) 50%, var(--orange-light));
+  }
+
+  .mod-card.exclusive.on::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 3px;
+    background: linear-gradient(90deg, var(--orange), #f59e0b);
+    border-radius: var(--radius) var(--radius) 0 0;
+  }
+
+  /* Icon */
+  .mod-icon {
+    width: 48px; height: 48px;
+    border-radius: 12px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 24px;
+    flex-shrink: 0;
+    transition: opacity 0.25s, transform 0.2s;
+  }
+
+  .mod-card:hover .mod-icon { transform: scale(1.06); }
+
+  /* Content */
+  .mod-body { flex: 1; min-width: 0; }
+
+  .mod-top-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 4px;
+  }
+
+  .mod-name {
+    font-size: 15px;
+    font-weight: 700;
+    color: var(--gray-800);
+    transition: color 0.2s;
+  }
+
+  .mod-card.on .mod-name { color: var(--teal); }
+  .mod-card.exclusive.on .mod-name { color: var(--orange); }
+
+  .mod-badge {
+    font-size: 9px;
+    font-weight: 700;
+    padding: 2px 7px;
+    border-radius: 20px;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+    flex-shrink: 0;
+  }
+
+  .mod-badge-exclusive { background: var(--orange); color: #fff; }
+  .mod-badge-popular { background: var(--teal); color: #fff; }
+  .mod-badge-rec { background: var(--green-light); color: var(--green); display: none; }
+
+  .mod-desc {
+    font-size: 13px;
+    color: var(--gray-500);
+    line-height: 1.5;
+    margin-bottom: 8px;
+    transition: color 0.2s;
+  }
+
+  .mod-meta {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    flex-wrap: wrap;
+  }
+
+  .mod-meta-item {
+    font-size: 11px;
+    color: var(--gray-400);
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    transition: color 0.2s;
+  }
+
+  .mod-meta-item.sponsor { color: var(--orange); font-weight: 600; }
+  .mod-card.off .mod-meta-item.sponsor { color: var(--gray-300); font-weight: 400; }
+
+  .mod-meta-sep {
+    width: 3px; height: 3px;
+    border-radius: 50%;
+    background: var(--gray-300);
+  }
+
+  /* Toggle */
+  .mod-toggle {
+    flex-shrink: 0;
+    padding-top: 2px;
+  }
+
+  .toggle-sw {
+    position: relative;
+    width: 44px; height: 24px;
+    cursor: pointer;
+    display: block;
+  }
+
+  .toggle-sw input { opacity: 0; width: 0; height: 0; position: absolute; }
+
+  .toggle-track {
+    position: absolute;
+    inset: 0;
+    border-radius: 12px;
+    background: var(--gray-300);
+    transition: background 0.2s;
+  }
+
+  .toggle-track::before {
+    content: '';
+    position: absolute;
+    width: 18px; height: 18px;
+    border-radius: 50%;
+    background: #fff;
+    top: 3px; left: 3px;
+    transition: transform 0.2s;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.15);
+  }
+
+  .toggle-sw input:checked + .toggle-track { background: var(--green); }
+  .toggle-sw input:checked + .toggle-track::before { transform: translateX(20px); }
+
+  /* Exclusive toggle */
+  .mod-card.exclusive .toggle-sw input:checked + .toggle-track { background: var(--orange); }
+
+  /* ═══ FOOTER ═══ */
+  .footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background: var(--white);
+    border-radius: var(--radius);
+    padding: 16px 24px;
+    box-shadow: var(--shadow-sm);
+    margin-top: 8px;
+  }
+
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 11px 24px;
+    border-radius: 8px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    border: none;
+    transition: all 0.15s;
+    white-space: nowrap;
+  }
+
+  .btn-primary { background: var(--orange); color: #fff; }
+  .btn-primary:hover { background: #c2521f; transform: translateY(-1px); box-shadow: 0 4px 12px rgba(217,95,43,0.25); }
+
+  .btn-secondary { background: var(--white); color: var(--gray-600); border: 1.5px solid var(--gray-300); }
+  .btn-secondary:hover { background: var(--gray-100); border-color: var(--gray-400); }
+
+  .btn-ghost { background: transparent; color: var(--gray-500); padding: 11px 14px; }
+  .btn-ghost:hover { background: var(--gray-100); color: var(--gray-700); }
+
+  /* ═══ TOAST ═══ */
+  .toast-box {
+    position: fixed;
+    top: 66px; right: 20px;
+    z-index: 200;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    pointer-events: none;
+  }
+
+  .toast {
+    padding: 11px 18px;
+    border-radius: 10px;
+    font-size: 13px;
+    font-weight: 500;
+    box-shadow: var(--shadow-lg);
+    pointer-events: all;
+    animation: toastIn 0.25s ease;
+    max-width: 300px;
+    color: #fff;
+  }
+
+  .toast-info { background: var(--teal); }
+  .toast-success { background: var(--green); }
+
+  @keyframes toastIn { from { transform: translateX(100%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+  .toast.out { animation: toastOut 0.2s ease forwards; }
+  @keyframes toastOut { to { opacity: 0; transform: translateX(20px); } }
+
+  /* ═══ SCROLLBAR ═══ */
+  ::-webkit-scrollbar { width: 6px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: var(--gray-300); border-radius: 3px; }
+
+  /* ═══ STAGGER ANIMATION ═══ */
+  .mod-card { animation: cardIn 0.3s ease both; }
+  .mod-card:nth-child(1) { animation-delay: 0.03s; }
+  .mod-card:nth-child(2) { animation-delay: 0.06s; }
+  .mod-card:nth-child(3) { animation-delay: 0.09s; }
+  .mod-card:nth-child(4) { animation-delay: 0.12s; }
+  .mod-card:nth-child(5) { animation-delay: 0.15s; }
+
+  @keyframes cardIn {
+    from { opacity: 0; transform: translateY(8px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+</style>
+</head>
+<body>
+
+<!-- ═══ NAV ═══ -->
+<nav class="nav">
+  <div class="nav-brand"><span>GAME CONNECTION</span> · Event HQ</div>
+  <div class="nav-right">
+    <div class="nav-event">
+      <div class="nav-event-dot"></div>
+      Indie Game Fest 2026
+    </div>
+    <div class="nav-avatar">QQ</div>
+  </div>
+</nav>
+
+<!-- ═══ MAIN ═══ -->
+<div class="main">
+
+  <!-- Header -->
+  <div class="page-header">
+    <div>
+      <h1>Module Setup</h1>
+      <p>Pick the features your event needs — we'll recommend based on your event scale.</p>
+    </div>
+  </div>
+
+  <!-- Stepper -->
+  <div class="stepper">
+    <div class="step">
+      <div class="step-dot done">✓</div>
+      <div class="step-label">Basic Info</div>
+    </div>
+    <div class="step-line done"></div>
+    <div class="step">
+      <div class="step-dot active">2</div>
+      <div class="step-label active">Module Setup</div>
+    </div>
+    <div class="step-line"></div>
+    <div class="step">
+      <div class="step-dot todo">3</div>
+      <div class="step-label todo">Sponsorship</div>
+    </div>
+    <div class="step-line"></div>
+    <div class="step">
+      <div class="step-dot todo">4</div>
+      <div class="step-label todo">Review</div>
+    </div>
+  </div>
+
+  <!-- ═══ SCALE SELECTOR ═══ -->
+  <div class="scale-bar">
+    <div class="scale-bar-header">
+      <div class="scale-bar-title">📐 What's the scale of your event?</div>
+      <div class="scale-bar-hint">This pre-selects recommended modules</div>
+    </div>
+    <div class="scale-pills">
+      <div class="scale-pill" onclick="setScale('intimate')" id="scale-intimate">
+        <div class="scale-pill-icon">🤝</div>
+        <div class="scale-pill-text">
+          <div class="scale-pill-name">Intimate</div>
+          <div class="scale-pill-sub">Up to 150 attendees</div>
+        </div>
+        <div class="scale-pill-count">3 modules</div>
+      </div>
+      <div class="scale-pill active" onclick="setScale('standard')" id="scale-standard">
+        <div class="scale-pill-icon">🏛️</div>
+        <div class="scale-pill-text">
+          <div class="scale-pill-name">Standard</div>
+          <div class="scale-pill-sub">150–800 attendees</div>
+        </div>
+        <div class="scale-pill-count">6 modules</div>
+      </div>
+      <div class="scale-pill" onclick="setScale('flagship')" id="scale-flagship">
+        <div class="scale-pill-icon">🌍</div>
+        <div class="scale-pill-text">
+          <div class="scale-pill-name">Flagship</div>
+          <div class="scale-pill-sub">800+ attendees</div>
+        </div>
+        <div class="scale-pill-count">All 9</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══ STICKY SUMMARY ═══ -->
+  <div class="summary-strip" id="summaryStrip">
+    <div class="summary-left">
+      <div class="summary-chip">
+        <div class="summary-num mod-num" id="sModCount">6</div>
+        <div class="summary-label">modules<br>active</div>
+      </div>
+      <div class="summary-divider"></div>
+      <div class="summary-chip">
+        <div class="summary-num spon-num" id="sSponCount">18</div>
+        <div class="summary-label">sponsorship<br>products</div>
+      </div>
+    </div>
+    <div class="summary-right">
+      <div class="summary-preset" id="sPresetLabel">Standard preset</div>
+      <button class="summary-reset" onclick="resetToPreset()">Reset</button>
+    </div>
+  </div>
+
+  <!-- ═══ CORE MODULES ═══ -->
+  <div class="section-label">
+    Core Modules
+    <div class="section-label-line"></div>
+  </div>
+
+  <div class="mod-list" id="coreList">
+
+    <!-- Registration & Tickets -->
+    <div class="mod-card on" data-id="registration" data-sponsor="2" onclick="toggle(this)">
+      <div class="mod-icon" style="background:#fef3ee;">🎟️</div>
+      <div class="mod-body">
+        <div class="mod-top-row">
+          <div class="mod-name">Registration & Tickets</div>
+        </div>
+        <div class="mod-desc">Manage attendee registration, ticket types, badge printing, and on-site check-in.</div>
+        <div class="mod-meta">
+          <div class="mod-meta-item">⏱ 5 min setup</div>
+          <div class="mod-meta-sep"></div>
+          <div class="mod-meta-item sponsor">💰 2 sponsorship products</div>
+        </div>
+      </div>
+      <div class="mod-toggle" onclick="event.stopPropagation()">
+        <label class="toggle-sw">
+          <input type="checkbox" checked onchange="syncCard(this)">
+          <span class="toggle-track"></span>
+        </label>
+      </div>
+    </div>
+
+    <!-- Schedule & Sessions -->
+    <div class="mod-card on" data-id="schedule" data-sponsor="4" onclick="toggle(this)">
+      <div class="mod-icon" style="background:#e6f4f9;">📅</div>
+      <div class="mod-body">
+        <div class="mod-top-row">
+          <div class="mod-name">Schedule & Sessions</div>
+        </div>
+        <div class="mod-desc">Build a multi-day program with speakers, rooms, time slots, and real-time updates.</div>
+        <div class="mod-meta">
+          <div class="mod-meta-item">⏱ 12 min setup</div>
+          <div class="mod-meta-sep"></div>
+          <div class="mod-meta-item sponsor">💰 4 sponsorship products</div>
+        </div>
+      </div>
+      <div class="mod-toggle" onclick="event.stopPropagation()">
+        <label class="toggle-sw">
+          <input type="checkbox" checked onchange="syncCard(this)">
+          <span class="toggle-track"></span>
+        </label>
+      </div>
+    </div>
+
+    <!-- Game Showcase -->
+    <div class="mod-card on" data-id="showcase" data-sponsor="4" onclick="toggle(this)">
+      <div class="mod-icon" style="background:#eaf7f1;">🎮</div>
+      <div class="mod-body">
+        <div class="mod-top-row">
+          <div class="mod-name">Game Showcase</div>
+        </div>
+        <div class="mod-desc">Curate and display game submissions with trailers, screenshots, and press kits.</div>
+        <div class="mod-meta">
+          <div class="mod-meta-item">⏱ 8 min setup</div>
+          <div class="mod-meta-sep"></div>
+          <div class="mod-meta-item sponsor">💰 4 sponsorship products</div>
+        </div>
+      </div>
+      <div class="mod-toggle" onclick="event.stopPropagation()">
+        <label class="toggle-sw">
+          <input type="checkbox" checked onchange="syncCard(this)">
+          <span class="toggle-track"></span>
+        </label>
+      </div>
+    </div>
+
+    <!-- Let's Meet — EXCLUSIVE -->
+    <div class="mod-card on exclusive" data-id="letsmeet" data-sponsor="2" onclick="toggle(this)">
+      <div class="mod-icon" style="background:#fef3ee;">🤝</div>
+      <div class="mod-body">
+        <div class="mod-top-row">
+          <div class="mod-name">Let's Meet</div>
+          <span class="mod-badge mod-badge-exclusive">★ GC EXCLUSIVE</span>
+        </div>
+        <div class="mod-desc">AI-powered 1-on-1 meeting scheduling between developers, publishers, and investors. Set time slots, duration, and room assignments.</div>
+        <div class="mod-meta">
+          <div class="mod-meta-item">⏱ 10 min setup</div>
+          <div class="mod-meta-sep"></div>
+          <div class="mod-meta-item sponsor">💰 2 sponsorship products</div>
+          <div class="mod-meta-sep"></div>
+          <div class="mod-meta-item" style="color:var(--gray-300);font-size:10px;">Meeting Room · Schedule Sponsor</div>
+        </div>
+      </div>
+      <div class="mod-toggle" onclick="event.stopPropagation()">
+        <label class="toggle-sw">
+          <input type="checkbox" checked onchange="syncCard(this)">
+          <span class="toggle-track"></span>
+        </label>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- ═══ ADD-ON MODULES ═══ -->
+  <div class="section-label">
+    Add-ons
+    <div class="section-label-line"></div>
+  </div>
+
+  <div class="mod-list" id="addonList">
+
+    <!-- Awards -->
+    <div class="mod-card on" data-id="awards" data-sponsor="6" onclick="toggle(this)">
+      <div class="mod-icon" style="background:#fefce8;">🏆</div>
+      <div class="mod-body">
+        <div class="mod-top-row">
+          <div class="mod-name">Awards & Competition</div>
+        </div>
+        <div class="mod-desc">Create award categories, manage nominations and community voting.</div>
+        <div class="mod-meta">
+          <div class="mod-meta-item">⏱ 10 min setup</div>
+          <div class="mod-meta-sep"></div>
+          <div class="mod-meta-item sponsor">💰 6 sponsorship products</div>
+        </div>
+      </div>
+      <div class="mod-toggle" onclick="event.stopPropagation()">
+        <label class="toggle-sw">
+          <input type="checkbox" checked onchange="syncCard(this)">
+          <span class="toggle-track"></span>
+        </label>
+      </div>
+    </div>
+
+    <!-- Buyer Invitations -->
+    <div class="mod-card on" data-id="buyer" data-sponsor="0" onclick="toggle(this)">
+      <div class="mod-icon" style="background:#f0e8ff;">👥</div>
+      <div class="mod-body">
+        <div class="mod-top-row">
+          <div class="mod-name">Buyer Invitations</div>
+        </div>
+        <div class="mod-desc">Invite and manage qualified buyers with curated access and priority scheduling.</div>
+        <div class="mod-meta">
+          <div class="mod-meta-item">⏱ 5 min setup</div>
+          <div class="mod-meta-sep"></div>
+          <div class="mod-meta-item" style="color:var(--gray-300);">No sponsorship products</div>
+        </div>
+      </div>
+      <div class="mod-toggle" onclick="event.stopPropagation()">
+        <label class="toggle-sw">
+          <input type="checkbox" checked onchange="syncCard(this)">
+          <span class="toggle-track"></span>
+        </label>
+      </div>
+    </div>
+
+    <!-- Live Streaming -->
+    <div class="mod-card off" data-id="streaming" data-sponsor="3" onclick="toggle(this)">
+      <div class="mod-icon" style="background:#fef3ee;">🎤</div>
+      <div class="mod-body">
+        <div class="mod-top-row">
+          <div class="mod-name">Live Streaming</div>
+          <span class="mod-badge mod-badge-popular">🔥 POPULAR</span>
+        </div>
+        <div class="mod-desc">Stream event sessions live to a global audience on multiple platforms.</div>
+        <div class="mod-meta">
+          <div class="mod-meta-item">⏱ 15 min setup</div>
+          <div class="mod-meta-sep"></div>
+          <div class="mod-meta-item sponsor">💰 3 sponsorship products</div>
+        </div>
+      </div>
+      <div class="mod-toggle" onclick="event.stopPropagation()">
+        <label class="toggle-sw">
+          <input type="checkbox" onchange="syncCard(this)">
+          <span class="toggle-track"></span>
+        </label>
+      </div>
+    </div>
+
+    <!-- Merchandise Store -->
+    <div class="mod-card off" data-id="merch" data-sponsor="1" onclick="toggle(this)">
+      <div class="mod-icon" style="background:#fef3ee;">🛍️</div>
+      <div class="mod-body">
+        <div class="mod-top-row">
+          <div class="mod-name">Merchandise Store</div>
+        </div>
+        <div class="mod-desc">Sell branded merchandise and digital goods to event attendees.</div>
+        <div class="mod-meta">
+          <div class="mod-meta-item">⏱ 8 min setup</div>
+          <div class="mod-meta-sep"></div>
+          <div class="mod-meta-item sponsor">💰 1 sponsorship product</div>
+        </div>
+      </div>
+      <div class="mod-toggle" onclick="event.stopPropagation()">
+        <label class="toggle-sw">
+          <input type="checkbox" onchange="syncCard(this)">
+          <span class="toggle-track"></span>
+        </label>
+      </div>
+    </div>
+
+    <!-- Analytics -->
+    <div class="mod-card off" data-id="analytics" data-sponsor="0" onclick="toggle(this)">
+      <div class="mod-icon" style="background:#e6f4f9;">📊</div>
+      <div class="mod-body">
+        <div class="mod-top-row">
+          <div class="mod-name">Analytics & Reports</div>
+        </div>
+        <div class="mod-desc">In-depth event data, attendance insights, and exportable reports.</div>
+        <div class="mod-meta">
+          <div class="mod-meta-item">⏱ 2 min setup</div>
+          <div class="mod-meta-sep"></div>
+          <div class="mod-meta-item" style="color:var(--gray-300);">No sponsorship products</div>
+        </div>
+      </div>
+      <div class="mod-toggle" onclick="event.stopPropagation()">
+        <label class="toggle-sw">
+          <input type="checkbox" onchange="syncCard(this)">
+          <span class="toggle-track"></span>
+        </label>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- ═══ FOOTER ACTIONS ═══ -->
+  <div class="footer">
+    <button class="btn btn-secondary">← Back</button>
+    <div style="display:flex; gap:8px;">
+      <button class="btn btn-ghost" onclick="toast('Draft saved ✓','success')">💾 Save Draft</button>
+      <button class="btn btn-primary">Continue to Sponsorship →</button>
+    </div>
+  </div>
+
+</div>
+
+<!-- Toast -->
+<div class="toast-box" id="toastBox"></div>
+
+<script>
+  // ═══════════════════════════════════════
+  // Scale presets — which modules are ON
+  // ═══════════════════════════════════════
+  const presets = {
+    intimate:  ['registration', 'schedule', 'showcase'],
+    standard:  ['registration', 'schedule', 'showcase', 'letsmeet', 'awards', 'buyer'],
+    flagship:  ['registration', 'schedule', 'showcase', 'letsmeet', 'awards', 'buyer', 'streaming', 'merch', 'analytics']
+  };
+
+  const presetLabels = {
+    intimate: 'Intimate preset',
+    standard: 'Standard preset',
+    flagship: 'Flagship preset'
+  };
+
+  let currentScale = 'standard';
+
+  // ═══════════════════════════════════════
+  // Scale selection
+  // ═══════════════════════════════════════
+  function setScale(scale) {
+    currentScale = scale;
+
+    // Update pills
+    document.querySelectorAll('.scale-pill').forEach(p => p.classList.remove('active'));
+    document.getElementById('scale-' + scale).classList.add('active');
+
+    // Apply preset
+    applyPreset(scale);
+    toast(scale.charAt(0).toUpperCase() + scale.slice(1) + ' preset applied', 'info');
+  }
+
+  function applyPreset(scale) {
+    const preset = presets[scale];
+    const allCards = document.querySelectorAll('.mod-card');
+
+    allCards.forEach(card => {
+      const id = card.dataset.id;
+      const cb = card.querySelector('input[type="checkbox"]');
+      const shouldBeOn = preset.includes(id);
+      cb.checked = shouldBeOn;
+      card.classList.toggle('on', shouldBeOn);
+      card.classList.toggle('off', !shouldBeOn);
+    });
+
+    document.getElementById('sPresetLabel').textContent = presetLabels[scale];
+    updateSummary();
+  }
+
+  function resetToPreset() {
+    applyPreset(currentScale);
+    toast('Reset to ' + currentScale + ' preset', 'info');
+  }
+
+  // ═══════════════════════════════════════
+  // Toggle a module
+  // ═══════════════════════════════════════
+  function toggle(card) {
+    const cb = card.querySelector('input[type="checkbox"]');
+    cb.checked = !cb.checked;
+    card.classList.toggle('on', cb.checked);
+    card.classList.toggle('off', !cb.checked);
+    updateSummary();
+  }
+
+  function syncCard(input) {
+    const card = input.closest('.mod-card');
+    card.classList.toggle('on', input.checked);
+    card.classList.toggle('off', !input.checked);
+    updateSummary();
+  }
+
+  // ═══════════════════════════════════════
+  // Update summary numbers
+  // ═══════════════════════════════════════
+  function updateSummary() {
+    const allCards = document.querySelectorAll('.mod-card');
+    let modCount = 0;
+    let sponCount = 0;
+
+    allCards.forEach(card => {
+      if (card.classList.contains('on')) {
+        modCount++;
+        sponCount += parseInt(card.dataset.sponsor) || 0;
+      }
+    });
+
+    animateNum('sModCount', modCount);
+    animateNum('sSponCount', sponCount);
+  }
+
+  function animateNum(id, target) {
+    const el = document.getElementById(id);
+    const current = parseInt(el.textContent) || 0;
+    if (current === target) return;
+
+    // Quick counter animation
+    const diff = target - current;
+    const steps = Math.min(Math.abs(diff), 8);
+    const stepVal = diff / steps;
+    let i = 0;
+
+    const interval = setInterval(() => {
+      i++;
+      if (i >= steps) {
+        el.textContent = target;
+        clearInterval(interval);
+      } else {
+        el.textContent = Math.round(current + stepVal * i);
+      }
+    }, 40);
+  }
+
+  // ═══════════════════════════════════════
+  // Summary strip shadow on scroll
+  // ═══════════════════════════════════════
+  const strip = document.getElementById('summaryStrip');
+  window.addEventListener('scroll', () => {
+    strip.classList.toggle('scrolled', window.scrollY > 200);
+  });
+
+  // ═══════════════════════════════════════
+  // Toast
+  // ═══════════════════════════════════════
+  function toast(msg, type = 'info') {
+    const box = document.getElementById('toastBox');
+    const t = document.createElement('div');
+    t.className = 'toast toast-' + type;
+    t.textContent = msg;
+    box.appendChild(t);
+    setTimeout(() => { t.classList.add('out'); setTimeout(() => t.remove(), 200); }, 2200);
+  }
+
+  // ═══════════════════════════════════════
+  // Init
+  // ═══════════════════════════════════════
+  updateSummary();
+</script>
+</body>
+</html>
