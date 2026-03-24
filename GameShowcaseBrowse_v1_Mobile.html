@@ -1,0 +1,668 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Game Showcase — Indie Game Fest 2026</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+html,body{height:100%;overflow:hidden}
+body{font-family:'DM Sans',sans-serif;background:#e8e4da;color:#1c1a17;display:flex;flex-direction:column;position:fixed;width:100%;height:100%}
+
+/* ─── Top Header ─── */
+.top-header{flex-shrink:0;background:#fff;border-bottom:1px solid #e0dbd0;padding:0 16px;height:52px;display:flex;align-items:center;justify-content:space-between;position:relative;z-index:50}
+.header-logo{font-weight:700;font-size:14px;color:#1c1a17;letter-spacing:.2px}
+.header-logo span{color:#d95f2b}
+.header-actions{display:flex;align-items:center;gap:8px}
+.event-pill{padding:4px 10px;background:#fde8dc;color:#d95f2b;border-radius:20px;font-size:11px;font-weight:600;white-space:nowrap}
+.btn-signin-top{padding:7px 14px;border-radius:8px;background:#1c1a17;color:#fff;font-size:12px;font-weight:600;cursor:pointer;border:none;font-family:'DM Sans',sans-serif}
+
+/* ─── Scroll Container ─── */
+.scroll-area{flex:1;overflow-y:auto;overflow-x:hidden;-webkit-overflow-scrolling:touch;scroll-behavior:smooth}
+.scroll-area::-webkit-scrollbar{display:none}
+
+/* ─── Hero ─── */
+.hero{background:linear-gradient(135deg,#1c1a17 0%,#2d2520 60%,#3a2010 100%);padding:20px 16px 18px;position:relative;overflow:hidden}
+.hero::before{content:'';position:absolute;top:-40px;right:-40px;width:200px;height:200px;border-radius:50%;background:radial-gradient(circle,rgba(217,95,43,.18),transparent 70%)}
+.hero h1{font-size:22px;font-weight:700;color:#fff;margin-bottom:4px;letter-spacing:-.3px;position:relative;z-index:1}
+.hero h1 span{color:#d95f2b}
+.hero p{font-size:13px;color:#a09890;margin-bottom:16px;position:relative;z-index:1}
+.hero-stats{display:flex;gap:0;position:relative;z-index:1}
+.hero-stat{flex:1;text-align:center;padding:8px 4px;background:rgba(255,255,255,.06);border-radius:8px;margin:0 3px}
+.hero-stat:first-child{margin-left:0}
+.hero-stat:last-child{margin-right:0}
+.hero-stat-num{font-size:20px;font-weight:700;color:#fff}
+.hero-stat-label{font-size:10px;color:#a09890;margin-top:1px}
+
+/* ─── Search Bar ─── */
+.search-bar{background:#fff;padding:10px 16px;border-bottom:1px solid #e0dbd0;position:sticky;top:0;z-index:40}
+.search-wrap{position:relative}
+.search-wrap input{width:100%;padding:10px 12px 10px 36px;border:1.5px solid #e0dbd0;border-radius:10px;font-size:14px;font-family:'DM Sans',sans-serif;background:#f5f3ef;color:#1c1a17;outline:none;transition:border-color .15s}
+.search-wrap input:focus{border-color:#d95f2b;background:#fff}
+.search-wrap input::placeholder{color:#a09890}
+.search-icon{position:absolute;left:11px;top:50%;transform:translateY(-50%);font-size:15px;color:#a09890;pointer-events:none}
+
+/* ─── Filter Chips ─── */
+.filter-chips-wrap{background:#fff;border-bottom:1px solid #e0dbd0;padding:0 16px 10px}
+.filter-chips{display:flex;gap:7px;overflow-x:auto;scrollbar-width:none;padding-top:8px}
+.filter-chips::-webkit-scrollbar{display:none}
+.chip{flex-shrink:0;padding:6px 13px;border:1.5px solid #e0dbd0;border-radius:20px;font-size:12.5px;font-weight:500;color:#6b6660;background:#f5f3ef;cursor:pointer;transition:all .15s;white-space:nowrap;font-family:'DM Sans',sans-serif}
+.chip:active{transform:scale(.96)}
+.chip.active{border-color:#d95f2b;background:#fde8dc;color:#d95f2b;font-weight:600}
+.chip-divider{flex-shrink:0;width:1px;height:28px;background:#e0dbd0;align-self:center}
+
+/* ─── Sort Row ─── */
+.sort-row{display:flex;align-items:center;justify-content:space-between;padding:10px 16px 8px;background:#e8e4da}
+.result-count{font-size:13px;color:#6b6660;font-weight:500}
+.sort-sel{padding:6px 10px;border:1.5px solid #e0dbd0;border-radius:8px;font-size:12.5px;font-family:'DM Sans',sans-serif;background:#fff;color:#1c1a17;outline:none;cursor:pointer;-webkit-appearance:none;appearance:none;padding-right:24px;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='7' viewBox='0 0 10 7'%3E%3Cpath d='M1 1l4 4 4-4' stroke='%23a09890' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 8px center}
+
+/* ─── Featured Strip ─── */
+.featured-section{padding:4px 16px 12px}
+.section-label{font-size:11px;font-weight:700;color:#a09890;text-transform:uppercase;letter-spacing:.6px;margin-bottom:10px;display:flex;align-items:center;gap:8px}
+.section-label::after{content:'';flex:1;height:1px;background:#d0cbc0}
+.featured-scroll{display:flex;gap:12px;overflow-x:auto;padding-bottom:4px;scrollbar-width:none}
+.featured-scroll::-webkit-scrollbar{display:none}
+.featured-card{flex-shrink:0;width:160px;border-radius:10px;overflow:hidden;background:#fff;box-shadow:0 2px 8px rgba(0,0,0,.08);cursor:pointer;transition:transform .15s}
+.featured-card:active{transform:scale(.97)}
+.featured-card-cover{width:100%;height:90px;display:flex;align-items:center;justify-content:center;font-size:26px;position:relative}
+.featured-badge{position:absolute;top:6px;left:6px;background:#d95f2b;color:#fff;font-size:9.5px;font-weight:700;padding:2px 6px;border-radius:4px;letter-spacing:.3px}
+.featured-card-body{padding:8px 10px}
+.featured-card-title{font-size:12px;font-weight:600;color:#1c1a17;margin-bottom:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.featured-card-dev{font-size:10.5px;color:#6b6660}
+.featured-card-heat{font-size:10.5px;color:#d95f2b;font-weight:600;margin-top:3px}
+
+/* ─── Game List ─── */
+.game-list{padding:0 16px 100px;display:flex;flex-direction:column;gap:12px}
+
+/* ─── Game Card ─── */
+.game-card{background:#fff;border-radius:14px;overflow:hidden;box-shadow:0 1px 4px rgba(0,0,0,.07);cursor:pointer;transition:transform .15s;display:flex;flex-direction:column;position:relative}
+.game-card:active{transform:scale(.99)}
+.game-card-cover{width:100%;height:140px;display:flex;align-items:center;justify-content:center;font-size:38px;position:relative;flex-shrink:0}
+.card-featured-badge{position:absolute;top:9px;left:9px;background:#d95f2b;color:#fff;font-size:9.5px;font-weight:700;padding:2px 7px;border-radius:4px;letter-spacing:.4px}
+.card-seeking-badge{position:absolute;top:9px;right:9px;background:rgba(0,0,0,.55);color:#fff;font-size:9.5px;font-weight:600;padding:2px 7px;border-radius:4px;backdrop-filter:blur(4px)}
+.card-heat{position:absolute;bottom:9px;right:9px;background:rgba(0,0,0,.6);color:#fff;font-size:10.5px;font-weight:600;padding:3px 7px;border-radius:5px}
+.game-card-body{padding:12px 14px 10px}
+.game-card-title{font-size:15px;font-weight:700;color:#1c1a17;margin-bottom:2px}
+.game-card-dev{font-size:12px;color:#6b6660;margin-bottom:8px;display:flex;align-items:center;gap:4px}
+.game-card-tags{display:flex;flex-wrap:wrap;gap:5px;margin-bottom:8px}
+.tag{padding:3px 8px;border-radius:5px;font-size:11px;font-weight:500;background:#f0ece4;color:#6b6660}
+.tag-genre{background:#e8f0fe;color:#3367d6}
+.tag-platform{background:#e8f5e9;color:#2e7d32}
+.tag-seeking{background:#fde8dc;color:#d95f2b}
+.game-card-footer{display:flex;align-items:center;justify-content:space-between;padding-top:8px;border-top:1px solid #f0ece4}
+.rating-stars{display:flex;align-items:center;gap:3px;font-size:11.5px;color:#6b6660}
+.rating-stars .stars{color:#f5a623;letter-spacing:-1px;font-size:12px}
+.platform-row{display:flex;gap:4px}
+.plat-pill{padding:2px 6px;background:#f5f3ef;border-radius:4px;font-size:10px;font-weight:500;color:#6b6660}
+
+/* ─── Empty State ─── */
+.empty-state{text-align:center;padding:48px 20px;color:#a09890}
+.empty-state .icon{font-size:36px;margin-bottom:10px}
+.empty-state p{font-size:14px}
+
+/* ─── Bottom Sheet Overlay ─── */
+.sheet-overlay{position:fixed;inset:0;background:rgba(0,0,0,.4);z-index:100;opacity:0;pointer-events:none;transition:opacity .25s;backdrop-filter:blur(2px)}
+.sheet-overlay.open{opacity:1;pointer-events:all}
+
+/* ─── Bottom Sheet ─── */
+.bottom-sheet{position:fixed;bottom:0;left:0;right:0;background:#fff;border-radius:20px 20px 0 0;z-index:101;max-height:92vh;display:flex;flex-direction:column;transform:translateY(100%);transition:transform .3s cubic-bezier(.32,.72,0,1);box-shadow:0 -4px 32px rgba(0,0,0,.18)}
+.bottom-sheet.open{transform:translateY(0)}
+
+.sheet-drag-handle{flex-shrink:0;display:flex;justify-content:center;padding:12px 0 4px}
+.sheet-drag-handle div{width:36px;height:4px;background:#d0cbc0;border-radius:2px}
+
+.sheet-scroll{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;padding:0 0 env(safe-area-inset-bottom, 0)}
+.sheet-scroll::-webkit-scrollbar{display:none}
+
+/* Cover in sheet */
+.sheet-cover{width:100%;height:180px;display:flex;align-items:center;justify-content:center;font-size:52px;position:relative;flex-shrink:0}
+.sheet-cover-gradient{position:absolute;bottom:0;left:0;right:0;padding:12px 16px;background:linear-gradient(transparent,rgba(0,0,0,.7))}
+.sheet-cover-title{font-size:19px;font-weight:700;color:#fff}
+.sheet-cover-dev{font-size:12px;color:rgba(255,255,255,.75);margin-top:2px}
+
+/* Trailer */
+.sheet-trailer{margin:14px 16px;border-radius:12px;background:#1c1a17;height:130px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;cursor:pointer;position:relative;overflow:hidden}
+.sheet-trailer::before{content:'';position:absolute;inset:0;background:linear-gradient(135deg,rgba(217,95,43,.1),transparent)}
+.trailer-play-btn{width:48px;height:48px;border-radius:50%;background:rgba(217,95,43,.9);display:flex;align-items:center;justify-content:center;font-size:18px}
+.trailer-lbl{font-size:12px;color:#a09890;font-weight:500}
+
+/* Tags in sheet */
+.sheet-tags{padding:8px 16px;display:flex;flex-wrap:wrap;gap:6px}
+
+/* Heat bar */
+.sheet-heat{padding:10px 16px 14px;border-bottom:1px solid #f0ece4}
+.heat-bar-label{font-size:11px;color:#6b6660;margin-bottom:5px;display:flex;justify-content:space-between}
+.heat-bar-bg{height:5px;background:#f0ece4;border-radius:3px;overflow:hidden}
+.heat-bar-fill{height:5px;border-radius:3px;background:linear-gradient(90deg,#d95f2b,#f08040)}
+
+/* Info sections */
+.sheet-section{padding:16px 16px 0}
+.sheet-section-title{font-size:11px;font-weight:700;color:#a09890;text-transform:uppercase;letter-spacing:.6px;margin-bottom:10px}
+.sheet-desc{font-size:14px;color:#1c1a17;line-height:1.65}
+.sheet-details-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.detail-item .dl{font-size:11px;color:#a09890;font-weight:500}
+.detail-item .dv{font-size:13px;color:#1c1a17;font-weight:500;margin-top:1px}
+
+/* Quick stats row */
+.sheet-quick{display:flex;gap:0;padding:12px 16px;background:#f5f3ef;border-radius:10px;margin:0 16px}
+.quick-stat{flex:1;text-align:center;padding:4px 0}
+.quick-stat:not(:last-child){border-right:1px solid #e0dbd0}
+.qs-num{font-size:15px;font-weight:700;color:#1c1a17}
+.qs-label{font-size:10.5px;color:#a09890;margin-top:1px}
+
+/* Contact locked */
+.contact-locked{margin:0 16px;background:#f5f3ef;border-radius:12px;padding:16px;text-align:center}
+.lock-icon{font-size:26px;margin-bottom:6px}
+.contact-locked p{font-size:13px;color:#6b6660;margin-bottom:12px;line-height:1.5}
+.btn-unlock{width:100%;padding:11px;border-radius:9px;background:#d95f2b;color:#fff;font-size:14px;font-weight:600;cursor:pointer;border:none;font-family:'DM Sans',sans-serif}
+
+/* CTA Buttons */
+.sheet-cta{position:sticky;bottom:0;background:#fff;border-top:1px solid #f0ece4;padding:12px 16px calc(12px + env(safe-area-inset-bottom, 0));display:flex;gap:10px;flex-shrink:0}
+.btn-meeting{flex:1;padding:13px 16px;border-radius:10px;background:#d95f2b;color:#fff;font-size:14px;font-weight:600;cursor:pointer;border:none;font-family:'DM Sans',sans-serif;transition:background .15s;display:flex;align-items:center;justify-content:center;gap:6px}
+.btn-meeting:active{background:#c4521f}
+.btn-interest{flex:1;padding:13px 16px;border-radius:10px;background:#fff;color:#1c1a17;font-size:14px;font-weight:600;cursor:pointer;border:2px solid #1c1a17;font-family:'DM Sans',sans-serif;transition:all .15s;display:flex;align-items:center;justify-content:center;gap:6px}
+.btn-interest:active{background:#1c1a17;color:#fff}
+.btn-interest.sent{background:#d4f5e7;color:#0d9b72;border-color:#0d9b72}
+
+/* ─── Bottom Tab Nav ─── */
+.bottom-nav{flex-shrink:0;background:#fff;border-top:1px solid #e0dbd0;display:flex;align-items:stretch;padding-bottom:env(safe-area-inset-bottom, 0);position:relative;z-index:50}
+.tab-item{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:8px 4px;cursor:pointer;position:relative;transition:all .15s;border:none;background:transparent;font-family:'DM Sans',sans-serif;gap:3px}
+.tab-item:active{background:#f5f3ef}
+.tab-icon{font-size:20px;line-height:1}
+.tab-label{font-size:10px;font-weight:500;color:#a09890;white-space:nowrap}
+.tab-item.active .tab-label{color:#d95f2b;font-weight:700}
+.tab-item.active .tab-icon{filter:none}
+.tab-active-dot{position:absolute;bottom:4px;width:4px;height:4px;border-radius:50%;background:#d95f2b;opacity:0;transition:opacity .15s}
+.tab-item.active .tab-active-dot{opacity:1}
+
+/* ─── Toast ─── */
+.toast{position:fixed;bottom:80px;left:50%;transform:translateX(-50%) translateY(10px);background:#1c1a17;color:#fff;padding:11px 20px;border-radius:10px;font-size:13px;font-weight:500;z-index:300;opacity:0;transition:all .3s;white-space:nowrap;pointer-events:none;max-width:90vw;text-align:center}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+
+/* ─── Section separator ─── */
+.sheet-sep{height:1px;background:#f0ece4;margin:16px 16px 0}
+.sheet-section-gap{height:16px}
+</style>
+</head>
+<body>
+
+<!-- ═══ Top Header ═══ -->
+<header class="top-header">
+  <div class="header-logo"><span>GAME CONNECTION</span> · IGF 2026</div>
+  <div class="header-actions">
+    <span class="event-pill">📅 May 15–17</span>
+    <button class="btn-signin-top" onclick="showLoginToast()">Sign In</button>
+  </div>
+</header>
+
+<!-- ═══ Scroll Area ═══ -->
+<div class="scroll-area" id="scrollArea">
+
+  <!-- Hero -->
+  <section class="hero">
+    <h1>🎮 Game <span>Showcase</span></h1>
+    <p>Discover the most promising indie games — connect with developers.</p>
+    <div class="hero-stats">
+      <div class="hero-stat"><div class="hero-stat-num">12</div><div class="hero-stat-label">Games</div></div>
+      <div class="hero-stat"><div class="hero-stat-num">9</div><div class="hero-stat-label">Countries</div></div>
+      <div class="hero-stat"><div class="hero-stat-num">6</div><div class="hero-stat-label">Publisher+</div></div>
+      <div class="hero-stat"><div class="hero-stat-num">5</div><div class="hero-stat-label">Genres</div></div>
+    </div>
+  </section>
+
+  <!-- Search -->
+  <div class="search-bar">
+    <div class="search-wrap">
+      <span class="search-icon">🔍</span>
+      <input type="text" id="searchInput" placeholder="Search games, developers…" oninput="applyFilters()" autocomplete="off" autocorrect="off" spellcheck="false">
+    </div>
+  </div>
+
+  <!-- Filter Chips -->
+  <div class="filter-chips-wrap">
+    <div class="filter-chips" id="filterChips">
+      <!-- Genre chips -->
+      <button class="chip active" data-type="genre" data-value="" onclick="setChip(this,'genre')">All Genres</button>
+      <button class="chip" data-type="genre" data-value="RPG" onclick="setChip(this,'genre')">RPG</button>
+      <button class="chip" data-type="genre" data-value="Action" onclick="setChip(this,'genre')">Action</button>
+      <button class="chip" data-type="genre" data-value="Puzzle" onclick="setChip(this,'genre')">Puzzle</button>
+      <button class="chip" data-type="genre" data-value="Strategy" onclick="setChip(this,'genre')">Strategy</button>
+      <button class="chip" data-type="genre" data-value="Survival" onclick="setChip(this,'genre')">Survival</button>
+      <button class="chip" data-type="genre" data-value="Adventure" onclick="setChip(this,'genre')">Adventure</button>
+      <button class="chip" data-type="genre" data-value="Simulation" onclick="setChip(this,'genre')">Sim</button>
+      <button class="chip" data-type="genre" data-value="Casual" onclick="setChip(this,'genre')">Casual</button>
+      <button class="chip" data-type="genre" data-value="Horror" onclick="setChip(this,'genre')">Horror</button>
+      <div class="chip-divider"></div>
+      <!-- Platform chips -->
+      <button class="chip active" data-type="platform" data-value="" onclick="setChip(this,'platform')">All Platforms</button>
+      <button class="chip" data-type="platform" data-value="PC" onclick="setChip(this,'platform')">PC</button>
+      <button class="chip" data-type="platform" data-value="Console" onclick="setChip(this,'platform')">Console</button>
+      <button class="chip" data-type="platform" data-value="Mobile" onclick="setChip(this,'platform')">Mobile</button>
+      <div class="chip-divider"></div>
+      <!-- Seeking publisher chip -->
+      <button class="chip" id="seekingChip" onclick="toggleSeeking()">🔍 Publisher+</button>
+    </div>
+  </div>
+
+  <!-- Sort Row -->
+  <div class="sort-row">
+    <span class="result-count" id="resultCount">12 games</span>
+    <select class="sort-sel" id="sortSelect" onchange="applyFilters()">
+      <option value="heat">Most Popular</option>
+      <option value="rating">Top Rated</option>
+      <option value="new">Newest</option>
+      <option value="az">A–Z</option>
+    </select>
+  </div>
+
+  <!-- Featured Strip -->
+  <div class="featured-section">
+    <div class="section-label">⭐ Featured</div>
+    <div class="featured-scroll" id="featuredStrip"></div>
+  </div>
+
+  <!-- Game List -->
+  <div class="game-list" id="gameList"></div>
+
+  <!-- Empty State -->
+  <div class="empty-state" id="emptyState" style="display:none">
+    <div class="icon">🎮</div>
+    <p>No games match your filters.<br>Try adjusting your search.</p>
+  </div>
+
+</div><!-- /scroll-area -->
+
+<!-- ═══ Bottom Tab Nav ═══ -->
+<nav class="bottom-nav">
+  <button class="tab-item" onclick="tabNav('program')">
+    <span class="tab-icon">📋</span>
+    <span class="tab-label">Program</span>
+    <div class="tab-active-dot"></div>
+  </button>
+  <button class="tab-item active" onclick="tabNav('showcase')">
+    <span class="tab-icon">🎮</span>
+    <span class="tab-label">Showcase</span>
+    <div class="tab-active-dot"></div>
+  </button>
+  <button class="tab-item" onclick="tabNav('meet')">
+    <span class="tab-icon">🤝</span>
+    <span class="tab-label">Let's Meet</span>
+    <div class="tab-active-dot"></div>
+  </button>
+  <button class="tab-item" onclick="tabNav('schedule')">
+    <span class="tab-icon">📅</span>
+    <span class="tab-label">Schedule</span>
+    <div class="tab-active-dot"></div>
+  </button>
+  <button class="tab-item" onclick="tabNav('more')">
+    <span class="tab-icon">⋯</span>
+    <span class="tab-label">More</span>
+    <div class="tab-active-dot"></div>
+  </button>
+</nav>
+
+<!-- ═══ Bottom Sheet ═══ -->
+<div class="sheet-overlay" id="sheetOverlay" onclick="closeSheet()"></div>
+<div class="bottom-sheet" id="bottomSheet">
+  <div class="sheet-drag-handle"><div></div></div>
+  <div class="sheet-scroll" id="sheetScroll">
+
+    <!-- Cover -->
+    <div class="sheet-cover" id="sheetCover">
+      <div class="sheet-cover-gradient">
+        <div class="sheet-cover-title" id="sheetTitle">Game Title</div>
+        <div class="sheet-cover-dev" id="sheetDev">Studio · 🇯🇵</div>
+      </div>
+    </div>
+
+    <!-- Trailer -->
+    <div class="sheet-trailer" onclick="showToast('🎬 Trailer coming soon — check back closer to the event!')">
+      <div class="trailer-play-btn">▶</div>
+      <div class="trailer-lbl">Watch Trailer</div>
+    </div>
+
+    <!-- Tags -->
+    <div class="sheet-tags" id="sheetTags"></div>
+
+    <!-- Quick Stats -->
+    <div class="sheet-quick" id="sheetQuick">
+      <div class="quick-stat"><div class="qs-num" id="qsRating">—</div><div class="qs-label">Rating</div></div>
+      <div class="quick-stat"><div class="qs-num" id="qsReviews">—</div><div class="qs-label">Reviews</div></div>
+      <div class="quick-stat"><div class="qs-num" id="qsHeat">—</div><div class="qs-label">Interest</div></div>
+    </div>
+
+    <!-- Heat Bar -->
+    <div class="sheet-heat">
+      <div class="heat-bar-label"><span>Attendee Interest</span><span id="sheetHeatPct">—</span></div>
+      <div class="heat-bar-bg"><div class="heat-bar-fill" id="sheetHeatBar" style="width:0%"></div></div>
+    </div>
+
+    <!-- About -->
+    <div class="sheet-section">
+      <div class="sheet-section-title">About This Game</div>
+      <p class="sheet-desc" id="sheetDesc">—</p>
+    </div>
+
+    <div class="sheet-sep"></div>
+
+    <!-- Details -->
+    <div class="sheet-section">
+      <div class="sheet-section-title">Game Details</div>
+      <div class="sheet-details-grid" id="sheetDetails"></div>
+    </div>
+
+    <div class="sheet-sep"></div>
+
+    <!-- Contact -->
+    <div class="sheet-section">
+      <div class="sheet-section-title">Contact Developer</div>
+    </div>
+    <div class="contact-locked" id="sheetContact">
+      <div class="lock-icon">🔒</div>
+      <p>Sign in to view developer contact details, website, and request information.</p>
+      <button class="btn-unlock" onclick="showLoginToast()">Sign In to View</button>
+    </div>
+
+    <div class="sheet-section-gap"></div>
+  </div>
+
+  <!-- Sticky CTA -->
+  <div class="sheet-cta">
+    <button class="btn-meeting" id="btnMeeting" onclick="requestMeeting()">📅 Request Meeting</button>
+    <button class="btn-interest" id="btnInterest" onclick="expressInterest()">💌 Express Interest</button>
+  </div>
+</div>
+
+<!-- Toast -->
+<div class="toast" id="toast"></div>
+
+<script>
+// ─── Data ────────────────────────────────────────────────────────────────────
+const games = [
+  {id:1,title:"Phantom Circuit",dev:"Akihabara Studio",country:"🇯🇵",genres:["Puzzle","Horror"],platforms:["PC","Console"],studioSize:"Small",seeking:true,featured:true,rating:4.8,heat:94,reviews:312,gradient:"linear-gradient(135deg,#6b48c0,#9b6fd4)",emoji:"👻",desc:"A mind-bending puzzle-horror adventure set in a ghost-infested electronics district. Navigate corrupted circuits, solve optical illusions, and survive encounters with eight terrifying entities — each with unique AI patterns. Winner of Best Narrative at Tokyo Indie Awards 2025.",engine:"Unity 2023",release:"Q3 2026",teamSize:"6 people",publisher:"Seeking"},
+  {id:2,title:"Echoes of Jade Dynasty",dev:"CloudPeak Games",country:"🇨🇳",genres:["RPG"],platforms:["PC","Mobile"],studioSize:"Mid",seeking:false,featured:true,rating:4.7,heat:88,reviews:278,gradient:"linear-gradient(135deg,#0a7fa8,#2eb5e0)",emoji:"🐉",desc:"An epic open-world RPG set in a mythological ancient China. Command a dynasty, forge alliances, and unravel the secrets of jade-powered celestial magic. Features 60+ hours of main story, dynamic weather, and a cast of 200 voiced NPCs.",engine:"Unreal Engine 5",release:"Q2 2026",teamSize:"28 people",publisher:"Self-publishing"},
+  {id:3,title:"Neon Requiem",dev:"Lumière Studio",country:"🇫🇷",genres:["Action","RPG"],platforms:["PC"],studioSize:"Small",seeking:true,featured:true,rating:4.6,heat:82,reviews:201,gradient:"linear-gradient(135deg,#e05a8a,#f78fb3)",emoji:"⚔️",desc:"A cyberpunk action RPG where music is your weapon. Craft sonic attacks, hack urban infrastructure with beats, and uncover a corporate conspiracy through neon-drenched Paris streets. Fully original OST produced by acclaimed DJ collective Infrarouge.",engine:"Godot 4",release:"Q4 2026",teamSize:"9 people",publisher:"Seeking"},
+  {id:4,title:"Jungle Protocol",dev:"Mekong Dev",country:"🇻🇳",genres:["Survival"],platforms:["PC","Console"],studioSize:"Small",seeking:true,featured:false,rating:4.4,heat:74,reviews:156,gradient:"linear-gradient(135deg,#2d8a3e,#52c041)",emoji:"🌿",desc:"A hardcore survival game set in a procedurally generated jungle teeming with megafauna and ancient ruins. Manage hunger, disease, and tribal politics while deciphering a lost civilization's warnings about what sleeps beneath the canopy.",engine:"Unity 2022",release:"Early Access Q1 2026",teamSize:"5 people",publisher:"Seeking"},
+  {id:5,title:"Island Keeper",dev:"Batik Games",country:"🇮🇩",genres:["Casual","Simulation"],platforms:["Mobile"],studioSize:"Solo",seeking:false,featured:false,rating:4.3,heat:67,reviews:543,gradient:"linear-gradient(135deg,#f5a623,#f7ca6d)",emoji:"🏝️",desc:"A cozy island management sim inspired by Southeast Asian archipelago life. Grow exotic crops, trade with neighboring islands, befriend colorful sea creatures, and rebuild coral reef ecosystems. Perfect for 5-minute play sessions.",engine:"Unity 2023",release:"Released Feb 2026",teamSize:"2 people",publisher:"Self-publishing"},
+  {id:6,title:"Steel Horizon",dev:"IronForge",country:"🇨🇳",genres:["Strategy"],platforms:["PC"],studioSize:"Mid",seeking:false,featured:true,rating:4.5,heat:79,reviews:187,gradient:"linear-gradient(135deg,#4a6fa5,#7695c9)",emoji:"⚙️",desc:"A grand 4X strategy game set in an alternate 1930s where mechs replaced tanks. Build industrial empires, research diesel-punk technologies, and command massive land battles across a richly detailed hex map. Multiplayer for up to 8 players.",engine:"Custom C++ Engine",release:"Q2 2026",teamSize:"22 people",publisher:"Self-publishing"},
+  {id:7,title:"Chronicle of Stars",dev:"Northern Lights",country:"🇨🇦",genres:["Strategy","RPG"],platforms:["PC","Console"],studioSize:"Small",seeking:true,featured:false,rating:4.6,heat:81,reviews:164,gradient:"linear-gradient(135deg,#1a6b7a,#2db3c8)",emoji:"⭐",desc:"A tactical strategy RPG where you guide a band of starfarers across procedurally generated galaxies. Each crew member has a unique backstory that evolves based on your decisions. Features a branching narrative with 40+ distinct endings.",engine:"Unity 2023",release:"Q3 2026",teamSize:"8 people",publisher:"Seeking"},
+  {id:8,title:"Roots & Ruins",dev:"Grünwald Games",country:"🇩🇪",genres:["Simulation"],platforms:["PC"],studioSize:"Small",seeking:false,featured:false,rating:4.4,heat:70,reviews:132,gradient:"linear-gradient(135deg,#5c7a35,#8ab553)",emoji:"🌳",desc:"A slow-paced ecological simulation where you restore abandoned European landscapes. Plant native flora, reintroduce species, manage water tables, and watch ecosystems rebuild over decades of in-game time. A meditative experience with real conservation data.",engine:"Godot 4",release:"Released Mar 2026",teamSize:"4 people",publisher:"Self-publishing"},
+  {id:9,title:"Void Wanderer",dev:"Starfield Games",country:"🇰🇷",genres:["RPG"],platforms:["PC"],studioSize:"Mid",seeking:true,featured:false,rating:4.5,heat:76,reviews:98,gradient:"linear-gradient(135deg,#3a3a6a,#6060a8)",emoji:"🚀",desc:"A deep-space action RPG with rogue-like elements. Each run through the void reveals new anomalies, alien civilizations, and cosmic horror. Build your ship, recruit synthetic crew members, and piece together the mystery of the Void Signal transmitted from the galaxy's edge.",engine:"Unreal Engine 5",release:"Q4 2026",teamSize:"18 people",publisher:"Seeking"},
+  {id:10,title:"Shadow Protocol",dev:"ByteWave Studio",country:"🇨🇳",genres:["Action","RPG"],platforms:["PC","Console"],studioSize:"Small",seeking:false,featured:false,rating:4.2,heat:62,reviews:87,gradient:"linear-gradient(135deg,#2a2a2a,#505050)",emoji:"🥷",desc:"A stealth action RPG set in a near-future East Asian megacity. Play as a shadow operative navigating corporate espionage, gang warfare, and government conspiracies. Features a fully reactive city AI system that remembers your actions.",engine:"Unity 2022",release:"Q1 2027",teamSize:"7 people",publisher:"Self-publishing"},
+  {id:11,title:"Desert Storm",dev:"Cairo Games",country:"🇪🇬",genres:["Strategy"],platforms:["PC"],studioSize:"Small",seeking:true,featured:false,rating:4.3,heat:65,reviews:76,gradient:"linear-gradient(135deg,#c4892b,#e0b060)",emoji:"🏜️",desc:"A real-time strategy game set in ancient North Africa. Command armies of pharaohs, navigate the political intrigue of the Nile delta, and harness mythological gods as battlefield powers. Authentic historical research meets fast-paced RTS gameplay.",engine:"Unity 2023",release:"Q3 2026",teamSize:"6 people",publisher:"Seeking"},
+  {id:12,title:"Forest Spirit",dev:"Bamboo Dev",country:"🇯🇵",genres:["Adventure"],platforms:["Mobile","PC"],studioSize:"Solo",seeking:false,featured:true,rating:4.7,heat:85,reviews:421,gradient:"linear-gradient(135deg,#2d7a4a,#55b070)",emoji:"🎋",desc:"A hand-drawn adventure game about a young forest spirit navigating a world threatened by urbanization. Featuring stunning traditional ink art, a haiku-infused narrative, and a meditative soundtrack composed by Kyoto-based musicians. A love letter to Japanese environmental folklore.",engine:"Godot 4",release:"Released Jan 2026",teamSize:"1 person",publisher:"Self-publishing"}
+];
+
+// ─── State ────────────────────────────────────────────────────────────────────
+let activeGenre = '';
+let activePlatform = '';
+let seekingOnly = false;
+let currentGame = null;
+let interestSent = new Set();
+
+// Touch drag state for bottom sheet
+let dragStart = 0;
+let dragCurrent = 0;
+let isDragging = false;
+
+// ─── Chip filter ─────────────────────────────────────────────────────────────
+function setChip(el, type) {
+  // Deactivate all chips of same type
+  document.querySelectorAll(`.chip[data-type="${type}"]`).forEach(c => c.classList.remove('active'));
+  el.classList.add('active');
+  if (type === 'genre') activeGenre = el.dataset.value;
+  else if (type === 'platform') activePlatform = el.dataset.value;
+  applyFilters();
+}
+
+function toggleSeeking() {
+  seekingOnly = !seekingOnly;
+  document.getElementById('seekingChip').classList.toggle('active', seekingOnly);
+  applyFilters();
+}
+
+// ─── Filter & sort ────────────────────────────────────────────────────────────
+function getFiltered() {
+  const q = document.getElementById('searchInput').value.toLowerCase();
+  const sort = document.getElementById('sortSelect').value;
+
+  let list = games.filter(g => {
+    if (q && !g.title.toLowerCase().includes(q) && !g.dev.toLowerCase().includes(q) && !g.genres.join(' ').toLowerCase().includes(q)) return false;
+    if (activeGenre && !g.genres.includes(activeGenre)) return false;
+    if (activePlatform && !g.platforms.includes(activePlatform)) return false;
+    if (seekingOnly && !g.seeking) return false;
+    return true;
+  });
+
+  if (sort === 'heat') list.sort((a, b) => b.heat - a.heat);
+  else if (sort === 'rating') list.sort((a, b) => b.rating - a.rating);
+  else if (sort === 'new') list.sort((a, b) => b.id - a.id);
+  else if (sort === 'az') list.sort((a, b) => a.title.localeCompare(b.title));
+
+  return list;
+}
+
+function applyFilters() {
+  const list = getFiltered();
+  document.getElementById('resultCount').textContent = `${list.length} game${list.length !== 1 ? 's' : ''}`;
+
+  const gameList = document.getElementById('gameList');
+  const emptyState = document.getElementById('emptyState');
+
+  if (!list.length) {
+    gameList.innerHTML = '';
+    emptyState.style.display = 'block';
+    return;
+  }
+  emptyState.style.display = 'none';
+
+  gameList.innerHTML = list.map(g => `
+    <div class="game-card" onclick="openSheet(${g.id})">
+      <div class="game-card-cover" style="background:${g.gradient}">
+        <span>${g.emoji}</span>
+        ${g.featured ? `<span class="card-featured-badge">⭐ FEATURED</span>` : ''}
+        ${g.seeking ? `<span class="card-seeking-badge">Seeking Publisher</span>` : ''}
+        <div class="card-heat">🔥 ${g.heat}%</div>
+      </div>
+      <div class="game-card-body">
+        <div class="game-card-title">${g.title}</div>
+        <div class="game-card-dev"><span>${g.dev}</span> ${g.country}</div>
+        <div class="game-card-tags">
+          ${g.genres.map(gn => `<span class="tag tag-genre">${gn}</span>`).join('')}
+          ${g.platforms.map(p => `<span class="tag tag-platform">${p}</span>`).join('')}
+          ${g.seeking ? `<span class="tag tag-seeking">Publisher+</span>` : ''}
+        </div>
+        <div class="game-card-footer">
+          <div class="rating-stars">
+            <span class="stars">${'★'.repeat(Math.round(g.rating))}</span>
+            <span>${g.rating} (${g.reviews})</span>
+          </div>
+          <div class="platform-row">
+            ${g.platforms.map(p => `<span class="plat-pill">${p}</span>`).join('')}
+          </div>
+        </div>
+      </div>
+    </div>
+  `).join('');
+}
+
+// ─── Featured strip ───────────────────────────────────────────────────────────
+function renderFeatured() {
+  const strip = document.getElementById('featuredStrip');
+  strip.innerHTML = games.filter(g => g.featured).map(g => `
+    <div class="featured-card" onclick="openSheet(${g.id})">
+      <div class="featured-card-cover" style="background:${g.gradient}">
+        <span style="font-size:26px">${g.emoji}</span>
+        <span class="featured-badge">FEATURED</span>
+      </div>
+      <div class="featured-card-body">
+        <div class="featured-card-title">${g.title}</div>
+        <div class="featured-card-dev">${g.dev} ${g.country}</div>
+        <div class="featured-card-heat">🔥 ${g.heat}% · ⭐ ${g.rating}</div>
+      </div>
+    </div>
+  `).join('');
+}
+
+// ─── Bottom Sheet ─────────────────────────────────────────────────────────────
+function openSheet(id) {
+  currentGame = games.find(g => g.id === id);
+  const g = currentGame;
+
+  // Cover
+  const cover = document.getElementById('sheetCover');
+  cover.style.background = g.gradient;
+  // Emoji overlay
+  let emojiEl = cover.querySelector('.cover-emoji');
+  if (!emojiEl) {
+    emojiEl = document.createElement('span');
+    emojiEl.className = 'cover-emoji';
+    emojiEl.style.cssText = 'font-size:50px;position:absolute;top:50%;left:50%;transform:translate(-50%,-65%);line-height:1';
+    cover.insertBefore(emojiEl, cover.firstChild);
+  }
+  emojiEl.textContent = g.emoji;
+
+  document.getElementById('sheetTitle').textContent = g.title;
+  document.getElementById('sheetDev').textContent = `${g.dev} · ${g.country}`;
+
+  // Tags
+  document.getElementById('sheetTags').innerHTML =
+    g.genres.map(gn => `<span class="tag tag-genre">${gn}</span>`).join('') +
+    g.platforms.map(p => `<span class="tag tag-platform">${p}</span>`).join('') +
+    (g.seeking ? `<span class="tag tag-seeking">Seeking Publisher</span>` : '');
+
+  // Quick stats
+  document.getElementById('qsRating').textContent = `${g.rating}⭐`;
+  document.getElementById('qsReviews').textContent = g.reviews;
+  document.getElementById('qsHeat').textContent = `${g.heat}%`;
+
+  // Heat bar
+  document.getElementById('sheetHeatPct').textContent = `${g.heat}%`;
+  document.getElementById('sheetHeatBar').style.width = g.heat + '%';
+
+  // Description
+  document.getElementById('sheetDesc').textContent = g.desc;
+
+  // Details grid
+  document.getElementById('sheetDetails').innerHTML = `
+    <div class="detail-item"><div class="dl">Genre</div><div class="dv">${g.genres.join(', ')}</div></div>
+    <div class="detail-item"><div class="dl">Platforms</div><div class="dv">${g.platforms.join(', ')}</div></div>
+    <div class="detail-item"><div class="dl">Engine</div><div class="dv">${g.engine}</div></div>
+    <div class="detail-item"><div class="dl">Team Size</div><div class="dv">${g.teamSize}</div></div>
+    <div class="detail-item"><div class="dl">Studio</div><div class="dv">${g.studioSize}</div></div>
+    <div class="detail-item"><div class="dl">Release</div><div class="dv">${g.release}</div></div>
+    <div class="detail-item"><div class="dl">Publisher</div><div class="dv">${g.publisher}</div></div>
+    <div class="detail-item"><div class="dl">Country</div><div class="dv">${g.country}</div></div>
+  `;
+
+  // Interest button state
+  const btn = document.getElementById('btnInterest');
+  if (interestSent.has(g.id)) {
+    btn.className = 'btn-interest sent';
+    btn.innerHTML = '✅ Interest Sent';
+  } else {
+    btn.className = 'btn-interest';
+    btn.innerHTML = '💌 Express Interest';
+  }
+
+  // Open
+  document.getElementById('sheetScroll').scrollTop = 0;
+  document.getElementById('sheetOverlay').classList.add('open');
+  document.getElementById('bottomSheet').classList.add('open');
+  document.body.style.overflow = 'hidden';
+}
+
+function closeSheet() {
+  document.getElementById('sheetOverlay').classList.remove('open');
+  document.getElementById('bottomSheet').classList.remove('open');
+  document.body.style.overflow = '';
+  currentGame = null;
+}
+
+// Swipe-down to dismiss
+const sheet = document.getElementById('bottomSheet');
+const sheetScroll = document.getElementById('sheetScroll');
+
+sheet.addEventListener('touchstart', e => {
+  if (sheetScroll.scrollTop > 0) return; // only when at top
+  dragStart = e.touches[0].clientY;
+  isDragging = true;
+}, { passive: true });
+
+sheet.addEventListener('touchmove', e => {
+  if (!isDragging) return;
+  if (sheetScroll.scrollTop > 0) { isDragging = false; return; }
+  dragCurrent = e.touches[0].clientY - dragStart;
+  if (dragCurrent > 0) {
+    sheet.style.transform = `translateY(${dragCurrent}px)`;
+    sheet.style.transition = 'none';
+  }
+}, { passive: true });
+
+sheet.addEventListener('touchend', () => {
+  if (!isDragging) return;
+  isDragging = false;
+  sheet.style.transition = '';
+  if (dragCurrent > 100) {
+    closeSheet();
+  } else {
+    sheet.style.transform = sheet.classList.contains('open') ? 'translateY(0)' : 'translateY(100%)';
+  }
+  dragCurrent = 0;
+});
+
+// ─── Actions ──────────────────────────────────────────────────────────────────
+function requestMeeting() {
+  if (!currentGame) return;
+  showToast(`📅 Meeting request sent to ${currentGame.dev}!`);
+}
+
+function expressInterest() {
+  if (!currentGame) return;
+  if (interestSent.has(currentGame.id)) {
+    showToast('You already expressed interest in this game.');
+    return;
+  }
+  interestSent.add(currentGame.id);
+  const btn = document.getElementById('btnInterest');
+  btn.className = 'btn-interest sent';
+  btn.innerHTML = '✅ Interest Sent';
+  showToast(`💌 Interest sent to ${currentGame.dev}! They'll be notified.`);
+}
+
+function showLoginToast() {
+  showToast('🔒 Please sign in to access this feature.');
+}
+
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  clearTimeout(t._timer);
+  t._timer = setTimeout(() => t.classList.remove('show'), 3200);
+}
+
+function tabNav(tab) {
+  document.querySelectorAll('.tab-item').forEach(el => el.classList.remove('active'));
+  event.currentTarget.classList.add('active');
+  if (tab !== 'showcase') {
+    showToast(`🚧 ${tab.charAt(0).toUpperCase() + tab.slice(1)} section coming soon!`);
+    setTimeout(() => {
+      document.querySelectorAll('.tab-item').forEach(el => el.classList.remove('active'));
+      document.querySelectorAll('.tab-item')[1].classList.add('active');
+    }, 1600);
+  }
+}
+
+// Escape key
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape') closeSheet();
+});
+
+// ─── Init ─────────────────────────────────────────────────────────────────────
+renderFeatured();
+applyFilters();
+</script>
+</body>
+</html>
