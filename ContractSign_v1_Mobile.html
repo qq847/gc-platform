@@ -1,0 +1,1252 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>电子合同签署</title>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg: #e8e4da;
+      --primary: #d95f2b;
+      --primary-dark: #b84d1f;
+      --primary-light: #f0896a;
+      --surface: #f4f1ea;
+      --surface2: #ffffff;
+      --border: #ccc9bf;
+      --text: #1a1814;
+      --text-muted: #7a7670;
+      --success: #2e9e6b;
+      --warning: #e0a020;
+      --tab-h: 64px;
+      --header-h: 64px;
+      --radius: 14px;
+    }
+
+    html, body {
+      height: 100%;
+      background: var(--bg);
+      font-family: 'DM Sans', sans-serif;
+      color: var(--text);
+      overscroll-behavior: none;
+    }
+
+    /* ── LAYOUT ── */
+    #app {
+      display: flex;
+      flex-direction: column;
+      height: 100%;
+      max-width: 480px;
+      margin: 0 auto;
+      position: relative;
+      overflow: hidden;
+    }
+
+    /* ── HEADER ── */
+    .header {
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      background: var(--bg);
+      border-bottom: 1px solid var(--border);
+      padding: 0 16px;
+      height: var(--header-h);
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      flex-shrink: 0;
+    }
+    .header-info { flex: 1; min-width: 0; }
+    .header-title {
+      font-size: 15px;
+      font-weight: 700;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .header-sub {
+      font-size: 11px;
+      color: var(--text-muted);
+      margin-top: 2px;
+    }
+    .progress-pill {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 999px;
+      padding: 5px 10px;
+      flex-shrink: 0;
+    }
+    .progress-dot {
+      width: 8px; height: 8px;
+      border-radius: 50%;
+      background: var(--text-muted);
+      transition: background .3s;
+    }
+    .progress-dot.done { background: var(--success); }
+    .progress-dot.active { background: var(--primary); }
+
+    /* ── MAIN SCROLL AREA ── */
+    .main {
+      flex: 1;
+      overflow-y: auto;
+      -webkit-overflow-scrolling: touch;
+      padding-bottom: 8px;
+    }
+
+    /* ── PAGES (tabs) ── */
+    .page { display: none; }
+    .page.active { display: block; }
+
+    /* ══════════════════════════════════
+       TAB 1 — DOCUMENT BROWSER
+    ══════════════════════════════════ */
+    .doc-container {
+      padding: 16px 16px 0;
+    }
+
+    .doc-card {
+      background: var(--surface2);
+      border-radius: var(--radius);
+      overflow: hidden;
+      box-shadow: 0 2px 12px rgba(0,0,0,.07);
+      min-height: 420px;
+      position: relative;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .doc-page-area {
+      flex: 1;
+      padding: 24px 20px 16px;
+      overflow-y: auto;
+    }
+
+    .doc-page-header {
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--primary);
+      letter-spacing: .06em;
+      text-transform: uppercase;
+      margin-bottom: 14px;
+    }
+
+    .doc-page-content {
+      font-size: 13.5px;
+      line-height: 1.75;
+      color: #2a2724;
+    }
+
+    .doc-page-content h3 {
+      font-size: 14px;
+      font-weight: 700;
+      margin-bottom: 8px;
+      margin-top: 16px;
+    }
+    .doc-page-content h3:first-child { margin-top: 0; }
+    .doc-page-content p { margin-bottom: 10px; }
+
+    /* page read overlay */
+    .read-bar {
+      border-top: 1px solid var(--border);
+      padding: 12px 16px;
+      background: var(--surface);
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .read-check {
+      width: 22px; height: 22px;
+      border-radius: 50%;
+      border: 2px solid var(--border);
+      display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0;
+      transition: all .25s;
+    }
+    .read-check.checked {
+      background: var(--success);
+      border-color: var(--success);
+    }
+    .read-check svg { display: none; }
+    .read-check.checked svg { display: block; }
+
+    .read-label {
+      font-size: 13px;
+      color: var(--text-muted);
+      flex: 1;
+    }
+    .read-label.checked { color: var(--success); font-weight: 600; }
+
+    .btn-read {
+      background: var(--primary);
+      color: #fff;
+      border: none;
+      border-radius: 8px;
+      padding: 7px 14px;
+      font-family: inherit;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background .2s;
+    }
+    .btn-read:hover { background: var(--primary-dark); }
+    .btn-read:disabled {
+      background: var(--border);
+      color: var(--text-muted);
+      cursor: default;
+    }
+
+    /* pagination */
+    .doc-nav {
+      padding: 12px 16px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+    }
+
+    .btn-nav {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 8px 14px;
+      font-family: inherit;
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--text);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      transition: all .2s;
+    }
+    .btn-nav:disabled {
+      opacity: .35;
+      cursor: default;
+    }
+    .btn-nav:not(:disabled):hover {
+      background: var(--primary);
+      color: #fff;
+      border-color: var(--primary);
+    }
+
+    .page-indicator {
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--text-muted);
+    }
+    .page-indicator span { color: var(--primary); }
+
+    /* progress bar */
+    .doc-progress-wrap {
+      padding: 10px 16px 0;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .doc-progress-bar {
+      flex: 1;
+      height: 4px;
+      background: var(--border);
+      border-radius: 999px;
+      overflow: hidden;
+    }
+    .doc-progress-fill {
+      height: 100%;
+      background: var(--primary);
+      border-radius: 999px;
+      transition: width .4s ease;
+    }
+    .doc-progress-label {
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--text-muted);
+      white-space: nowrap;
+    }
+
+    /* unlock notice */
+    .unlock-notice {
+      margin: 14px 16px 0;
+      background: #fff8f0;
+      border: 1px solid #f5c99a;
+      border-radius: 10px;
+      padding: 10px 14px;
+      font-size: 12.5px;
+      color: var(--warning);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .unlock-notice.unlocked {
+      background: #edfaf4;
+      border-color: #9de5c5;
+      color: var(--success);
+    }
+
+    /* ══════════════════════════════════
+       TAB 2 — SIGN
+    ══════════════════════════════════ */
+    .sign-container { padding: 16px; }
+
+    .sign-section-title {
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: .07em;
+      text-transform: uppercase;
+      color: var(--text-muted);
+      margin-bottom: 10px;
+    }
+
+    .canvas-wrap {
+      background: var(--surface2);
+      border-radius: var(--radius);
+      border: 2px dashed var(--border);
+      position: relative;
+      overflow: hidden;
+      transition: border-color .2s;
+    }
+    .canvas-wrap.has-sig { border-style: solid; border-color: var(--primary); }
+    .canvas-wrap.locked { opacity: .55; pointer-events: none; }
+
+    .canvas-hint {
+      position: absolute;
+      top: 50%; left: 50%;
+      transform: translate(-50%, -50%);
+      text-align: center;
+      pointer-events: none;
+      transition: opacity .3s;
+    }
+    .canvas-hint-icon { font-size: 28px; margin-bottom: 4px; }
+    .canvas-hint-text { font-size: 12px; color: var(--text-muted); font-weight: 500; }
+
+    #sigCanvas {
+      display: block;
+      width: 100%;
+      height: 200px;
+      touch-action: none;
+      cursor: crosshair;
+    }
+
+    .canvas-toolbar {
+      display: flex;
+      justify-content: flex-end;
+      gap: 8px;
+      padding: 8px 12px;
+      border-top: 1px solid var(--border);
+    }
+    .btn-tool {
+      background: none;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 5px 10px;
+      font-family: inherit;
+      font-size: 12px;
+      color: var(--text-muted);
+      cursor: pointer;
+    }
+    .btn-tool:hover { border-color: var(--primary); color: var(--primary); }
+
+    .locked-msg {
+      background: #fff8f0;
+      border: 1px solid #f5c99a;
+      border-radius: 10px;
+      padding: 12px 14px;
+      font-size: 13px;
+      color: var(--warning);
+      margin-bottom: 16px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .locked-msg.hidden { display: none; }
+
+    .status-cards {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      margin-top: 16px;
+    }
+
+    .status-card {
+      background: var(--surface2);
+      border-radius: var(--radius);
+      padding: 14px 12px;
+      border: 1px solid var(--border);
+      text-align: center;
+    }
+    .status-card-label {
+      font-size: 11px;
+      color: var(--text-muted);
+      margin-bottom: 6px;
+    }
+    .status-card-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      border-radius: 999px;
+      padding: 4px 10px;
+      font-size: 12px;
+      font-weight: 700;
+    }
+    .badge-signed { background: #edfaf4; color: var(--success); }
+    .badge-waiting { background: #fef5e7; color: var(--warning); }
+    .badge-pending { background: #f0f0f0; color: var(--text-muted); }
+
+    .btn-submit {
+      width: 100%;
+      margin-top: 16px;
+      background: var(--primary);
+      color: #fff;
+      border: none;
+      border-radius: var(--radius);
+      padding: 15px;
+      font-family: inherit;
+      font-size: 15px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: background .2s, transform .1s;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+    }
+    .btn-submit:hover { background: var(--primary-dark); }
+    .btn-submit:active { transform: scale(.98); }
+    .btn-submit:disabled {
+      background: var(--border);
+      color: var(--text-muted);
+      cursor: default;
+      transform: none;
+    }
+
+    /* ══════════════════════════════════
+       TAB 3 — COMPLETE
+    ══════════════════════════════════ */
+    .complete-container {
+      padding: 16px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    .complete-icon-wrap {
+      width: 80px; height: 80px;
+      background: #edfaf4;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 24px auto 16px;
+      font-size: 36px;
+    }
+    .complete-icon-wrap.pending {
+      background: #fef5e7;
+    }
+
+    .complete-title {
+      font-size: 20px;
+      font-weight: 700;
+      text-align: center;
+      margin-bottom: 6px;
+    }
+    .complete-sub {
+      font-size: 13px;
+      color: var(--text-muted);
+      text-align: center;
+      margin-bottom: 24px;
+    }
+
+    .contract-info-card {
+      width: 100%;
+      background: var(--surface2);
+      border-radius: var(--radius);
+      padding: 16px;
+      border: 1px solid var(--border);
+      margin-bottom: 16px;
+    }
+    .contract-info-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 8px 0;
+      border-bottom: 1px solid var(--border);
+    }
+    .contract-info-row:last-child { border-bottom: none; }
+    .ci-label { font-size: 12px; color: var(--text-muted); }
+    .ci-value { font-size: 13px; font-weight: 600; font-family: 'DM Sans', monospace; }
+
+    .btn-download {
+      width: 100%;
+      background: var(--text);
+      color: #fff;
+      border: none;
+      border-radius: var(--radius);
+      padding: 15px;
+      font-family: inherit;
+      font-size: 15px;
+      font-weight: 700;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      transition: background .2s;
+      margin-bottom: 10px;
+    }
+    .btn-download:hover { background: #333; }
+    .btn-download:disabled {
+      background: var(--border);
+      color: var(--text-muted);
+      cursor: default;
+    }
+
+    .waiting-banner {
+      width: 100%;
+      background: #fef5e7;
+      border: 1px solid #f5c99a;
+      border-radius: var(--radius);
+      padding: 14px 16px;
+      font-size: 13px;
+      color: var(--warning);
+      text-align: center;
+      margin-bottom: 16px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+    }
+
+    .both-signed-banner {
+      width: 100%;
+      background: #edfaf4;
+      border: 1px solid #9de5c5;
+      border-radius: var(--radius);
+      padding: 14px 16px;
+      font-size: 13px;
+      color: var(--success);
+      text-align: center;
+      margin-bottom: 16px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+    }
+
+    /* ── BOTTOM TAB BAR ── */
+    .tab-bar {
+      height: var(--tab-h);
+      background: var(--surface2);
+      border-top: 1px solid var(--border);
+      display: flex;
+      flex-shrink: 0;
+    }
+
+    .tab-btn {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 3px;
+      background: none;
+      border: none;
+      cursor: pointer;
+      position: relative;
+      padding: 0;
+    }
+
+    .tab-icon {
+      font-size: 20px;
+      transition: transform .2s;
+    }
+    .tab-label {
+      font-family: 'DM Sans', sans-serif;
+      font-size: 10px;
+      font-weight: 600;
+      color: var(--text-muted);
+      transition: color .2s;
+    }
+
+    .tab-btn.active .tab-label { color: var(--primary); }
+    .tab-btn.active .tab-icon { transform: translateY(-1px); }
+
+    .tab-indicator {
+      position: absolute;
+      top: 0; left: 50%;
+      transform: translateX(-50%);
+      width: 28px; height: 3px;
+      border-radius: 0 0 3px 3px;
+      background: var(--primary);
+      opacity: 0;
+      transition: opacity .25s;
+    }
+    .tab-btn.active .tab-indicator { opacity: 1; }
+
+    .tab-badge {
+      position: absolute;
+      top: 6px; right: calc(50% - 18px);
+      background: var(--primary);
+      color: #fff;
+      font-size: 9px;
+      font-weight: 700;
+      width: 16px; height: 16px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .tab-badge.hidden { display: none; }
+
+    /* ── Toast ── */
+    .toast {
+      position: fixed;
+      bottom: calc(var(--tab-h) + 12px);
+      left: 50%; transform: translateX(-50%) translateY(0);
+      background: #1a1814ee;
+      color: #fff;
+      font-size: 13px;
+      font-weight: 600;
+      padding: 10px 18px;
+      border-radius: 999px;
+      white-space: nowrap;
+      z-index: 9999;
+      opacity: 0;
+      transition: opacity .3s, transform .3s;
+      pointer-events: none;
+    }
+    .toast.show { opacity: 1; }
+
+    /* ── Scrollbar ── */
+    .main::-webkit-scrollbar { width: 4px; }
+    .main::-webkit-scrollbar-track { background: transparent; }
+    .main::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+
+    /* ── Animations ── */
+    @keyframes fadeInUp {
+      from { opacity: 0; transform: translateY(12px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+    .page.active { animation: fadeInUp .25s ease; }
+
+    @keyframes pop {
+      0%   { transform: scale(1); }
+      50%  { transform: scale(1.18); }
+      100% { transform: scale(1); }
+    }
+    .pop { animation: pop .3s ease; }
+  </style>
+</head>
+<body>
+<div id="app">
+
+  <!-- HEADER -->
+  <div class="header">
+    <div class="header-info">
+      <div class="header-title">服务合作框架协议</div>
+      <div class="header-sub" id="headerSub">请阅读合同文件</div>
+    </div>
+    <div class="progress-pill">
+      <div class="progress-dot active" id="dot1" title="阅读"></div>
+      <div class="progress-dot" id="dot2" title="签署"></div>
+      <div class="progress-dot" id="dot3" title="完成"></div>
+    </div>
+  </div>
+
+  <!-- MAIN AREA -->
+  <div class="main" id="mainScroll">
+
+    <!-- ── PAGE 1: DOCUMENT ── -->
+    <div class="page active" id="pageDoc">
+
+      <!-- Progress -->
+      <div class="doc-progress-wrap">
+        <div class="doc-progress-bar">
+          <div class="doc-progress-fill" id="readProgress" style="width:0%"></div>
+        </div>
+        <div class="doc-progress-label" id="readProgressLabel">已读 0/4</div>
+      </div>
+
+      <!-- Unlock notice -->
+      <div class="unlock-notice" id="unlockNotice">
+        <span>🔒</span>
+        <span>请阅读全部页面后解锁签署功能</span>
+      </div>
+
+      <!-- Doc card -->
+      <div class="doc-container">
+        <div class="doc-card">
+          <div class="doc-page-area" id="docPageArea">
+            <!-- content injected by JS -->
+          </div>
+          <div class="read-bar">
+            <div class="read-check" id="readCheck">
+              <svg width="12" height="10" viewBox="0 0 12 10" fill="none">
+                <path d="M1 5l3.5 3.5L11 1" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+            </div>
+            <div class="read-label" id="readLabel">确认已阅读本页</div>
+            <button class="btn-read" id="btnRead" onclick="markRead()">已阅读</button>
+          </div>
+        </div>
+
+        <!-- Navigation -->
+        <div class="doc-nav">
+          <button class="btn-nav" id="btnPrev" onclick="changePage(-1)" disabled>
+            ← 上一页
+          </button>
+          <div class="page-indicator">第 <span id="curPage">1</span> 页 / 共 <span id="totalPages">4</span> 页</div>
+          <button class="btn-nav" id="btnNext" onclick="changePage(1)">
+            下一页 →
+          </button>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- ── PAGE 2: SIGN ── -->
+    <div class="page" id="pageSign">
+      <div class="sign-container">
+
+        <div class="locked-msg" id="signLockedMsg">
+          <span>🔒</span>
+          <span>请先完成全部合同文件的阅读确认</span>
+        </div>
+
+        <div class="sign-section-title">手写签名</div>
+        <div class="canvas-wrap" id="canvasWrap">
+          <div class="canvas-hint" id="canvasHint">
+            <div class="canvas-hint-icon">✍️</div>
+            <div class="canvas-hint-text">在此处手写您的签名</div>
+          </div>
+          <canvas id="sigCanvas"></canvas>
+          <div class="canvas-toolbar">
+            <button class="btn-tool" onclick="clearCanvas()">清除重签</button>
+          </div>
+        </div>
+
+        <!-- Status -->
+        <div class="status-cards">
+          <div class="status-card">
+            <div class="status-card-label">我方（甲方）</div>
+            <div class="status-card-badge" id="myStatus" style="background:#f0f0f0;color:var(--text-muted)">
+              <span>⏳</span> 待签署
+            </div>
+          </div>
+          <div class="status-card">
+            <div class="status-card-label">对方（乙方）</div>
+            <div class="status-card-badge badge-waiting" id="theirStatus">
+              <span>⌛</span> 等待对方
+            </div>
+          </div>
+        </div>
+
+        <button class="btn-submit" id="btnSubmitSign" onclick="submitSign()" disabled>
+          <span>✍️</span> 确认签署
+        </button>
+
+      </div>
+    </div>
+
+    <!-- ── PAGE 3: COMPLETE ── -->
+    <div class="page" id="pageComplete">
+      <div class="complete-container">
+
+        <div class="complete-icon-wrap" id="completeIcon">⏳</div>
+        <div class="complete-title" id="completeTitle">等待对方签署</div>
+        <div class="complete-sub" id="completeSub">您已完成签署，等待乙方确认</div>
+
+        <div class="waiting-banner" id="waitingBanner">
+          <span>📧</span>
+          <span>已向乙方发送签署邀请，请等待确认</span>
+        </div>
+
+        <div class="both-signed-banner hidden" id="bothSignedBanner">
+          <span>✅</span>
+          <span>双方均已完成签署，合同正式生效</span>
+        </div>
+
+        <div class="contract-info-card" id="contractInfoCard" style="display:none">
+          <div class="contract-info-row">
+            <span class="ci-label">合同编号</span>
+            <span class="ci-value" id="contractId">—</span>
+          </div>
+          <div class="contract-info-row">
+            <span class="ci-label">签署时间</span>
+            <span class="ci-value" id="signTime">—</span>
+          </div>
+          <div class="contract-info-row">
+            <span class="ci-label">合同名称</span>
+            <span class="ci-value">服务合作框架协议</span>
+          </div>
+          <div class="contract-info-row">
+            <span class="ci-label">合同状态</span>
+            <span class="ci-value" id="contractStatus" style="color:var(--warning)">等待对方签署</span>
+          </div>
+        </div>
+
+        <button class="btn-download" id="btnDownload" disabled onclick="downloadPDF()">
+          <span>📄</span> 下载合同 PDF
+        </button>
+
+        <button class="btn-tool" style="width:100%;padding:12px;font-size:13px;border-radius:10px;margin-top:4px;" onclick="simulateCounterSign()">
+          🧪 模拟对方签署（演示）
+        </button>
+
+      </div>
+    </div>
+
+  </div><!-- /main -->
+
+  <!-- BOTTOM TAB BAR -->
+  <div class="tab-bar">
+    <button class="tab-btn active" id="tab1" onclick="switchTab('doc')">
+      <div class="tab-indicator"></div>
+      <div class="tab-icon">📄</div>
+      <div class="tab-label">合同文件</div>
+      <div class="tab-badge hidden" id="badge1"></div>
+    </button>
+    <button class="tab-btn" id="tab2" onclick="switchTab('sign')">
+      <div class="tab-indicator"></div>
+      <div class="tab-icon">✍️</div>
+      <div class="tab-label">签署</div>
+      <div class="tab-badge hidden" id="badge2">!</div>
+    </button>
+    <button class="tab-btn" id="tab3" onclick="switchTab('complete')">
+      <div class="tab-indicator"></div>
+      <div class="tab-icon">✅</div>
+      <div class="tab-label">完成</div>
+      <div class="tab-badge hidden" id="badge3"></div>
+    </button>
+  </div>
+
+</div><!-- /app -->
+
+<!-- TOAST -->
+<div class="toast" id="toast"></div>
+
+<script>
+/* ═══════════════════════════════════════════════
+   CONTRACT PAGES DATA
+═══════════════════════════════════════════════ */
+const CONTRACT_PAGES = [
+  {
+    title: "第一条 — 合同主体与目的",
+    content: `
+      <p>本协议由以下双方于签署日期正式订立：</p>
+      <p><strong>甲方：</strong>北京星澜科技有限公司（以下简称"甲方"）<br>
+      <strong>乙方：</strong>上海创合信息技术有限公司（以下简称"乙方"）</p>
+      <h3>1.1 合同目的</h3>
+      <p>本协议旨在明确双方在服务合作期间的权利与义务，规范合作行为，保障双方合法权益，实现互利共赢的合作目标。</p>
+      <h3>1.2 合同期限</h3>
+      <p>本协议自双方签署之日起正式生效，有效期为十二（12）个月，期满前三十日内如无一方书面提出异议，则自动续期一年。</p>
+      <h3>1.3 法律依据</h3>
+      <p>本协议依据《中华人民共和国合同法》《中华人民共和国民法典》及相关法律法规订立，受中华人民共和国法律管辖并受其保护。</p>
+    `
+  },
+  {
+    title: "第二条 — 服务内容与标准",
+    content: `
+      <h3>2.1 服务范围</h3>
+      <p>乙方为甲方提供以下服务：</p>
+      <p>（一）企业级软件系统开发与定制；<br>
+      （二）系统运维及技术支持服务；<br>
+      （三）数据分析与商业智能解决方案；<br>
+      （四）双方协商确认的其他技术服务。</p>
+      <h3>2.2 服务标准</h3>
+      <p>乙方承诺按照行业通行标准提供服务，服务可用率不低于 <strong>99.5%</strong>（月度统计），重大故障响应时间不超过2小时。</p>
+      <h3>2.3 验收标准</h3>
+      <p>甲方自收到乙方交付物之日起十五（15）个工作日内完成验收。逾期未提出书面异议的，视为验收合格。</p>
+    `
+  },
+  {
+    title: "第三条 — 费用与支付",
+    content: `
+      <h3>3.1 合同金额</h3>
+      <p>本协议合同总金额为人民币 <strong>伍拾万元整（￥500,000.00）</strong>，含增值税。</p>
+      <h3>3.2 付款方式</h3>
+      <p>甲方按如下计划向乙方支付服务费用：</p>
+      <p>• 合同签署后五个工作日内支付首期款 <strong>30%（￥150,000）</strong><br>
+      • 项目中期验收合格后支付 <strong>40%（￥200,000）</strong><br>
+      • 项目竣工验收合格后支付尾款 <strong>30%（￥150,000）</strong></p>
+      <h3>3.3 发票要求</h3>
+      <p>乙方应于收到款项后十个工作日内开具增值税专用发票。税率按国家现行规定执行。</p>
+      <h3>3.4 逾期付款</h3>
+      <p>甲方逾期付款的，每逾期一日，按逾期金额的 <strong>0.05%</strong> 支付违约金。</p>
+    `
+  },
+  {
+    title: "第四条 — 保密与责任",
+    content: `
+      <h3>4.1 保密义务</h3>
+      <p>双方均负有保密义务，不得向任何第三方披露在合作过程中获悉的对方商业秘密、技术秘密及客户信息。保密期限自本协议签署之日起 <strong>三（3）年</strong>，不因协议终止而提前失效。</p>
+      <h3>4.2 知识产权</h3>
+      <p>乙方在本协议框架内专项开发的成果，知识产权归甲方所有。乙方保留其通用技术框架及工具的所有权。</p>
+      <h3>4.3 违约责任</h3>
+      <p>任何一方违反本协议约定的，违约方应向守约方支付合同总金额 <strong>10%</strong> 的违约金，并赔偿实际损失。</p>
+      <h3>4.4 争议解决</h3>
+      <p>双方因本协议发生的争议，应首先协商解决；协商不成的，提交北京仲裁委员会按其仲裁规则进行仲裁，仲裁裁决为终局裁决。</p>
+      <p style="margin-top:16px;padding:10px;background:#f5f3ee;border-radius:8px;font-size:12px;color:#7a7670">
+        ※ 本合同经双方电子签署后具有与纸质合同同等的法律效力，符合《电子签名法》相关规定。
+      </p>
+    `
+  }
+];
+
+/* ═══════════════════════════════════════════════
+   STATE
+═══════════════════════════════════════════════ */
+let state = {
+  currentDoc: 0,           // current doc page index
+  readPages: [],           // array of booleans
+  allRead: false,
+  hasSig: false,
+  mySigned: false,
+  theirSigned: false,
+  contractId: null,
+  signTime: null,
+  activeTab: 'doc'
+};
+
+/* ═══════════════════════════════════════════════
+   INIT
+═══════════════════════════════════════════════ */
+window.addEventListener('DOMContentLoaded', () => {
+  state.readPages = new Array(CONTRACT_PAGES.length).fill(false);
+  renderDocPage();
+  initCanvas();
+  updateUI();
+});
+
+/* ═══════════════════════════════════════════════
+   TAB SWITCHING
+═══════════════════════════════════════════════ */
+function switchTab(tab) {
+  state.activeTab = tab;
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+
+  const map = { doc: ['tab1','pageDoc'], sign: ['tab2','pageSign'], complete: ['tab3','pageComplete'] };
+  document.getElementById(map[tab][0]).classList.add('active');
+  document.getElementById(map[tab][1]).classList.add('active');
+
+  document.getElementById('mainScroll').scrollTop = 0;
+  if (tab === 'sign') updateSignUI();
+}
+
+/* ═══════════════════════════════════════════════
+   DOCUMENT PAGING
+═══════════════════════════════════════════════ */
+function renderDocPage() {
+  const p = CONTRACT_PAGES[state.currentDoc];
+  document.getElementById('docPageArea').innerHTML = `
+    <div class="doc-page-header">合同正文 · 第 ${state.currentDoc + 1} 节</div>
+    <div class="doc-page-content">
+      <h3>${p.title}</h3>
+      ${p.content}
+    </div>
+  `;
+  document.getElementById('curPage').textContent = state.currentDoc + 1;
+  document.getElementById('totalPages').textContent = CONTRACT_PAGES.length;
+  document.getElementById('btnPrev').disabled = state.currentDoc === 0;
+  document.getElementById('btnNext').disabled = state.currentDoc === CONTRACT_PAGES.length - 1;
+
+  const isRead = state.readPages[state.currentDoc];
+  const rc = document.getElementById('readCheck');
+  const rl = document.getElementById('readLabel');
+  const br = document.getElementById('btnRead');
+  rc.classList.toggle('checked', isRead);
+  rl.classList.toggle('checked', isRead);
+  rl.textContent = isRead ? '本页已确认阅读 ✓' : '确认已阅读本页';
+  br.disabled = isRead;
+  br.textContent = isRead ? '已确认' : '已阅读';
+
+  updateProgress();
+}
+
+function changePage(dir) {
+  const next = state.currentDoc + dir;
+  if (next < 0 || next >= CONTRACT_PAGES.length) return;
+  state.currentDoc = next;
+  renderDocPage();
+  document.getElementById('mainScroll').scrollTop = 0;
+}
+
+function markRead() {
+  if (state.readPages[state.currentDoc]) return;
+  state.readPages[state.currentDoc] = true;
+
+  // Animate check
+  const rc = document.getElementById('readCheck');
+  rc.classList.add('checked', 'pop');
+  setTimeout(() => rc.classList.remove('pop'), 350);
+
+  const rl = document.getElementById('readLabel');
+  rl.classList.add('checked');
+  rl.textContent = '本页已确认阅读 ✓';
+  document.getElementById('btnRead').disabled = true;
+  document.getElementById('btnRead').textContent = '已确认';
+
+  updateProgress();
+  showToast('✓ 第 ' + (state.currentDoc + 1) + ' 页已确认');
+
+  // Auto advance
+  if (state.currentDoc < CONTRACT_PAGES.length - 1) {
+    setTimeout(() => changePage(1), 600);
+  }
+}
+
+function updateProgress() {
+  const readCount = state.readPages.filter(Boolean).length;
+  const total = CONTRACT_PAGES.length;
+  const pct = (readCount / total) * 100;
+
+  document.getElementById('readProgress').style.width = pct + '%';
+  document.getElementById('readProgressLabel').textContent = `已读 ${readCount}/${total}`;
+
+  state.allRead = readCount === total;
+
+  const notice = document.getElementById('unlockNotice');
+  if (state.allRead) {
+    notice.classList.add('unlocked');
+    notice.innerHTML = '<span>🔓</span><span>全部页面已阅读，签署功能已解锁</span>';
+    // Update header
+    document.getElementById('headerSub').textContent = '文件已全部阅读';
+    document.getElementById('dot1').classList.remove('active');
+    document.getElementById('dot1').classList.add('done');
+    document.getElementById('dot2').classList.add('active');
+    // Badge on sign tab
+    document.getElementById('badge2').classList.remove('hidden');
+  }
+}
+
+/* ═══════════════════════════════════════════════
+   CANVAS SIGNATURE
+═══════════════════════════════════════════════ */
+let canvas, ctx, drawing = false, lastX = 0, lastY = 0;
+
+function initCanvas() {
+  canvas = document.getElementById('sigCanvas');
+  ctx = canvas.getContext('2d');
+
+  // Resize canvas to actual pixel dimensions
+  function resize() {
+    const rect = canvas.getBoundingClientRect();
+    const ratio = window.devicePixelRatio || 1;
+    canvas.width = rect.width * ratio;
+    canvas.height = rect.height * ratio;
+    ctx.scale(ratio, ratio);
+    ctx.strokeStyle = '#1a1814';
+    ctx.lineWidth = 2.5;
+    ctx.lineCap = 'round';
+    ctx.lineJoin = 'round';
+  }
+  resize();
+  window.addEventListener('resize', resize);
+
+  // Mouse
+  canvas.addEventListener('mousedown', startDraw);
+  canvas.addEventListener('mousemove', draw);
+  canvas.addEventListener('mouseup', endDraw);
+  canvas.addEventListener('mouseleave', endDraw);
+
+  // Touch
+  canvas.addEventListener('touchstart', e => { e.preventDefault(); startDraw(e.touches[0]); }, { passive: false });
+  canvas.addEventListener('touchmove', e => { e.preventDefault(); draw(e.touches[0]); }, { passive: false });
+  canvas.addEventListener('touchend', endDraw, { passive: false });
+}
+
+function getXY(e) {
+  const rect = canvas.getBoundingClientRect();
+  return {
+    x: (e.clientX ?? e.pageX) - rect.left,
+    y: (e.clientY ?? e.pageY) - rect.top
+  };
+}
+
+function startDraw(e) {
+  if (!state.allRead) return;
+  drawing = true;
+  const { x, y } = getXY(e);
+  lastX = x; lastY = y;
+  ctx.beginPath();
+  ctx.arc(x, y, 1.2, 0, Math.PI * 2);
+  ctx.fillStyle = '#1a1814';
+  ctx.fill();
+}
+
+function draw(e) {
+  if (!drawing) return;
+  const { x, y } = getXY(e);
+  ctx.beginPath();
+  ctx.moveTo(lastX, lastY);
+  ctx.lineTo(x, y);
+  ctx.stroke();
+  lastX = x; lastY = y;
+  checkHasSig();
+}
+
+function endDraw() {
+  if (drawing) { drawing = false; checkHasSig(); }
+}
+
+function checkHasSig() {
+  const data = ctx.getImageData(0, 0, canvas.width, canvas.height).data;
+  state.hasSig = Array.from(data).some((v, i) => i % 4 === 3 && v > 10);
+  document.getElementById('canvasHint').style.opacity = state.hasSig ? '0' : '1';
+  document.getElementById('canvasWrap').classList.toggle('has-sig', state.hasSig);
+  document.getElementById('btnSubmitSign').disabled = !state.hasSig;
+}
+
+function clearCanvas() {
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  state.hasSig = false;
+  document.getElementById('canvasHint').style.opacity = '1';
+  document.getElementById('canvasWrap').classList.remove('has-sig');
+  document.getElementById('btnSubmitSign').disabled = true;
+  showToast('签名已清除');
+}
+
+function updateSignUI() {
+  const locked = !state.allRead;
+  document.getElementById('signLockedMsg').classList.toggle('hidden', !locked);
+  document.getElementById('canvasWrap').classList.toggle('locked', locked);
+  if (state.mySigned) {
+    document.getElementById('myStatus').className = 'status-card-badge badge-signed';
+    document.getElementById('myStatus').innerHTML = '<span>✅</span> 已签署';
+    document.getElementById('btnSubmitSign').disabled = true;
+    document.getElementById('btnSubmitSign').textContent = '✅ 已完成签署';
+  }
+}
+
+/* ═══════════════════════════════════════════════
+   SUBMIT SIGN
+═══════════════════════════════════════════════ */
+function submitSign() {
+  if (!state.hasSig) return;
+  state.mySigned = true;
+  state.signTime = new Date();
+  state.contractId = 'CT-' + Date.now().toString(36).toUpperCase().slice(-8);
+
+  // Update dot
+  document.getElementById('dot2').classList.remove('active');
+  document.getElementById('dot2').classList.add('done');
+  document.getElementById('dot3').classList.add('active');
+  document.getElementById('badge2').classList.add('hidden');
+  document.getElementById('badge3').classList.remove('hidden');
+
+  showToast('✅ 签名已提交');
+  updateSignUI();
+  renderComplete();
+  setTimeout(() => switchTab('complete'), 800);
+}
+
+/* ═══════════════════════════════════════════════
+   COMPLETE PAGE
+═══════════════════════════════════════════════ */
+function renderComplete() {
+  if (!state.contractId) return;
+
+  document.getElementById('contractInfoCard').style.display = 'block';
+  document.getElementById('contractId').textContent = state.contractId;
+  document.getElementById('signTime').textContent = formatDate(state.signTime);
+  document.getElementById('headerSub').textContent = state.theirSigned ? '合同已生效' : '等待对方签署';
+
+  if (state.theirSigned) {
+    document.getElementById('completeIcon').classList.remove('pending');
+    document.getElementById('completeIcon').innerHTML = '🎉';
+    document.getElementById('completeTitle').textContent = '合同签署完成';
+    document.getElementById('completeSub').textContent = '双方均已完成签署，合同正式生效';
+    document.getElementById('waitingBanner').classList.add('hidden');
+    document.getElementById('bothSignedBanner').classList.remove('hidden');
+    document.getElementById('contractStatus').textContent = '已生效';
+    document.getElementById('contractStatus').style.color = 'var(--success)';
+    document.getElementById('btnDownload').disabled = false;
+    document.getElementById('dot3').classList.remove('active');
+    document.getElementById('dot3').classList.add('done');
+    document.getElementById('badge3').classList.add('hidden');
+  } else {
+    document.getElementById('completeIcon').classList.add('pending');
+    document.getElementById('completeIcon').innerHTML = '⏳';
+    document.getElementById('completeTitle').textContent = '等待对方签署';
+    document.getElementById('completeSub').textContent = '您已完成签署，等待乙方确认';
+    document.getElementById('waitingBanner').classList.remove('hidden');
+    document.getElementById('bothSignedBanner').classList.add('hidden');
+    document.getElementById('contractStatus').textContent = '等待对方签署';
+    document.getElementById('contractStatus').style.color = 'var(--warning)';
+    document.getElementById('btnDownload').disabled = true;
+  }
+}
+
+function simulateCounterSign() {
+  if (!state.mySigned) {
+    showToast('⚠️ 请先完成我方签署');
+    return;
+  }
+  state.theirSigned = true;
+  document.getElementById('theirStatus').className = 'status-card-badge badge-signed';
+  document.getElementById('theirStatus').innerHTML = '<span>✅</span> 已签署';
+  renderComplete();
+  showToast('🎉 对方已完成签署！合同生效');
+}
+
+/* ═══════════════════════════════════════════════
+   PDF DOWNLOAD (mock)
+═══════════════════════════════════════════════ */
+function downloadPDF() {
+  showToast('📄 正在生成 PDF…');
+  setTimeout(() => {
+    const blob = new Blob([generatePDFContent()], { type: 'text/plain;charset=utf-8' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `合同_${state.contractId}.txt`;
+    a.click();
+    URL.revokeObjectURL(url);
+    showToast('✅ 合同已下载');
+  }, 1200);
+}
+
+function generatePDFContent() {
+  return `服务合作框架协议
+${'═'.repeat(40)}
+合同编号：${state.contractId}
+签署时间：${formatDate(state.signTime)}
+甲方：北京星澜科技有限公司
+乙方：上海创合信息技术有限公司
+合同状态：双方已签署，正式生效
+${'─'.repeat(40)}
+${CONTRACT_PAGES.map(p => p.title).join('\n')}
+${'═'.repeat(40)}
+本合同经双方电子签署，具有法律效力。
+`;
+}
+
+/* ═══════════════════════════════════════════════
+   HELPERS
+═══════════════════════════════════════════════ */
+function updateUI() {
+  renderDocPage();
+}
+
+function formatDate(d) {
+  if (!d) return '—';
+  const pad = n => String(n).padStart(2, '0');
+  return `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())} ${pad(d.getHours())}:${pad(d.getMinutes())}:${pad(d.getSeconds())}`;
+}
+
+let toastTimer = null;
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  if (toastTimer) clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => t.classList.remove('show'), 2200);
+}
+</script>
+</body>
+</html>
