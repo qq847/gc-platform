@@ -1,0 +1,929 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Deal Negotiation — Game Connection Platform</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'DM Sans', sans-serif; background: #e8e4da; color: #1c1a17; min-height: 100vh; display: flex; flex-direction: column; }
+
+  /* ─── TOPNAV ─── */
+  .topnav {
+    position: sticky; top: 0; z-index: 200;
+    background: #fff; border-bottom: 1px solid #e0dbd2;
+    height: 60px; display: flex; align-items: center;
+    padding: 0 28px; gap: 20px; box-shadow: 0 1px 4px rgba(0,0,0,.06);
+  }
+  .nav-logo { font-size: 16px; font-weight: 700; color: #1c1a17; white-space: nowrap; letter-spacing: .5px; flex-shrink: 0; }
+  .nav-logo span { color: #d95f2b; }
+  .nav-search { display: flex; align-items: center; gap: 8px; background: #f5f3ef; border: 1px solid #e0dbd2; border-radius: 8px; padding: 6px 12px; min-width: 220px; }
+  .nav-search input { border: none; background: transparent; outline: none; font-family: inherit; font-size: 14px; color: #1c1a17; width: 100%; }
+  .nav-search input::placeholder { color: #a09890; }
+  .nav-links { display: flex; align-items: center; gap: 4px; flex: 1; justify-content: center; }
+  .nav-links a { text-decoration: none; color: #6b6660; font-size: 14px; font-weight: 500; padding: 6px 14px; border-radius: 6px; cursor: pointer; transition: all .15s; }
+  .nav-links a:hover { color: #1c1a17; background: #f5f3ef; }
+  .nav-links a.active { color: #d95f2b; font-weight: 600; background: #fef0e9; }
+  .nav-right { display: flex; align-items: center; gap: 12px; flex-shrink: 0; }
+  .nav-bell { font-size: 18px; cursor: pointer; color: #6b6660; position: relative; }
+  .nav-bell-dot { position: absolute; top: -2px; right: -2px; width: 8px; height: 8px; background: #d95f2b; border-radius: 50%; border: 1.5px solid #fff; }
+  .nav-avatar { width: 34px; height: 34px; border-radius: 50%; background: linear-gradient(135deg, #d95f2b, #e8834f); display: flex; align-items: center; justify-content: center; color: #fff; font-size: 13px; font-weight: 700; cursor: pointer; }
+
+  /* ─── PAGE HEADER ─── */
+  .page-header {
+    background: #fff; border-bottom: 1px solid #e0dbd2;
+    padding: 12px 28px; position: sticky; top: 60px; z-index: 100;
+    display: flex; align-items: center; gap: 16px;
+  }
+  .breadcrumb { font-size: 12.5px; color: #6b6660; display: flex; align-items: center; gap: 5px; }
+  .breadcrumb a { color: #d95f2b; text-decoration: none; cursor: pointer; font-weight: 500; }
+  .breadcrumb a:hover { text-decoration: underline; }
+  .breadcrumb .sep { color: #c0bbb4; }
+  .page-header-actions { margin-left: auto; display: flex; align-items: center; gap: 10px; }
+  .btn-sm { padding: 7px 14px; border-radius: 8px; font-family: inherit; font-size: 13px; font-weight: 600; cursor: pointer; transition: all .15s; border: 1.5px solid #e0dbd2; background: #fff; color: #1c1a17; display: flex; align-items: center; gap: 6px; }
+  .btn-sm:hover { border-color: #d95f2b; color: #d95f2b; }
+  .btn-sm-primary { background: #d95f2b; color: #fff; border-color: #d95f2b; }
+  .btn-sm-primary:hover { background: #c05426; border-color: #c05426; color: #fff; }
+
+  /* ─── MAIN 3-COLUMN LAYOUT ─── */
+  .main-layout {
+    display: flex; flex: 1; gap: 0;
+    max-width: 1600px; margin: 0 auto; width: 100%;
+    padding: 20px 24px; gap: 18px; align-items: flex-start;
+  }
+
+  /* ─── LEFT: NEGOTIATION LIST ─── */
+  .col-left {
+    width: 280px; flex-shrink: 0;
+    position: sticky; top: 110px;
+    max-height: calc(100vh - 130px); overflow-y: auto;
+    display: flex; flex-direction: column; gap: 12px;
+  }
+  .col-left::-webkit-scrollbar { width: 4px; }
+  .col-left::-webkit-scrollbar-thumb { background: #d0ccc4; border-radius: 4px; }
+
+  .neg-list-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 4px; }
+  .neg-list-title { font-size: 13.5px; font-weight: 700; color: #1c1a17; }
+  .neg-list-count { font-size: 12px; font-weight: 600; background: #f5f3ef; color: #6b6660; border-radius: 10px; padding: 2px 8px; }
+  .neg-search { display: flex; align-items: center; gap: 7px; background: #fff; border: 1.5px solid #e0dbd2; border-radius: 8px; padding: 7px 10px; margin-bottom: 2px; }
+  .neg-search input { border: none; background: transparent; outline: none; font-family: inherit; font-size: 13px; color: #1c1a17; width: 100%; }
+  .neg-search input::placeholder { color: #a09890; }
+
+  .stage-group { margin-bottom: 4px; }
+  .stage-label { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: .8px; color: #a09890; padding: 4px 6px; margin-bottom: 4px; }
+
+  .neg-card { background: #fff; border: 1.5px solid #e0dbd2; border-radius: 10px; padding: 12px 13px; cursor: pointer; transition: all .15s; margin-bottom: 6px; }
+  .neg-card:hover { border-color: #d95f2b; box-shadow: 0 2px 8px rgba(217,95,43,.1); }
+  .neg-card.active { border-color: #d95f2b; background: #fef0e9; box-shadow: 0 2px 8px rgba(217,95,43,.12); }
+  .neg-card-top { display: flex; align-items: flex-start; justify-content: space-between; gap: 8px; margin-bottom: 6px; }
+  .neg-card-name { font-size: 13px; font-weight: 700; color: #1c1a17; line-height: 1.3; }
+  .neg-card-stage { font-size: 10.5px; font-weight: 700; border-radius: 10px; padding: 2px 7px; white-space: nowrap; flex-shrink: 0; }
+  .stage-initial { background: #f0ede7; color: #6b6660; }
+  .stage-nda { background: #e6f4fa; color: #0a7fa8; }
+  .stage-termsheet { background: #fef9e6; color: #c17a00; }
+  .stage-dd { background: #f0e8fa; color: #7a2db8; }
+  .stage-closed { background: #e6f7f2; color: #0d9b72; }
+  .neg-card-parties { font-size: 11.5px; color: #6b6660; display: flex; align-items: center; gap: 4px; }
+  .neg-card-meta { display: flex; align-items: center; justify-content: space-between; margin-top: 6px; }
+  .neg-card-date { font-size: 11px; color: #a09890; }
+  .neg-card-unread { width: 8px; height: 8px; border-radius: 50%; background: #d95f2b; flex-shrink: 0; }
+
+  /* ─── CENTER: DEAL DETAIL ─── */
+  .col-center { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 16px; }
+
+  /* Deal Header Card */
+  .deal-hero { background: #fff; border: 1px solid #e0dbd2; border-radius: 14px; padding: 20px 22px; }
+  .deal-hero-top { display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: 16px; }
+  .deal-hero-title { font-size: 18px; font-weight: 700; color: #1c1a17; margin-bottom: 4px; }
+  .deal-hero-sub { font-size: 13px; color: #6b6660; }
+  .deal-stage-pill { display: flex; align-items: center; gap: 7px; background: #fef9e6; border: 1.5px solid #f0d060; border-radius: 20px; padding: 6px 14px; }
+  .deal-stage-dot { width: 8px; height: 8px; border-radius: 50%; background: #c17a00; }
+  .deal-stage-text { font-size: 12.5px; font-weight: 700; color: #c17a00; }
+
+  .parties-bar { display: flex; align-items: center; gap: 0; background: #f9f8f5; border-radius: 10px; overflow: hidden; border: 1px solid #e8e4da; }
+  .party-side { flex: 1; padding: 14px 18px; }
+  .party-side.dev { border-right: 1px solid #e8e4da; }
+  .party-side-role { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: .7px; color: #a09890; margin-bottom: 6px; }
+  .party-side-name { font-size: 15px; font-weight: 700; color: #1c1a17; margin-bottom: 3px; }
+  .party-side-name.dev-color { color: #0a7fa8; }
+  .party-side-name.pub-color { color: #d95f2b; }
+  .party-side-contact { font-size: 12.5px; color: #6b6660; }
+  .party-vs { padding: 0 20px; display: flex; align-items: center; font-size: 22px; color: #c0bbb4; }
+
+  /* Progress Stepper */
+  .stage-stepper { display: flex; align-items: center; gap: 0; background: #fff; border: 1px solid #e0dbd2; border-radius: 12px; padding: 16px 20px; }
+  .step { display: flex; align-items: center; flex: 1; }
+  .step-dot-wrap { display: flex; flex-direction: column; align-items: center; gap: 4px; }
+  .step-dot { width: 28px; height: 28px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 700; flex-shrink: 0; transition: all .2s; }
+  .step-dot.done { background: #0d9b72; color: #fff; }
+  .step-dot.current { background: #d95f2b; color: #fff; box-shadow: 0 0 0 4px rgba(217,95,43,.2); }
+  .step-dot.pending { background: #f0ede7; color: #a09890; border: 1.5px solid #d0ccc4; }
+  .step-label { font-size: 10.5px; font-weight: 600; color: #6b6660; white-space: nowrap; margin-top: 4px; }
+  .step-label.current { color: #d95f2b; font-weight: 700; }
+  .step-label.done { color: #0d9b72; }
+  .step-connector { flex: 1; height: 2px; background: #e0dbd2; margin: 0 4px; margin-bottom: 20px; }
+  .step-connector.done { background: #0d9b72; }
+
+  /* Shared card */
+  .card { background: #fff; border: 1px solid #e0dbd2; border-radius: 12px; padding: 18px 20px; }
+  .card-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px; }
+  .card-title { font-size: 14px; font-weight: 700; color: #1c1a17; display: flex; align-items: center; gap: 7px; }
+  .card-action-link { font-size: 12.5px; color: #d95f2b; cursor: pointer; font-weight: 600; }
+  .card-action-link:hover { text-decoration: underline; }
+
+  /* Timeline */
+  .timeline { display: flex; flex-direction: column; gap: 0; }
+  .tl-item { display: flex; gap: 14px; position: relative; padding-bottom: 18px; }
+  .tl-item:last-child { padding-bottom: 0; }
+  .tl-item:not(:last-child) .tl-line { position: absolute; left: 15px; top: 32px; bottom: 0; width: 2px; background: #f0ede7; }
+  .tl-icon-wrap { width: 32px; height: 32px; border-radius: 50%; flex-shrink: 0; display: flex; align-items: center; justify-content: center; font-size: 14px; border: 2px solid #e8e4da; background: #fff; z-index: 1; }
+  .tl-icon-wrap.msg { background: #fef0e9; border-color: #f5c4a8; }
+  .tl-icon-wrap.file { background: #e6f4fa; border-color: #b8dff0; }
+  .tl-icon-wrap.status { background: #e6f7f2; border-color: #a3e4cf; }
+  .tl-icon-wrap.terms { background: #fef9e6; border-color: #f0d060; }
+  .tl-body { flex: 1; min-width: 0; }
+  .tl-meta { display: flex; align-items: center; gap: 8px; margin-bottom: 4px; }
+  .tl-sender { font-size: 12.5px; font-weight: 700; color: #1c1a17; }
+  .tl-time { font-size: 11.5px; color: #a09890; }
+  .tl-type-tag { font-size: 10.5px; font-weight: 700; border-radius: 6px; padding: 1.5px 6px; }
+  .tl-type-msg { background: #fef0e9; color: #d95f2b; }
+  .tl-type-file { background: #e6f4fa; color: #0a7fa8; }
+  .tl-type-status { background: #e6f7f2; color: #0d9b72; }
+  .tl-type-terms { background: #fef9e6; color: #c17a00; }
+  .tl-content { font-size: 13.5px; line-height: 1.55; color: #1c1a17; }
+  .tl-content.muted { color: #6b6660; font-style: italic; }
+  .tl-file-card { display: inline-flex; align-items: center; gap: 10px; background: #f5f3ef; border: 1px solid #e0dbd2; border-radius: 8px; padding: 8px 12px; margin-top: 4px; cursor: pointer; transition: background .15s; }
+  .tl-file-card:hover { background: #eeeae3; }
+  .tl-file-name { font-size: 13px; font-weight: 600; color: #1c1a17; }
+  .tl-file-meta { font-size: 11.5px; color: #a09890; }
+
+  /* Terms Draft */
+  .terms-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+  .term-field { display: flex; flex-direction: column; gap: 6px; }
+  .term-field.full { grid-column: 1 / -1; }
+  .term-label { font-size: 12px; font-weight: 700; color: #6b6660; text-transform: uppercase; letter-spacing: .5px; }
+  .term-value { font-size: 15px; font-weight: 700; color: #1c1a17; }
+  .term-value.highlight { color: #d95f2b; }
+  .term-sub { font-size: 12px; color: #a09890; margin-top: 1px; }
+  .term-badge { display: inline-flex; align-items: center; gap: 5px; border-radius: 8px; padding: 3px 10px; font-size: 12px; font-weight: 600; }
+  .term-badge.agreed { background: #e6f7f2; color: #0d9b72; }
+  .term-badge.negotiating { background: #fef9e6; color: #c17a00; }
+  .term-badge.pending { background: #f0ede7; color: #a09890; }
+
+  /* Slider */
+  .slider-row { display: flex; align-items: center; gap: 12px; }
+  .slider-label { font-size: 12.5px; color: #6b6660; white-space: nowrap; width: 40px; font-weight: 600; }
+  input[type=range] { flex: 1; -webkit-appearance: none; height: 6px; border-radius: 3px; background: linear-gradient(to right, #d95f2b 70%, #e0dbd2 70%); outline: none; cursor: pointer; }
+  input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; width: 18px; height: 18px; border-radius: 50%; background: #d95f2b; border: 2.5px solid #fff; box-shadow: 0 1px 4px rgba(0,0,0,.2); cursor: pointer; transition: transform .15s; }
+  input[type=range]::-webkit-slider-thumb:hover { transform: scale(1.2); }
+  .slider-val { font-size: 14px; font-weight: 700; color: #d95f2b; white-space: nowrap; width: 50px; text-align: right; }
+
+  /* Documents */
+  .doc-list { display: flex; flex-direction: column; gap: 8px; }
+  .doc-item { display: flex; align-items: center; gap: 12px; padding: 10px 13px; background: #f9f8f5; border-radius: 9px; border: 1px solid #e8e4da; cursor: pointer; transition: all .15s; }
+  .doc-item:hover { background: #f0ede7; border-color: #d0ccc4; }
+  .doc-icon-wrap { width: 36px; height: 36px; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 18px; flex-shrink: 0; }
+  .doc-icon-wrap.pdf { background: #ffe5e5; }
+  .doc-icon-wrap.docx { background: #e6f4fa; }
+  .doc-info { flex: 1; min-width: 0; }
+  .doc-name { font-size: 13px; font-weight: 600; color: #1c1a17; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .doc-meta { font-size: 11.5px; color: #a09890; margin-top: 2px; display: flex; align-items: center; gap: 8px; }
+  .doc-version { background: #f0ede7; color: #6b6660; border-radius: 4px; padding: 1px 6px; font-size: 11px; font-weight: 700; }
+  .doc-status-tag { font-size: 11px; font-weight: 700; border-radius: 6px; padding: 2px 7px; }
+  .doc-status-tag.signed { background: #e6f7f2; color: #0d9b72; }
+  .doc-status-tag.review { background: #fef9e6; color: #c17a00; }
+  .doc-status-tag.draft { background: #f0ede7; color: #a09890; }
+  .doc-actions { display: flex; gap: 6px; flex-shrink: 0; }
+  .doc-btn { padding: 5px 10px; border-radius: 6px; font-family: inherit; font-size: 11.5px; font-weight: 600; cursor: pointer; border: 1.5px solid #e0dbd2; background: #fff; color: #6b6660; transition: all .15s; }
+  .doc-btn:hover { border-color: #d95f2b; color: #d95f2b; }
+
+  /* ─── RIGHT: ACTION PANEL ─── */
+  .col-right {
+    width: 300px; flex-shrink: 0;
+    position: sticky; top: 110px;
+    max-height: calc(100vh - 130px); overflow-y: auto;
+    display: flex; flex-direction: column; gap: 14px;
+  }
+  .col-right::-webkit-scrollbar { width: 4px; }
+  .col-right::-webkit-scrollbar-thumb { background: #d0ccc4; border-radius: 4px; }
+
+  .action-card { background: #fff; border: 1px solid #e0dbd2; border-radius: 12px; padding: 16px 18px; }
+  .action-card-title { font-size: 13px; font-weight: 700; color: #1c1a17; margin-bottom: 12px; display: flex; align-items: center; gap: 6px; }
+
+  /* Message compose */
+  .msg-compose { border: 1.5px solid #e0dbd2; border-radius: 10px; overflow: hidden; transition: border-color .15s; }
+  .msg-compose:focus-within { border-color: #d95f2b; }
+  .msg-compose textarea { width: 100%; border: none; outline: none; font-family: inherit; font-size: 13.5px; color: #1c1a17; padding: 11px 13px; resize: none; min-height: 90px; background: #f9f8f5; line-height: 1.5; }
+  .msg-compose textarea::placeholder { color: #a09890; }
+  .msg-compose-footer { display: flex; align-items: center; gap: 6px; padding: 8px 10px; background: #fff; border-top: 1px solid #f0ede7; }
+  .msg-icon-btn { background: none; border: none; font-size: 16px; cursor: pointer; color: #a09890; padding: 4px; border-radius: 5px; transition: all .15s; }
+  .msg-icon-btn:hover { background: #f0ede7; color: #1c1a17; }
+  .msg-to-tag { display: flex; align-items: center; gap: 4px; background: #fef0e9; border-radius: 6px; padding: 3px 8px; font-size: 11.5px; font-weight: 600; color: #d95f2b; }
+  .btn-send { margin-left: auto; background: #d95f2b; color: #fff; border: none; border-radius: 7px; padding: 7px 14px; font-family: inherit; font-size: 13px; font-weight: 600; cursor: pointer; transition: background .15s; display: flex; align-items: center; gap: 5px; }
+  .btn-send:hover { background: #c05426; }
+
+  /* File upload zone */
+  .upload-zone { border: 2px dashed #d0ccc4; border-radius: 9px; padding: 14px 16px; text-align: center; cursor: pointer; transition: all .15s; color: #6b6660; font-size: 13px; }
+  .upload-zone:hover { border-color: #d95f2b; color: #d95f2b; background: #fef9f7; }
+  .upload-zone-icon { font-size: 24px; margin-bottom: 4px; }
+  .upload-zone-sub { font-size: 11.5px; color: #a09890; margin-top: 3px; }
+
+  /* Terms edit */
+  .terms-edit-row { display: flex; flex-direction: column; gap: 4px; margin-bottom: 12px; }
+  .terms-edit-label { font-size: 11.5px; font-weight: 700; color: #6b6660; text-transform: uppercase; letter-spacing: .4px; }
+  .terms-edit-input { background: #f9f8f5; border: 1.5px solid #e0dbd2; border-radius: 8px; padding: 8px 11px; font-family: inherit; font-size: 13.5px; color: #1c1a17; outline: none; width: 100%; transition: border-color .15s; }
+  .terms-edit-input:focus { border-color: #d95f2b; background: #fff; }
+  .terms-edit-input::placeholder { color: #a09890; }
+
+  /* Stage advance */
+  .stage-advance-btn { width: 100%; padding: 11px 14px; border-radius: 9px; font-family: inherit; font-size: 13.5px; font-weight: 700; cursor: pointer; border: none; transition: all .15s; display: flex; align-items: center; justify-content: center; gap: 8px; }
+  .stage-advance-btn.primary { background: #d95f2b; color: #fff; }
+  .stage-advance-btn.primary:hover { background: #c05426; }
+  .stage-advance-btn.secondary { background: #f5f3ef; color: #1c1a17; border: 1.5px solid #e0dbd2; }
+  .stage-advance-btn.secondary:hover { background: #ede9e2; }
+  .stage-advance-btn.danger { background: #fff0f0; color: #c0392b; border: 1.5px solid #f0c0c0; }
+  .stage-advance-btn.danger:hover { background: #ffe0e0; }
+
+  /* ─── EXPORT FOOTER ─── */
+  .export-bar {
+    background: #fff; border-top: 1px solid #e0dbd2;
+    padding: 14px 28px; display: flex; align-items: center; gap: 14px;
+    flex-wrap: wrap;
+  }
+  .export-bar-title { font-size: 13px; font-weight: 700; color: #1c1a17; display: flex; align-items: center; gap: 7px; white-space: nowrap; }
+  .export-summary { flex: 1; font-size: 12.5px; color: #6b6660; line-height: 1.5; }
+  .export-actions { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+  .export-btn { display: flex; align-items: center; gap: 6px; padding: 8px 14px; border-radius: 8px; font-family: inherit; font-size: 13px; font-weight: 600; cursor: pointer; transition: all .15s; text-decoration: none; }
+  .export-btn-outline { background: #fff; border: 1.5px solid #e0dbd2; color: #1c1a17; }
+  .export-btn-outline:hover { border-color: #d95f2b; color: #d95f2b; }
+  .export-btn-filled { background: #1c1a17; border: 1.5px solid #1c1a17; color: #fff; }
+  .export-btn-filled:hover { background: #2e2b26; }
+
+  /* ─── UTILITIES ─── */
+  .divider { height: 1px; background: #f0ede7; margin: 10px 0; }
+  .tag { display: inline-flex; align-items: center; gap: 4px; border-radius: 6px; padding: 2px 8px; font-size: 11.5px; font-weight: 600; }
+  .tag-orange { background: #fef0e9; color: #d95f2b; }
+  .tag-blue { background: #e6f4fa; color: #0a7fa8; }
+  .tag-green { background: #e6f7f2; color: #0d9b72; }
+  .tag-yellow { background: #fef9e6; color: #c17a00; }
+  .tag-purple { background: #f0e8fa; color: #7a2db8; }
+  .tag-gray { background: #f0ede7; color: #6b6660; }
+
+  /* Range track coloring */
+  #rev-slider { --val: 70%; }
+</style>
+</head>
+<body>
+
+<!-- ═══ TOPNAV ═══ -->
+<nav class="topnav">
+  <div class="nav-logo">GAME <span>CONNECTION</span></div>
+  <div class="nav-search">
+    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#a09890" stroke-width="2.5"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+    <input type="text" placeholder="Search negotiations, studios…">
+  </div>
+  <div class="nav-links">
+    <a href="#">Home</a>
+    <a href="#">People</a>
+    <a href="#">Projects</a>
+    <a href="#" class="active">Market</a>
+    <a href="#">Events</a>
+  </div>
+  <div class="nav-right">
+    <div class="nav-bell" style="position:relative;">🔔<div class="nav-bell-dot"></div></div>
+    <div class="nav-avatar">QQ</div>
+  </div>
+</nav>
+
+<!-- ═══ PAGE HEADER ═══ -->
+<div class="page-header">
+  <div class="breadcrumb">
+    <a href="#">Market</a>
+    <span class="sep">›</span>
+    <a href="#">Negotiations</a>
+    <span class="sep">›</span>
+    <span style="color:#1c1a17;font-weight:600;">Echoes of Jade Dynasty × Devolver Digital</span>
+  </div>
+  <div class="page-header-actions">
+    <button class="btn-sm">📋 Summary Report</button>
+    <button class="btn-sm">🔗 Share Link</button>
+    <button class="btn-sm btn-sm-primary">+ New Negotiation</button>
+  </div>
+</div>
+
+<!-- ═══ MAIN 3-COLUMN ═══ -->
+<div class="main-layout">
+
+  <!-- ═══ LEFT COLUMN: NEGOTIATION LIST ═══ -->
+  <aside class="col-left">
+    <div class="neg-list-header">
+      <div class="neg-list-title">All Negotiations</div>
+      <div class="neg-list-count">12 active</div>
+    </div>
+    <div class="neg-search">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#a09890" stroke-width="2.5"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+      <input type="text" placeholder="Filter by game or studio…">
+    </div>
+
+    <!-- Initial Contact -->
+    <div class="stage-group">
+      <div class="stage-label">🤝 Initial Contact</div>
+      <div class="neg-card">
+        <div class="neg-card-top">
+          <div class="neg-card-name">Shadow Realm: Origins</div>
+          <div class="neg-card-stage stage-initial">Initial</div>
+        </div>
+        <div class="neg-card-parties">🏢 NightOwl Games &nbsp;↔&nbsp; Team17</div>
+        <div class="neg-card-meta">
+          <div class="neg-card-date">Mar 22, 2026</div>
+          <div class="neg-card-unread"></div>
+        </div>
+      </div>
+      <div class="neg-card">
+        <div class="neg-card-top">
+          <div class="neg-card-name">Quantum Drift</div>
+          <div class="neg-card-stage stage-initial">Initial</div>
+        </div>
+        <div class="neg-card-parties">🏢 PixelForge &nbsp;↔&nbsp; Raw Fury</div>
+        <div class="neg-card-meta">
+          <div class="neg-card-date">Mar 21, 2026</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- NDA Signed -->
+    <div class="stage-group">
+      <div class="stage-label">📑 NDA Signed</div>
+      <div class="neg-card">
+        <div class="neg-card-top">
+          <div class="neg-card-name">Hollow Earth Chronicles</div>
+          <div class="neg-card-stage stage-nda">NDA Signed</div>
+        </div>
+        <div class="neg-card-parties">🏢 DepthFusion &nbsp;↔&nbsp; Annapurna</div>
+        <div class="neg-card-meta">
+          <div class="neg-card-date">Mar 19, 2026</div>
+          <div class="neg-card-unread"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Term Sheet -->
+    <div class="stage-group">
+      <div class="stage-label">📋 Term Sheet</div>
+      <div class="neg-card active">
+        <div class="neg-card-top">
+          <div class="neg-card-name">Echoes of Jade Dynasty</div>
+          <div class="neg-card-stage stage-termsheet">Term Sheet</div>
+        </div>
+        <div class="neg-card-parties">🏢 CloudPeak &nbsp;↔&nbsp; Devolver Digital</div>
+        <div class="neg-card-meta">
+          <div class="neg-card-date">Mar 18, 2026</div>
+          <div class="neg-card-unread"></div>
+        </div>
+      </div>
+      <div class="neg-card">
+        <div class="neg-card-top">
+          <div class="neg-card-name">Neon Abyss 2</div>
+          <div class="neg-card-stage stage-termsheet">Term Sheet</div>
+        </div>
+        <div class="neg-card-parties">🏢 Veewo &nbsp;↔&nbsp; Team17</div>
+        <div class="neg-card-meta">
+          <div class="neg-card-date">Mar 15, 2026</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Due Diligence -->
+    <div class="stage-group">
+      <div class="stage-label">🔍 Due Diligence</div>
+      <div class="neg-card">
+        <div class="neg-card-top">
+          <div class="neg-card-name">Iron Meridian</div>
+          <div class="neg-card-stage stage-dd">Due Diligence</div>
+        </div>
+        <div class="neg-card-parties">🏢 SteelCore &nbsp;↔&nbsp; Paradox</div>
+        <div class="neg-card-meta">
+          <div class="neg-card-date">Mar 10, 2026</div>
+        </div>
+      </div>
+      <div class="neg-card">
+        <div class="neg-card-top">
+          <div class="neg-card-name">Celestia: Lost Skies</div>
+          <div class="neg-card-stage stage-dd">Due Diligence</div>
+        </div>
+        <div class="neg-card-parties">🏢 SkyArch &nbsp;↔&nbsp; Focus Entertainment</div>
+        <div class="neg-card-meta">
+          <div class="neg-card-date">Mar 8, 2026</div>
+          <div class="neg-card-unread"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Closed -->
+    <div class="stage-group">
+      <div class="stage-label">✅ Closed</div>
+      <div class="neg-card">
+        <div class="neg-card-top">
+          <div class="neg-card-name">Dungeon Merchant Pro</div>
+          <div class="neg-card-stage stage-closed">Closed ✓</div>
+        </div>
+        <div class="neg-card-parties">🏢 ArcLight &nbsp;↔&nbsp; Curve Games</div>
+        <div class="neg-card-meta">
+          <div class="neg-card-date">Feb 28, 2026</div>
+        </div>
+      </div>
+    </div>
+  </aside>
+
+  <!-- ═══ CENTER COLUMN: DEAL DETAIL ═══ -->
+  <main class="col-center">
+
+    <!-- Deal Hero Card -->
+    <div class="deal-hero">
+      <div class="deal-hero-top">
+        <div>
+          <div class="deal-hero-title">Echoes of Jade Dynasty</div>
+          <div class="deal-hero-sub">Publishing deal negotiation &nbsp;·&nbsp; Started March 18, 2026 &nbsp;·&nbsp; 6 days active</div>
+        </div>
+        <div class="deal-stage-pill">
+          <div class="deal-stage-dot"></div>
+          <div class="deal-stage-text">Term Sheet Stage</div>
+        </div>
+      </div>
+      <div class="parties-bar">
+        <div class="party-side dev">
+          <div class="party-side-role">🎮 Developer</div>
+          <div class="party-side-name dev-color">CloudPeak Games</div>
+          <div class="party-side-contact">Li Wei · CEO &nbsp;·&nbsp; li.wei@cloudpeak.cn</div>
+        </div>
+        <div class="party-vs">⇄</div>
+        <div class="party-side">
+          <div class="party-side-role">📦 Publisher</div>
+          <div class="party-side-name pub-color">Devolver Digital</div>
+          <div class="party-side-contact">Sarah Chen · BD Manager &nbsp;·&nbsp; sarah@devolverdigital.com</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Stage Stepper -->
+    <div class="stage-stepper">
+      <div class="step">
+        <div class="step-dot-wrap">
+          <div class="step-dot done">✓</div>
+          <div class="step-label done">Initial Contact</div>
+        </div>
+      </div>
+      <div class="step-connector done"></div>
+      <div class="step">
+        <div class="step-dot-wrap">
+          <div class="step-dot done">✓</div>
+          <div class="step-label done">NDA Signed</div>
+        </div>
+      </div>
+      <div class="step-connector done"></div>
+      <div class="step">
+        <div class="step-dot-wrap">
+          <div class="step-dot current">3</div>
+          <div class="step-label current">Term Sheet</div>
+        </div>
+      </div>
+      <div class="step-connector"></div>
+      <div class="step">
+        <div class="step-dot-wrap">
+          <div class="step-dot pending">4</div>
+          <div class="step-label">Due Diligence</div>
+        </div>
+      </div>
+      <div class="step-connector"></div>
+      <div class="step">
+        <div class="step-dot-wrap">
+          <div class="step-dot pending">✓</div>
+          <div class="step-label">Closed</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Timeline -->
+    <div class="card">
+      <div class="card-header">
+        <div class="card-title">🕐 Negotiation Timeline</div>
+        <span class="card-action-link">View full history →</span>
+      </div>
+      <div class="timeline">
+
+        <!-- Status change -->
+        <div class="tl-item">
+          <div class="tl-line"></div>
+          <div class="tl-icon-wrap status">📌</div>
+          <div class="tl-body">
+            <div class="tl-meta">
+              <span class="tl-sender">System</span>
+              <span class="tl-type-tag tl-type-status">Stage Change</span>
+              <span class="tl-time">Today, 09:14</span>
+            </div>
+            <div class="tl-content muted">Negotiation advanced to <strong>Term Sheet</strong> stage. Devolver Digital sent updated term sheet for review.</div>
+          </div>
+        </div>
+
+        <!-- Message from publisher -->
+        <div class="tl-item">
+          <div class="tl-line"></div>
+          <div class="tl-icon-wrap msg">💬</div>
+          <div class="tl-body">
+            <div class="tl-meta">
+              <span class="tl-sender">Sarah Chen (Devolver Digital)</span>
+              <span class="tl-type-tag tl-type-msg">Message</span>
+              <span class="tl-time">Today, 09:10</span>
+            </div>
+            <div class="tl-content">Hi Li Wei, I've just sent over the updated term sheet with our revised minimum guarantee position. We've moved to $280K which is our best offer given current market comps. Looking forward to discussing this Wednesday.</div>
+          </div>
+        </div>
+
+        <!-- File shared -->
+        <div class="tl-item">
+          <div class="tl-line"></div>
+          <div class="tl-icon-wrap file">📄</div>
+          <div class="tl-body">
+            <div class="tl-meta">
+              <span class="tl-sender">Sarah Chen (Devolver Digital)</span>
+              <span class="tl-type-tag tl-type-file">File Shared</span>
+              <span class="tl-time">Today, 09:08</span>
+            </div>
+            <div class="tl-file-card">
+              <span style="font-size:22px;">📋</span>
+              <div>
+                <div class="tl-file-name">TermSheet_EchoesJadeDynasty_v3.pdf</div>
+                <div class="tl-file-meta">PDF · 2.1 MB · <span class="doc-version">v3</span></div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Terms update -->
+        <div class="tl-item">
+          <div class="tl-line"></div>
+          <div class="tl-icon-wrap terms">⚖️</div>
+          <div class="tl-body">
+            <div class="tl-meta">
+              <span class="tl-sender">System</span>
+              <span class="tl-type-tag tl-type-terms">Terms Updated</span>
+              <span class="tl-time">Yesterday, 16:45</span>
+            </div>
+            <div class="tl-content muted">Revenue share agreed at <strong>70/30 (Dev/Pub)</strong>. Minimum guarantee still under negotiation ($200K ↔ $350K).</div>
+          </div>
+        </div>
+
+        <!-- Dev message -->
+        <div class="tl-item">
+          <div class="tl-line"></div>
+          <div class="tl-icon-wrap msg">💬</div>
+          <div class="tl-body">
+            <div class="tl-meta">
+              <span class="tl-sender">Li Wei (CloudPeak Games)</span>
+              <span class="tl-type-tag tl-type-msg">Message</span>
+              <span class="tl-time">Yesterday, 15:20</span>
+            </div>
+            <div class="tl-content">We're comfortable with 70/30 revenue share. However, given our production costs, we need a minimum guarantee of at least $300K. This is critical for us to proceed. We can be flexible on the exclusivity window — 12 months instead of 18 could work.</div>
+          </div>
+        </div>
+
+        <!-- File: NDA -->
+        <div class="tl-item">
+          <div class="tl-line"></div>
+          <div class="tl-icon-wrap file">📄</div>
+          <div class="tl-body">
+            <div class="tl-meta">
+              <span class="tl-sender">Li Wei (CloudPeak Games)</span>
+              <span class="tl-type-tag tl-type-file">File Shared</span>
+              <span class="tl-time">Mar 19, 14:30</span>
+            </div>
+            <div class="tl-file-card">
+              <span style="font-size:22px;">🔏</span>
+              <div>
+                <div class="tl-file-name">NDA_CloudPeak_Devolver_Signed.pdf</div>
+                <div class="tl-file-meta">PDF · 580 KB · <span class="doc-version">v1 · Signed</span></div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Status: NDA -->
+        <div class="tl-item">
+          <div class="tl-icon-wrap status">✅</div>
+          <div class="tl-body">
+            <div class="tl-meta">
+              <span class="tl-sender">System</span>
+              <span class="tl-type-tag tl-type-status">Stage Change</span>
+              <span class="tl-time">Mar 19, 14:28</span>
+            </div>
+            <div class="tl-content muted">NDA signed by both parties. Negotiation advanced to <strong>NDA Signed</strong> stage.</div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- Terms Draft -->
+    <div class="card">
+      <div class="card-header">
+        <div class="card-title">📝 Current Terms Draft</div>
+        <span class="tag tag-yellow">⚠ Under Review</span>
+      </div>
+      <div class="terms-grid">
+
+        <div class="term-field">
+          <div class="term-label">Rights Scope</div>
+          <div class="term-value">Global (excl. China)</div>
+          <div class="term-sub">PC + Console + Mobile TBD</div>
+          <div style="margin-top:6px;"><span class="term-badge agreed">✓ Agreed</span></div>
+        </div>
+
+        <div class="term-field">
+          <div class="term-label">Exclusivity Period</div>
+          <div class="term-value highlight">18 months</div>
+          <div class="term-sub">Dev proposes 12 months</div>
+          <div style="margin-top:6px;"><span class="term-badge negotiating">⟳ Negotiating</span></div>
+        </div>
+
+        <div class="term-field full">
+          <div class="term-label">Revenue Share &nbsp;<span style="font-weight:400;text-transform:none;letter-spacing:0;color:#d95f2b;font-size:14px;font-weight:700;">Dev 70% / Pub 30%</span></div>
+          <div style="margin-top:8px;">
+            <div class="slider-row">
+              <div class="slider-label">Dev</div>
+              <input type="range" id="rev-slider" min="50" max="85" value="70" oninput="updateSlider(this)">
+              <div class="slider-val" id="rev-val">70%</div>
+            </div>
+          </div>
+          <div class="term-sub" style="margin-top:6px;">Post-recoup. Pub recoups marketing/MG advance first. Net revenue basis.</div>
+          <div style="margin-top:6px;"><span class="term-badge agreed">✓ Agreed</span></div>
+        </div>
+
+        <div class="term-field">
+          <div class="term-label">Minimum Guarantee</div>
+          <div class="term-value highlight">$280K</div>
+          <div class="term-sub">Dev asks $300K · Pub offers $280K</div>
+          <div style="margin-top:6px;"><span class="term-badge negotiating">⟳ Negotiating</span></div>
+        </div>
+
+        <div class="term-field">
+          <div class="term-label">Contract Duration</div>
+          <div class="term-value">5 years</div>
+          <div class="term-sub">With 2-year renewal option</div>
+          <div style="margin-top:6px;"><span class="term-badge pending">○ Pending</span></div>
+        </div>
+
+        <div class="term-field">
+          <div class="term-label">Marketing Commitment</div>
+          <div class="term-value">TBD</div>
+          <div class="term-sub">Pub to provide budget proposal</div>
+          <div style="margin-top:6px;"><span class="term-badge pending">○ Pending</span></div>
+        </div>
+
+        <div class="term-field">
+          <div class="term-label">Localization Support</div>
+          <div class="term-value">TBD</div>
+          <div class="term-sub">7 languages requested</div>
+          <div style="margin-top:6px;"><span class="term-badge pending">○ Pending</span></div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- Documents -->
+    <div class="card">
+      <div class="card-header">
+        <div class="card-title">📁 Documents</div>
+        <span class="card-action-link">+ Upload Document</span>
+      </div>
+      <div class="doc-list">
+
+        <div class="doc-item">
+          <div class="doc-icon-wrap pdf">🔏</div>
+          <div class="doc-info">
+            <div class="doc-name">NDA — CloudPeak × Devolver Digital</div>
+            <div class="doc-meta">
+              <span class="doc-version">v1</span>
+              Signed by both parties · Mar 19, 2026
+            </div>
+          </div>
+          <div class="doc-actions">
+            <span class="doc-status-tag signed">✓ Signed</span>
+            <button class="doc-btn">⬇ Download</button>
+          </div>
+        </div>
+
+        <div class="doc-item">
+          <div class="doc-icon-wrap pdf">📋</div>
+          <div class="doc-info">
+            <div class="doc-name">Term Sheet — Echoes of Jade Dynasty</div>
+            <div class="doc-meta">
+              <span class="doc-version">v3</span>
+              Shared by Devolver Digital · Today
+            </div>
+          </div>
+          <div class="doc-actions">
+            <span class="doc-status-tag review">⟳ Review</span>
+            <button class="doc-btn">👁 View</button>
+            <button class="doc-btn">💬 Comment</button>
+          </div>
+        </div>
+
+        <div class="doc-item">
+          <div class="doc-icon-wrap docx">📄</div>
+          <div class="doc-info">
+            <div class="doc-name">Contract Draft — Publishing Agreement</div>
+            <div class="doc-meta">
+              <span class="doc-version">v1.2</span>
+              Internal draft · Mar 20, 2026
+            </div>
+          </div>
+          <div class="doc-actions">
+            <span class="doc-status-tag draft">Draft</span>
+            <button class="doc-btn">✏ Edit</button>
+            <button class="doc-btn">📤 Share</button>
+          </div>
+        </div>
+
+        <div class="doc-item">
+          <div class="doc-icon-wrap pdf">📊</div>
+          <div class="doc-info">
+            <div class="doc-name">Game Financial Projections FY2026–2029</div>
+            <div class="doc-meta">
+              <span class="doc-version">v2</span>
+              Submitted by CloudPeak · Mar 18, 2026
+            </div>
+          </div>
+          <div class="doc-actions">
+            <span class="doc-status-tag signed">Shared</span>
+            <button class="doc-btn">⬇ Download</button>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+  </main>
+
+  <!-- ═══ RIGHT COLUMN: ACTIONS ═══ -->
+  <aside class="col-right">
+
+    <!-- Send Message -->
+    <div class="action-card">
+      <div class="action-card-title">💬 Send Message</div>
+      <div style="margin-bottom:8px;display:flex;align-items:center;gap:6px;">
+        <span style="font-size:12px;color:#6b6660;">To:</span>
+        <span class="msg-to-tag">Devolver Digital</span>
+        <span style="font-size:12px;color:#a09890;margin-left:auto;cursor:pointer;">+ Add CC</span>
+      </div>
+      <div class="msg-compose">
+        <textarea placeholder="Type your message to Sarah Chen at Devolver Digital…"></textarea>
+        <div class="msg-compose-footer">
+          <button class="msg-icon-btn" title="Attach file">📎</button>
+          <button class="msg-icon-btn" title="Add emoji">😊</button>
+          <button class="msg-icon-btn" title="Schedule send">🕐</button>
+          <button class="btn-send">Send ➤</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Upload File -->
+    <div class="action-card">
+      <div class="action-card-title">📎 Share Document</div>
+      <div class="upload-zone" onclick="this.style.background='#fef0e9'">
+        <div class="upload-zone-icon">☁️</div>
+        <div>Click to upload or drag & drop</div>
+        <div class="upload-zone-sub">PDF, DOCX, XLSX · Max 50 MB</div>
+      </div>
+      <div style="margin-top:10px;display:flex;gap:6px;flex-wrap:wrap;">
+        <span class="tag tag-gray" style="cursor:pointer;">📋 Term Sheet</span>
+        <span class="tag tag-gray" style="cursor:pointer;">📄 Contract</span>
+        <span class="tag tag-gray" style="cursor:pointer;">📊 Financials</span>
+        <span class="tag tag-gray" style="cursor:pointer;">🖼 Pitch Deck</span>
+      </div>
+    </div>
+
+    <!-- Update Terms -->
+    <div class="action-card">
+      <div class="action-card-title">✏️ Propose Term Update</div>
+      <div class="terms-edit-row">
+        <div class="terms-edit-label">Term to Update</div>
+        <select class="terms-edit-input" style="cursor:pointer;">
+          <option>Minimum Guarantee</option>
+          <option>Exclusivity Period</option>
+          <option>Revenue Share</option>
+          <option>Contract Duration</option>
+          <option>Marketing Commitment</option>
+          <option>Localization Support</option>
+          <option>Other…</option>
+        </select>
+      </div>
+      <div class="terms-edit-row">
+        <div class="terms-edit-label">Your Proposed Value</div>
+        <input class="terms-edit-input" type="text" placeholder="e.g. $300,000">
+      </div>
+      <div class="terms-edit-row">
+        <div class="terms-edit-label">Rationale (optional)</div>
+        <textarea class="terms-edit-input" rows="3" placeholder="Explain your position…" style="resize:none;"></textarea>
+      </div>
+      <button class="stage-advance-btn primary" style="font-size:13px;padding:9px 14px;">📨 Send Proposal</button>
+    </div>
+
+    <!-- Advance Stage -->
+    <div class="action-card">
+      <div class="action-card-title">🚀 Advance Negotiation</div>
+      <div style="font-size:12.5px;color:#6b6660;margin-bottom:12px;line-height:1.5;">
+        Current stage: <strong style="color:#c17a00;">Term Sheet</strong><br>
+        Next: <strong style="color:#7a2db8;">Due Diligence</strong>
+        <br><br>
+        <span style="color:#a09890;">Resolve all pending terms before advancing.</span>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:8px;">
+        <button class="stage-advance-btn primary">➡ Advance to Due Diligence</button>
+        <button class="stage-advance-btn secondary">📧 Request Counter-Offer</button>
+        <button class="stage-advance-btn secondary">⏸ Put on Hold</button>
+        <button class="stage-advance-btn danger">✗ Withdraw from Negotiation</button>
+      </div>
+    </div>
+
+    <!-- Reminders -->
+    <div class="action-card">
+      <div class="action-card-title">🔔 Reminders &amp; Next Steps</div>
+      <div style="display:flex;flex-direction:column;gap:8px;">
+        <div style="display:flex;align-items:flex-start;gap:9px;padding:9px 10px;background:#fef9e6;border-radius:8px;border:1px solid #f0d060;">
+          <span style="font-size:14px;flex-shrink:0;">⚠️</span>
+          <div>
+            <div style="font-size:12.5px;font-weight:700;color:#c17a00;">MG Counter-Offer Due</div>
+            <div style="font-size:11.5px;color:#6b6660;margin-top:2px;">Respond to Devolver's $280K offer by Wed Mar 25</div>
+          </div>
+        </div>
+        <div style="display:flex;align-items:flex-start;gap:9px;padding:9px 10px;background:#f9f8f5;border-radius:8px;">
+          <span style="font-size:14px;flex-shrink:0;">📅</span>
+          <div>
+            <div style="font-size:12.5px;font-weight:700;color:#1c1a17;">Call Scheduled</div>
+            <div style="font-size:11.5px;color:#6b6660;margin-top:2px;">Wed Mar 25 · 14:00 CET · Zoom</div>
+          </div>
+        </div>
+        <div style="display:flex;align-items:flex-start;gap:9px;padding:9px 10px;background:#f9f8f5;border-radius:8px;">
+          <span style="font-size:14px;flex-shrink:0;">📋</span>
+          <div>
+            <div style="font-size:12.5px;font-weight:700;color:#1c1a17;">Legal Review Pending</div>
+            <div style="font-size:11.5px;color:#6b6660;margin-top:2px;">Term sheet v3 sent to counsel Mar 24</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </aside>
+</div>
+
+<!-- ═══ EXPORT / SUMMARY BAR ═══ -->
+<div class="export-bar">
+  <div class="export-bar-title">📊 Negotiation Summary Export</div>
+  <div class="export-summary">
+    <strong>Echoes of Jade Dynasty × Devolver Digital</strong> &nbsp;·&nbsp;
+    Stage: Term Sheet &nbsp;·&nbsp;
+    Rev Share: 70/30 (agreed) &nbsp;·&nbsp;
+    MG: $280K (proposed) &nbsp;·&nbsp;
+    Exclusivity: 18 months (negotiating) &nbsp;·&nbsp;
+    Rights: Global excl. China &nbsp;·&nbsp;
+    3 open items
+  </div>
+  <div class="export-actions">
+    <a class="export-btn export-btn-outline" href="#">📋 Copy Summary</a>
+    <a class="export-btn export-btn-outline" href="#">📧 Email to Counsel</a>
+    <a class="export-btn export-btn-outline" href="#">📄 Export PDF</a>
+    <a class="export-btn export-btn-filled" href="#">⬇ Download Full Report</a>
+  </div>
+</div>
+
+<script>
+  // Revenue share slider
+  function updateSlider(el) {
+    const val = el.value;
+    document.getElementById('rev-val').textContent = val + '%';
+    const pct = ((val - el.min) / (el.max - el.min)) * 100;
+    el.style.background = `linear-gradient(to right, #d95f2b ${pct}%, #e0dbd2 ${pct}%)`;
+  }
+  // Init slider gradient
+  const slider = document.getElementById('rev-slider');
+  if (slider) updateSlider(slider);
+
+  // Negotiation card click
+  document.querySelectorAll('.neg-card').forEach(card => {
+    card.addEventListener('click', function() {
+      document.querySelectorAll('.neg-card').forEach(c => c.classList.remove('active'));
+      this.classList.add('active');
+    });
+  });
+
+  // Upload zone drag states
+  const zone = document.querySelector('.upload-zone');
+  if (zone) {
+    zone.addEventListener('dragover', e => { e.preventDefault(); zone.style.borderColor = '#d95f2b'; zone.style.background = '#fef9f7'; });
+    zone.addEventListener('dragleave', () => { zone.style.borderColor = ''; zone.style.background = ''; });
+    zone.addEventListener('drop', e => { e.preventDefault(); zone.style.borderColor = ''; zone.style.background = ''; });
+  }
+</script>
+</body>
+</html>
