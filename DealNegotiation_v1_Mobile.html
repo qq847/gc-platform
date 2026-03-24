@@ -1,0 +1,1574 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>商务磋商 — Deal Negotiation</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: #e8e4da;
+    min-height: 100vh;
+    display: flex;
+    justify-content: center;
+    overflow-x: hidden;
+  }
+  .app {
+    width: 100%;
+    max-width: 480px;
+    min-height: 100vh;
+    background: #e8e4da;
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
+
+  /* ===================== VIEWS ===================== */
+  .view {
+    position: absolute;
+    top: 0; left: 0; right: 0; bottom: 0;
+    display: flex;
+    flex-direction: column;
+    background: #e8e4da;
+    transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    will-change: transform;
+  }
+  .view.hidden { transform: translateX(100%); pointer-events: none; }
+  .view.active { transform: translateX(0); }
+
+  /* ===================== TOP NAV ===================== */
+  .top-nav {
+    background: #fff;
+    border-bottom: 1px solid #ede9e0;
+    padding: 0 16px;
+    flex-shrink: 0;
+    z-index: 10;
+  }
+  .nav-row {
+    display: flex;
+    align-items: center;
+    height: 52px;
+  }
+  .nav-back {
+    font-size: 20px;
+    color: #333;
+    cursor: pointer;
+    width: 36px;
+    text-decoration: none;
+    display: flex;
+    align-items: center;
+    background: none;
+    border: none;
+    padding: 0;
+  }
+  .nav-title {
+    flex: 1;
+    text-align: center;
+    font-size: 16px;
+    font-weight: 700;
+    color: #1a1a1a;
+  }
+  .nav-action {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    border: 1.5px solid #ddd;
+    background: #fff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 16px;
+    cursor: pointer;
+    color: #555;
+  }
+
+  /* ===================== LIST VIEW ===================== */
+  .list-header {
+    padding: 16px 16px 8px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+  .list-header-title {
+    font-size: 20px;
+    font-weight: 700;
+    color: #1a1a1a;
+  }
+  .list-header-count {
+    font-size: 13px;
+    color: #888;
+    font-weight: 500;
+  }
+
+  /* Search bar */
+  .search-bar {
+    margin: 0 16px 12px;
+    background: #fff;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    padding: 0 14px;
+    height: 42px;
+    gap: 8px;
+    border: 1.5px solid #ede9e0;
+  }
+  .search-icon { font-size: 16px; color: #bbb; }
+  .search-input {
+    flex: 1;
+    border: none;
+    background: none;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 14px;
+    color: #1a1a1a;
+    outline: none;
+  }
+  .search-input::placeholder { color: #bbb; }
+
+  /* Stage filter pills */
+  .stage-pills {
+    padding: 0 16px 12px;
+    display: flex;
+    gap: 8px;
+    overflow-x: auto;
+    scrollbar-width: none;
+    -webkit-overflow-scrolling: touch;
+  }
+  .stage-pills::-webkit-scrollbar { display: none; }
+  .pill {
+    flex-shrink: 0;
+    padding: 6px 14px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    border: 1.5px solid #ddd;
+    background: #fff;
+    color: #777;
+    transition: all 0.15s;
+    white-space: nowrap;
+  }
+  .pill.active {
+    background: #d95f2b;
+    border-color: #d95f2b;
+    color: #fff;
+  }
+
+  /* Scrollable list body */
+  .list-body {
+    flex: 1;
+    overflow-y: auto;
+    padding: 0 16px 90px;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  /* Stage group */
+  .stage-group { margin-bottom: 20px; }
+  .stage-group-header {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 8px;
+    padding: 0 2px;
+  }
+  .stage-label {
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+    color: #999;
+  }
+  .stage-count {
+    font-size: 11px;
+    font-weight: 700;
+    padding: 2px 7px;
+    border-radius: 10px;
+    background: #ede9e0;
+    color: #888;
+  }
+  .stage-line { flex: 1; height: 1px; background: #ddd; }
+
+  /* Negotiation card */
+  .nego-card {
+    background: #fff;
+    border-radius: 14px;
+    padding: 14px 16px;
+    margin-bottom: 10px;
+    cursor: pointer;
+    transition: transform 0.1s, box-shadow 0.1s;
+    position: relative;
+    overflow: hidden;
+    border: 1.5px solid transparent;
+    -webkit-tap-highlight-color: transparent;
+  }
+  .nego-card:active { transform: scale(0.98); }
+  .nego-card.urgent { border-color: #d95f2b; }
+  .nego-card-top {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    margin-bottom: 10px;
+  }
+  .nego-avatar {
+    width: 44px;
+    height: 44px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 18px;
+    font-weight: 700;
+    color: #fff;
+    flex-shrink: 0;
+  }
+  .nego-card-info { flex: 1; min-width: 0; }
+  .nego-card-title {
+    font-size: 15px;
+    font-weight: 700;
+    color: #1a1a1a;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .nego-card-party {
+    font-size: 12px;
+    color: #888;
+    margin-top: 2px;
+  }
+  .nego-card-meta {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    flex-shrink: 0;
+    flex-direction: column;
+    align-items: flex-end;
+  }
+  .nego-time {
+    font-size: 11px;
+    color: #bbb;
+  }
+  .unread-badge {
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    background: #d95f2b;
+    color: #fff;
+    font-size: 10px;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .nego-card-preview {
+    font-size: 13px;
+    color: #888;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    margin-bottom: 10px;
+  }
+  .nego-card-footer {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    flex-wrap: wrap;
+  }
+  .stage-badge {
+    font-size: 11px;
+    font-weight: 600;
+    padding: 3px 9px;
+    border-radius: 20px;
+    white-space: nowrap;
+  }
+  .badge-initial { background: #f0f4ff; color: #4f6beb; }
+  .badge-active { background: #fff3e6; color: #d95f2b; }
+  .badge-review { background: #fff8e1; color: #c8860a; }
+  .badge-diligence { background: #e8f4fd; color: #0a7fa8; }
+  .badge-signed { background: #e6f9f2; color: #0d9b72; }
+  .badge-closed { background: #f5f5f5; color: #aaa; }
+
+  .nego-value {
+    font-size: 12px;
+    font-weight: 700;
+    color: #1a1a1a;
+    margin-left: auto;
+  }
+  .urgent-chip {
+    font-size: 10px;
+    font-weight: 700;
+    padding: 2px 7px;
+    border-radius: 20px;
+    background: #ffeaea;
+    color: #e53935;
+  }
+
+  /* Progress mini-bar */
+  .nego-progress {
+    margin-top: 10px;
+    height: 3px;
+    background: #eee;
+    border-radius: 2px;
+    overflow: hidden;
+  }
+  .nego-progress-fill {
+    height: 100%;
+    border-radius: 2px;
+    background: linear-gradient(90deg, #d95f2b, #f0a070);
+  }
+
+  /* New Nego FAB */
+  .fab {
+    position: fixed;
+    bottom: 80px;
+    right: calc(50% - 240px + 16px);
+    width: 52px;
+    height: 52px;
+    border-radius: 50%;
+    background: #d95f2b;
+    color: #fff;
+    font-size: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 4px 16px rgba(217,95,43,0.4);
+    cursor: pointer;
+    border: none;
+    z-index: 150;
+    transition: transform 0.15s;
+  }
+  .fab:active { transform: scale(0.92); }
+
+  /* ===================== DETAIL VIEW ===================== */
+  .detail-nav-sub {
+    padding: 4px 16px 10px;
+    font-size: 12px;
+    color: #888;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .detail-stage-dot {
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: #d95f2b;
+    flex-shrink: 0;
+  }
+
+  /* Terms Summary Card */
+  .terms-card-wrap {
+    padding: 10px 14px 0;
+    flex-shrink: 0;
+  }
+  .terms-summary-card {
+    background: #fff;
+    border-radius: 14px;
+    overflow: hidden;
+    border: 1.5px solid #ede9e0;
+  }
+  .terms-summary-header {
+    display: flex;
+    align-items: center;
+    padding: 12px 14px;
+    cursor: pointer;
+    user-select: none;
+    -webkit-tap-highlight-color: transparent;
+  }
+  .terms-summary-icon { font-size: 18px; margin-right: 10px; }
+  .terms-summary-title {
+    flex: 1;
+    font-size: 14px;
+    font-weight: 700;
+    color: #1a1a1a;
+  }
+  .terms-progress-mini {
+    font-size: 12px;
+    font-weight: 600;
+    color: #0d9b72;
+    margin-right: 8px;
+  }
+  .terms-chevron {
+    font-size: 12px;
+    color: #bbb;
+    transition: transform 0.25s;
+  }
+  .terms-chevron.open { transform: rotate(180deg); }
+
+  .terms-summary-body {
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height 0.3s ease;
+  }
+  .terms-summary-body.open { max-height: 400px; }
+  .terms-summary-inner {
+    border-top: 1px solid #f0ece4;
+    padding: 10px 14px 12px;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+  .term-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .term-row-icon { font-size: 13px; width: 18px; text-align: center; }
+  .term-row-label { font-size: 13px; color: #555; flex: 1; }
+  .term-row-value { font-size: 13px; font-weight: 600; color: #1a1a1a; }
+  .term-row-badge {
+    font-size: 10px;
+    font-weight: 700;
+    padding: 2px 6px;
+    border-radius: 10px;
+  }
+  .trb-agreed { background: #e6f9f2; color: #0d9b72; }
+  .trb-pending { background: #fff3e6; color: #d95f2b; }
+  .trb-open { background: #f0f0f0; color: #aaa; }
+
+  .terms-propose-btn {
+    margin: 2px 14px 12px;
+    width: calc(100% - 28px);
+    height: 38px;
+    background: #d95f2b;
+    color: #fff;
+    border: none;
+    border-radius: 10px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 13px;
+    font-weight: 700;
+    cursor: pointer;
+  }
+
+  /* Mixed Timeline */
+  .timeline-wrap {
+    flex: 1;
+    overflow-y: auto;
+    padding: 12px 14px 140px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  /* Date separator */
+  .date-sep {
+    text-align: center;
+    font-size: 11px;
+    color: #aaa;
+    font-weight: 500;
+    position: relative;
+    margin: 4px 0;
+  }
+  .date-sep::before, .date-sep::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    width: 28%;
+    height: 1px;
+    background: #d5d0c6;
+  }
+  .date-sep::before { left: 0; }
+  .date-sep::after { right: 0; }
+
+  /* Status change event */
+  .status-event {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: rgba(255,255,255,0.6);
+    border-radius: 10px;
+    padding: 8px 12px;
+    border-left: 3px solid #d95f2b;
+  }
+  .status-event-icon { font-size: 15px; }
+  .status-event-text {
+    font-size: 12px;
+    color: #555;
+    font-weight: 500;
+    flex: 1;
+  }
+  .status-event-time { font-size: 10px; color: #bbb; }
+
+  /* File event */
+  .file-event {
+    background: #fff;
+    border-radius: 12px;
+    padding: 10px 12px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    border: 1.5px solid #ede9e0;
+  }
+  .file-event-icon-wrap {
+    width: 38px;
+    height: 38px;
+    border-radius: 9px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 18px;
+    flex-shrink: 0;
+  }
+  .fei-pdf { background: #ffeaea; }
+  .fei-doc { background: #fff3e6; }
+  .fei-zip { background: #e8f4fd; }
+  .fei-img { background: #f0f4ff; }
+  .file-event-info { flex: 1; min-width: 0; }
+  .file-event-name {
+    font-size: 13px;
+    font-weight: 600;
+    color: #1a1a1a;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .file-event-meta { font-size: 11px; color: #aaa; margin-top: 2px; }
+  .file-event-dl {
+    width: 30px;
+    height: 30px;
+    border-radius: 8px;
+    background: #f5f5f5;
+    border: 1.5px solid #eee;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 13px;
+    cursor: pointer;
+    color: #555;
+  }
+
+  /* Chat bubbles */
+  .msg-row {
+    display: flex;
+    align-items: flex-end;
+    gap: 8px;
+  }
+  .msg-row.self { flex-direction: row-reverse; }
+  .avatar {
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 11px;
+    font-weight: 700;
+    color: #fff;
+    flex-shrink: 0;
+  }
+  .av-a { background: linear-gradient(135deg, #4f6beb, #0a3fa8); }
+  .av-b { background: linear-gradient(135deg, #0a7fa8, #0d4a7a); }
+  .av-self { background: linear-gradient(135deg, #d95f2b, #b04820); }
+  .bubble-wrap {
+    max-width: 72%;
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+  }
+  .msg-row.self .bubble-wrap { align-items: flex-end; }
+  .sender-name {
+    font-size: 11px;
+    color: #999;
+    font-weight: 500;
+    padding: 0 4px;
+  }
+  .bubble {
+    padding: 10px 13px;
+    border-radius: 16px;
+    font-size: 14px;
+    line-height: 1.45;
+    word-break: break-word;
+  }
+  .bubble-other {
+    background: #fff;
+    color: #1a1a1a;
+    border-bottom-left-radius: 4px;
+  }
+  .bubble-self {
+    background: #d95f2b;
+    color: #fff;
+    border-bottom-right-radius: 4px;
+  }
+  .msg-time { font-size: 10px; color: #bbb; padding: 0 4px; }
+
+  /* ===================== BOTTOM ACTION BAR ===================== */
+  .action-bar {
+    position: fixed;
+    bottom: 64px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 100%;
+    max-width: 480px;
+    background: #fff;
+    border-top: 1px solid #ede9e0;
+    z-index: 100;
+  }
+
+  /* Quick action buttons row */
+  .action-buttons {
+    display: flex;
+    align-items: center;
+    padding: 8px 12px;
+    gap: 8px;
+    border-bottom: 1px solid #f5f5f5;
+  }
+  .action-btn {
+    flex: 1;
+    height: 38px;
+    border-radius: 10px;
+    border: 1.5px solid #e0ddd6;
+    background: #faf9f6;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 12px;
+    font-weight: 600;
+    color: #444;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 5px;
+    transition: all 0.15s;
+    white-space: nowrap;
+  }
+  .action-btn:active { background: #f0ece4; }
+  .action-btn.primary {
+    background: #d95f2b;
+    color: #fff;
+    border-color: #d95f2b;
+  }
+  .action-btn.primary:active { background: #b04820; }
+
+  /* Reply input row */
+  .input-row {
+    display: flex;
+    align-items: center;
+    padding: 8px 12px 10px;
+    gap: 8px;
+  }
+  .input-field {
+    flex: 1;
+    height: 38px;
+    border: 1.5px solid #e0ddd6;
+    border-radius: 20px;
+    padding: 0 14px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 14px;
+    color: #1a1a1a;
+    background: #faf9f6;
+    outline: none;
+  }
+  .input-field:focus { border-color: #d95f2b; background: #fff; }
+  .input-send {
+    width: 38px;
+    height: 38px;
+    border-radius: 50%;
+    background: #d95f2b;
+    border: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 15px;
+    cursor: pointer;
+    color: #fff;
+    flex-shrink: 0;
+  }
+
+  /* Stage update modal */
+  .modal-overlay {
+    position: fixed;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background: rgba(0,0,0,0.45);
+    z-index: 300;
+    display: flex;
+    align-items: flex-end;
+    justify-content: center;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.25s;
+  }
+  .modal-overlay.open {
+    opacity: 1;
+    pointer-events: all;
+  }
+  .modal-sheet {
+    width: 100%;
+    max-width: 480px;
+    background: #fff;
+    border-radius: 20px 20px 0 0;
+    padding: 20px 16px 36px;
+    transform: translateY(100%);
+    transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+  .modal-overlay.open .modal-sheet { transform: translateY(0); }
+  .modal-handle {
+    width: 36px;
+    height: 4px;
+    background: #ddd;
+    border-radius: 2px;
+    margin: 0 auto 16px;
+  }
+  .modal-title {
+    font-size: 16px;
+    font-weight: 700;
+    color: #1a1a1a;
+    margin-bottom: 16px;
+    text-align: center;
+  }
+  .stage-option {
+    display: flex;
+    align-items: center;
+    padding: 13px 14px;
+    border-radius: 12px;
+    cursor: pointer;
+    gap: 12px;
+    transition: background 0.15s;
+    margin-bottom: 6px;
+    border: 2px solid transparent;
+    -webkit-tap-highlight-color: transparent;
+  }
+  .stage-option:active { background: #f5f0ea; }
+  .stage-option.selected {
+    background: #fff5f0;
+    border-color: #d95f2b;
+  }
+  .stage-option-icon { font-size: 20px; width: 28px; text-align: center; }
+  .stage-option-info { flex: 1; }
+  .stage-option-name {
+    font-size: 14px;
+    font-weight: 600;
+    color: #1a1a1a;
+  }
+  .stage-option-desc {
+    font-size: 12px;
+    color: #888;
+    margin-top: 2px;
+  }
+  .stage-option-check {
+    font-size: 16px;
+    color: #d95f2b;
+    opacity: 0;
+  }
+  .stage-option.selected .stage-option-check { opacity: 1; }
+  .modal-confirm-btn {
+    width: 100%;
+    height: 48px;
+    background: #d95f2b;
+    color: #fff;
+    border: none;
+    border-radius: 12px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 15px;
+    font-weight: 700;
+    cursor: pointer;
+    margin-top: 8px;
+  }
+
+  /* ===================== BOTTOM TAB BAR ===================== */
+  .tab-bar {
+    position: fixed;
+    bottom: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 100%;
+    max-width: 480px;
+    height: 64px;
+    background: #fff;
+    border-top: 1px solid #e8e4da;
+    display: flex;
+    z-index: 200;
+  }
+  .tab-item {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 3px;
+    cursor: pointer;
+    text-decoration: none;
+    -webkit-tap-highlight-color: transparent;
+  }
+  .tab-icon { font-size: 20px; }
+  .tab-label {
+    font-size: 10px;
+    font-weight: 500;
+    color: #aaa;
+    font-family: 'DM Sans', sans-serif;
+  }
+  .tab-item.active .tab-label { color: #d95f2b; }
+  .tab-dot {
+    width: 4px;
+    height: 4px;
+    background: #d95f2b;
+    border-radius: 50%;
+    margin-top: -2px;
+  }
+
+  /* ===================== SCROLLBAR ===================== */
+  ::-webkit-scrollbar { width: 0; height: 0; }
+</style>
+</head>
+<body>
+<div class="app">
+
+  <!-- ========================================================
+       VIEW 1: NEGOTIATION LIST
+       ======================================================== -->
+  <div class="view active" id="view-list">
+
+    <div class="top-nav">
+      <div class="nav-row">
+        <div style="width:36px;"></div>
+        <span class="nav-title">商务磋商</span>
+        <button class="nav-action" onclick="showToast('筛选与排序')">⊞</button>
+      </div>
+    </div>
+
+    <div style="flex:1;overflow-y:auto;padding-top:12px;-webkit-overflow-scrolling:touch;">
+      <!-- Search -->
+      <div class="search-bar" style="margin:0 16px 12px;">
+        <span class="search-icon">🔍</span>
+        <input class="search-input" type="text" placeholder="搜索谈判项目或对方...">
+      </div>
+
+      <!-- Stage filter pills -->
+      <div class="stage-pills">
+        <div class="pill active">全部</div>
+        <div class="pill">初步接触</div>
+        <div class="pill">积极磋商</div>
+        <div class="pill">尽职调查</div>
+        <div class="pill">合同审查</div>
+        <div class="pill">已签约</div>
+      </div>
+
+      <div class="list-body" style="overflow:visible;padding:0 16px 90px;">
+
+        <!-- ── 积极磋商 ── -->
+        <div class="stage-group">
+          <div class="stage-group-header">
+            <span class="stage-label">积极磋商</span>
+            <span class="stage-count">3</span>
+            <div class="stage-line"></div>
+          </div>
+
+          <!-- Card 1 -->
+          <div class="nego-card urgent" onclick="openDetail('deal1')">
+            <div class="nego-card-top">
+              <div class="nego-avatar" style="background:linear-gradient(135deg,#d95f2b,#b04820);">云</div>
+              <div class="nego-card-info">
+                <div class="nego-card-title">CloudPeak × 星河科技</div>
+                <div class="nego-card-party">主导方：李明 · 供应链合作协议</div>
+              </div>
+              <div class="nego-card-meta">
+                <span class="nego-time">10:32</span>
+                <span class="unread-badge">3</span>
+              </div>
+            </div>
+            <div class="nego-card-preview">📎 对方刚刚上传了修订版合同草案，请尽快确认...</div>
+            <div class="nego-card-footer">
+              <span class="stage-badge badge-active">积极磋商</span>
+              <span class="urgent-chip">⚠ 待回复</span>
+              <span class="nego-value">¥2,400,000</span>
+            </div>
+            <div class="nego-progress"><div class="nego-progress-fill" style="width:55%;background:linear-gradient(90deg,#d95f2b,#f0a070);"></div></div>
+          </div>
+
+          <!-- Card 2 -->
+          <div class="nego-card" onclick="openDetail('deal2')">
+            <div class="nego-card-top">
+              <div class="nego-avatar" style="background:linear-gradient(135deg,#4f6beb,#0a3fa8);">新</div>
+              <div class="nego-card-info">
+                <div class="nego-card-title">新能源投资框架协议</div>
+                <div class="nego-card-party">对方：蓝海资本 · 赵总团队</div>
+              </div>
+              <div class="nego-card-meta">
+                <span class="nego-time">昨天</span>
+              </div>
+            </div>
+            <div class="nego-card-preview">我方：条款第7条关于退出机制需要进一步明确...</div>
+            <div class="nego-card-footer">
+              <span class="stage-badge badge-active">积极磋商</span>
+              <span class="nego-value">$5,000,000</span>
+            </div>
+            <div class="nego-progress"><div class="nego-progress-fill" style="width:40%;"></div></div>
+          </div>
+
+          <!-- Card 3 -->
+          <div class="nego-card" onclick="openDetail('deal3')">
+            <div class="nego-card-top">
+              <div class="nego-avatar" style="background:linear-gradient(135deg,#0d9b72,#057a56);">绿</div>
+              <div class="nego-card-info">
+                <div class="nego-card-title">绿色物流战略合作</div>
+                <div class="nego-card-party">对方：顺风达 · 王总</div>
+              </div>
+              <div class="nego-card-meta">
+                <span class="nego-time">周一</span>
+              </div>
+            </div>
+            <div class="nego-card-preview">双方已就价格区间达成初步共识，下一步讨论...</div>
+            <div class="nego-card-footer">
+              <span class="stage-badge badge-active">积极磋商</span>
+              <span class="nego-value">¥890,000</span>
+            </div>
+            <div class="nego-progress"><div class="nego-progress-fill" style="width:65%;"></div></div>
+          </div>
+        </div>
+
+        <!-- ── 尽职调查 ── -->
+        <div class="stage-group">
+          <div class="stage-group-header">
+            <span class="stage-label">尽职调查</span>
+            <span class="stage-count">2</span>
+            <div class="stage-line"></div>
+          </div>
+
+          <div class="nego-card" onclick="openDetail('deal4')">
+            <div class="nego-card-top">
+              <div class="nego-avatar" style="background:linear-gradient(135deg,#0a7fa8,#0d4a7a);">远</div>
+              <div class="nego-card-info">
+                <div class="nego-card-title">远达科技股权收购</div>
+                <div class="nego-card-party">对方：锐峰投资 · 陈总律师团队</div>
+              </div>
+              <div class="nego-card-meta">
+                <span class="nego-time">周三</span>
+                <span class="unread-badge">1</span>
+              </div>
+            </div>
+            <div class="nego-card-preview">📄 财务审计报告已上传，请律师团队查阅...</div>
+            <div class="nego-card-footer">
+              <span class="stage-badge badge-diligence">尽职调查</span>
+              <span class="nego-value">¥18,000,000</span>
+            </div>
+            <div class="nego-progress"><div class="nego-progress-fill" style="width:75%;background:linear-gradient(90deg,#0a7fa8,#4fb8d4);"></div></div>
+          </div>
+
+          <div class="nego-card" onclick="showToast('打开谈判详情')">
+            <div class="nego-card-top">
+              <div class="nego-avatar" style="background:linear-gradient(135deg,#8b5cf6,#6d28d9);">汇</div>
+              <div class="nego-card-info">
+                <div class="nego-card-title">汇聚传媒版权授权</div>
+                <div class="nego-card-party">对方：全球内容联盟 · 张副总</div>
+              </div>
+              <div class="nego-card-meta">
+                <span class="nego-time">周二</span>
+              </div>
+            </div>
+            <div class="nego-card-preview">IP授权范围已确认，正在梳理子许可条款...</div>
+            <div class="nego-card-footer">
+              <span class="stage-badge badge-diligence">尽职调查</span>
+              <span class="nego-value">$1,200,000</span>
+            </div>
+            <div class="nego-progress"><div class="nego-progress-fill" style="width:80%;background:linear-gradient(90deg,#8b5cf6,#a78bfa);"></div></div>
+          </div>
+        </div>
+
+        <!-- ── 合同审查 ── -->
+        <div class="stage-group">
+          <div class="stage-group-header">
+            <span class="stage-label">合同审查</span>
+            <span class="stage-count">1</span>
+            <div class="stage-line"></div>
+          </div>
+
+          <div class="nego-card" onclick="showToast('打开谈判详情')">
+            <div class="nego-card-top">
+              <div class="nego-avatar" style="background:linear-gradient(135deg,#c8860a,#a06007);">峰</div>
+              <div class="nego-card-info">
+                <div class="nego-card-title">峰汇地产租赁协议</div>
+                <div class="nego-card-party">对方：商业地产集团 · 法务部</div>
+              </div>
+              <div class="nego-card-meta">
+                <span class="nego-time">上周</span>
+              </div>
+            </div>
+            <div class="nego-card-preview">✅ 双方法务团队正在最终确认条款措辞...</div>
+            <div class="nego-card-footer">
+              <span class="stage-badge badge-review">合同审查</span>
+              <span class="nego-value">¥360,000/年</span>
+            </div>
+            <div class="nego-progress"><div class="nego-progress-fill" style="width:90%;background:linear-gradient(90deg,#c8860a,#f0c040);"></div></div>
+          </div>
+        </div>
+
+        <!-- ── 初步接触 ── -->
+        <div class="stage-group">
+          <div class="stage-group-header">
+            <span class="stage-label">初步接触</span>
+            <span class="stage-count">2</span>
+            <div class="stage-line"></div>
+          </div>
+
+          <div class="nego-card" onclick="showToast('打开谈判详情')">
+            <div class="nego-card-top">
+              <div class="nego-avatar" style="background:linear-gradient(135deg,#64748b,#334155);">铭</div>
+              <div class="nego-card-info">
+                <div class="nego-card-title">铭远人力资源外包</div>
+                <div class="nego-card-party">对方：铭远 HR · 张经理</div>
+              </div>
+              <div class="nego-card-meta">
+                <span class="nego-time">3天前</span>
+              </div>
+            </div>
+            <div class="nego-card-preview">初次洽谈，对方已发送服务方案供初步评估...</div>
+            <div class="nego-card-footer">
+              <span class="stage-badge badge-initial">初步接触</span>
+              <span class="nego-value">¥120,000</span>
+            </div>
+            <div class="nego-progress"><div class="nego-progress-fill" style="width:15%;background:linear-gradient(90deg,#94a3b8,#cbd5e1);"></div></div>
+          </div>
+
+          <div class="nego-card" onclick="showToast('打开谈判详情')">
+            <div class="nego-card-top">
+              <div class="nego-avatar" style="background:linear-gradient(135deg,#e53935,#b71c1c);">星</div>
+              <div class="nego-card-info">
+                <div class="nego-card-title">星际电商平台入驻</div>
+                <div class="nego-card-party">对方：星际商城运营部</div>
+              </div>
+              <div class="nego-card-meta">
+                <span class="nego-time">本周</span>
+              </div>
+            </div>
+            <div class="nego-card-preview">平台入驻条件讨论中，佣金比例待定...</div>
+            <div class="nego-card-footer">
+              <span class="stage-badge badge-initial">初步接触</span>
+              <span class="nego-value">待定</span>
+            </div>
+            <div class="nego-progress"><div class="nego-progress-fill" style="width:10%;background:linear-gradient(90deg,#e53935,#f87171);"></div></div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- New Negotiation FAB -->
+    <button class="fab" onclick="showToast('新建谈判')">＋</button>
+
+    <!-- Bottom Tab Bar -->
+    <nav class="tab-bar">
+      <a class="tab-item" href="#" onclick="showToast('首页')">
+        <span class="tab-icon">🏠</span>
+        <span class="tab-label">首页</span>
+      </a>
+      <a class="tab-item" href="#" onclick="showToast('项目')">
+        <span class="tab-icon">📋</span>
+        <span class="tab-label">项目</span>
+      </a>
+      <a class="tab-item active" href="#">
+        <span class="tab-icon">🤝</span>
+        <span class="tab-label">磋商</span>
+        <div class="tab-dot"></div>
+      </a>
+      <a class="tab-item" href="#" onclick="showToast('文件')">
+        <span class="tab-icon">📁</span>
+        <span class="tab-label">文件</span>
+      </a>
+      <a class="tab-item" href="#" onclick="showToast('我的')">
+        <span class="tab-icon">👤</span>
+        <span class="tab-label">我的</span>
+      </a>
+    </nav>
+  </div>
+
+
+  <!-- ========================================================
+       VIEW 2: NEGOTIATION DETAIL
+       ======================================================== -->
+  <div class="view hidden" id="view-detail">
+
+    <!-- Detail Top Nav -->
+    <div class="top-nav">
+      <div class="nav-row">
+        <button class="nav-back" onclick="closeDetail()">←</button>
+        <span class="nav-title" id="detail-title">CloudPeak × 星河科技</span>
+        <button class="nav-action" onclick="showToast('更多操作')">⋯</button>
+      </div>
+      <div class="detail-nav-sub">
+        <div class="detail-stage-dot"></div>
+        <span id="detail-stage-text">积极磋商 · 供应链合作协议 · 李明负责</span>
+      </div>
+    </div>
+
+    <!-- Terms Summary Card (Expandable) -->
+    <div class="terms-card-wrap">
+      <div class="terms-summary-card">
+        <div class="terms-summary-header" onclick="toggleTerms()">
+          <span class="terms-summary-icon">📋</span>
+          <span class="terms-summary-title">当前条款摘要</span>
+          <span class="terms-progress-mini">3/6 已确认</span>
+          <span class="terms-chevron" id="terms-chevron">▼</span>
+        </div>
+        <div class="terms-summary-body" id="terms-body">
+          <div class="terms-summary-inner">
+            <div class="term-row">
+              <span class="term-row-icon">✅</span>
+              <span class="term-row-label">合作范围</span>
+              <span class="term-row-value">华东区域独家</span>
+              <span class="term-row-badge trb-agreed">已确认</span>
+            </div>
+            <div class="term-row">
+              <span class="term-row-icon">✅</span>
+              <span class="term-row-label">合作期限</span>
+              <span class="term-row-value">3年 + 续签选项</span>
+              <span class="term-row-badge trb-agreed">已确认</span>
+            </div>
+            <div class="term-row">
+              <span class="term-row-icon">✅</span>
+              <span class="term-row-label">保密条款</span>
+              <span class="term-row-value">双向NDA 5年</span>
+              <span class="term-row-badge trb-agreed">已确认</span>
+            </div>
+            <div class="term-row">
+              <span class="term-row-icon">🔄</span>
+              <span class="term-row-label">合同总额</span>
+              <span class="term-row-value">¥240 vs ¥280万</span>
+              <span class="term-row-badge trb-pending">磋商中</span>
+            </div>
+            <div class="term-row">
+              <span class="term-row-icon">🔄</span>
+              <span class="term-row-label">付款方式</span>
+              <span class="term-row-value">季付 vs 月付</span>
+              <span class="term-row-badge trb-pending">磋商中</span>
+            </div>
+            <div class="term-row">
+              <span class="term-row-icon">⬜</span>
+              <span class="term-row-label">违约条款</span>
+              <span class="term-row-value">待讨论</span>
+              <span class="term-row-badge trb-open">待定</span>
+            </div>
+            <!-- Progress bar -->
+            <div style="margin-top:6px;">
+              <div style="display:flex;justify-content:space-between;margin-bottom:5px;">
+                <span style="font-size:11px;color:#999;">整体进度</span>
+                <span style="font-size:11px;font-weight:700;color:#0d9b72;">50%</span>
+              </div>
+              <div style="height:5px;background:#eee;border-radius:3px;overflow:hidden;">
+                <div style="width:50%;height:100%;background:linear-gradient(90deg,#0d9b72,#0a7fa8);border-radius:3px;"></div>
+              </div>
+            </div>
+          </div>
+          <button class="terms-propose-btn" onclick="showToast('提议新条款')">＋ 提议修改条款</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Mixed Timeline -->
+    <div class="timeline-wrap" id="timeline-wrap">
+
+      <div class="date-sep">2025年3月20日</div>
+
+      <!-- Status change: deal created -->
+      <div class="status-event">
+        <span class="status-event-icon">🎯</span>
+        <span class="status-event-text">谈判项目创建 · CloudPeak × 星河科技供应链合作</span>
+        <span class="status-event-time">09:00</span>
+      </div>
+
+      <!-- Message from other party -->
+      <div class="msg-row">
+        <div class="avatar av-b">李明</div>
+        <div class="bubble-wrap">
+          <span class="sender-name">李明 · 星河科技</span>
+          <div class="bubble bubble-other">
+            您好！感谢贵司对此次合作的关注。我们在华东供应链领域深耕8年，此次希望能与 CloudPeak 建立长期战略合作关系，共同拓展市场。
+          </div>
+          <span class="msg-time">10:15</span>
+        </div>
+      </div>
+
+      <!-- Self reply -->
+      <div class="msg-row self">
+        <div class="avatar av-self">我</div>
+        <div class="bubble-wrap">
+          <div class="bubble bubble-self">
+            您好李总！我们同样对此次合作充满期待。请问贵司在华东区域的仓储网络覆盖如何？这对我们评估合作规模很关键。
+          </div>
+          <span class="msg-time">11:02</span>
+        </div>
+      </div>
+
+      <!-- File uploaded -->
+      <div class="file-event">
+        <div class="file-event-icon-wrap fei-pdf">📄</div>
+        <div class="file-event-info">
+          <div class="file-event-name">星河科技-仓储网络覆盖图.pdf</div>
+          <div class="file-event-meta">李明上传 · PDF · 3.2 MB · 11:30</div>
+        </div>
+        <div class="file-event-dl" onclick="showToast('下载文件')">⬇</div>
+      </div>
+
+      <div class="date-sep">2025年3月22日</div>
+
+      <!-- Status change: NDA signed -->
+      <div class="status-event">
+        <span class="status-event-icon">✅</span>
+        <span class="status-event-text">NDA保密协议已双方签署确认</span>
+        <span class="status-event-time">09:30</span>
+      </div>
+
+      <div class="msg-row">
+        <div class="avatar av-b">李明</div>
+        <div class="bubble-wrap">
+          <span class="sender-name">李明 · 星河科技</span>
+          <div class="bubble bubble-other">
+            NDA已完成签署，感谢配合。现在可以正式进入商务条款讨论阶段。我们的初步方案是：合同总额2,400,000元，按季度付款，华东独家合作3年。
+          </div>
+          <span class="msg-time">10:05</span>
+        </div>
+      </div>
+
+      <!-- File: NDA -->
+      <div class="file-event">
+        <div class="file-event-icon-wrap fei-pdf">📋</div>
+        <div class="file-event-info">
+          <div class="file-event-name">NDA-双方签署版.pdf</div>
+          <div class="file-event-meta">李明上传 · PDF · 1.8 MB · 09:28</div>
+        </div>
+        <div class="file-event-dl" onclick="showToast('下载文件')">⬇</div>
+      </div>
+
+      <div class="msg-row self">
+        <div class="avatar av-self">我</div>
+        <div class="bubble-wrap">
+          <div class="bubble bubble-self">
+            感谢分享方案！合作期限3年和华东独家我们可以接受。但关于合同总额，我们内部评估认为2,800,000元更能反映华东市场的潜力，同时建议改为月付以降低现金流压力。
+          </div>
+          <span class="msg-time">14:30</span>
+        </div>
+      </div>
+
+      <!-- Status change: terms update -->
+      <div class="status-event">
+        <span class="status-event-icon">🔄</span>
+        <span class="status-event-text">条款更新：合同金额磋商中（¥240万 vs ¥280万）</span>
+        <span class="status-event-time">14:31</span>
+      </div>
+
+      <div class="date-sep">2025年3月24日 · 今天</div>
+
+      <div class="msg-row">
+        <div class="avatar av-b">李明</div>
+        <div class="bubble-wrap">
+          <span class="sender-name">李明 · 星河科技</span>
+          <div class="bubble bubble-other">
+            我们内部讨论后，可以将金额上调至2,600,000元，付款方式支持月付，但希望增加年度考核指标作为续约条件，请贵司法务评估。
+          </div>
+          <span class="msg-time">09:15</span>
+        </div>
+      </div>
+
+      <!-- File: revised draft -->
+      <div class="file-event">
+        <div class="file-event-icon-wrap fei-doc">📝</div>
+        <div class="file-event-info">
+          <div class="file-event-name">合同草案-修订版v2.docx</div>
+          <div class="file-event-meta">李明上传 · DOCX · 892 KB · 09:18</div>
+        </div>
+        <div class="file-event-dl" onclick="showToast('下载文件')">⬇</div>
+      </div>
+
+      <div class="msg-row self">
+        <div class="avatar av-self">我</div>
+        <div class="bubble-wrap">
+          <div class="bubble bubble-self">
+            收到修订版，已转交法务团队。关于年度考核指标，我们原则上同意，但需要明确指标设定方式和异议处理机制。预计3个工作日内回复。
+          </div>
+          <span class="msg-time">10:32</span>
+        </div>
+      </div>
+
+      <!-- Status change: stage updated -->
+      <div class="status-event">
+        <span class="status-event-icon">⬆</span>
+        <span class="status-event-text">阶段进展顺利 · 预计本周进入合同审查阶段</span>
+        <span class="status-event-time">10:33</span>
+      </div>
+
+    </div><!-- /timeline-wrap -->
+
+    <!-- Bottom Action Bar -->
+    <div class="action-bar" id="action-bar">
+      <!-- Quick action buttons -->
+      <div class="action-buttons">
+        <button class="action-btn" onclick="showToast('上传文件')">
+          <span>📎</span> 上传文件
+        </button>
+        <button class="action-btn" onclick="openStageModal()">
+          <span>🔄</span> 更新阶段
+        </button>
+        <button class="action-btn primary" onclick="focusReply()">
+          <span>↩</span> 回复
+        </button>
+      </div>
+      <!-- Reply input -->
+      <div class="input-row">
+        <input class="input-field" id="reply-input" type="text" placeholder="输入回复消息...">
+        <button class="input-send" onclick="sendReply()">➤</button>
+      </div>
+    </div>
+
+    <!-- Bottom Tab Bar (in detail view, same structure) -->
+    <nav class="tab-bar">
+      <a class="tab-item" href="#" onclick="closeDetail();return false;">
+        <span class="tab-icon">🏠</span>
+        <span class="tab-label">首页</span>
+      </a>
+      <a class="tab-item" href="#" onclick="showToast('项目')">
+        <span class="tab-icon">📋</span>
+        <span class="tab-label">项目</span>
+      </a>
+      <a class="tab-item active" href="#">
+        <span class="tab-icon">🤝</span>
+        <span class="tab-label">磋商</span>
+        <div class="tab-dot"></div>
+      </a>
+      <a class="tab-item" href="#" onclick="showToast('文件')">
+        <span class="tab-icon">📁</span>
+        <span class="tab-label">文件</span>
+      </a>
+      <a class="tab-item" href="#" onclick="showToast('我的')">
+        <span class="tab-icon">👤</span>
+        <span class="tab-label">我的</span>
+      </a>
+    </nav>
+  </div>
+
+
+  <!-- ========================================================
+       STAGE UPDATE MODAL (Bottom Sheet)
+       ======================================================== -->
+  <div class="modal-overlay" id="stage-modal" onclick="closeStageModal(event)">
+    <div class="modal-sheet" onclick="event.stopPropagation()">
+      <div class="modal-handle"></div>
+      <div class="modal-title">更新谈判阶段</div>
+
+      <div class="stage-option" data-stage="initial" onclick="selectStage('initial')">
+        <span class="stage-option-icon">🌱</span>
+        <div class="stage-option-info">
+          <div class="stage-option-name">初步接触</div>
+          <div class="stage-option-desc">双方初次接触，了解合作意向</div>
+        </div>
+        <span class="stage-option-check">✓</span>
+      </div>
+
+      <div class="stage-option selected" data-stage="active" onclick="selectStage('active')">
+        <span class="stage-option-icon">🔥</span>
+        <div class="stage-option-info">
+          <div class="stage-option-name">积极磋商</div>
+          <div class="stage-option-desc">双方就核心条款展开实质性谈判</div>
+        </div>
+        <span class="stage-option-check">✓</span>
+      </div>
+
+      <div class="stage-option" data-stage="diligence" onclick="selectStage('diligence')">
+        <span class="stage-option-icon">🔍</span>
+        <div class="stage-option-info">
+          <div class="stage-option-name">尽职调查</div>
+          <div class="stage-option-desc">深入核查财务、法律、技术等信息</div>
+        </div>
+        <span class="stage-option-check">✓</span>
+      </div>
+
+      <div class="stage-option" data-stage="review" onclick="selectStage('review')">
+        <span class="stage-option-icon">📜</span>
+        <div class="stage-option-info">
+          <div class="stage-option-name">合同审查</div>
+          <div class="stage-option-desc">法务团队审查最终合同文本</div>
+        </div>
+        <span class="stage-option-check">✓</span>
+      </div>
+
+      <div class="stage-option" data-stage="signed" onclick="selectStage('signed')">
+        <span class="stage-option-icon">🖊</span>
+        <div class="stage-option-info">
+          <div class="stage-option-name">已签约</div>
+          <div class="stage-option-desc">合同正式签署，进入执行阶段</div>
+        </div>
+        <span class="stage-option-check">✓</span>
+      </div>
+
+      <button class="modal-confirm-btn" onclick="confirmStage()">确认更新阶段</button>
+    </div>
+  </div>
+
+
+  <!-- Toast notification -->
+  <div id="toast" style="
+    position:fixed;
+    bottom:90px;
+    left:50%;
+    transform:translateX(-50%) translateY(20px);
+    background:rgba(26,26,26,0.88);
+    color:#fff;
+    padding:9px 20px;
+    border-radius:24px;
+    font-size:13px;
+    font-weight:500;
+    font-family:'DM Sans',sans-serif;
+    z-index:999;
+    opacity:0;
+    transition:opacity 0.2s, transform 0.2s;
+    pointer-events:none;
+    white-space:nowrap;
+    backdrop-filter:blur(6px);
+  "></div>
+
+</div><!-- /app -->
+
+<script>
+  // ── View transitions ──
+  function openDetail(dealId) {
+    const titles = {
+      deal1: 'CloudPeak × 星河科技',
+      deal2: '新能源投资框架',
+      deal3: '绿色物流战略合作',
+      deal4: '远达科技股权收购'
+    };
+    const stages = {
+      deal1: '积极磋商 · 供应链合作协议 · 李明负责',
+      deal2: '积极磋商 · 投资框架协议 · 赵总团队',
+      deal3: '积极磋商 · 物流合作 · 王总',
+      deal4: '尽职调查 · 股权收购 · 陈总律师团队'
+    };
+    document.getElementById('detail-title').textContent = titles[dealId] || '谈判详情';
+    document.getElementById('detail-stage-text').textContent = stages[dealId] || '积极磋商';
+    document.getElementById('view-list').classList.remove('active');
+    document.getElementById('view-list').classList.add('hidden');
+    document.getElementById('view-detail').classList.remove('hidden');
+    document.getElementById('view-detail').classList.add('active');
+    // Scroll timeline to bottom
+    setTimeout(() => {
+      const tw = document.getElementById('timeline-wrap');
+      tw.scrollTop = tw.scrollHeight;
+    }, 350);
+  }
+
+  function closeDetail() {
+    document.getElementById('view-detail').classList.remove('active');
+    document.getElementById('view-detail').classList.add('hidden');
+    document.getElementById('view-list').classList.remove('hidden');
+    document.getElementById('view-list').classList.add('active');
+    // Close any open modal
+    closeStageModal();
+  }
+
+  // ── Terms card toggle ──
+  function toggleTerms() {
+    const body = document.getElementById('terms-body');
+    const chevron = document.getElementById('terms-chevron');
+    body.classList.toggle('open');
+    chevron.classList.toggle('open');
+  }
+
+  // ── Stage modal ──
+  function openStageModal() {
+    document.getElementById('stage-modal').classList.add('open');
+  }
+
+  function closeStageModal(e) {
+    if (!e || e.target === document.getElementById('stage-modal')) {
+      document.getElementById('stage-modal').classList.remove('open');
+    }
+  }
+
+  function selectStage(stage) {
+    document.querySelectorAll('.stage-option').forEach(el => {
+      el.classList.toggle('selected', el.dataset.stage === stage);
+    });
+  }
+
+  function confirmStage() {
+    const selected = document.querySelector('.stage-option.selected');
+    if (selected) {
+      const name = selected.querySelector('.stage-option-name').textContent;
+      document.getElementById('stage-modal').classList.remove('open');
+      addStatusEvent(`阶段已更新为：${name}`);
+      showToast(`✅ 阶段已更新：${name}`);
+    }
+  }
+
+  // ── Reply / Send ──
+  function focusReply() {
+    const input = document.getElementById('reply-input');
+    input.focus();
+    input.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+  }
+
+  function sendReply() {
+    const input = document.getElementById('reply-input');
+    const text = input.value.trim();
+    if (!text) { input.focus(); return; }
+
+    // Add bubble to timeline
+    const tw = document.getElementById('timeline-wrap');
+    const row = document.createElement('div');
+    row.className = 'msg-row self';
+    row.innerHTML = `
+      <div class="avatar av-self">我</div>
+      <div class="bubble-wrap">
+        <div class="bubble bubble-self">${escapeHtml(text)}</div>
+        <span class="msg-time">${getTime()}</span>
+      </div>`;
+    // Insert before action bar sentinel (insert last)
+    tw.appendChild(row);
+    input.value = '';
+    tw.scrollTop = tw.scrollHeight;
+  }
+
+  function addStatusEvent(text) {
+    const tw = document.getElementById('timeline-wrap');
+    const el = document.createElement('div');
+    el.className = 'status-event';
+    el.innerHTML = `
+      <span class="status-event-icon">🔄</span>
+      <span class="status-event-text">${escapeHtml(text)}</span>
+      <span class="status-event-time">${getTime()}</span>`;
+    tw.appendChild(el);
+    tw.scrollTop = tw.scrollHeight;
+  }
+
+  // ── Toast ──
+  let toastTimer;
+  function showToast(msg) {
+    const t = document.getElementById('toast');
+    t.textContent = msg;
+    t.style.opacity = '1';
+    t.style.transform = 'translateX(-50%) translateY(0)';
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(() => {
+      t.style.opacity = '0';
+      t.style.transform = 'translateX(-50%) translateY(20px)';
+    }, 1800);
+  }
+
+  // ── Utils ──
+  function getTime() {
+    const d = new Date();
+    return d.getHours().toString().padStart(2,'0') + ':' + d.getMinutes().toString().padStart(2,'0');
+  }
+
+  function escapeHtml(str) {
+    return str.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+  }
+
+  // Enter key to send
+  document.getElementById('reply-input').addEventListener('keydown', function(e) {
+    if (e.key === 'Enter') sendReply();
+  });
+
+  // Prevent body scroll when modal open
+  document.getElementById('stage-modal').addEventListener('touchmove', function(e) {
+    e.stopPropagation();
+  });
+
+  // Stage pill filter (UI-only toggle)
+  document.querySelectorAll('.pill').forEach(pill => {
+    pill.addEventListener('click', function() {
+      document.querySelectorAll('.pill').forEach(p => p.classList.remove('active'));
+      this.classList.add('active');
+    });
+  });
+</script>
+</body>
+</html>
