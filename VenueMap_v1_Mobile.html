@@ -1,0 +1,1216 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Game Connection – 展会地图</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --bg: #e8e4da;
+  --primary: #d95f2b;
+  --dark: #1a1a1a;
+  --card: #ffffff;
+  --muted: #999;
+  --border: #e0ddd6;
+  --header-h: 52px;
+  --floortab-h: 42px;
+  --tabnav-h: 60px;
+}
+
+html, body {
+  height: 100%;
+  overflow: hidden;
+  font-family: 'DM Sans', sans-serif;
+  background: var(--bg);
+  color: var(--dark);
+  -webkit-font-smoothing: antialiased;
+}
+
+/* ── HEADER ── */
+.header {
+  position: fixed;
+  top: 0; left: 0; right: 0;
+  height: var(--header-h);
+  background: var(--dark);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 16px;
+  z-index: 300;
+}
+.logo {
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--primary);
+  letter-spacing: 0.5px;
+}
+.logo span { color: #fff; }
+.header-subtitle {
+  font-size: 11px;
+  color: #888;
+  font-weight: 400;
+}
+
+/* ── FLOOR TABS ── */
+.floor-tabs {
+  position: fixed;
+  top: var(--header-h);
+  left: 0; right: 0;
+  height: var(--floortab-h);
+  background: #fff;
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  overflow-x: auto;
+  overflow-y: hidden;
+  scrollbar-width: none;
+  -webkit-overflow-scrolling: touch;
+  z-index: 290;
+}
+.floor-tabs::-webkit-scrollbar { display: none; }
+.floor-tab {
+  flex-shrink: 0;
+  padding: 0 18px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--muted);
+  cursor: pointer;
+  border-bottom: 2px solid transparent;
+  display: flex;
+  align-items: center;
+  white-space: nowrap;
+  transition: color .2s, border-color .2s;
+  -webkit-tap-highlight-color: transparent;
+}
+.floor-tab.active {
+  color: var(--primary);
+  border-bottom-color: var(--primary);
+}
+
+/* ── MAP AREA ── */
+.map-area {
+  position: fixed;
+  top: calc(var(--header-h) + var(--floortab-h));
+  left: 0; right: 0;
+  bottom: var(--tabnav-h);
+  overflow: hidden;
+  background: var(--bg);
+  touch-action: none;
+}
+
+#svg-el {
+  position: absolute;
+  top: 0; left: 0;
+  transform-origin: 0 0;
+  cursor: grab;
+  will-change: transform;
+  user-select: none;
+}
+#svg-el:active { cursor: grabbing; }
+
+/* ── FLOATING CONTROLS ── */
+.float-right {
+  position: fixed;
+  right: 12px;
+  top: calc(var(--header-h) + var(--floortab-h) + 10px);
+  z-index: 200;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.flt-btn {
+  width: 40px; height: 40px;
+  border: none;
+  border-radius: 10px;
+  background: #fff;
+  box-shadow: 0 2px 10px rgba(0,0,0,.14);
+  font-size: 18px;
+  font-weight: 700;
+  display: flex; align-items: center; justify-content: center;
+  cursor: pointer;
+  color: var(--dark);
+  -webkit-tap-highlight-color: transparent;
+  transition: background .15s;
+}
+.flt-btn:active { background: #f0ede6; }
+.flt-btn.locate {
+  background: var(--primary);
+  color: #fff;
+  font-size: 16px;
+  margin-top: 4px;
+}
+.flt-btn.locate.on { background: #c04a15; }
+.flt-btn.locate:active { background: #a03510; }
+
+/* ── SEARCH PILL ── */
+.search-pill {
+  position: fixed;
+  left: 12px;
+  top: calc(var(--header-h) + var(--floortab-h) + 10px);
+  z-index: 200;
+}
+.search-pill-btn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: #fff;
+  border: none;
+  border-radius: 22px;
+  padding: 10px 14px;
+  box-shadow: 0 2px 10px rgba(0,0,0,.13);
+  font-family: 'DM Sans', sans-serif;
+  font-size: 13px;
+  color: #aaa;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  transition: background .15s;
+  max-width: 170px;
+}
+.search-pill-btn:active { background: #f5f2ed; }
+
+/* ── SEARCH OVERLAY ── */
+.search-overlay {
+  position: fixed;
+  inset: 0;
+  background: var(--bg);
+  z-index: 500;
+  transform: translateY(-100%);
+  transition: transform .3s cubic-bezier(.4,0,.2,1);
+  display: flex;
+  flex-direction: column;
+}
+.search-overlay.open { transform: translateY(0); }
+.search-top {
+  background: var(--dark);
+  padding: 12px 14px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.search-wrap {
+  flex: 1;
+  position: relative;
+}
+.search-wrap input {
+  width: 100%;
+  padding: 10px 36px 10px 14px;
+  border: none;
+  border-radius: 10px;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 15px;
+  background: #fff;
+  outline: none;
+  color: var(--dark);
+}
+.search-wrap .s-ico {
+  position: absolute;
+  right: 10px; top: 50%;
+  transform: translateY(-50%);
+  color: #bbb;
+  pointer-events: none;
+}
+.search-cancel {
+  background: none; border: none;
+  color: #aaa;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 14px;
+  cursor: pointer;
+  white-space: nowrap;
+  padding: 4px 2px;
+  -webkit-tap-highlight-color: transparent;
+}
+.search-results {
+  flex: 1;
+  overflow-y: auto;
+  padding: 10px 14px 20px;
+  -webkit-overflow-scrolling: touch;
+}
+.srch-group {
+  font-size: 10px; font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  color: #bbb;
+  padding: 12px 2px 6px;
+}
+.srch-item {
+  display: flex; align-items: center; gap: 12px;
+  padding: 12px 14px;
+  background: #fff;
+  border-radius: 12px;
+  margin-bottom: 6px;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  transition: background .15s;
+}
+.srch-item:active { background: #f0ede6; }
+.srch-id {
+  font-size: 12px; font-weight: 700;
+  color: var(--primary);
+  width: 36px; flex-shrink: 0;
+}
+.srch-info { flex: 1; min-width: 0; }
+.srch-name {
+  font-size: 14px; font-weight: 600;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.srch-sub {
+  font-size: 12px; color: var(--muted);
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.srch-dot {
+  width: 9px; height: 9px;
+  border-radius: 50%; flex-shrink: 0;
+}
+.srch-empty {
+  text-align: center;
+  padding: 48px 0;
+  color: #bbb; font-size: 14px;
+}
+
+/* ── LEGEND OVERLAY ── */
+.legend-overlay {
+  position: fixed; inset: 0; z-index: 450;
+  display: none;
+}
+.legend-overlay.open { display: block; }
+.legend-backdrop {
+  position: absolute; inset: 0;
+  background: rgba(0,0,0,.35);
+}
+.legend-panel {
+  position: absolute;
+  bottom: var(--tabnav-h); left: 0; right: 0;
+  background: #fff;
+  border-radius: 18px 18px 0 0;
+  padding: 0 20px 24px;
+  box-shadow: 0 -4px 24px rgba(0,0,0,.15);
+  animation: slideUp .25s ease;
+}
+@keyframes slideUp {
+  from { transform: translateY(60px); opacity: 0; }
+  to   { transform: translateY(0); opacity: 1; }
+}
+.legend-handle {
+  width: 36px; height: 4px;
+  background: #ddd; border-radius: 2px;
+  margin: 14px auto 18px;
+}
+.legend-title {
+  font-size: 15px; font-weight: 700;
+  margin-bottom: 14px;
+}
+.legend-row {
+  display: flex; align-items: center; gap: 12px;
+  padding: 10px 12px;
+  border-radius: 10px;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  transition: background .15s;
+  margin-bottom: 2px;
+}
+.legend-row:active { background: #f5f2ed; }
+.ld { width: 14px; height: 14px; border-radius: 4px; flex-shrink: 0; }
+.legend-row .ltxt { font-size: 14px; color: var(--dark); }
+.legend-row .lcount {
+  margin-left: auto;
+  font-size: 12px; color: var(--muted);
+  background: #f5f2ed; border-radius: 10px;
+  padding: 2px 8px;
+}
+.legend-divider {
+  height: 1px; background: #f0ede6;
+  margin: 8px 0;
+}
+
+/* ── BOTTOM SHEET ── */
+.sheet {
+  position: fixed;
+  left: 0; right: 0;
+  bottom: var(--tabnav-h);
+  z-index: 400;
+  transform: translateY(100%);
+  transition: transform .35s cubic-bezier(.4,0,.2,1);
+  max-height: 62vh;
+  display: flex; flex-direction: column;
+  pointer-events: none;
+}
+.sheet.open {
+  transform: translateY(0);
+  pointer-events: auto;
+}
+.sheet-top {
+  background: #fff;
+  border-radius: 18px 18px 0 0;
+  padding: 0 20px 14px;
+  box-shadow: 0 -2px 16px rgba(0,0,0,.10);
+}
+.sheet-drag-handle {
+  width: 36px; height: 4px;
+  background: #ddd; border-radius: 2px;
+  margin: 12px auto 14px;
+}
+.sheet-hd {
+  display: flex; align-items: flex-start; justify-content: space-between;
+  padding-bottom: 12px;
+  border-bottom: 1px solid var(--border);
+}
+.sheet-id {
+  font-size: 28px; font-weight: 800;
+  color: var(--primary); line-height: 1;
+}
+.sheet-type {
+  font-size: 10px; font-weight: 700;
+  text-transform: uppercase; letter-spacing: 1px;
+  color: #bbb; margin-top: 4px;
+}
+.sheet-close-btn {
+  width: 32px; height: 32px;
+  border-radius: 50%; border: none;
+  background: #f5f2ed; cursor: pointer;
+  font-size: 15px; display: flex;
+  align-items: center; justify-content: center;
+  color: #666; -webkit-tap-highlight-color: transparent;
+}
+.sheet-close-btn:active { background: #e8e4da; }
+.sheet-body {
+  background: #fff;
+  padding: 16px 20px 20px;
+  overflow-y: auto;
+  flex: 1;
+  -webkit-overflow-scrolling: touch;
+}
+.st-badge {
+  display: inline-flex; align-items: center; gap: 5px;
+  padding: 4px 12px; border-radius: 20px;
+  font-size: 12px; font-weight: 700;
+  margin-bottom: 16px;
+}
+.st-sold      { background: #ffe0cc; color: #c04a15; }
+.st-reserved  { background: #cde3f7; color: #1c5fa3; }
+.st-available { background: #d4f0e0; color: #276944; }
+.st-unavailable { background: #edeae4; color: #999; }
+.sh-field { margin-bottom: 14px; }
+.sh-field label {
+  display: block;
+  font-size: 10px; font-weight: 700;
+  text-transform: uppercase; letter-spacing: 1px;
+  color: #bbb; margin-bottom: 3px;
+}
+.sh-field .val {
+  font-size: 15px; font-weight: 500; color: var(--dark);
+}
+.sh-field .val.empty {
+  color: #bbb; font-style: italic; font-weight: 400;
+}
+
+/* ── BOTTOM TAB NAV ── */
+.tab-nav {
+  position: fixed;
+  bottom: 0; left: 0; right: 0;
+  height: var(--tabnav-h);
+  background: #fff;
+  border-top: 1px solid var(--border);
+  display: flex;
+  z-index: 600;
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+}
+.nav-btn {
+  flex: 1;
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  gap: 3px;
+  border: none; background: none;
+  cursor: pointer;
+  color: #ccc;
+  font-family: 'DM Sans', sans-serif;
+  padding-top: 2px;
+  transition: color .15s;
+  -webkit-tap-highlight-color: transparent;
+}
+.nav-btn.active { color: var(--primary); }
+.nav-btn .nicon { font-size: 22px; }
+.nav-btn .nlabel { font-size: 10px; font-weight: 600; letter-spacing: 0.3px; }
+
+/* ── MY LOCATION PULSE ── */
+@keyframes locPulse {
+  0%   { r: 8; stroke-opacity: 0.8; }
+  100% { r: 22; stroke-opacity: 0; }
+}
+.loc-ring {
+  animation: locPulse 1.8s ease-out infinite;
+  transform-box: fill-box;
+  transform-origin: center;
+}
+
+/* SVG booth selected glow */
+.sel-cell {
+  filter: drop-shadow(0 0 4px rgba(26,26,26,.6));
+}
+
+/* search highlight blink on SVG */
+@keyframes svgBlink {
+  0%,100% { stroke-width: 2; }
+  50%      { stroke-width: 5; stroke: #d95f2b; }
+}
+.hl-cell { animation: svgBlink 0.7s ease-in-out 3; }
+</style>
+</head>
+<body>
+
+<!-- HEADER -->
+<header class="header">
+  <div class="logo">GAME<span>CONNECTION</span></div>
+  <div class="header-subtitle">展会现场地图</div>
+</header>
+
+<!-- FLOOR TABS -->
+<div class="floor-tabs" id="floor-tabs">
+  <div class="floor-tab active" data-floor="B1" onclick="switchFloor(this)">B1 · 主展厅</div>
+  <div class="floor-tab" data-floor="1F" onclick="switchFloor(this)">1F · 业务洽谈</div>
+  <div class="floor-tab" data-floor="2F" onclick="switchFloor(this)">2F · 演讲厅</div>
+  <div class="floor-tab" data-floor="3F" onclick="switchFloor(this)">3F · VIP 区</div>
+</div>
+
+<!-- MAP AREA -->
+<div class="map-area" id="map-area">
+  <svg id="svg-el" width="720" height="540"
+       xmlns="http://www.w3.org/2000/svg"
+       viewBox="0 0 720 540">
+
+    <!-- Floor background -->
+    <rect width="720" height="540" fill="#ede9e0" rx="0"/>
+
+    <!-- Outer hall border -->
+    <rect x="14" y="14" width="692" height="512" rx="14"
+          fill="#f0ece3" stroke="#d4cfc5" stroke-width="1.5"/>
+
+    <!-- ── STAGE ── -->
+    <rect x="28" y="26" width="664" height="66" rx="10" fill="#252525"/>
+    <text x="360" y="56" text-anchor="middle"
+          fill="#fff" font-family="DM Sans,sans-serif"
+          font-size="15" font-weight="700" letter-spacing="3">🎮  MAIN STAGE</text>
+    <text x="360" y="74" text-anchor="middle"
+          fill="#666" font-family="DM Sans,sans-serif"
+          font-size="10">Game Connection 2025 · Hall B</text>
+
+    <!-- Aisle -->
+    <line x1="28" y1="112" x2="692" y2="112" stroke="#d4cfc5" stroke-width="1" stroke-dasharray="4,4"/>
+    <text x="360" y="109" text-anchor="middle"
+          fill="#c0bdb6" font-family="DM Sans,sans-serif"
+          font-size="8" letter-spacing="2">MAIN AISLE</text>
+
+    <!-- ── POD ZONE (left block) ── -->
+    <rect x="28" y="122" width="196" height="222" rx="10"
+          fill="#e4e0d7" stroke="#cac6bc" stroke-width="1"/>
+    <text x="126" y="140" text-anchor="middle"
+          fill="#aaa" font-family="DM Sans,sans-serif"
+          font-size="9" font-weight="700" letter-spacing="1.5">POD ZONE</text>
+    <g id="pod-grp"></g>
+
+    <!-- ── BOOTH ZONE (center block) ── -->
+    <rect x="242" y="122" width="266" height="222" rx="10"
+          fill="#e4e0d7" stroke="#cac6bc" stroke-width="1"/>
+    <text x="375" y="140" text-anchor="middle"
+          fill="#aaa" font-family="DM Sans,sans-serif"
+          font-size="9" font-weight="700" letter-spacing="1.5">BOOTH ZONE</text>
+    <g id="booth-grp"></g>
+
+    <!-- ── MEETING ROOMS (right block) ── -->
+    <rect x="526" y="122" width="168" height="222" rx="10"
+          fill="#e4e0d7" stroke="#cac6bc" stroke-width="1"/>
+    <text x="610" y="140" text-anchor="middle"
+          fill="#aaa" font-family="DM Sans,sans-serif"
+          font-size="9" font-weight="700" letter-spacing="1.5">LET'S MEET</text>
+
+    <!-- Room A -->
+    <rect x="540" y="148" width="140" height="56" rx="8"
+          fill="#c8c4bc" stroke="#b8b4ac" stroke-width="1.5"/>
+    <text x="610" y="174" text-anchor="middle"
+          fill="#555" font-family="DM Sans,sans-serif"
+          font-size="12" font-weight="600">🤝  Room A</text>
+    <text x="610" y="190" text-anchor="middle"
+          fill="#888" font-family="DM Sans,sans-serif" font-size="9">Meetings</text>
+
+    <!-- Room B -->
+    <rect x="540" y="216" width="140" height="56" rx="8"
+          fill="#c8c4bc" stroke="#b8b4ac" stroke-width="1.5"/>
+    <text x="610" y="242" text-anchor="middle"
+          fill="#555" font-family="DM Sans,sans-serif"
+          font-size="12" font-weight="600">🤝  Room B</text>
+    <text x="610" y="258" text-anchor="middle"
+          fill="#888" font-family="DM Sans,sans-serif" font-size="9">Meetings</text>
+
+    <!-- Room C -->
+    <rect x="540" y="284" width="140" height="54" rx="8"
+          fill="#c8c4bc" stroke="#b8b4ac" stroke-width="1.5"/>
+    <text x="610" y="309" text-anchor="middle"
+          fill="#555" font-family="DM Sans,sans-serif"
+          font-size="12" font-weight="600">🤝  Room C</text>
+    <text x="610" y="325" text-anchor="middle"
+          fill="#888" font-family="DM Sans,sans-serif" font-size="9">Meetings</text>
+
+    <!-- ── BOTTOM ROW ── -->
+    <!-- F&B -->
+    <rect x="28" y="366" width="204" height="72" rx="10"
+          fill="#cac6be" stroke="#b8b4ac" stroke-width="1.5"/>
+    <text x="130" y="396" text-anchor="middle" font-size="20">🍔</text>
+    <text x="130" y="418" text-anchor="middle"
+          fill="#555" font-family="DM Sans,sans-serif"
+          font-size="13" font-weight="600">F&amp;B Area</text>
+
+    <!-- Networking Lounge -->
+    <rect x="250" y="366" width="218" height="72" rx="10"
+          fill="#cac6be" stroke="#b8b4ac" stroke-width="1.5"/>
+    <text x="359" y="396" text-anchor="middle" font-size="20">💬</text>
+    <text x="359" y="418" text-anchor="middle"
+          fill="#555" font-family="DM Sans,sans-serif"
+          font-size="13" font-weight="600">Networking Lounge</text>
+
+    <!-- Registration + Entrance -->
+    <rect x="486" y="366" width="208" height="72" rx="10"
+          fill="#ede8df" stroke="#d0cbc2" stroke-width="1.5"/>
+    <text x="590" y="396" text-anchor="middle" font-size="20">🚪</text>
+    <text x="590" y="413" text-anchor="middle"
+          fill="#d95f2b" font-family="DM Sans,sans-serif"
+          font-size="11" font-weight="700">Registration</text>
+    <text x="590" y="427" text-anchor="middle"
+          fill="#d95f2b" font-family="DM Sans,sans-serif"
+          font-size="11" font-weight="700">+ Entrance</text>
+
+    <!-- ── MY LOCATION ── -->
+    <g id="my-loc" visibility="hidden">
+      <!-- pulse ring -->
+      <circle id="loc-ring" cx="126" cy="270" r="8"
+              fill="none" stroke="#d95f2b" stroke-width="2"
+              class="loc-ring"/>
+      <!-- inner glow -->
+      <circle cx="126" cy="270" r="10" fill="#d95f2b" opacity="0.15"/>
+      <!-- core dot -->
+      <circle cx="126" cy="270" r="7" fill="#d95f2b" stroke="#fff" stroke-width="2.5"/>
+      <!-- label bubble -->
+      <rect x="102" y="254" width="48" height="16" rx="8" fill="#d95f2b"/>
+      <text x="126" y="265" text-anchor="middle"
+            fill="#fff" font-family="DM Sans,sans-serif"
+            font-size="9" font-weight="700">我在这</text>
+    </g>
+
+  </svg>
+</div>
+
+<!-- Floating search pill -->
+<div class="search-pill">
+  <button class="search-pill-btn" onclick="openSearch()">
+    <span>🔍</span>
+    <span>搜索展位/展商</span>
+  </button>
+</div>
+
+<!-- Floating right controls -->
+<div class="float-right">
+  <button class="flt-btn" onclick="doZoom(0.25)" title="放大">+</button>
+  <button class="flt-btn" onclick="doZoom(-0.25)" title="缩小" style="font-size:22px; padding-bottom:2px">−</button>
+  <button class="flt-btn" onclick="resetView()" title="重置" style="font-size:14px;">↺</button>
+  <button class="flt-btn locate" id="locate-btn" onclick="toggleLocation()" title="我在哪">📍</button>
+</div>
+
+<!-- ── SEARCH OVERLAY ── -->
+<div class="search-overlay" id="search-overlay">
+  <div class="search-top">
+    <div class="search-wrap">
+      <input type="text" id="search-input"
+             placeholder="搜索展位号或公司名…"
+             oninput="handleSearch(this.value)"
+             autocomplete="off">
+      <span class="s-ico">🔍</span>
+    </div>
+    <button class="search-cancel" onclick="closeSearch()">取消</button>
+  </div>
+  <div class="search-results" id="search-results"></div>
+</div>
+
+<!-- ── LEGEND OVERLAY ── -->
+<div class="legend-overlay" id="legend-overlay">
+  <div class="legend-backdrop" onclick="closeLegend()"></div>
+  <div class="legend-panel">
+    <div class="legend-handle"></div>
+    <div class="legend-title">📋 图例说明</div>
+    <div class="legend-row" onclick="applyFilter('available'); closeLegend()">
+      <div class="ld" style="background:#4caf7d;"></div>
+      <span class="ltxt">可用 Available</span>
+      <span class="lcount" id="lc-available">—</span>
+    </div>
+    <div class="legend-row" onclick="applyFilter('sold'); closeLegend()">
+      <div class="ld" style="background:#d95f2b;"></div>
+      <span class="ltxt">已售 Sold</span>
+      <span class="lcount" id="lc-sold">—</span>
+    </div>
+    <div class="legend-row" onclick="applyFilter('reserved'); closeLegend()">
+      <div class="ld" style="background:#4a90d9;"></div>
+      <span class="ltxt">已预留 Reserved</span>
+      <span class="lcount" id="lc-reserved">—</span>
+    </div>
+    <div class="legend-row" onclick="applyFilter('unavailable'); closeLegend()">
+      <div class="ld" style="background:#c0bdb6;"></div>
+      <span class="ltxt">不可用 Unavailable</span>
+      <span class="lcount" id="lc-unavailable">—</span>
+    </div>
+    <div class="legend-divider"></div>
+    <div class="legend-row" onclick="applyFilter(null); closeLegend()">
+      <div class="ld" style="background:#ddd;"></div>
+      <span class="ltxt" style="color:#aaa;">显示全部</span>
+    </div>
+    <div class="legend-divider"></div>
+    <div class="legend-row" style="background:#fff7f4; border-radius:10px; padding:10px 12px;">
+      <div class="ld" style="background:#d95f2b; border-radius:50%;"></div>
+      <span class="ltxt">我的位置（模拟定位）</span>
+      <span style="margin-left:auto; font-size:18px;">📍</span>
+    </div>
+  </div>
+</div>
+
+<!-- ── BOTTOM SHEET ── -->
+<div class="sheet" id="sheet">
+  <div class="sheet-top">
+    <div class="sheet-drag-handle"></div>
+    <div class="sheet-hd">
+      <div>
+        <div class="sheet-id" id="sh-id">P01</div>
+        <div class="sheet-type" id="sh-type">Pod 展位</div>
+      </div>
+      <button class="sheet-close-btn" onclick="closeSheet()">✕</button>
+    </div>
+  </div>
+  <div class="sheet-body">
+    <div class="st-badge st-sold" id="sh-badge">● 已售</div>
+    <div class="sh-field">
+      <label>展商公司</label>
+      <div class="val" id="sh-company">—</div>
+    </div>
+    <div class="sh-field">
+      <label>游戏 / 产品</label>
+      <div class="val" id="sh-game">—</div>
+    </div>
+    <div class="sh-field">
+      <label>类型</label>
+      <div class="val" id="sh-genre">—</div>
+    </div>
+    <div class="sh-field">
+      <label>联系方式</label>
+      <div class="val" id="sh-contact">—</div>
+    </div>
+  </div>
+</div>
+
+<!-- ── BOTTOM TAB NAV ── -->
+<nav class="tab-nav">
+  <button class="nav-btn active" id="nt-map" onclick="navTo('map')">
+    <span class="nicon">🗺️</span>
+    <span class="nlabel">地图</span>
+  </button>
+  <button class="nav-btn" id="nt-search" onclick="openSearch()">
+    <span class="nicon">🔍</span>
+    <span class="nlabel">搜索</span>
+  </button>
+  <button class="nav-btn" id="nt-legend" onclick="openLegend()">
+    <span class="nicon">📋</span>
+    <span class="nlabel">图例</span>
+  </button>
+  <button class="nav-btn" id="nt-locate" onclick="toggleLocation()">
+    <span class="nicon">📍</span>
+    <span class="nlabel">定位</span>
+  </button>
+</nav>
+
+<script>
+/* ═══════════════════════════════════════════════
+   DATA
+═══════════════════════════════════════════════ */
+const EXHIBITORS = {
+  P01:{ company:'Indie Forge Studio', game:'Pixel Quest',         genre:'Platformer / Indie',    contact:'hello@indieforge.io' },
+  P02:{ company:'Nordic Games',       game:'Ice Realm',           genre:'RPG / Adventure',       contact:'press@nordicgames.se' },
+  P03:{ company:'PixelDream',         game:'Neon City',           genre:'Action / Cyberpunk',    contact:'bd@pixeldream.fr' },
+  P04:{ company:'CyberPlay',          game:'Dark Horizon',        genre:'Sci-Fi / Shooter',      contact:'info@cyberplay.io' },
+  P05:{ company:'GameCraft',          game:'Forest Tales',        genre:'Puzzle / Family',       contact:'team@gamecraft.com' },
+  P06:{ company:'NeonWave Studio',    game:'Pulse Drive',         genre:'Racing / Arcade',       contact:'nw@neonwave.io' },
+  P07:{ company:'Retro Republic',     game:'Bit Heroes',          genre:'Retro / Action',        contact:'rr@retrorepublic.gg' },
+  P08:{ company:'CloudNine Games',    game:'Sky Empire',          genre:'Strategy',              contact:'pr@cloudnine.games' },
+  P09:{ company:'MindSpark',          game:'BrainGrid',           genre:'Puzzle / Casual',       contact:'hi@mindspark.io' },
+  P10:{ company:'Frontier Digital',   game:'Wild Lands',          genre:'Open World',            contact:'fd@frontier.co' },
+  P11:{ company:'ArcLight Dev',       game:'Void Runner',         genre:'Endless Runner',        contact:'dev@arclight.io' },
+  P12:{ company:'ByteForge',          game:'HexRealm',            genre:'Turn-based Strategy',   contact:'bf@byteforge.eu' },
+  P13:{ company:'SonicPixel',         game:'AudioQuest',          genre:'Rhythm / Music',        contact:'sp@sonicpixel.fm' },
+  P14:{ company:'Moonbase Studios',   game:'Lunar Colony',        genre:'Simulation',            contact:'moon@moonbase.game' },
+  P15:{ company:'TempestGames',       game:'Storm Chain',         genre:'Tower Defense',         contact:'tg@tempest.gg' },
+  B01:{ company:'Ubisoft',            game:'Multiple Titles',     genre:'AAA / Multi-genre',     contact:'bizdev@ubisoft.com' },
+  B02:{ company:'EA Sports',          game:'FIFA Mobile',         genre:'Sports / Mobile',       contact:'ea@ea.com' },
+  B03:{ company:'Supercell',          game:'New Strategy Title',  genre:'Mobile / Strategy',     contact:'press@supercell.com' },
+  B04:{ company:'Riot Games',         game:'TFT Mobile',          genre:'Strategy / Esports',    contact:'riot@riotgames.com' },
+  B05:{ company:'Bandai Namco',       game:'Tales of Next',       genre:'JRPG',                  contact:'bn@bandainamco.eu' },
+  B06:{ company:'505 Games',          game:'Control 2',           genre:'Action / Thriller',     contact:'505@505games.com' },
+  B07:{ company:'Devolver Digital',   game:'TBA',                 genre:'Indie / Publisher',     contact:'dd@devolverdigital.com' },
+};
+
+const STATUS = {};
+for (let i = 1; i <= 25; i++) {
+  const id = 'P' + String(i).padStart(2,'0');
+  STATUS[id] = i<=15 ? 'sold' : i<=18 ? 'reserved' : 'available';
+}
+for (let i = 1; i <= 12; i++) {
+  const id = 'B' + String(i).padStart(2,'0');
+  STATUS[id] = i<=7 ? 'sold' : i===8 ? 'reserved' : 'available';
+}
+
+const SC = {
+  sold:        { fill:'#ffe0cc', stroke:'#d95f2b', text:'#c04a15', label:'已售',    badgeClass:'st-sold' },
+  reserved:    { fill:'#cde3f7', stroke:'#4a90d9', text:'#1c5fa3', label:'已预留',  badgeClass:'st-reserved' },
+  available:   { fill:'#d4f0e0', stroke:'#4caf7d', text:'#276944', label:'可用',    badgeClass:'st-available' },
+  unavailable: { fill:'#edeae4', stroke:'#c0bdb6', text:'#999',    label:'不可用',  badgeClass:'st-unavailable' },
+};
+const DOT_COLORS = {
+  sold:'#d95f2b', reserved:'#4a90d9', available:'#4caf7d', unavailable:'#c0bdb6'
+};
+
+/* ═══════════════════════════════════════════════
+   STATE
+═══════════════════════════════════════════════ */
+let selectedId   = null;
+let locVisible   = false;
+let activeFilter = null;
+
+/* ═══════════════════════════════════════════════
+   BUILD SVG ELEMENTS
+═══════════════════════════════════════════════ */
+const SVG_NS = 'http://www.w3.org/2000/svg';
+
+function mkEl(tag, attrs) {
+  const el = document.createElementNS(SVG_NS, tag);
+  Object.entries(attrs).forEach(([k, v]) => el.setAttribute(k, v));
+  return el;
+}
+
+function buildPods() {
+  const g = document.getElementById('pod-grp');
+  g.innerHTML = '';
+  const cols = 5, cw = 32, ch = 32, gap = 4;
+  const ox = 34, oy = 150;
+  for (let i = 0; i < 25; i++) {
+    const id  = 'P' + String(i+1).padStart(2,'0');
+    const col = i % cols;
+    const row = Math.floor(i / cols);
+    const x   = ox + col*(cw+gap);
+    const y   = oy + row*(ch+gap);
+    const sc  = SC[STATUS[id]];
+
+    const rect = mkEl('rect',{x,y,width:cw,height:ch,rx:5,
+                               fill:sc.fill, stroke:sc.stroke, 'stroke-width':'1.5',
+                               id:'cell-'+id, class:'booth-rect'});
+    rect.addEventListener('click', e => { e.stopPropagation(); onCellClick(id); });
+    g.appendChild(rect);
+
+    const txt = mkEl('text',{x:x+cw/2, y:y+ch/2+4, 'text-anchor':'middle',
+                              fill:sc.text, 'font-family':'DM Sans,sans-serif',
+                              'font-size':8, 'font-weight':700, 'pointer-events':'none'});
+    txt.textContent = id;
+    g.appendChild(txt);
+  }
+}
+
+function buildBooths() {
+  const g = document.getElementById('booth-grp');
+  g.innerHTML = '';
+  const cols = 3, cw = 80, ch = 80, gap = 6;
+  const ox = 248, oy = 150;
+  for (let i = 0; i < 12; i++) {
+    const id  = 'B' + String(i+1).padStart(2,'0');
+    const col = i % cols;
+    const row = Math.floor(i / cols);
+    const x   = ox + col*(cw+gap);
+    const y   = oy + row*(ch+gap);
+    const sc  = SC[STATUS[id]];
+    const ex  = EXHIBITORS[id];
+
+    const rect = mkEl('rect',{x,y,width:cw,height:ch,rx:8,
+                               fill:sc.fill, stroke:sc.stroke, 'stroke-width':'1.5',
+                               id:'cell-'+id, class:'booth-rect'});
+    rect.addEventListener('click', e => { e.stopPropagation(); onCellClick(id); });
+    g.appendChild(rect);
+
+    const tid = mkEl('text',{x:x+cw/2, y:y+22, 'text-anchor':'middle',
+                              fill:sc.text, 'font-family':'DM Sans,sans-serif',
+                              'font-size':11,'font-weight':700,'pointer-events':'none'});
+    tid.textContent = id;
+    g.appendChild(tid);
+
+    if (ex) {
+      const tco = mkEl('text',{x:x+cw/2, y:y+40, 'text-anchor':'middle',
+                                fill:sc.text, 'font-family':'DM Sans,sans-serif',
+                                'font-size':8,'font-weight':500,'pointer-events':'none'});
+      const name = ex.company.length > 11 ? ex.company.slice(0,11)+'…' : ex.company;
+      tco.textContent = name;
+      g.appendChild(tco);
+    }
+  }
+}
+
+function buildAll() {
+  buildPods();
+  buildBooths();
+  refreshLegendCounts();
+}
+
+/* ═══════════════════════════════════════════════
+   CELL CLICK (tap detection via movement check)
+═══════════════════════════════════════════════ */
+function onCellClick(id) {
+  if (wasDragging) return; // ignore if user was panning
+  openSheet(id);
+}
+
+/* ═══════════════════════════════════════════════
+   BOTTOM SHEET
+═══════════════════════════════════════════════ */
+function openSheet(id) {
+  // deselect old
+  if (selectedId) {
+    const prev = document.getElementById('cell-'+selectedId);
+    if (prev) { prev.setAttribute('stroke-width','1.5'); prev.classList.remove('sel-cell'); }
+  }
+  selectedId = id;
+  const cell = document.getElementById('cell-'+id);
+  if (cell) { cell.setAttribute('stroke-width','3'); cell.classList.add('sel-cell'); }
+
+  const ex = EXHIBITORS[id];
+  const st = STATUS[id];
+  const sc = SC[st];
+
+  document.getElementById('sh-id').textContent   = id;
+  document.getElementById('sh-type').textContent = id.startsWith('P') ? 'Pod 展位' : 'Booth 展位';
+
+  const badge = document.getElementById('sh-badge');
+  badge.className = 'st-badge ' + sc.badgeClass;
+  badge.textContent = '● ' + sc.label;
+
+  setField('sh-company', ex ? ex.company : null);
+  setField('sh-game',    ex ? ex.game    : null);
+  setField('sh-genre',   ex ? ex.genre   : null);
+  setField('sh-contact', ex ? ex.contact : null);
+
+  document.getElementById('sheet').classList.add('open');
+}
+
+function setField(id, val) {
+  const el = document.getElementById(id);
+  if (val) { el.textContent = val; el.className = 'val'; }
+  else      { el.textContent = '—'; el.className = 'val empty'; }
+}
+
+function closeSheet() {
+  document.getElementById('sheet').classList.remove('open');
+  if (selectedId) {
+    const prev = document.getElementById('cell-'+selectedId);
+    if (prev) { prev.setAttribute('stroke-width','1.5'); prev.classList.remove('sel-cell'); }
+    selectedId = null;
+  }
+}
+
+/* ═══════════════════════════════════════════════
+   MY LOCATION
+═══════════════════════════════════════════════ */
+// Simulated location: somewhere in Pod Zone (between P11 and P12 area)
+const LOC_SVG = { x: 126, y: 270 };
+
+function toggleLocation() {
+  locVisible = !locVisible;
+  document.getElementById('my-loc').setAttribute('visibility', locVisible ? 'visible' : 'hidden');
+  document.getElementById('locate-btn').classList.toggle('on', locVisible);
+  document.getElementById('nt-locate').classList.toggle('active', locVisible);
+  if (locVisible) centerOn(LOC_SVG.x, LOC_SVG.y);
+}
+
+/* ═══════════════════════════════════════════════
+   FLOOR SWITCHING
+═══════════════════════════════════════════════ */
+function switchFloor(el) {
+  document.querySelectorAll('.floor-tab').forEach(t => t.classList.remove('active'));
+  el.classList.add('active');
+  closeSheet();
+  resetView();
+}
+
+/* ═══════════════════════════════════════════════
+   SEARCH
+═══════════════════════════════════════════════ */
+function openSearch() {
+  document.getElementById('search-overlay').classList.add('open');
+  renderSearch('');
+  setTimeout(() => document.getElementById('search-input').focus(), 350);
+  navTo('search');
+}
+
+function closeSearch() {
+  document.getElementById('search-overlay').classList.remove('open');
+  document.getElementById('search-input').value = '';
+  navTo('map');
+}
+
+function handleSearch(val) {
+  renderSearch(val.trim());
+}
+
+function allIds() {
+  return [
+    ...Array.from({length:25},(_,i)=>'P'+String(i+1).padStart(2,'0')),
+    ...Array.from({length:12},(_,i)=>'B'+String(i+1).padStart(2,'0')),
+  ];
+}
+
+function renderSearch(q) {
+  const container = document.getElementById('search-results');
+  const ql = q.toLowerCase();
+
+  const matches = allIds().filter(id => {
+    const ex = EXHIBITORS[id];
+    if (activeFilter && STATUS[id] !== activeFilter) return false;
+    if (!q) return true;
+    return id.toLowerCase().includes(ql) ||
+      (ex && (ex.company.toLowerCase().includes(ql) || ex.game.toLowerCase().includes(ql)));
+  });
+
+  if (!matches.length) {
+    container.innerHTML = '<div class="srch-empty">未找到相关展位 😅</div>';
+    return;
+  }
+
+  const pods   = matches.filter(id => id.startsWith('P'));
+  const booths = matches.filter(id => id.startsWith('B'));
+  let html = '';
+
+  if (pods.length) {
+    html += '<div class="srch-group">Pod 展位</div>';
+    pods.forEach(id => { html += searchItem(id); });
+  }
+  if (booths.length) {
+    html += '<div class="srch-group">Booth 展位</div>';
+    booths.forEach(id => { html += searchItem(id); });
+  }
+  container.innerHTML = html;
+
+  container.querySelectorAll('.srch-item').forEach(el => {
+    el.addEventListener('click', () => {
+      const id = el.dataset.id;
+      closeSearch();
+      scrollToCell(id);
+      setTimeout(() => openSheet(id), 200);
+    });
+  });
+}
+
+function searchItem(id) {
+  const ex = EXHIBITORS[id];
+  const st = STATUS[id];
+  return `<div class="srch-item" data-id="${id}">
+    <div class="srch-id">${id}</div>
+    <div class="srch-info">
+      <div class="srch-name">${ex ? ex.company : '(可用)'}</div>
+      <div class="srch-sub">${ex ? ex.game : SC[st].label}</div>
+    </div>
+    <div class="srch-dot" style="background:${DOT_COLORS[st]};"></div>
+  </div>`;
+}
+
+function scrollToCell(id) {
+  const cell = document.getElementById('cell-'+id);
+  if (!cell) return;
+  const x = parseFloat(cell.getAttribute('x')) + parseFloat(cell.getAttribute('width'))/2;
+  const y = parseFloat(cell.getAttribute('y')) + parseFloat(cell.getAttribute('height'))/2;
+  centerOn(x, y);
+  // brief highlight
+  cell.classList.add('hl-cell');
+  cell.addEventListener('animationend', () => cell.classList.remove('hl-cell'), {once:true});
+}
+
+/* ═══════════════════════════════════════════════
+   LEGEND
+═══════════════════════════════════════════════ */
+function openLegend() {
+  refreshLegendCounts();
+  document.getElementById('legend-overlay').classList.add('open');
+  navTo('legend');
+}
+function closeLegend() {
+  document.getElementById('legend-overlay').classList.remove('open');
+  navTo('map');
+}
+function applyFilter(status) {
+  activeFilter = status;
+  allIds().forEach(id => {
+    const cell = document.getElementById('cell-'+id);
+    if (!cell) return;
+    cell.setAttribute('opacity', (!status || STATUS[id]===status) ? '1' : '0.22');
+  });
+}
+function refreshLegendCounts() {
+  const counts = {available:0, sold:0, reserved:0, unavailable:0};
+  Object.values(STATUS).forEach(s => counts[s]++);
+  Object.keys(counts).forEach(k => {
+    const el = document.getElementById('lc-'+k);
+    if (el) el.textContent = counts[k]+'个';
+  });
+}
+
+/* ═══════════════════════════════════════════════
+   TAB NAV
+═══════════════════════════════════════════════ */
+function navTo(tab) {
+  document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+  const btn = document.getElementById('nt-'+tab);
+  if (btn) btn.classList.add('active');
+}
+
+/* ═══════════════════════════════════════════════
+   MAP PAN + ZOOM
+═══════════════════════════════════════════════ */
+const tx = { x:0, y:0, scale:1 };
+let wasDragging = false;
+let isDrag = false;
+let dragOrigin = {x:0, y:0};
+let moveThresh = 6; // px
+let moved = 0;
+let lastPinch = null;
+
+const mapArea = document.getElementById('map-area');
+const svgEl   = document.getElementById('svg-el');
+
+function applyTx() {
+  svgEl.style.transform = `translate(${tx.x}px,${tx.y}px) scale(${tx.scale})`;
+}
+
+function doZoom(delta) {
+  const wrap = mapArea.getBoundingClientRect();
+  const cx = wrap.width/2, cy = wrap.height/2;
+  const ns = Math.min(5, Math.max(0.25, tx.scale + delta));
+  tx.x = cx - (cx - tx.x) * (ns/tx.scale);
+  tx.y = cy - (cy - tx.y) * (ns/tx.scale);
+  tx.scale = ns;
+  applyTx();
+}
+
+function centerOn(svgX, svgY) {
+  const wrap = mapArea.getBoundingClientRect();
+  tx.x = wrap.width/2  - svgX * tx.scale;
+  tx.y = wrap.height/2 - svgY * tx.scale;
+  applyTx();
+}
+
+function resetView() {
+  const wrap = mapArea.getBoundingClientRect();
+  const svgW = 720, svgH = 540;
+  const scale = Math.min(wrap.width/svgW, wrap.height/svgH) * 0.94;
+  tx.scale = scale;
+  tx.x = (wrap.width  - svgW*scale) / 2;
+  tx.y = (wrap.height - svgH*scale) / 2;
+  applyTx();
+}
+
+function pinchDist(t) {
+  const dx = t[0].clientX - t[1].clientX;
+  const dy = t[0].clientY - t[1].clientY;
+  return Math.sqrt(dx*dx + dy*dy);
+}
+
+// ── Mouse ──
+mapArea.addEventListener('mousedown', e => {
+  isDrag = true; wasDragging = false; moved = 0;
+  dragOrigin = { x: e.clientX - tx.x, y: e.clientY - tx.y };
+});
+window.addEventListener('mousemove', e => {
+  if (!isDrag) return;
+  const dx = e.clientX - dragOrigin.x - tx.x;
+  const dy = e.clientY - dragOrigin.y - tx.y;
+  moved += Math.abs(dx) + Math.abs(dy);
+  if (moved > moveThresh) wasDragging = true;
+  tx.x = e.clientX - dragOrigin.x;
+  tx.y = e.clientY - dragOrigin.y;
+  applyTx();
+});
+window.addEventListener('mouseup', () => { isDrag = false; });
+
+// ── Touch ──
+mapArea.addEventListener('touchstart', e => {
+  if (e.touches.length === 1) {
+    const t = e.touches[0];
+    isDrag = true; wasDragging = false; moved = 0;
+    dragOrigin = { x: t.clientX - tx.x, y: t.clientY - tx.y };
+    lastPinch = null;
+  } else if (e.touches.length === 2) {
+    isDrag = false;
+    lastPinch = pinchDist(e.touches);
+  }
+}, {passive:true});
+
+mapArea.addEventListener('touchmove', e => {
+  e.preventDefault();
+  if (e.touches.length === 1 && isDrag) {
+    const t = e.touches[0];
+    const nx = t.clientX - dragOrigin.x;
+    const ny = t.clientY - dragOrigin.y;
+    const dm = Math.abs(nx - tx.x) + Math.abs(ny - tx.y);
+    moved += dm;
+    if (moved > moveThresh) wasDragging = true;
+    tx.x = nx; tx.y = ny;
+    applyTx();
+  } else if (e.touches.length === 2 && lastPinch !== null) {
+    const dist = pinchDist(e.touches);
+    const ratio = dist / lastPinch;
+    const ns = Math.min(5, Math.max(0.25, tx.scale * ratio));
+    const cx = (e.touches[0].clientX + e.touches[1].clientX)/2;
+    const cy = (e.touches[0].clientY + e.touches[1].clientY)/2;
+    const wr = mapArea.getBoundingClientRect();
+    const lx = cx - wr.left, ly = cy - wr.top;
+    tx.x = lx - (lx - tx.x)*(ns/tx.scale);
+    tx.y = ly - (ly - tx.y)*(ns/tx.scale);
+    tx.scale = ns;
+    lastPinch = dist;
+    applyTx();
+  }
+}, {passive:false});
+
+mapArea.addEventListener('touchend', e => {
+  if (e.touches.length < 2) lastPinch = null;
+  if (e.touches.length === 0) {
+    isDrag = false;
+    // Reset wasDragging after a tick so click handlers can check it
+    setTimeout(() => { wasDragging = false; }, 50);
+  }
+}, {passive:true});
+
+// Mouse wheel zoom
+mapArea.addEventListener('wheel', e => {
+  e.preventDefault();
+  const delta = e.deltaY < 0 ? 0.15 : -0.15;
+  const wr = mapArea.getBoundingClientRect();
+  const lx = e.clientX - wr.left, ly = e.clientY - wr.top;
+  const ns = Math.min(5, Math.max(0.25, tx.scale + delta));
+  tx.x = lx - (lx - tx.x)*(ns/tx.scale);
+  tx.y = ly - (ly - tx.y)*(ns/tx.scale);
+  tx.scale = ns;
+  applyTx();
+}, {passive:false});
+
+// Tap on empty map area closes sheet
+mapArea.addEventListener('click', e => {
+  if (wasDragging) return;
+  if (!e.target.closest('.booth-rect')) closeSheet();
+});
+
+/* ═══════════════════════════════════════════════
+   INIT
+═══════════════════════════════════════════════ */
+buildAll();
+// Fit map after layout settles
+requestAnimationFrame(() => { setTimeout(resetView, 80); });
+</script>
+</body>
+</html>
