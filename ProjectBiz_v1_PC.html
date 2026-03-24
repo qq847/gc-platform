@@ -1,0 +1,807 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Phantom Circuit — Project Biz Profile</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'DM Sans',sans-serif;background:#e8e4da;color:#1c1a17;min-height:100vh}
+
+/* ── Top Nav ── */
+.topnav{position:sticky;top:0;z-index:100;height:56px;background:#fff;border-bottom:1px solid #e0dbd0;display:flex;align-items:center;justify-content:space-between;padding:0 24px 0 220px}
+.topnav-logo{font-weight:700;font-size:15px;color:#1c1a17;letter-spacing:.3px}
+.topnav-logo span{color:#d95f2b}
+.topnav-right{display:flex;align-items:center;gap:16px}
+.notif-btn{width:36px;height:36px;border:none;background:#f5f3ef;border-radius:8px;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:16px;position:relative}
+.notif-dot{position:absolute;top:6px;right:6px;width:8px;height:8px;background:#d95f2b;border-radius:50%;border:2px solid #fff}
+.org-info{display:flex;align-items:center;gap:10px}
+.org-avatar{width:32px;height:32px;border-radius:50%;background:linear-gradient(135deg,#d95f2b,#f08040);display:flex;align-items:center;justify-content:center;color:#fff;font-weight:700;font-size:13px}
+.org-name{font-size:13px;font-weight:600;color:#1c1a17}
+
+/* ── Sidebar ── */
+.sidebar{position:fixed;top:0;left:0;width:200px;height:100vh;background:#1c1a17;padding-top:56px;z-index:99;overflow-y:auto}
+.sidebar-nav{padding:16px 0}
+.nav-item{display:flex;align-items:center;gap:10px;padding:10px 16px;font-size:13.5px;font-weight:500;color:#a09890;cursor:pointer;transition:all .15s;text-decoration:none}
+.nav-item:hover{color:#fff;background:rgba(255,255,255,.06)}
+.nav-item.active{color:#fff;background:rgba(217,95,43,.2);border-right:3px solid #d95f2b}
+.nav-item .icon{font-size:15px;width:20px;text-align:center}
+.nav-section{padding:10px 16px 4px;font-size:10px;font-weight:700;color:#4a4540;letter-spacing:.8px;text-transform:uppercase}
+
+/* ── Main ── */
+.main{margin-left:200px;padding-top:56px;min-height:100vh}
+.content{padding:24px}
+
+/* ── Breadcrumb ── */
+.breadcrumb{display:flex;align-items:center;gap:6px;font-size:12.5px;color:#a09890;margin-bottom:18px}
+.breadcrumb a{color:#a09890;text-decoration:none}
+.breadcrumb a:hover{color:#d95f2b}
+.breadcrumb .sep{color:#d0cbc0}
+.breadcrumb .current{color:#1c1a17;font-weight:600}
+
+/* ── Page Header ── */
+.page-header{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:22px;gap:16px}
+.game-hero{display:flex;align-items:center;gap:18px}
+.game-hero-thumb{width:80px;height:80px;border-radius:14px;background:linear-gradient(135deg,#6b48c0,#9b6fd4);display:flex;align-items:center;justify-content:center;font-size:32px;flex-shrink:0;box-shadow:0 4px 12px rgba(107,72,192,.3)}
+.hero-meta h1{font-size:22px;font-weight:700;color:#1c1a17;margin-bottom:6px;display:flex;align-items:center;gap:10px}
+.stage-pill{padding:3px 10px;border-radius:12px;font-size:11px;font-weight:700;letter-spacing:.2px}
+.stage-beta{background:#fde8dc;color:#d95f2b}
+.stage-alpha{background:#fef3e2;color:#d97706}
+.stage-launch{background:#d4f5e7;color:#0d9b72}
+.hero-tags{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.hero-tag{display:inline-flex;align-items:center;gap:4px;padding:4px 10px;background:#f0ece4;border-radius:6px;font-size:12px;font-weight:500;color:#5a5450}
+.hero-tag .tag-icon{font-size:13px}
+.header-ctas{display:flex;align-items:center;gap:10px;flex-shrink:0}
+
+/* ── Buttons ── */
+.btn{padding:9px 18px;border-radius:8px;font-size:13.5px;font-weight:600;cursor:pointer;border:none;font-family:'DM Sans',sans-serif;transition:all .15s;display:inline-flex;align-items:center;gap:6px}
+.btn-primary{background:#d95f2b;color:#fff}
+.btn-primary:hover{background:#c4521f}
+.btn-outline{background:#fff;color:#1c1a17;border:1.5px solid #d0cbc0}
+.btn-outline:hover{border-color:#d95f2b;color:#d95f2b}
+.btn-ghost{background:#f5f3ef;color:#6b6660;border:1.5px solid #e0dbd0}
+.btn-ghost:hover{background:#ede9e0}
+.btn-nda{background:#fff;color:#6b48c0;border:1.5px solid #6b48c0}
+.btn-nda:hover{background:#f5f0ff}
+.btn-sm{padding:5px 12px;font-size:12px;font-weight:600;border-radius:6px;cursor:pointer;font-family:'DM Sans',sans-serif}
+
+/* ── Two-col layout ── */
+.two-col{display:flex;gap:20px;align-items:flex-start}
+.main-col{flex:1;min-width:0;display:flex;flex-direction:column;gap:16px}
+.right-panel{width:300px;flex-shrink:0;display:flex;flex-direction:column;gap:16px}
+
+/* ── Cards ── */
+.card{background:#fff;border-radius:12px;padding:20px;box-shadow:0 1px 3px rgba(0,0,0,.06)}
+.card-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px}
+.card-title{font-size:14px;font-weight:700;color:#1c1a17;display:flex;align-items:center;gap:7px}
+.card-title .emoji{font-size:15px}
+.card-action{font-size:12px;color:#d95f2b;font-weight:600;cursor:pointer;text-decoration:none;border:none;background:none;font-family:'DM Sans',sans-serif}
+.card-action:hover{text-decoration:underline}
+
+/* ── Info Grid ── */
+.info-grid{display:grid;grid-template-columns:1fr 1fr;gap:0}
+.info-item{padding:12px 0;border-bottom:1px solid #f5f3ef}
+.info-item:nth-last-child(-n+2){border-bottom:none}
+.info-item:nth-child(odd){padding-right:20px;border-right:1px solid #f5f3ef}
+.info-item:nth-child(even){padding-left:20px}
+.info-label{font-size:11px;font-weight:600;color:#a09890;text-transform:uppercase;letter-spacing:.4px;margin-bottom:4px}
+.info-val{font-size:14px;font-weight:600;color:#1c1a17}
+.info-val.muted{color:#6b6660;font-weight:400}
+
+/* ── Lock overlay section ── */
+.locked-section{position:relative;border-radius:10px;overflow:hidden}
+.lock-overlay{position:absolute;inset:0;background:rgba(232,228,218,.85);backdrop-filter:blur(6px);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;z-index:10;border-radius:10px;border:1.5px dashed #c8c3b8}
+.lock-icon{font-size:36px}
+.lock-title{font-size:14px;font-weight:700;color:#1c1a17}
+.lock-sub{font-size:12px;color:#6b6660;text-align:center;max-width:220px}
+.blurred-content{filter:blur(4px);pointer-events:none;user-select:none}
+
+/* ── Biz Data Grid ── */
+.biz-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+.biz-stat{background:#f5f3ef;border-radius:10px;padding:14px}
+.biz-stat-num{font-size:22px;font-weight:700;color:#1c1a17;margin-bottom:2px}
+.biz-stat-num.accent{color:#d95f2b}
+.biz-stat-label{font-size:11px;color:#6b6660;font-weight:500}
+.biz-row{display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid #f5f3ef;font-size:13.5px}
+.biz-row:last-child{border-bottom:none}
+.biz-row .label{color:#6b6660}
+.biz-row .val{font-weight:600;color:#1c1a17;display:flex;align-items:center;gap:6px}
+.market-flag{font-size:14px}
+.collab-tag{display:inline-block;padding:2px 8px;background:#fde8dc;border-radius:4px;font-size:11px;font-weight:600;color:#d95f2b;margin-left:4px}
+.collab-tag.blue{background:#e8f0fe;color:#3b6fe0}
+.collab-tag.green{background:#d4f5e7;color:#0d9b72}
+
+/* ── Publishing Terms ── */
+.terms-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.term-item{background:#f5f3ef;border-radius:8px;padding:12px 14px}
+.term-label{font-size:11px;font-weight:600;color:#a09890;text-transform:uppercase;letter-spacing:.4px;margin-bottom:5px}
+.term-val{font-size:13.5px;font-weight:600;color:#1c1a17}
+.term-val.highlight{color:#d95f2b}
+.term-note{font-size:11px;color:#6b6660;margin-top:3px}
+.exclusivity-badge{display:inline-flex;align-items:center;gap:4px;padding:4px 10px;border-radius:6px;font-size:12px;font-weight:700}
+.excl-yes{background:#fee2e2;color:#dc2626}
+.excl-no{background:#d4f5e7;color:#0d9b72}
+.excl-neg{background:#fef3e2;color:#d97706}
+
+/* ── Attachments ── */
+.attachment-list{display:flex;flex-direction:column;gap:10px}
+.attachment-item{display:flex;align-items:center;gap:14px;padding:12px 14px;background:#f5f3ef;border-radius:10px;transition:background .15s}
+.attachment-item:hover{background:#ede9e0}
+.attach-icon{width:40px;height:40px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0}
+.attach-pdf{background:#fee2e2}
+.attach-video{background:#e8f0fe}
+.attach-doc{background:#d4f5e7}
+.attach-info{flex:1}
+.attach-name{font-size:14px;font-weight:600;color:#1c1a17}
+.attach-meta{font-size:11.5px;color:#a09890;margin-top:2px}
+.attach-actions{display:flex;gap:6px}
+.btn-attach{padding:5px 12px;border-radius:6px;font-size:12px;font-weight:600;cursor:pointer;border:1px solid;font-family:'DM Sans',sans-serif;transition:all .15s}
+.btn-download{background:#fff;color:#0a7fa8;border-color:#0a7fa8}
+.btn-download:hover{background:#e8f4f8}
+.btn-preview{background:#fff;color:#6b6660;border-color:#d0cbc0}
+.btn-preview:hover{background:#f5f3ef}
+.video-embed{margin-top:14px;border-radius:10px;overflow:hidden;background:#1c1a17;aspect-ratio:16/9;display:flex;align-items:center;justify-content:center;cursor:pointer;position:relative}
+.video-thumb{width:100%;height:100%;object-fit:cover;opacity:.6}
+.play-btn{position:absolute;width:56px;height:56px;background:rgba(217,95,43,.9);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:22px;color:#fff;transition:transform .15s;cursor:pointer}
+.play-btn:hover{transform:scale(1.08)}
+
+/* ── View History ── */
+.view-history{display:flex;flex-direction:column;gap:0}
+.view-item{display:flex;align-items:center;gap:12px;padding:10px 0;border-bottom:1px solid #f5f3ef}
+.view-item:last-child{border-bottom:none}
+.viewer-avatar{width:34px;height:34px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:13px;color:#fff;flex-shrink:0}
+.viewer-info{flex:1}
+.viewer-name{font-size:13.5px;font-weight:600;color:#1c1a17}
+.viewer-company{font-size:11.5px;color:#6b6660;margin-top:1px}
+.viewer-time{font-size:11.5px;color:#a09890;text-align:right;flex-shrink:0}
+.viewer-role{display:inline-block;padding:1px 7px;border-radius:4px;font-size:10px;font-weight:600;margin-left:5px}
+.role-pub{background:#e8f0fe;color:#3b6fe0}
+.role-inv{background:#f0e8ff;color:#6b48c0}
+.role-dev{background:#d4f5e7;color:#0d9b72}
+.view-count-bar{display:flex;align-items:center;gap:10px;padding:12px 14px;background:#f5f3ef;border-radius:8px;margin-bottom:14px}
+.view-count-num{font-size:22px;font-weight:700;color:#d95f2b}
+.view-count-info{font-size:12px;color:#6b6660}
+.view-count-info strong{color:#1c1a17}
+
+/* ── Right Panel ── */
+.dev-card-header{display:flex;align-items:center;gap:14px;margin-bottom:16px}
+.dev-logo{width:52px;height:52px;border-radius:10px;background:linear-gradient(135deg,#6b48c0,#9b6fd4);display:flex;align-items:center;justify-content:center;font-size:24px;flex-shrink:0}
+.dev-card-name{font-size:16px;font-weight:700;color:#1c1a17}
+.dev-card-sub{font-size:12px;color:#6b6660;margin-top:2px}
+.dev-stats{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:14px}
+.dev-stat{background:#f5f3ef;border-radius:8px;padding:10px 12px;text-align:center}
+.dev-stat-num{font-size:17px;font-weight:700;color:#1c1a17}
+.dev-stat-label{font-size:10.5px;color:#6b6660;margin-top:2px}
+.dev-info-row{display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid #f5f3ef;font-size:13px}
+.dev-info-row:last-child{border-bottom:none}
+.dev-info-row .dl{color:#6b6660}
+.dev-info-row .dv{font-weight:600;color:#1c1a17}
+.portfolio-list{margin-top:4px;display:flex;flex-direction:column;gap:8px}
+.portfolio-item{display:flex;align-items:center;gap:10px;font-size:13px}
+.portfolio-thumb{width:36px;height:27px;border-radius:4px;flex-shrink:0}
+.portfolio-name{font-weight:500;flex:1}
+.portfolio-stat{font-size:11px;color:#6b6660}
+
+/* ── Contacts ── */
+.contact-list{display:flex;flex-direction:column;gap:10px}
+.contact-item{display:flex;align-items:center;gap:12px;padding:10px;background:#f5f3ef;border-radius:8px}
+.contact-avatar{width:38px;height:38px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:14px;color:#fff;flex-shrink:0}
+.contact-name{font-size:13.5px;font-weight:600;color:#1c1a17}
+.contact-role{font-size:11.5px;color:#6b6660;margin-top:1px}
+.contact-links{display:flex;gap:5px;margin-top:4px}
+.contact-link{padding:2px 8px;border-radius:4px;font-size:11px;font-weight:600;background:#fff;color:#0a7fa8;border:1px solid #b8dce8;cursor:pointer;text-decoration:none}
+.contact-link:hover{background:#e8f4f8}
+
+/* ── Status Banner ── */
+.status-banner{display:flex;align-items:center;gap:10px;padding:10px 14px;border-radius:8px;margin-bottom:2px;font-size:13px}
+.banner-active{background:#d4f5e7;color:#0d9b72;border:1px solid #a5e5cc}
+.banner-dot{width:8px;height:8px;border-radius:50%;background:currentColor;flex-shrink:0}
+.banner-txt{font-weight:600}
+.banner-sub{font-weight:400;opacity:.75;margin-left:2px}
+
+/* ── Misc ── */
+.divider{height:1px;background:#f0ece4;margin:16px 0}
+.tag-list{display:flex;flex-wrap:wrap;gap:6px}
+.tag{display:inline-block;padding:3px 9px;background:#f0ece4;border-radius:5px;font-size:12px;font-weight:500;color:#5a5450}
+.section-note{font-size:12px;color:#a09890;font-style:italic;margin-top:8px}
+</style>
+</head>
+<body>
+
+<!-- ── Top Nav ── -->
+<nav class="topnav">
+  <div class="topnav-logo"><span>GAME CONNECTION</span> · Biz Platform</div>
+  <div class="topnav-right">
+    <button class="notif-btn">🔔<span class="notif-dot"></span></button>
+    <div class="org-info">
+      <div class="org-avatar">N</div>
+      <div class="org-name">NexGen Publishing</div>
+    </div>
+  </div>
+</nav>
+
+<!-- ── Sidebar ── -->
+<aside class="sidebar">
+  <nav class="sidebar-nav">
+    <a class="nav-item" href="#"><span class="icon">📊</span>Dashboard</a>
+    <a class="nav-item" href="#"><span class="icon">🔍</span>Discover Games</a>
+    <a class="nav-item active" href="#"><span class="icon">📁</span>Project Profiles</a>
+    <a class="nav-item" href="#"><span class="icon">🤝</span>My Deals</a>
+    <div class="nav-section">Marketplace</div>
+    <a class="nav-item" href="#"><span class="icon">📅</span>Events</a>
+    <a class="nav-item" href="#"><span class="icon">🏆</span>Leaderboard</a>
+    <a class="nav-item" href="#"><span class="icon">📨</span>Messages</a>
+    <div class="nav-section">Account</div>
+    <a class="nav-item" href="#"><span class="icon">🏢</span>My Company</a>
+    <a class="nav-item" href="#"><span class="icon">🔑</span>NDA Requests</a>
+    <a class="nav-item" href="#"><span class="icon">⚙️</span>Settings</a>
+  </nav>
+</aside>
+
+<!-- ── Main ── -->
+<main class="main">
+  <div class="content">
+
+    <!-- Breadcrumb -->
+    <div class="breadcrumb">
+      <a href="#">Project Profiles</a>
+      <span class="sep">›</span>
+      <a href="#">Action RPG</a>
+      <span class="sep">›</span>
+      <span class="current">Phantom Circuit</span>
+    </div>
+
+    <!-- Page Header -->
+    <div class="page-header">
+      <div class="game-hero">
+        <div class="game-hero-thumb">👻</div>
+        <div class="hero-meta">
+          <h1>Phantom Circuit <span class="stage-pill stage-beta">Beta</span></h1>
+          <div class="hero-tags">
+            <span class="hero-tag"><span class="tag-icon">🎮</span>Puzzle / Horror</span>
+            <span class="hero-tag"><span class="tag-icon">🖥</span>PC</span>
+            <span class="hero-tag"><span class="tag-icon">🎮</span>Console</span>
+            <span class="hero-tag"><span class="tag-icon">🌏</span>Global</span>
+            <span class="hero-tag"><span class="tag-icon">🇯🇵</span>Japan</span>
+          </div>
+        </div>
+      </div>
+      <div class="header-ctas">
+        <button class="btn btn-nda" onclick="showModal('nda')">🔒 Request NDA</button>
+        <button class="btn btn-primary" onclick="showModal('interest')">✉️ Express Interest</button>
+      </div>
+    </div>
+
+    <!-- Status banner -->
+    <div class="status-banner banner-active" style="margin-bottom:18px">
+      <span class="banner-dot"></span>
+      <span class="banner-txt">Actively Seeking Publisher</span>
+      <span class="banner-sub">— Updated Mar 20, 2026 · Profile verified ✓</span>
+    </div>
+
+    <div class="two-col">
+      <!-- ── Left: Main Content ── -->
+      <div class="main-col">
+
+        <!-- 1. Project Basic Info -->
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title"><span class="emoji">🎯</span>Project Overview</div>
+            <a class="card-action" href="#">+ Compare Games</a>
+          </div>
+          <div class="info-grid">
+            <div class="info-item">
+              <div class="info-label">Game Title</div>
+              <div class="info-val">Phantom Circuit</div>
+            </div>
+            <div class="info-item">
+              <div class="info-label">Genre</div>
+              <div class="info-val">Puzzle / Psychological Horror</div>
+            </div>
+            <div class="info-item">
+              <div class="info-label">Platforms</div>
+              <div class="info-val">PC (Steam) · PlayStation 5 · Xbox Series</div>
+            </div>
+            <div class="info-item">
+              <div class="info-label">Development Stage</div>
+              <div class="info-val"><span class="stage-pill stage-beta">Beta</span> ~85% complete</div>
+            </div>
+            <div class="info-item">
+              <div class="info-label">Engine</div>
+              <div class="info-val">Unreal Engine 5.3</div>
+            </div>
+            <div class="info-item">
+              <div class="info-label">Target Release</div>
+              <div class="info-val">Q3 2026 (Steam Early Access)</div>
+            </div>
+            <div class="info-item">
+              <div class="info-label">Player Mode</div>
+              <div class="info-val">Single Player</div>
+            </div>
+            <div class="info-item">
+              <div class="info-label">Estimated Playtime</div>
+              <div class="info-val">12 – 18 hrs</div>
+            </div>
+          </div>
+          <div class="divider" style="margin-bottom:12px"></div>
+          <div class="info-label" style="margin-bottom:8px">Description</div>
+          <p style="font-size:13.5px;color:#3a3530;line-height:1.7">
+            Phantom Circuit is an atmospheric puzzle-horror game set in a decaying underground research facility. Players take the role of an ex-engineer navigating AI-generated illusions, solving environmental puzzles while uncovering a conspiracy that blurs reality and simulation. Heavily inspired by liminal aesthetics and J-horror cinema, the game features a fully procedural audio system and hand-painted environment art.
+          </p>
+          <div class="tag-list" style="margin-top:12px">
+            <span class="tag">Atmospheric</span><span class="tag">Narrative-driven</span><span class="tag">Procedural Audio</span><span class="tag">J-Horror</span><span class="tag">Controller Support</span><span class="tag">Steam Deck Ready</span>
+          </div>
+        </div>
+
+        <!-- 2. Business Data (Locked) -->
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title"><span class="emoji">📈</span>Business Data <span style="font-size:11px;font-weight:400;color:#a09890;margin-left:4px">— NDA Required</span></div>
+            <button class="btn-sm btn-nda" style="border:1.5px solid #6b48c0;background:#fff;color:#6b48c0;cursor:pointer" onclick="showModal('nda')">🔒 Unlock Data</button>
+          </div>
+          <div class="locked-section">
+            <!-- Blurred preview (always rendered for layout) -->
+            <div class="blurred-content">
+              <div class="biz-grid" style="margin-bottom:16px">
+                <div class="biz-stat">
+                  <div class="biz-stat-num accent">48,200</div>
+                  <div class="biz-stat-label">Daily Active Users (DAU)</div>
+                </div>
+                <div class="biz-stat">
+                  <div class="biz-stat-num">$127K</div>
+                  <div class="biz-stat-label">Monthly Revenue (Steam EA)</div>
+                </div>
+                <div class="biz-stat">
+                  <div class="biz-stat-num">4.7★</div>
+                  <div class="biz-stat-label">Avg. User Rating</div>
+                </div>
+              </div>
+              <div class="biz-row">
+                <span class="label">Target Markets</span>
+                <span class="val"><span class="market-flag">🇯🇵</span>Japan <span class="market-flag">🇰🇷</span>Korea <span class="market-flag">🇺🇸</span>North America</span>
+              </div>
+              <div class="biz-row">
+                <span class="label">Current Publisher</span>
+                <span class="val">Self-published (No publisher)</span>
+              </div>
+              <div class="biz-row">
+                <span class="label">Seeking Partnership</span>
+                <span class="val">
+                  <span class="collab-tag">Publishing</span>
+                  <span class="collab-tag blue">Distribution</span>
+                  <span class="collab-tag green">Localization</span>
+                </span>
+              </div>
+              <div class="biz-row">
+                <span class="label">Wishlist Count</span>
+                <span class="val">214,500 (Steam)</span>
+              </div>
+              <div class="biz-row">
+                <span class="label">Projected Year-1 Revenue</span>
+                <span class="val">$2.1M – $3.8M</span>
+              </div>
+            </div>
+            <!-- Lock overlay -->
+            <div class="lock-overlay">
+              <div class="lock-icon">🔐</div>
+              <div class="lock-title">Business Data Restricted</div>
+              <div class="lock-sub">Sign an NDA to view DAU, revenue, market data and partnership terms</div>
+              <button class="btn btn-nda" style="margin-top:4px" onclick="showModal('nda')">Request NDA Access</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- 3. Publishing Terms Preview -->
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title"><span class="emoji">📜</span>Publishing Terms Preview</div>
+            <span style="font-size:11.5px;color:#6b6660;font-weight:400">Indicative only — subject to negotiation</span>
+          </div>
+          <div class="terms-grid">
+            <div class="term-item">
+              <div class="term-label">IP License Scope</div>
+              <div class="term-val">Publishing Rights Only</div>
+              <div class="term-note">Developer retains full IP ownership</div>
+            </div>
+            <div class="term-item">
+              <div class="term-label">Revenue Share (Dev)</div>
+              <div class="term-val highlight">70% – 80%</div>
+              <div class="term-note">After platform fees (Steam 30%)</div>
+            </div>
+            <div class="term-item">
+              <div class="term-label">Exclusivity</div>
+              <div class="term-val">
+                <span class="exclusivity-badge excl-neg">⚠ Negotiable</span>
+              </div>
+              <div class="term-note">Open to 12-month window exclusivity</div>
+            </div>
+            <div class="term-item">
+              <div class="term-label">Minimum Guarantee</div>
+              <div class="term-val highlight">$300K – $500K</div>
+              <div class="term-note">Advance recoupable from royalties</div>
+            </div>
+            <div class="term-item">
+              <div class="term-label">Territory</div>
+              <div class="term-val">Asia Pacific + Global</div>
+              <div class="term-note">Regional deals considered</div>
+            </div>
+            <div class="term-item">
+              <div class="term-label">Deal Type</div>
+              <div class="term-val">Co-publishing / Funding</div>
+              <div class="term-note">Marketing co-investment welcome</div>
+            </div>
+          </div>
+          <p class="section-note">* Full term sheet and financials shared after NDA execution with qualified parties only.</p>
+        </div>
+
+        <!-- 4. Attachments -->
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title"><span class="emoji">📎</span>Materials & Attachments</div>
+          </div>
+          <div class="attachment-list">
+            <div class="attachment-item">
+              <div class="attach-icon attach-pdf">📄</div>
+              <div class="attach-info">
+                <div class="attach-name">Phantom Circuit — Pitch Deck 2026</div>
+                <div class="attach-meta">PDF · 18 slides · 4.2 MB · Updated Mar 18, 2026</div>
+              </div>
+              <div class="attach-actions">
+                <button class="btn-attach btn-preview" onclick="alert('Preview: Pitch Deck')">Preview</button>
+                <button class="btn-attach btn-download" onclick="alert('Downloading Pitch Deck...')">⬇ Download</button>
+              </div>
+            </div>
+            <div class="attachment-item">
+              <div class="attach-icon attach-doc">📊</div>
+              <div class="attach-info">
+                <div class="attach-name">Business Plan & Financial Projections</div>
+                <div class="attach-meta">PDF · 32 pages · 6.8 MB · Requires NDA</div>
+              </div>
+              <div class="attach-actions">
+                <button class="btn-attach btn-preview" style="color:#a09890;border-color:#d0cbc0;cursor:default" disabled>🔒 NDA Required</button>
+                <button class="btn-attach btn-download" style="opacity:.4;cursor:not-allowed" disabled>⬇ Download</button>
+              </div>
+            </div>
+            <div class="attachment-item">
+              <div class="attach-icon attach-video">🎬</div>
+              <div class="attach-info">
+                <div class="attach-name">Gameplay Trailer — Chapter 1</div>
+                <div class="attach-meta">MP4 · 3:42 · 1080p · Public</div>
+              </div>
+              <div class="attach-actions">
+                <button class="btn-attach btn-preview" onclick="toggleVideo()">▶ Play</button>
+                <button class="btn-attach btn-download" onclick="alert('Downloading Gameplay Video...')">⬇ Download</button>
+              </div>
+            </div>
+          </div>
+          <!-- Gameplay video embed -->
+          <div class="video-embed" id="videoEmbed" style="display:none;margin-top:14px" onclick="alert('Video player would open here')">
+            <div style="width:100%;height:100%;background:linear-gradient(135deg,#1a0a2e,#3a1a5a);display:flex;align-items:center;justify-content:center;flex-direction:column;gap:10px">
+              <div style="font-size:48px">👻</div>
+              <div style="color:#e0d8f0;font-size:14px;font-weight:600">Phantom Circuit — Chapter 1 Gameplay</div>
+              <div style="color:#9080a0;font-size:12px">3:42 · 1080p60</div>
+            </div>
+            <div class="play-btn">▶</div>
+          </div>
+        </div>
+
+        <!-- 5. View History -->
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title"><span class="emoji">👁</span>Profile Views</div>
+            <a class="card-action" href="#">Export Report</a>
+          </div>
+          <div class="view-count-bar">
+            <div class="view-count-num">47</div>
+            <div class="view-count-info">
+              views in the last 30 days · <strong>12 companies</strong> · <strong>8 new this week</strong>
+            </div>
+          </div>
+          <div class="view-history">
+            <div class="view-item">
+              <div class="viewer-avatar" style="background:linear-gradient(135deg,#3b6fe0,#6b9ff0)">S</div>
+              <div class="viewer-info">
+                <div class="viewer-name">Sarah Nakamura <span class="viewer-role role-pub">Publisher</span></div>
+                <div class="viewer-company">SkyHarbor Interactive · Tokyo, JP</div>
+              </div>
+              <div class="viewer-time">Today · 14:32</div>
+            </div>
+            <div class="view-item">
+              <div class="viewer-avatar" style="background:linear-gradient(135deg,#0d9b72,#20c480)">M</div>
+              <div class="viewer-info">
+                <div class="viewer-name">Marcus Linden <span class="viewer-role role-inv">Investor</span></div>
+                <div class="viewer-company">Nordic Games Fund · Stockholm, SE</div>
+              </div>
+              <div class="viewer-time">Yesterday · 09:15</div>
+            </div>
+            <div class="view-item">
+              <div class="viewer-avatar" style="background:linear-gradient(135deg,#d95f2b,#f08040)">Y</div>
+              <div class="viewer-info">
+                <div class="viewer-name">Yuki Tanaka <span class="viewer-role role-pub">Publisher</span></div>
+                <div class="viewer-company">Capstone Asia Ltd. · Osaka, JP</div>
+              </div>
+              <div class="viewer-time">Mar 21 · 11:40</div>
+            </div>
+            <div class="view-item">
+              <div class="viewer-avatar" style="background:linear-gradient(135deg,#6b48c0,#9b6fd4)">C</div>
+              <div class="viewer-info">
+                <div class="viewer-name">Chen Wei <span class="viewer-role role-pub">Publisher</span></div>
+                <div class="viewer-company">MirrorWorld Games · Shanghai, CN</div>
+              </div>
+              <div class="viewer-time">Mar 20 · 16:08</div>
+            </div>
+            <div class="view-item">
+              <div class="viewer-avatar" style="background:linear-gradient(135deg,#c4892b,#e0b060)">A</div>
+              <div class="viewer-info">
+                <div class="viewer-name">Anna Vogt <span class="viewer-role role-inv">Investor</span></div>
+                <div class="viewer-company">Venture Pixel GmbH · Berlin, DE</div>
+              </div>
+              <div class="viewer-time">Mar 19 · 10:52</div>
+            </div>
+            <div class="view-item">
+              <div class="viewer-avatar" style="background:linear-gradient(135deg,#2d8a3e,#52c041)">J</div>
+              <div class="viewer-info">
+                <div class="viewer-name">James Park <span class="viewer-role role-dev">Developer</span></div>
+                <div class="viewer-company">Starfield Games · Seoul, KR</div>
+              </div>
+              <div class="viewer-time">Mar 18 · 08:30</div>
+            </div>
+          </div>
+          <p class="section-note" style="margin-top:12px">Showing 6 of 47 viewers. Full list available to the project owner.</p>
+        </div>
+
+      </div><!-- /main-col -->
+
+      <!-- ── Right Panel ── -->
+      <div class="right-panel">
+
+        <!-- Developer Card -->
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title"><span class="emoji">🏢</span>Developer</div>
+            <a class="card-action" href="#">View Profile →</a>
+          </div>
+          <div class="dev-card-header">
+            <div class="dev-logo">👻</div>
+            <div>
+              <div class="dev-card-name">Akihabara Studio</div>
+              <div class="dev-card-sub">🇯🇵 Tokyo, Japan · Founded 2019</div>
+            </div>
+          </div>
+          <div class="dev-stats">
+            <div class="dev-stat">
+              <div class="dev-stat-num">12</div>
+              <div class="dev-stat-label">Team Size</div>
+            </div>
+            <div class="dev-stat">
+              <div class="dev-stat-num">3</div>
+              <div class="dev-stat-label">Shipped Titles</div>
+            </div>
+            <div class="dev-stat">
+              <div class="dev-stat-num">4.6★</div>
+              <div class="dev-stat-label">Avg. Rating</div>
+            </div>
+            <div class="dev-stat">
+              <div class="dev-stat-num">$2.8M</div>
+              <div class="dev-stat-label">Total Revenue</div>
+            </div>
+          </div>
+          <div class="divider"></div>
+          <div class="dev-info-row"><span class="dl">Studio Type</span><span class="dv">Independent</span></div>
+          <div class="dev-info-row"><span class="dl">Primary Engine</span><span class="dv">Unreal Engine 5</span></div>
+          <div class="dev-info-row"><span class="dl">Website</span><span class="dv" style="color:#0a7fa8">akihabara-studio.jp</span></div>
+          <div class="dev-info-row"><span class="dl">GC Member Since</span><span class="dv">Jan 2024</span></div>
+          <div class="divider"></div>
+          <div style="font-size:12px;font-weight:700;color:#a09890;text-transform:uppercase;letter-spacing:.4px;margin-bottom:10px">Portfolio</div>
+          <div class="portfolio-list">
+            <div class="portfolio-item">
+              <svg class="portfolio-thumb" style="background:linear-gradient(135deg,#6b48c0,#9b6fd4)" width="36" height="27" viewBox="0 0 36 27"><text x="50%" y="55%" dominant-baseline="middle" text-anchor="middle" fill="rgba(255,255,255,.5)" font-size="12">👻</text></svg>
+              <span class="portfolio-name">Phantom Circuit</span>
+              <span class="portfolio-stat stage-pill stage-beta">Beta</span>
+            </div>
+            <div class="portfolio-item">
+              <svg class="portfolio-thumb" style="background:linear-gradient(135deg,#0a7fa8,#2eb5e0)" width="36" height="27" viewBox="0 0 36 27"><text x="50%" y="55%" dominant-baseline="middle" text-anchor="middle" fill="rgba(255,255,255,.5)" font-size="12">🌊</text></svg>
+              <span class="portfolio-name">Null Tide</span>
+              <span class="portfolio-stat" style="font-size:11px;color:#0d9b72;font-weight:600">Released</span>
+            </div>
+            <div class="portfolio-item">
+              <svg class="portfolio-thumb" style="background:linear-gradient(135deg,#c4892b,#e0b060)" width="36" height="27" viewBox="0 0 36 27"><text x="50%" y="55%" dominant-baseline="middle" text-anchor="middle" fill="rgba(255,255,255,.5)" font-size="12">🗺</text></svg>
+              <span class="portfolio-name">Echo Atlas</span>
+              <span class="portfolio-stat" style="font-size:11px;color:#0d9b72;font-weight:600">Released</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Contacts -->
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title"><span class="emoji">👤</span>Contacts</div>
+          </div>
+          <div class="contact-list">
+            <div class="contact-item">
+              <div class="contact-avatar" style="background:linear-gradient(135deg,#6b48c0,#9b6fd4)">H</div>
+              <div style="flex:1">
+                <div class="contact-name">Hiro Matsumoto</div>
+                <div class="contact-role">CEO & Game Director</div>
+                <div class="contact-links">
+                  <a class="contact-link" href="#">✉ Email</a>
+                  <a class="contact-link" href="#">💬 Message</a>
+                  <a class="contact-link" href="#">🔗 LinkedIn</a>
+                </div>
+              </div>
+            </div>
+            <div class="contact-item">
+              <div class="contact-avatar" style="background:linear-gradient(135deg,#d95f2b,#f08040)">A</div>
+              <div style="flex:1">
+                <div class="contact-name">Aiko Sato</div>
+                <div class="contact-role">Business Development</div>
+                <div class="contact-links">
+                  <a class="contact-link" href="#">✉ Email</a>
+                  <a class="contact-link" href="#">💬 Message</a>
+                </div>
+              </div>
+            </div>
+            <div class="contact-item">
+              <div class="contact-avatar" style="background:linear-gradient(135deg,#0d9b72,#20c480)">K</div>
+              <div style="flex:1">
+                <div class="contact-name">Kenji Yamada</div>
+                <div class="contact-role">Lead Producer</div>
+                <div class="contact-links">
+                  <a class="contact-link" href="#">✉ Email</a>
+                  <a class="contact-link" href="#">💬 Message</a>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Quick Actions -->
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title"><span class="emoji">⚡</span>Quick Actions</div>
+          </div>
+          <div style="display:flex;flex-direction:column;gap:8px">
+            <button class="btn btn-primary" style="width:100%;justify-content:center" onclick="showModal('interest')">✉️ Express Interest</button>
+            <button class="btn btn-nda" style="width:100%;justify-content:center" onclick="showModal('nda')">🔒 Request NDA</button>
+            <button class="btn btn-ghost" style="width:100%;justify-content:center" onclick="alert('Added to watchlist')">🔖 Save to Watchlist</button>
+            <button class="btn btn-outline" style="width:100%;justify-content:center" onclick="alert('Schedule meeting')">📅 Schedule Meeting</button>
+          </div>
+        </div>
+
+        <!-- Similar Projects -->
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title"><span class="emoji">🔮</span>Similar Projects</div>
+            <a class="card-action" href="#">See all</a>
+          </div>
+          <div style="display:flex;flex-direction:column;gap:10px">
+            <div style="display:flex;align-items:center;gap:10px;cursor:pointer">
+              <svg style="background:linear-gradient(135deg,#2a2a2a,#505050);border-radius:6px;flex-shrink:0" width="40" height="30" viewBox="0 0 40 30"><text x="50%" y="55%" dominant-baseline="middle" text-anchor="middle" fill="rgba(255,255,255,.5)" font-size="14">🥷</text></svg>
+              <div>
+                <div style="font-size:13px;font-weight:600;color:#1c1a17">Shadow Protocol</div>
+                <div style="font-size:11.5px;color:#6b6660">ByteWave Studio · RPG</div>
+              </div>
+              <span class="stage-pill stage-alpha" style="margin-left:auto">Alpha</span>
+            </div>
+            <div style="display:flex;align-items:center;gap:10px;cursor:pointer">
+              <svg style="background:linear-gradient(135deg,#2d7a4a,#55b070);border-radius:6px;flex-shrink:0" width="40" height="30" viewBox="0 0 40 30"><text x="50%" y="55%" dominant-baseline="middle" text-anchor="middle" fill="rgba(255,255,255,.5)" font-size="14">🎋</text></svg>
+              <div>
+                <div style="font-size:13px;font-weight:600;color:#1c1a17">Forest Spirit</div>
+                <div style="font-size:11.5px;color:#6b6660">Bamboo Dev · Adventure</div>
+              </div>
+              <span class="stage-pill stage-beta" style="margin-left:auto">Beta</span>
+            </div>
+            <div style="display:flex;align-items:center;gap:10px;cursor:pointer">
+              <svg style="background:linear-gradient(135deg,#3a3a6a,#6060a8);border-radius:6px;flex-shrink:0" width="40" height="30" viewBox="0 0 40 30"><text x="50%" y="55%" dominant-baseline="middle" text-anchor="middle" fill="rgba(255,255,255,.5)" font-size="14">🚀</text></svg>
+              <div>
+                <div style="font-size:13px;font-weight:600;color:#1c1a17">Void Wanderer</div>
+                <div style="font-size:11.5px;color:#6b6660">Starfield Games · Sci-fi</div>
+              </div>
+              <span class="stage-pill stage-alpha" style="margin-left:auto">Alpha</span>
+            </div>
+          </div>
+        </div>
+
+      </div><!-- /right-panel -->
+    </div>
+
+  </div>
+</main>
+
+<!-- ── Modal: Express Interest ── -->
+<div id="modalInterest" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.4);z-index:300;display:none;align-items:center;justify-content:center">
+  <div style="background:#fff;border-radius:16px;padding:32px;width:460px;max-width:92vw;box-shadow:0 12px 40px rgba(0,0,0,.2)">
+    <div style="font-size:20px;font-weight:700;margin-bottom:6px">✉️ Express Interest</div>
+    <div style="font-size:13px;color:#6b6660;margin-bottom:20px">Send a message to <strong>Akihabara Studio</strong> about Phantom Circuit</div>
+    <div style="margin-bottom:14px">
+      <label style="font-size:12px;font-weight:600;color:#6b6660;display:block;margin-bottom:5px">Your Company</label>
+      <input type="text" value="NexGen Publishing" style="width:100%;padding:9px 12px;border:1.5px solid #d0cbc0;border-radius:8px;font-size:13.5px;font-family:'DM Sans',sans-serif;outline:none">
+    </div>
+    <div style="margin-bottom:14px">
+      <label style="font-size:12px;font-weight:600;color:#6b6660;display:block;margin-bottom:5px">Partnership Interest</label>
+      <select style="width:100%;padding:9px 12px;border:1.5px solid #d0cbc0;border-radius:8px;font-size:13.5px;font-family:'DM Sans',sans-serif;outline:none;background:#fff">
+        <option>Publishing Deal</option>
+        <option>Distribution Only</option>
+        <option>Co-Development</option>
+        <option>Investment / Funding</option>
+        <option>Localization</option>
+      </select>
+    </div>
+    <div style="margin-bottom:20px">
+      <label style="font-size:12px;font-weight:600;color:#6b6660;display:block;margin-bottom:5px">Message</label>
+      <textarea rows="4" placeholder="Introduce your company and what kind of deal you're interested in..." style="width:100%;padding:9px 12px;border:1.5px solid #d0cbc0;border-radius:8px;font-size:13.5px;font-family:'DM Sans',sans-serif;outline:none;resize:vertical"></textarea>
+    </div>
+    <div style="display:flex;gap:10px;justify-content:flex-end">
+      <button class="btn btn-ghost" onclick="closeModal('interest')">Cancel</button>
+      <button class="btn btn-primary" onclick="closeModal('interest');alert('Interest expressed! Akihabara Studio will be notified.')">Send Message</button>
+    </div>
+  </div>
+</div>
+
+<!-- ── Modal: Request NDA ── -->
+<div id="modalNda" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.4);z-index:300;align-items:center;justify-content:center">
+  <div style="background:#fff;border-radius:16px;padding:32px;width:480px;max-width:92vw;box-shadow:0 12px 40px rgba(0,0,0,.2)">
+    <div style="font-size:20px;font-weight:700;margin-bottom:6px">🔒 Request NDA</div>
+    <div style="font-size:13px;color:#6b6660;margin-bottom:20px">Request a Non-Disclosure Agreement to access restricted business data for <strong>Phantom Circuit</strong></div>
+    <div style="background:#f5f3ef;border-radius:10px;padding:14px;margin-bottom:18px">
+      <div style="font-size:12px;font-weight:700;color:#a09890;text-transform:uppercase;letter-spacing:.4px;margin-bottom:8px">Data Unlocked After NDA</div>
+      <div style="display:flex;flex-direction:column;gap:6px;font-size:13px;color:#3a3530">
+        <div>✅ DAU & retention metrics</div>
+        <div>✅ Monthly revenue and projections</div>
+        <div>✅ Full financial business plan</div>
+        <div>✅ Market penetration strategy</div>
+        <div>✅ Publisher deal history</div>
+      </div>
+    </div>
+    <div style="margin-bottom:14px">
+      <label style="font-size:12px;font-weight:600;color:#6b6660;display:block;margin-bottom:5px">Legal Entity Name</label>
+      <input type="text" value="NexGen Publishing Ltd." style="width:100%;padding:9px 12px;border:1.5px solid #d0cbc0;border-radius:8px;font-size:13.5px;font-family:'DM Sans',sans-serif;outline:none">
+    </div>
+    <div style="margin-bottom:14px">
+      <label style="font-size:12px;font-weight:600;color:#6b6660;display:block;margin-bottom:5px">Jurisdiction</label>
+      <select style="width:100%;padding:9px 12px;border:1.5px solid #d0cbc0;border-radius:8px;font-size:13.5px;font-family:'DM Sans',sans-serif;outline:none;background:#fff">
+        <option>France</option>
+        <option>Japan</option>
+        <option>United States</option>
+        <option>United Kingdom</option>
+        <option>Germany</option>
+        <option>Singapore</option>
+      </select>
+    </div>
+    <div style="margin-bottom:20px">
+      <label style="display:flex;align-items:flex-start;gap:10px;font-size:13px;color:#3a3530;cursor:pointer">
+        <input type="checkbox" style="margin-top:2px;accent-color:#d95f2b">
+        I confirm that I am an authorized representative of my organization and agree to keep all disclosed information strictly confidential.
+      </label>
+    </div>
+    <div style="display:flex;gap:10px;justify-content:flex-end">
+      <button class="btn btn-ghost" onclick="closeModal('nda')">Cancel</button>
+      <button class="btn btn-nda" onclick="closeModal('nda');alert('NDA request sent! Akihabara Studio will review and respond within 48 hours.')">Submit NDA Request</button>
+    </div>
+  </div>
+</div>
+
+<script>
+function showModal(type) {
+  const id = type === 'nda' ? 'modalNda' : 'modalInterest';
+  const el = document.getElementById(id);
+  el.style.display = 'flex';
+}
+function closeModal(type) {
+  const id = type === 'nda' ? 'modalNda' : 'modalInterest';
+  document.getElementById(id).style.display = 'none';
+}
+// Close modals on backdrop click
+['modalNda','modalInterest'].forEach(id => {
+  document.getElementById(id).addEventListener('click', function(e) {
+    if (e.target === this) this.style.display = 'none';
+  });
+});
+function toggleVideo() {
+  const v = document.getElementById('videoEmbed');
+  v.style.display = v.style.display === 'none' ? 'block' : 'none';
+}
+</script>
+</body>
+</html>

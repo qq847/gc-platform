@@ -1,0 +1,1275 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>发行合作合同 — 电子签署</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg: #e8e4da;
+    --accent: #d95f2b;
+    --accent-dark: #b84d22;
+    --accent-light: #f5ddd3;
+    --surface: #f4f1eb;
+    --surface2: #ffffff;
+    --border: #d4cfc4;
+    --text: #1a1714;
+    --text-muted: #6b6560;
+    --text-light: #9c9690;
+    --success: #2e7d4f;
+    --success-bg: #d6f0e0;
+    --radius: 10px;
+    --shadow: 0 2px 12px rgba(0,0,0,0.08);
+    --shadow-lg: 0 8px 32px rgba(0,0,0,0.12);
+  }
+
+  html, body {
+    height: 100%;
+    font-family: 'DM Sans', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    font-size: 14px;
+    line-height: 1.6;
+  }
+
+  /* ───── TOP BAR ───── */
+  .topbar {
+    background: var(--surface2);
+    border-bottom: 1px solid var(--border);
+    padding: 0 40px;
+    height: 60px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    box-shadow: 0 1px 6px rgba(0,0,0,0.06);
+  }
+  .topbar-brand {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .topbar-logo {
+    width: 32px; height: 32px;
+    background: var(--accent);
+    border-radius: 8px;
+    display: flex; align-items: center; justify-content: center;
+    color: #fff;
+    font-weight: 700;
+    font-size: 16px;
+    letter-spacing: -1px;
+  }
+  .topbar-title { font-weight: 600; font-size: 15px; color: var(--text); }
+  .topbar-sub { font-size: 12px; color: var(--text-muted); }
+  .contract-id-badge {
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 4px 12px;
+    font-size: 12px;
+    color: var(--text-muted);
+    font-family: 'DM Sans', monospace;
+  }
+
+  /* ───── PROGRESS BAR ───── */
+  .progress-wrap {
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    padding: 16px 40px;
+  }
+  .progress-steps {
+    display: flex;
+    align-items: center;
+    max-width: 600px;
+    margin: 0 auto;
+  }
+  .step {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    position: relative;
+    flex: 1;
+  }
+  .step-dot {
+    width: 32px; height: 32px;
+    border-radius: 50%;
+    border: 2px solid var(--border);
+    background: var(--surface2);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--text-muted);
+    z-index: 1;
+    transition: all 0.3s;
+  }
+  .step.done .step-dot {
+    background: var(--accent);
+    border-color: var(--accent);
+    color: #fff;
+  }
+  .step.active .step-dot {
+    background: var(--surface2);
+    border-color: var(--accent);
+    color: var(--accent);
+    box-shadow: 0 0 0 4px var(--accent-light);
+  }
+  .step-label {
+    font-size: 11px;
+    font-weight: 500;
+    color: var(--text-muted);
+    margin-top: 5px;
+    white-space: nowrap;
+  }
+  .step.done .step-label, .step.active .step-label { color: var(--accent); }
+  .step-line {
+    flex: 1;
+    height: 2px;
+    background: var(--border);
+    margin: 0 -1px;
+    margin-bottom: 18px;
+    transition: background 0.3s;
+  }
+  .step-line.done { background: var(--accent); }
+
+  /* ───── MAIN LAYOUT ───── */
+  .main {
+    display: grid;
+    grid-template-columns: 1fr 420px;
+    gap: 0;
+    height: calc(100vh - 60px - 72px);
+    overflow: hidden;
+  }
+
+  /* ───── LEFT: CONTRACT DOC ───── */
+  .contract-panel {
+    overflow-y: auto;
+    padding: 32px 40px;
+    border-right: 1px solid var(--border);
+    background: var(--bg);
+  }
+  .contract-panel::-webkit-scrollbar { width: 6px; }
+  .contract-panel::-webkit-scrollbar-track { background: transparent; }
+  .contract-panel::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+
+  .contract-doc {
+    max-width: 720px;
+    margin: 0 auto;
+    background: var(--surface2);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+    overflow: hidden;
+  }
+  .doc-header {
+    background: var(--text);
+    color: #fff;
+    padding: 36px 48px 28px;
+    text-align: center;
+  }
+  .doc-header-badge {
+    display: inline-block;
+    background: rgba(255,255,255,0.15);
+    border-radius: 4px;
+    padding: 3px 10px;
+    font-size: 11px;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    margin-bottom: 12px;
+    color: rgba(255,255,255,0.7);
+  }
+  .doc-title { font-size: 22px; font-weight: 700; margin-bottom: 6px; letter-spacing: -0.3px; }
+  .doc-subtitle { font-size: 13px; color: rgba(255,255,255,0.6); }
+
+  .doc-meta {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0;
+    border-bottom: 1px solid var(--border);
+  }
+  .doc-meta-item {
+    padding: 18px 28px;
+    border-right: 1px solid var(--border);
+  }
+  .doc-meta-item:last-child { border-right: none; }
+  .doc-meta-label { font-size: 11px; text-transform: uppercase; letter-spacing: 0.8px; color: var(--text-muted); margin-bottom: 4px; }
+  .doc-meta-value { font-size: 13px; font-weight: 600; color: var(--text); }
+
+  .doc-body { padding: 32px 48px 48px; }
+
+  .doc-intro {
+    background: var(--bg);
+    border-radius: 8px;
+    padding: 16px 20px;
+    font-size: 13px;
+    color: var(--text-muted);
+    margin-bottom: 28px;
+    line-height: 1.7;
+    border-left: 3px solid var(--accent);
+  }
+
+  .clause {
+    margin-bottom: 26px;
+    padding-bottom: 26px;
+    border-bottom: 1px solid #ece9e2;
+  }
+  .clause:last-child { border-bottom: none; margin-bottom: 0; padding-bottom: 0; }
+  .clause-num {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 8px;
+  }
+  .clause-num-badge {
+    background: var(--accent);
+    color: #fff;
+    width: 22px; height: 22px;
+    border-radius: 4px;
+    display: inline-flex; align-items: center; justify-content: center;
+    font-size: 11px;
+    font-weight: 700;
+    flex-shrink: 0;
+  }
+  .clause-title {
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--text);
+  }
+  .clause-body {
+    font-size: 13px;
+    color: var(--text-muted);
+    line-height: 1.75;
+    padding-left: 30px;
+  }
+  .clause-body p { margin-bottom: 6px; }
+  .clause-body ul { padding-left: 16px; }
+  .clause-body li { margin-bottom: 4px; }
+  .highlight { color: var(--accent); font-weight: 600; }
+
+  /* ───── RIGHT: SIGNING PANEL ───── */
+  .sign-panel {
+    overflow-y: auto;
+    background: var(--surface);
+    display: flex;
+    flex-direction: column;
+  }
+  .sign-panel::-webkit-scrollbar { width: 6px; }
+  .sign-panel::-webkit-scrollbar-track { background: transparent; }
+  .sign-panel::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+
+  .sign-section {
+    padding: 20px 24px;
+    border-bottom: 1px solid var(--border);
+  }
+  .sign-section:last-child { border-bottom: none; }
+
+  .section-title {
+    font-size: 12px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+    color: var(--text-muted);
+    margin-bottom: 14px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .section-title::before {
+    content: '';
+    display: block;
+    width: 3px; height: 12px;
+    background: var(--accent);
+    border-radius: 2px;
+  }
+
+  /* Parties */
+  .parties-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+  }
+  .party-card {
+    background: var(--surface2);
+    border-radius: 8px;
+    padding: 14px 16px;
+    border: 1px solid var(--border);
+  }
+  .party-role {
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+    color: var(--accent);
+    font-weight: 700;
+    margin-bottom: 8px;
+  }
+  .party-name { font-size: 13px; font-weight: 600; margin-bottom: 2px; }
+  .party-pos { font-size: 11px; color: var(--text-muted); margin-bottom: 1px; }
+  .party-co { font-size: 11px; color: var(--text-light); }
+
+  /* Checklist */
+  .checklist { display: flex; flex-direction: column; gap: 6px; }
+  .check-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    padding: 10px 12px;
+    background: var(--surface2);
+    border-radius: 7px;
+    border: 1px solid var(--border);
+    cursor: pointer;
+    transition: border-color 0.2s, background 0.2s;
+    user-select: none;
+  }
+  .check-item:hover { border-color: var(--accent); background: var(--accent-light); }
+  .check-item.checked { border-color: var(--accent); background: #fdf5f1; }
+  .check-item input[type="checkbox"] { display: none; }
+  .check-box {
+    width: 18px; height: 18px;
+    border-radius: 4px;
+    border: 2px solid var(--border);
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+    margin-top: 1px;
+    transition: all 0.2s;
+    background: var(--surface2);
+  }
+  .check-item.checked .check-box {
+    background: var(--accent);
+    border-color: var(--accent);
+  }
+  .check-box svg { display: none; }
+  .check-item.checked .check-box svg { display: block; }
+  .check-text {
+    font-size: 12px;
+    color: var(--text-muted);
+    line-height: 1.5;
+  }
+  .check-item.checked .check-text { color: var(--text); }
+  .check-clause { font-size: 10px; color: var(--text-light); margin-top: 2px; }
+
+  /* Signature Canvas */
+  .sig-area {
+    background: var(--surface2);
+    border: 2px dashed var(--border);
+    border-radius: 8px;
+    overflow: hidden;
+    position: relative;
+    transition: border-color 0.2s;
+  }
+  .sig-area.has-sig { border-style: solid; border-color: var(--accent); }
+  .sig-area canvas { display: block; touch-action: none; cursor: crosshair; }
+  .sig-placeholder {
+    position: absolute;
+    top: 50%; left: 50%;
+    transform: translate(-50%, -50%);
+    text-align: center;
+    pointer-events: none;
+    transition: opacity 0.2s;
+  }
+  .sig-placeholder.hidden { opacity: 0; }
+  .sig-placeholder-icon { font-size: 28px; margin-bottom: 6px; opacity: 0.3; }
+  .sig-placeholder-text { font-size: 12px; color: var(--text-light); }
+
+  .sig-actions {
+    display: flex;
+    gap: 8px;
+    margin-top: 8px;
+  }
+  .btn-ghost {
+    flex: 1;
+    padding: 7px 12px;
+    border-radius: 7px;
+    border: 1px solid var(--border);
+    background: transparent;
+    color: var(--text-muted);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 12px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s;
+    display: flex; align-items: center; justify-content: center; gap: 5px;
+  }
+  .btn-ghost:hover { background: var(--bg); border-color: var(--text-muted); color: var(--text); }
+
+  /* Upload */
+  .upload-area {
+    margin-top: 8px;
+    padding: 10px 14px;
+    border: 1px dashed var(--border);
+    border-radius: 7px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    cursor: pointer;
+    transition: all 0.2s;
+    background: transparent;
+  }
+  .upload-area:hover { border-color: var(--accent); background: var(--accent-light); }
+  .upload-icon { font-size: 18px; opacity: 0.5; }
+  .upload-text { font-size: 12px; color: var(--text-muted); }
+  .upload-text strong { color: var(--accent); }
+  .upload-area input { display: none; }
+
+  /* Date */
+  .date-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    background: var(--surface2);
+    border-radius: 7px;
+    padding: 10px 14px;
+    border: 1px solid var(--border);
+  }
+  .date-label { font-size: 12px; color: var(--text-muted); }
+  .date-value { font-size: 13px; font-weight: 600; color: var(--text); margin-left: auto; }
+
+  /* Sign Button */
+  .btn-sign {
+    width: 100%;
+    padding: 14px;
+    border-radius: 9px;
+    border: none;
+    background: var(--accent);
+    color: #fff;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 15px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.25s;
+    display: flex; align-items: center; justify-content: center; gap: 8px;
+    letter-spacing: -0.2px;
+    position: relative;
+    overflow: hidden;
+  }
+  .btn-sign:disabled {
+    background: var(--border);
+    color: var(--text-light);
+    cursor: not-allowed;
+  }
+  .btn-sign:not(:disabled):hover {
+    background: var(--accent-dark);
+    transform: translateY(-1px);
+    box-shadow: 0 6px 20px rgba(217,95,43,0.35);
+  }
+  .btn-sign:not(:disabled):active { transform: translateY(0); }
+
+  .sign-hint {
+    text-align: center;
+    font-size: 11px;
+    color: var(--text-light);
+    margin-top: 8px;
+  }
+  .sign-hint span { color: var(--accent); }
+
+  /* ───── COMPLETION STATE ───── */
+  .completion-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(26, 23, 20, 0.7);
+    z-index: 200;
+    align-items: center;
+    justify-content: center;
+    backdrop-filter: blur(4px);
+  }
+  .completion-overlay.show { display: flex; }
+
+  .completion-card {
+    background: var(--surface2);
+    border-radius: 16px;
+    padding: 48px 52px;
+    max-width: 480px;
+    width: 90%;
+    text-align: center;
+    box-shadow: var(--shadow-lg);
+    animation: slideUp 0.4s cubic-bezier(0.34,1.56,0.64,1);
+  }
+  @keyframes slideUp {
+    from { opacity: 0; transform: translateY(30px) scale(0.96); }
+    to   { opacity: 1; transform: translateY(0) scale(1); }
+  }
+
+  .completion-icon {
+    width: 72px; height: 72px;
+    background: var(--success-bg);
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    margin: 0 auto 20px;
+    font-size: 32px;
+  }
+  .completion-title {
+    font-size: 22px;
+    font-weight: 700;
+    margin-bottom: 8px;
+    color: var(--text);
+  }
+  .completion-sub {
+    font-size: 14px;
+    color: var(--text-muted);
+    margin-bottom: 28px;
+    line-height: 1.6;
+  }
+
+  .completion-meta {
+    background: var(--bg);
+    border-radius: 10px;
+    padding: 18px 22px;
+    margin-bottom: 24px;
+    text-align: left;
+  }
+  .meta-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 6px 0;
+    border-bottom: 1px solid var(--border);
+    font-size: 13px;
+  }
+  .meta-row:last-child { border-bottom: none; }
+  .meta-row-label { color: var(--text-muted); }
+  .meta-row-value { font-weight: 600; font-family: 'DM Sans', monospace; font-size: 12px; }
+  .meta-row-value.green { color: var(--success); }
+
+  .btn-download {
+    width: 100%;
+    padding: 13px;
+    border-radius: 9px;
+    border: none;
+    background: var(--accent);
+    color: #fff;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 14px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.2s;
+    display: flex; align-items: center; justify-content: center; gap: 8px;
+    margin-bottom: 10px;
+  }
+  .btn-download:hover { background: var(--accent-dark); }
+
+  .btn-close {
+    width: 100%;
+    padding: 10px;
+    border-radius: 9px;
+    border: 1px solid var(--border);
+    background: transparent;
+    color: var(--text-muted);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .btn-close:hover { background: var(--bg); }
+
+  /* Progress bar in sign panel */
+  .progress-mini {
+    background: var(--border);
+    border-radius: 3px;
+    height: 4px;
+    margin-top: 10px;
+    overflow: hidden;
+  }
+  .progress-mini-fill {
+    height: 100%;
+    background: var(--accent);
+    border-radius: 3px;
+    transition: width 0.4s ease;
+  }
+  .progress-mini-label {
+    font-size: 11px;
+    color: var(--text-muted);
+    margin-top: 5px;
+    text-align: right;
+  }
+
+  /* Scrollbar for sign panel */
+  .sign-panel::-webkit-scrollbar { width: 4px; }
+</style>
+</head>
+<body>
+
+<!-- TOP BAR -->
+<div class="topbar">
+  <div class="topbar-brand">
+    <div class="topbar-logo">P</div>
+    <div>
+      <div class="topbar-title">PublishPort</div>
+      <div class="topbar-sub">电子合同签署平台</div>
+    </div>
+  </div>
+  <div class="contract-id-badge">合同编号：PPC-2026-03240087</div>
+</div>
+
+<!-- PROGRESS BAR -->
+<div class="progress-wrap">
+  <div class="progress-steps">
+    <div class="step done">
+      <div class="step-dot">✓</div>
+      <div class="step-label">草案起草</div>
+    </div>
+    <div class="step-line done"></div>
+    <div class="step done">
+      <div class="step-dot">✓</div>
+      <div class="step-label">法务审核</div>
+    </div>
+    <div class="step-line done"></div>
+    <div class="step active" id="step-signing">
+      <div class="step-dot">3</div>
+      <div class="step-label">双方签署</div>
+    </div>
+    <div class="step-line" id="line-executed"></div>
+    <div class="step" id="step-executed">
+      <div class="step-dot">4</div>
+      <div class="step-label">合同生效</div>
+    </div>
+  </div>
+</div>
+
+<!-- MAIN LAYOUT -->
+<div class="main">
+
+  <!-- LEFT: CONTRACT DOC -->
+  <div class="contract-panel">
+    <div class="contract-doc">
+
+      <div class="doc-header">
+        <div class="doc-header-badge">正式合同文件</div>
+        <div class="doc-title">游戏发行合作合同</div>
+        <div class="doc-subtitle">Game Publishing Cooperation Agreement · 版本 v2.1</div>
+      </div>
+
+      <div class="doc-meta">
+        <div class="doc-meta-item">
+          <div class="doc-meta-label">合同日期</div>
+          <div class="doc-meta-value" id="doc-date-display">—</div>
+        </div>
+        <div class="doc-meta-item">
+          <div class="doc-meta-label">合同有效期</div>
+          <div class="doc-meta-value">自签署之日起 3 年</div>
+        </div>
+        <div class="doc-meta-item">
+          <div class="doc-meta-label">开发商</div>
+          <div class="doc-meta-value">星辰互娱科技有限公司</div>
+        </div>
+        <div class="doc-meta-item">
+          <div class="doc-meta-label">发行商</div>
+          <div class="doc-meta-value">聚光传媒发行集团</div>
+        </div>
+      </div>
+
+      <div class="doc-body">
+
+        <div class="doc-intro">
+          本合同由<strong>星辰互娱科技有限公司</strong>（以下简称"开发商"）与<strong>聚光传媒发行集团</strong>（以下简称"发行商"）依据《中华人民共和国民法典》及相关法律法规，就游戏产品《星际觉醒》之发行合作事宜，经双方协商一致，订立本合同。
+        </div>
+
+        <!-- Clause 1 -->
+        <div class="clause">
+          <div class="clause-num">
+            <span class="clause-num-badge">1</span>
+            <span class="clause-title">发行授权范围</span>
+          </div>
+          <div class="clause-body">
+            <p>开发商授予发行商在<span class="highlight">中国大陆、香港、澳门、台湾及东南亚地区</span>（以下统称"授权区域"）内，对游戏产品《星际觉醒》（以下简称"本游戏"）进行发行、运营及推广的排他性权利。</p>
+            <ul>
+              <li>授权平台：iOS App Store、Android 主流应用商店、PC 客户端平台</li>
+              <li>授权期限：自本合同生效之日起三（3）年，期满可协商续约</li>
+              <li>发行商不得将授权区域外的发行权转让给第三方</li>
+            </ul>
+          </div>
+        </div>
+
+        <!-- Clause 2 -->
+        <div class="clause">
+          <div class="clause-num">
+            <span class="clause-num-badge">2</span>
+            <span class="clause-title">收益分成比例</span>
+          </div>
+          <div class="clause-body">
+            <p>双方同意按以下比例分配游戏净收益（扣除平台渠道费用后）：</p>
+            <ul>
+              <li>开发商分成比例：<span class="highlight">55%</span></li>
+              <li>发行商分成比例：<span class="highlight">45%</span></li>
+              <li>结算周期：每自然月结算一次，发行商于次月 15 日前完成打款</li>
+              <li>首年若月流水超过 500 万元人民币，开发商分成提升至 <span class="highlight">60%</span></li>
+            </ul>
+          </div>
+        </div>
+
+        <!-- Clause 3 -->
+        <div class="clause">
+          <div class="clause-num">
+            <span class="clause-num-badge">3</span>
+            <span class="clause-title">市场推广义务</span>
+          </div>
+          <div class="clause-body">
+            <p>发行商承诺在合同首年内，为本游戏投入<span class="highlight">不低于人民币 800 万元</span>的市场推广预算，具体包括：</p>
+            <ul>
+              <li>社交媒体广告投放（微博、抖音、B 站等）</li>
+              <li>KOL/KOC 合作推广不少于 50 人次</li>
+              <li>线下游戏展会参展（ChinaJoy 及区域展会）</li>
+              <li>应用商店首页推荐资源争取</li>
+            </ul>
+            <p>发行商每季度提交推广报告，开发商有权审查推广数据。</p>
+          </div>
+        </div>
+
+        <!-- Clause 4 -->
+        <div class="clause">
+          <div class="clause-num">
+            <span class="clause-num-badge">4</span>
+            <span class="clause-title">知识产权归属</span>
+          </div>
+          <div class="clause-body">
+            <p>本游戏的全部知识产权，包括但不限于源代码、美术资源、音效音乐、剧情文本、商标及品牌标识，<span class="highlight">归开发商独家所有</span>。</p>
+            <ul>
+              <li>发行商获得在授权区域内使用上述资产用于发行推广的有限授权</li>
+              <li>发行商不得对本游戏进行逆向工程、反编译或修改</li>
+              <li>合同终止后，发行商须立即停止使用全部游戏资产</li>
+            </ul>
+          </div>
+        </div>
+
+        <!-- Clause 5 -->
+        <div class="clause">
+          <div class="clause-num">
+            <span class="clause-num-badge">5</span>
+            <span class="clause-title">版本更新与内容审核</span>
+          </div>
+          <div class="clause-body">
+            <p>开发商负责游戏内容开发与版本迭代，发行商负责版号申请及相关监管审批。</p>
+            <ul>
+              <li>开发商须提前 <span class="highlight">30 天</span>通知发行商重大版本更新计划</li>
+              <li>涉及付费系统变更须经双方书面确认</li>
+              <li>发行商负责游戏内容符合授权区域法律法规的合规审查</li>
+            </ul>
+          </div>
+        </div>
+
+        <!-- Clause 6 -->
+        <div class="clause">
+          <div class="clause-num">
+            <span class="clause-num-badge">6</span>
+            <span class="clause-title">数据归属与隐私保护</span>
+          </div>
+          <div class="clause-body">
+            <p>游戏运营期间产生的用户数据处理按以下原则执行：</p>
+            <ul>
+              <li>用户行为数据由双方共享，用于产品优化与运营决策</li>
+              <li>用户个人隐私数据由发行商按《个人信息保护法》独立管理</li>
+              <li>合同终止后，发行商须在 <span class="highlight">90 天</span>内向开发商移交全量用户数据并删除副本</li>
+            </ul>
+          </div>
+        </div>
+
+        <!-- Clause 7 -->
+        <div class="clause">
+          <div class="clause-num">
+            <span class="clause-num-badge">7</span>
+            <span class="clause-title">保密义务</span>
+          </div>
+          <div class="clause-body">
+            <p>双方对本合同内容及合作期间获取的商业信息负有严格保密义务，保密期限为<span class="highlight">合同终止后 5 年</span>。</p>
+            <ul>
+              <li>未经对方书面同意，不得向第三方披露合同条款及收益数据</li>
+              <li>违反保密义务须向守约方支付 <span class="highlight">200 万元人民币</span>违约金</li>
+            </ul>
+          </div>
+        </div>
+
+        <!-- Clause 8 -->
+        <div class="clause">
+          <div class="clause-num">
+            <span class="clause-num-badge">8</span>
+            <span class="clause-title">独家发行与竞业限制</span>
+          </div>
+          <div class="clause-body">
+            <p>合同期内，开发商不得在授权区域内将本游戏授权给其他发行商，发行商不得在授权区域内发行与本游戏存在<span class="highlight">直接竞争关系</span>的同类游戏产品。</p>
+            <p>认定直接竞争关系的标准：相同游戏品类且目标用户重合度超过 60%。</p>
+          </div>
+        </div>
+
+        <!-- Clause 9 -->
+        <div class="clause">
+          <div class="clause-num">
+            <span class="clause-num-badge">9</span>
+            <span class="clause-title">运营数据报告</span>
+          </div>
+          <div class="clause-body">
+            <p>发行商须定期向开发商提供运营数据报告：</p>
+            <ul>
+              <li>每日数据：DAU、新增用户、付费额（T+1 日提供）</li>
+              <li>月度报告：每月 10 日前提供上月完整运营分析</li>
+              <li>季度报告：包含市场趋势分析与下季度推广计划</li>
+              <li>开发商可随时访问发行商后台数据系统进行独立核查</li>
+            </ul>
+          </div>
+        </div>
+
+        <!-- Clause 10 -->
+        <div class="clause">
+          <div class="clause-num">
+            <span class="clause-num-badge">10</span>
+            <span class="clause-title">违约责任</span>
+          </div>
+          <div class="clause-body">
+            <p>任一方违反本合同约定，须承担以下责任：</p>
+            <ul>
+              <li>发行商延迟付款：按未付金额每日 <span class="highlight">0.05%</span> 计算违约金</li>
+              <li>开发商延迟交付版本：每延迟一日赔偿发行商 <span class="highlight">5 万元人民币</span></li>
+              <li>严重违约（含欺诈行为）：守约方有权立即解除合同并追偿全部损失</li>
+            </ul>
+          </div>
+        </div>
+
+        <!-- Clause 11 -->
+        <div class="clause">
+          <div class="clause-num">
+            <span class="clause-num-badge">11</span>
+            <span class="clause-title">合同解除与终止</span>
+          </div>
+          <div class="clause-body">
+            <p>以下情形任一方均可提前解除合同：</p>
+            <ul>
+              <li>一方连续 <span class="highlight">3 个月</span>未履行主要合同义务</li>
+              <li>一方发生破产、重组或丧失经营许可</li>
+              <li>不可抗力事件持续超过 <span class="highlight">6 个月</span></li>
+              <li>双方协商一致书面同意解除</li>
+            </ul>
+            <p>解除合同须提前 <span class="highlight">60 天</span>书面通知对方，合同终止后 30 天内完成结算清算。</p>
+          </div>
+        </div>
+
+        <!-- Clause 12 -->
+        <div class="clause">
+          <div class="clause-num">
+            <span class="clause-num-badge">12</span>
+            <span class="clause-title">争议解决</span>
+          </div>
+          <div class="clause-body">
+            <p>双方因本合同产生的任何争议，应首先通过友好协商解决，协商不成的，提交<span class="highlight">中国国际经济贸易仲裁委员会</span>按其规则仲裁。</p>
+            <ul>
+              <li>仲裁地点：北京</li>
+              <li>仲裁语言：中文</li>
+              <li>仲裁裁决为终局裁决，对双方均有约束力</li>
+            </ul>
+          </div>
+        </div>
+
+        <!-- Clause 13 -->
+        <div class="clause">
+          <div class="clause-num">
+            <span class="clause-num-badge">13</span>
+            <span class="clause-title">不可抗力</span>
+          </div>
+          <div class="clause-body">
+            <p>不可抗力事件包括自然灾害、战争、政府政策变化、网络安全事件等双方无法预见、无法避免且无法克服的情形。</p>
+            <p>遭遇不可抗力的一方须在 <span class="highlight">72 小时</span>内书面通知对方，并提供官方证明文件。不可抗力期间双方的相应义务暂停履行。</p>
+          </div>
+        </div>
+
+        <!-- Clause 14 -->
+        <div class="clause">
+          <div class="clause-num">
+            <span class="clause-num-badge">14</span>
+            <span class="clause-title">合同变更</span>
+          </div>
+          <div class="clause-body">
+            <p>本合同的任何变更须经双方授权代表签字的书面补充协议方为有效。口头协议对双方均无约束力。</p>
+            <p>补充协议与本合同具有同等法律效力，以最新签署的补充协议为准。</p>
+          </div>
+        </div>
+
+        <!-- Clause 15 -->
+        <div class="clause">
+          <div class="clause-num">
+            <span class="clause-num-badge">15</span>
+            <span class="clause-title">合同生效与份数</span>
+          </div>
+          <div class="clause-body">
+            <p>本合同经双方授权代表签署后生效，电子签名与手写签名具有同等法律效力（依据《电子签名法》第十三条）。</p>
+            <ul>
+              <li>本合同一式四份，双方各执两份</li>
+              <li>电子版本由平台存档，可随时下载具有法律效力的 PDF 版本</li>
+              <li>本合同为双方之间就本游戏发行合作的完整约定，取代此前一切口头或书面协议</li>
+            </ul>
+          </div>
+        </div>
+
+      </div><!-- /doc-body -->
+    </div><!-- /contract-doc -->
+  </div><!-- /contract-panel -->
+
+  <!-- RIGHT: SIGNING PANEL -->
+  <div class="sign-panel">
+
+    <!-- PARTIES -->
+    <div class="sign-section">
+      <div class="section-title">合同双方</div>
+      <div class="parties-grid">
+        <div class="party-card">
+          <div class="party-role">🏗 开发商</div>
+          <div class="party-name">王志远</div>
+          <div class="party-pos">联合创始人 &amp; CEO</div>
+          <div class="party-co">星辰互娱科技有限公司</div>
+        </div>
+        <div class="party-card">
+          <div class="party-role">📡 发行商</div>
+          <div class="party-name">李晓彤</div>
+          <div class="party-pos">发行总监 &amp; 授权代表</div>
+          <div class="party-co">聚光传媒发行集团</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- CHECKLIST -->
+    <div class="sign-section">
+      <div class="section-title">条款逐一确认</div>
+      <div class="checklist" id="checklist">
+
+        <label class="check-item" onclick="toggleCheck(this)">
+          <input type="checkbox">
+          <div class="check-box">
+            <svg width="10" height="8" viewBox="0 0 10 8" fill="none"><path d="M1 4L3.5 6.5L9 1" stroke="white" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </div>
+          <div><div class="check-text">同意第 1 条：发行授权范围及排他性规定</div><div class="check-clause">授权区域 · 授权期限 · 平台限制</div></div>
+        </label>
+
+        <label class="check-item" onclick="toggleCheck(this)">
+          <input type="checkbox">
+          <div class="check-box">
+            <svg width="10" height="8" viewBox="0 0 10 8" fill="none"><path d="M1 4L3.5 6.5L9 1" stroke="white" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </div>
+          <div><div class="check-text">同意第 2 条：收益分成比例（55% / 45%）</div><div class="check-clause">结算周期 · 流水奖励条款</div></div>
+        </label>
+
+        <label class="check-item" onclick="toggleCheck(this)">
+          <input type="checkbox">
+          <div class="check-box">
+            <svg width="10" height="8" viewBox="0 0 10 8" fill="none"><path d="M1 4L3.5 6.5L9 1" stroke="white" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </div>
+          <div><div class="check-text">同意第 3 条：市场推广义务（不低于 800 万）</div><div class="check-clause">推广预算 · 渠道要求 · 报告义务</div></div>
+        </label>
+
+        <label class="check-item" onclick="toggleCheck(this)">
+          <input type="checkbox">
+          <div class="check-box">
+            <svg width="10" height="8" viewBox="0 0 10 8" fill="none"><path d="M1 4L3.5 6.5L9 1" stroke="white" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </div>
+          <div><div class="check-text">同意第 4 条：知识产权归开发商独家所有</div><div class="check-clause">IP 归属 · 使用限制 · 合同终止后义务</div></div>
+        </label>
+
+        <label class="check-item" onclick="toggleCheck(this)">
+          <input type="checkbox">
+          <div class="check-box">
+            <svg width="10" height="8" viewBox="0 0 10 8" fill="none"><path d="M1 4L3.5 6.5L9 1" stroke="white" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </div>
+          <div><div class="check-text">同意第 6–7 条：数据归属与保密义务</div><div class="check-clause">数据共享 · 隐私合规 · 5 年保密期</div></div>
+        </label>
+
+        <label class="check-item" onclick="toggleCheck(this)">
+          <input type="checkbox">
+          <div class="check-box">
+            <svg width="10" height="8" viewBox="0 0 10 8" fill="none"><path d="M1 4L3.5 6.5L9 1" stroke="white" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </div>
+          <div><div class="check-text">同意第 10–11 条：违约责任与合同解除</div><div class="check-clause">违约金标准 · 解除条件 · 提前通知</div></div>
+        </label>
+
+        <label class="check-item" onclick="toggleCheck(this)">
+          <input type="checkbox">
+          <div class="check-box">
+            <svg width="10" height="8" viewBox="0 0 10 8" fill="none"><path d="M1 4L3.5 6.5L9 1" stroke="white" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </div>
+          <div><div class="check-text">同意第 12 条：争议提交仲裁委解决</div><div class="check-clause">仲裁机构 · 仲裁地 · 终局效力</div></div>
+        </label>
+
+        <label class="check-item" onclick="toggleCheck(this)">
+          <input type="checkbox">
+          <div class="check-box">
+            <svg width="10" height="8" viewBox="0 0 10 8" fill="none"><path d="M1 4L3.5 6.5L9 1" stroke="white" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </div>
+          <div><div class="check-text">同意第 15 条：合同生效条件及全文约束力</div><div class="check-clause">电子签名效力 · 取代既往协议</div></div>
+        </label>
+
+      </div>
+
+      <div class="progress-mini">
+        <div class="progress-mini-fill" id="check-progress" style="width:0%"></div>
+      </div>
+      <div class="progress-mini-label"><span id="check-count">0</span> / 8 条款已确认</div>
+    </div>
+
+    <!-- SIGNATURE -->
+    <div class="sign-section">
+      <div class="section-title">手写签名</div>
+      <div class="sig-area" id="sig-area">
+        <canvas id="sig-canvas" width="370" height="130"></canvas>
+        <div class="sig-placeholder" id="sig-placeholder">
+          <div class="sig-placeholder-icon">✍️</div>
+          <div class="sig-placeholder-text">在此区域手写签名</div>
+        </div>
+      </div>
+      <div class="sig-actions">
+        <button class="btn-ghost" onclick="clearSignature()">
+          <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M2 2L10 10M10 2L2 10" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+          清除重签
+        </button>
+        <label class="btn-ghost" style="cursor:pointer">
+          <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M6 1v7M3 5l3 3 3-3M1 9v1.5A.5.5 0 001.5 11h9a.5.5 0 00.5-.5V9" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          上传签名图片
+          <input type="file" accept="image/*" onchange="uploadSignature(event)" style="display:none">
+        </label>
+      </div>
+    </div>
+
+    <!-- DATE -->
+    <div class="sign-section">
+      <div class="section-title">签署日期</div>
+      <div class="date-row">
+        <div class="date-label">📅 自动填入</div>
+        <div class="date-value" id="sign-date">—</div>
+      </div>
+    </div>
+
+    <!-- SIGN BUTTON -->
+    <div class="sign-section">
+      <button class="btn-sign" id="sign-btn" disabled onclick="executeSign()">
+        <svg width="18" height="18" viewBox="0 0 18 18" fill="none"><path d="M15 5L7 13L3 9" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        确认签署合同
+      </button>
+      <div class="sign-hint" id="sign-hint">请先确认所有条款并完成签名</div>
+    </div>
+
+  </div><!-- /sign-panel -->
+
+</div><!-- /main -->
+
+<!-- COMPLETION OVERLAY -->
+<div class="completion-overlay" id="completion-overlay">
+  <div class="completion-card">
+    <div class="completion-icon">✅</div>
+    <div class="completion-title">合同签署成功！</div>
+    <div class="completion-sub">《星际觉醒》发行合作合同已由双方授权代表完成电子签署，具有完整法律效力。</div>
+
+    <div class="completion-meta">
+      <div class="meta-row">
+        <span class="meta-row-label">合同编号</span>
+        <span class="meta-row-value">PPC-2026-03240087</span>
+      </div>
+      <div class="meta-row">
+        <span class="meta-row-label">签署时间戳</span>
+        <span class="meta-row-value" id="completion-ts">—</span>
+      </div>
+      <div class="meta-row">
+        <span class="meta-row-label">签署状态</span>
+        <span class="meta-row-value green">✓ 双方已签署 · 合同生效</span>
+      </div>
+      <div class="meta-row">
+        <span class="meta-row-label">区块链存证</span>
+        <span class="meta-row-value">0x4A2F…9E1C（蚂蚁链）</span>
+      </div>
+      <div class="meta-row">
+        <span class="meta-row-label">文件哈希</span>
+        <span class="meta-row-value">SHA256: a3b7c…</span>
+      </div>
+    </div>
+
+    <button class="btn-download" onclick="downloadPDF()">
+      <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M8 2v8M5 7l3 3 3-3M2 12v1.5A.5.5 0 002.5 14h11a.5.5 0 00.5-.5V12" stroke="white" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      下载合同 PDF
+    </button>
+    <button class="btn-close" onclick="closeCompletion()">返回合同详情</button>
+  </div>
+</div>
+
+<script>
+  // ── Init date ──
+  const now = new Date();
+  const pad = n => String(n).padStart(2, '0');
+  const dateStr = `${now.getFullYear()} 年 ${pad(now.getMonth()+1)} 月 ${pad(now.getDate())} 日`;
+  document.getElementById('sign-date').textContent = dateStr;
+  document.getElementById('doc-date-display').textContent =
+    `${now.getFullYear()}-${pad(now.getMonth()+1)}-${pad(now.getDate())}`;
+
+  // ── Checklist ──
+  let checkedCount = 0;
+  const TOTAL = 8;
+
+  function toggleCheck(el) {
+    el.classList.toggle('checked');
+    const cb = el.querySelector('input[type="checkbox"]');
+    cb.checked = !cb.checked;
+    checkedCount = document.querySelectorAll('.check-item.checked').length;
+    document.getElementById('check-count').textContent = checkedCount;
+    document.getElementById('check-progress').style.width = (checkedCount / TOTAL * 100) + '%';
+    updateSignBtn();
+  }
+
+  // ── Canvas Signature ──
+  const canvas = document.getElementById('sig-canvas');
+  const ctx = canvas.getContext('2d');
+  const sigArea = document.getElementById('sig-area');
+  const sigPlaceholder = document.getElementById('sig-placeholder');
+  let drawing = false;
+  let hasSig = false;
+  let lastX = 0, lastY = 0;
+
+  ctx.strokeStyle = '#1a1714';
+  ctx.lineWidth = 2.2;
+  ctx.lineCap = 'round';
+  ctx.lineJoin = 'round';
+
+  function getPos(e) {
+    const rect = canvas.getBoundingClientRect();
+    const scaleX = canvas.width / rect.width;
+    const scaleY = canvas.height / rect.height;
+    if (e.touches) {
+      return {
+        x: (e.touches[0].clientX - rect.left) * scaleX,
+        y: (e.touches[0].clientY - rect.top) * scaleY
+      };
+    }
+    return {
+      x: (e.clientX - rect.left) * scaleX,
+      y: (e.clientY - rect.top) * scaleY
+    };
+  }
+
+  canvas.addEventListener('mousedown', e => {
+    drawing = true;
+    const p = getPos(e);
+    lastX = p.x; lastY = p.y;
+    ctx.beginPath();
+    ctx.arc(p.x, p.y, 1, 0, Math.PI*2);
+    ctx.fill();
+    markSig();
+  });
+
+  canvas.addEventListener('mousemove', e => {
+    if (!drawing) return;
+    const p = getPos(e);
+    ctx.beginPath();
+    ctx.moveTo(lastX, lastY);
+    ctx.lineTo(p.x, p.y);
+    ctx.stroke();
+    lastX = p.x; lastY = p.y;
+  });
+
+  canvas.addEventListener('mouseup', () => { drawing = false; });
+  canvas.addEventListener('mouseleave', () => { drawing = false; });
+
+  canvas.addEventListener('touchstart', e => {
+    e.preventDefault();
+    drawing = true;
+    const p = getPos(e);
+    lastX = p.x; lastY = p.y;
+    markSig();
+  }, { passive: false });
+
+  canvas.addEventListener('touchmove', e => {
+    e.preventDefault();
+    if (!drawing) return;
+    const p = getPos(e);
+    ctx.beginPath();
+    ctx.moveTo(lastX, lastY);
+    ctx.lineTo(p.x, p.y);
+    ctx.stroke();
+    lastX = p.x; lastY = p.y;
+  }, { passive: false });
+
+  canvas.addEventListener('touchend', () => { drawing = false; });
+
+  function markSig() {
+    hasSig = true;
+    sigPlaceholder.classList.add('hidden');
+    sigArea.classList.add('has-sig');
+    updateSignBtn();
+  }
+
+  function clearSignature() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    hasSig = false;
+    sigPlaceholder.classList.remove('hidden');
+    sigArea.classList.remove('has-sig');
+    updateSignBtn();
+  }
+
+  function uploadSignature(event) {
+    const file = event.target.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = function(e) {
+      const img = new Image();
+      img.onload = function() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        const scale = Math.min(canvas.width / img.width, canvas.height / img.height) * 0.85;
+        const w = img.width * scale;
+        const h = img.height * scale;
+        const x = (canvas.width - w) / 2;
+        const y = (canvas.height - h) / 2;
+        ctx.drawImage(img, x, y, w, h);
+        markSig();
+      };
+      img.src = e.target.result;
+    };
+    reader.readAsDataURL(file);
+  }
+
+  // ── Sign button state ──
+  function updateSignBtn() {
+    const btn = document.getElementById('sign-btn');
+    const hint = document.getElementById('sign-hint');
+    const allChecked = checkedCount === TOTAL;
+    const ready = allChecked && hasSig;
+    btn.disabled = !ready;
+
+    if (!allChecked && !hasSig) {
+      hint.innerHTML = `请先确认所有条款并完成签名`;
+    } else if (!allChecked) {
+      hint.innerHTML = `还有 <span>${TOTAL - checkedCount}</span> 条款待确认`;
+    } else if (!hasSig) {
+      hint.innerHTML = `请在上方完成手写签名`;
+    } else {
+      hint.innerHTML = `✓ 所有条款已确认 · 签名完成 · 可以签署`;
+    }
+  }
+
+  // ── Execute signing ──
+  function executeSign() {
+    const ts = new Date();
+    const tsStr = `${ts.getFullYear()}-${pad(ts.getMonth()+1)}-${pad(ts.getDate())} ` +
+                  `${pad(ts.getHours())}:${pad(ts.getMinutes())}:${pad(ts.getSeconds())} CST`;
+    document.getElementById('completion-ts').textContent = tsStr;
+
+    // Update progress bar
+    document.getElementById('step-signing').classList.remove('active');
+    document.getElementById('step-signing').classList.add('done');
+    document.getElementById('step-signing').querySelector('.step-dot').textContent = '✓';
+    document.getElementById('line-executed').classList.add('done');
+    document.getElementById('step-executed').classList.add('active');
+    document.getElementById('step-executed').querySelector('.step-dot').textContent = '4';
+
+    // Show overlay
+    document.getElementById('completion-overlay').classList.add('show');
+  }
+
+  function downloadPDF() {
+    // Simulate download
+    const a = document.createElement('a');
+    a.href = 'data:application/pdf;base64,JVBERi0xLjQ=';
+    a.download = 'PPC-2026-03240087_发行合作合同.pdf';
+    a.click();
+  }
+
+  function closeCompletion() {
+    document.getElementById('completion-overlay').classList.remove('show');
+  }
+</script>
+</body>
+</html>

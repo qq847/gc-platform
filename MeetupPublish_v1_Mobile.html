@@ -1,0 +1,843 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>GC Platform — Publish Meetup</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'DM Sans', sans-serif; background: #e8e4da; color: #222; padding-bottom: 72px; min-height: 100vh; }
+
+  /* TOP NAV */
+  .nav {
+    background: #1a1a2e;
+    height: 52px;
+    display: flex;
+    align-items: center;
+    padding: 0 16px;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    gap: 12px;
+  }
+  .nav-back {
+    color: #aaa;
+    font-size: 20px;
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 0;
+    line-height: 1;
+    flex-shrink: 0;
+  }
+  .nav-title { color: #fff; font-weight: 600; font-size: 16px; flex: 1; }
+  .nav-logo { color: #fff; font-weight: 700; font-size: 14px; letter-spacing: 1px; }
+  .nav-logo span { color: #d95f2b; }
+
+  /* BOTTOM TAB */
+  .bottom-nav {
+    position: fixed;
+    bottom: 0; left: 0; right: 0;
+    height: 56px;
+    background: #1a1a2e;
+    display: flex;
+    align-items: stretch;
+    z-index: 100;
+    border-top: 1px solid rgba(255,255,255,0.08);
+  }
+  .bottom-nav-item {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    color: #666;
+    font-size: 10px;
+    gap: 3px;
+    text-decoration: none;
+    cursor: pointer;
+    background: none;
+    border: none;
+  }
+  .bottom-nav-item.active { color: #d95f2b; }
+  .bottom-nav-item .tab-icon { font-size: 18px; line-height: 1; }
+
+  /* PAGE WRAPPER */
+  .page { max-width: 480px; margin: 0 auto; padding: 16px 16px 8px; display: flex; flex-direction: column; gap: 0; }
+
+  /* COVER IMAGE UPLOAD */
+  .cover-upload {
+    background: #fff;
+    border-radius: 12px;
+    overflow: hidden;
+    margin-bottom: 14px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+  }
+  .cover-area {
+    height: 160px;
+    background: linear-gradient(135deg, #2a2a3e 0%, #1a1a2e 100%);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    cursor: pointer;
+    position: relative;
+    overflow: hidden;
+  }
+  .cover-area input[type="file"] {
+    position: absolute;
+    inset: 0;
+    opacity: 0;
+    cursor: pointer;
+    width: 100%;
+    height: 100%;
+  }
+  .cover-area-icon { font-size: 32px; opacity: 0.6; }
+  .cover-area-label { color: rgba(255,255,255,0.6); font-size: 13px; font-weight: 500; }
+  .cover-area-sub { color: rgba(255,255,255,0.35); font-size: 11px; }
+  .cover-upload-hint {
+    padding: 9px 14px;
+    font-size: 11px;
+    color: #999;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    border-top: 1px solid #f0f0f0;
+  }
+
+  /* FORM CARD */
+  .form-card {
+    background: #fff;
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+    margin-bottom: 14px;
+  }
+  .form-section-title {
+    padding: 14px 16px 0;
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+    color: #aaa;
+    margin-bottom: 2px;
+  }
+
+  /* FORM ROWS */
+  .form-row {
+    padding: 12px 16px;
+    border-bottom: 1px solid #f5f5f5;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+  .form-row:last-child { border-bottom: none; }
+  .form-label {
+    font-size: 12px;
+    font-weight: 600;
+    color: #555;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+  }
+  .form-label .required { color: #d95f2b; font-size: 13px; line-height: 1; }
+  .form-input {
+    width: 100%;
+    border: 1.5px solid #e8e8e4;
+    border-radius: 8px;
+    padding: 11px 13px;
+    font-size: 15px;
+    font-family: 'DM Sans', sans-serif;
+    color: #222;
+    background: #fcfcfb;
+    outline: none;
+    transition: border-color 0.15s, box-shadow 0.15s;
+    -webkit-appearance: none;
+    appearance: none;
+  }
+  .form-input:focus {
+    border-color: #d95f2b;
+    box-shadow: 0 0 0 3px rgba(217,95,43,0.12);
+    background: #fff;
+  }
+  .form-input::placeholder { color: #bbb; }
+  .form-textarea {
+    width: 100%;
+    border: 1.5px solid #e8e8e4;
+    border-radius: 8px;
+    padding: 11px 13px;
+    font-size: 14px;
+    font-family: 'DM Sans', sans-serif;
+    color: #222;
+    background: #fcfcfb;
+    outline: none;
+    resize: none;
+    min-height: 100px;
+    transition: border-color 0.15s, box-shadow 0.15s;
+    -webkit-appearance: none;
+  }
+  .form-textarea:focus {
+    border-color: #d95f2b;
+    box-shadow: 0 0 0 3px rgba(217,95,43,0.12);
+    background: #fff;
+  }
+  .form-textarea::placeholder { color: #bbb; }
+  .form-select {
+    width: 100%;
+    border: 1.5px solid #e8e8e4;
+    border-radius: 8px;
+    padding: 11px 36px 11px 13px;
+    font-size: 14px;
+    font-family: 'DM Sans', sans-serif;
+    color: #222;
+    background: #fcfcfb url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath fill='%23999' d='M1 1l5 5 5-5'/%3E%3C/svg%3E") no-repeat right 14px center;
+    -webkit-appearance: none;
+    appearance: none;
+    outline: none;
+    cursor: pointer;
+    transition: border-color 0.15s, box-shadow 0.15s;
+  }
+  .form-select:focus {
+    border-color: #d95f2b;
+    box-shadow: 0 0 0 3px rgba(217,95,43,0.12);
+  }
+  .char-count { font-size: 11px; color: #bbb; text-align: right; margin-top: 2px; }
+
+  /* EVENT TYPE CHIPS */
+  .type-chips { display: flex; gap: 8px; flex-wrap: wrap; }
+  .type-chip {
+    padding: 8px 14px;
+    border-radius: 20px;
+    font-size: 13px;
+    font-weight: 500;
+    border: 1.5px solid #e0e0dc;
+    background: #f9f8f5;
+    color: #555;
+    cursor: pointer;
+    transition: all 0.15s;
+    user-select: none;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+  }
+  .type-chip.selected {
+    background: #d95f2b;
+    border-color: #d95f2b;
+    color: #fff;
+  }
+
+  /* DATETIME ROW */
+  .datetime-row { display: flex; gap: 10px; }
+  .datetime-row .form-input { flex: 1; }
+
+  /* LOCATION TOGGLE */
+  .location-toggle {
+    display: flex;
+    background: #f0f0ec;
+    border-radius: 8px;
+    padding: 3px;
+    gap: 2px;
+    margin-bottom: 10px;
+  }
+  .loc-btn {
+    flex: 1;
+    padding: 8px 0;
+    border-radius: 6px;
+    border: none;
+    font-size: 13px;
+    font-weight: 500;
+    font-family: 'DM Sans', sans-serif;
+    cursor: pointer;
+    background: transparent;
+    color: #888;
+    transition: all 0.15s;
+  }
+  .loc-btn.active {
+    background: #fff;
+    color: #222;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+  }
+  .loc-online-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    padding: 9px 13px;
+    background: #f0f8ff;
+    border: 1.5px solid #c0d8f0;
+    border-radius: 8px;
+    font-size: 13px;
+    color: #1a73e8;
+    width: 100%;
+  }
+
+  /* CAPACITY */
+  .capacity-row { display: flex; align-items: center; gap: 12px; }
+  .capacity-btn {
+    width: 38px; height: 38px;
+    border-radius: 8px;
+    border: 1.5px solid #e0e0dc;
+    background: #f9f8f5;
+    font-size: 20px;
+    font-weight: 600;
+    color: #555;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    flex-shrink: 0;
+    user-select: none;
+    line-height: 1;
+  }
+  .capacity-btn:active { background: #ece9e0; }
+  .capacity-display {
+    flex: 1;
+    text-align: center;
+    font-size: 22px;
+    font-weight: 700;
+    color: #1a1a2e;
+  }
+  .capacity-unit { font-size: 12px; color: #888; margin-top: 2px; font-weight: 400; }
+  .capacity-presets { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 8px; }
+  .capacity-preset {
+    padding: 5px 12px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 500;
+    border: 1.5px solid #e0e0dc;
+    background: #f9f8f5;
+    color: #666;
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+  .capacity-preset.selected {
+    background: #fff3ee;
+    border-color: #d95f2b;
+    color: #d95f2b;
+  }
+
+  /* FREE / PAID TOGGLE */
+  .pricing-toggle {
+    display: flex;
+    background: #f0f0ec;
+    border-radius: 8px;
+    padding: 3px;
+    gap: 2px;
+    margin-bottom: 0;
+  }
+  .price-btn {
+    flex: 1;
+    padding: 10px 0;
+    border-radius: 6px;
+    border: none;
+    font-size: 14px;
+    font-weight: 600;
+    font-family: 'DM Sans', sans-serif;
+    cursor: pointer;
+    background: transparent;
+    color: #888;
+    transition: all 0.15s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+  }
+  .price-btn.active-free {
+    background: #fff;
+    color: #188038;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+  }
+  .price-btn.active-paid {
+    background: #fff;
+    color: #d95f2b;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+  }
+  .paid-amount-wrap {
+    display: none;
+    margin-top: 10px;
+    position: relative;
+  }
+  .paid-amount-wrap.visible { display: block; }
+  .currency-prefix {
+    position: absolute;
+    left: 13px;
+    top: 50%;
+    transform: translateY(-50%);
+    font-size: 15px;
+    color: #888;
+    font-weight: 500;
+    pointer-events: none;
+  }
+  .form-input.with-prefix { padding-left: 28px; }
+
+  /* VISIBILITY & SETTINGS ROW */
+  .settings-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 13px 16px;
+    border-bottom: 1px solid #f5f5f5;
+    cursor: pointer;
+  }
+  .settings-row:last-child { border-bottom: none; }
+  .settings-row-left { display: flex; align-items: center; gap: 10px; }
+  .settings-icon { font-size: 18px; }
+  .settings-label { font-size: 14px; font-weight: 500; }
+  .settings-value { font-size: 13px; color: #888; }
+  .settings-arrow { font-size: 14px; color: #ccc; }
+
+  /* SMALL TOGGLE */
+  .sm-toggle {
+    position: relative;
+    width: 42px; height: 24px;
+    flex-shrink: 0;
+  }
+  .sm-toggle input { opacity: 0; width: 0; height: 0; }
+  .sm-toggle-track {
+    position: absolute;
+    inset: 0;
+    background: #ddd;
+    border-radius: 24px;
+    transition: background 0.2s;
+    cursor: pointer;
+  }
+  .sm-toggle input:checked + .sm-toggle-track { background: #d95f2b; }
+  .sm-toggle-thumb {
+    position: absolute;
+    width: 18px; height: 18px;
+    background: #fff;
+    border-radius: 50%;
+    top: 3px; left: 3px;
+    transition: left 0.2s;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+    pointer-events: none;
+  }
+  .sm-toggle input:checked ~ .sm-toggle-thumb { left: 21px; }
+
+  /* SUBMIT BUTTON */
+  .submit-area {
+    padding: 0 0 16px;
+  }
+  .btn-publish {
+    width: 100%;
+    padding: 16px;
+    border-radius: 12px;
+    border: none;
+    background: #d95f2b;
+    color: #fff;
+    font-size: 16px;
+    font-weight: 700;
+    font-family: 'DM Sans', sans-serif;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    box-shadow: 0 4px 14px rgba(217,95,43,0.35);
+    transition: background 0.15s, box-shadow 0.15s, transform 0.1s;
+    letter-spacing: 0.2px;
+  }
+  .btn-publish:active {
+    transform: scale(0.98);
+    box-shadow: 0 2px 8px rgba(217,95,43,0.3);
+  }
+  .btn-draft {
+    width: 100%;
+    padding: 13px;
+    border-radius: 12px;
+    border: 1.5px solid #d0cec8;
+    background: transparent;
+    color: #666;
+    font-size: 14px;
+    font-weight: 600;
+    font-family: 'DM Sans', sans-serif;
+    cursor: pointer;
+    margin-top: 10px;
+    transition: background 0.15s;
+  }
+  .btn-draft:active { background: rgba(0,0,0,0.04); }
+
+  /* HELPER TEXT */
+  .helper-text {
+    font-size: 11px;
+    color: #999;
+    margin-top: 5px;
+    display: flex;
+    align-items: flex-start;
+    gap: 4px;
+    line-height: 1.4;
+  }
+
+  /* PAGE HEADER LABEL */
+  .page-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 14px 0 10px;
+  }
+  .page-header-icon {
+    width: 40px; height: 40px;
+    border-radius: 10px;
+    background: #d95f2b;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 20px;
+    flex-shrink: 0;
+  }
+  .page-header-text { flex: 1; }
+  .page-header-title { font-size: 18px; font-weight: 700; }
+  .page-header-sub { font-size: 12px; color: #888; margin-top: 2px; }
+</style>
+</head>
+<body>
+
+<!-- TOP NAV -->
+<div class="nav">
+  <button class="nav-back">←</button>
+  <div class="nav-title">Create Event</div>
+  <div class="nav-logo">GAME<span>CONNECTION</span></div>
+</div>
+
+<div class="page">
+
+  <!-- PAGE HEADER -->
+  <div class="page-header">
+    <div class="page-header-icon">🎉</div>
+    <div class="page-header-text">
+      <div class="page-header-title">New Meetup</div>
+      <div class="page-header-sub">Fill in the details to publish your event</div>
+    </div>
+  </div>
+
+  <!-- COVER IMAGE -->
+  <div class="cover-upload">
+    <div class="cover-area">
+      <input type="file" accept="image/*" id="coverInput" onchange="previewCover(this)">
+      <div class="cover-area-icon" id="coverIcon">🖼️</div>
+      <div class="cover-area-label" id="coverLabel">Add Cover Photo</div>
+      <div class="cover-area-sub" id="coverSub">Tap to upload · JPG, PNG up to 5MB</div>
+    </div>
+    <div class="cover-upload-hint">💡 A great cover image gets 3× more attention</div>
+  </div>
+
+  <!-- BASIC INFO -->
+  <div class="form-card">
+    <div class="form-section-title">Event Details</div>
+
+    <!-- TITLE -->
+    <div class="form-row">
+      <label class="form-label" for="eventTitle">Event Name <span class="required">*</span></label>
+      <input class="form-input" type="text" id="eventTitle" placeholder="e.g. Indie Dev Drinks & Demo Night" maxlength="80" oninput="updateChar(this,'titleCount')">
+      <div class="char-count"><span id="titleCount">0</span>/80</div>
+    </div>
+
+    <!-- TYPE -->
+    <div class="form-row">
+      <label class="form-label">Event Type <span class="required">*</span></label>
+      <div class="type-chips">
+        <div class="type-chip selected" onclick="selectType(this)">🍻 Meetup</div>
+        <div class="type-chip" onclick="selectType(this)">🛠️ Workshop</div>
+        <div class="type-chip" onclick="selectType(this)">🎬 Screening</div>
+        <div class="type-chip" onclick="selectType(this)">🎊 Party</div>
+      </div>
+    </div>
+
+    <!-- DATE & TIME -->
+    <div class="form-row">
+      <label class="form-label" for="eventDate">Date & Time <span class="required">*</span></label>
+      <div class="datetime-row">
+        <input class="form-input" type="date" id="eventDate">
+        <input class="form-input" type="time" id="eventTimeStart" value="19:00">
+      </div>
+      <div class="helper-text">ℹ️ End time (optional)</div>
+      <input class="form-input" type="time" id="eventTimeEnd" value="22:00" style="margin-top:4px;">
+    </div>
+  </div>
+
+  <!-- LOCATION -->
+  <div class="form-card">
+    <div class="form-section-title">Location</div>
+    <div class="form-row">
+      <div class="location-toggle">
+        <button class="loc-btn active" id="btnInPerson" onclick="switchLocation('inperson')">📍 In Person</button>
+        <button class="loc-btn" id="btnOnline" onclick="switchLocation('online')">💻 Online</button>
+      </div>
+      <div id="locationInPerson">
+        <input class="form-input" type="text" id="venueInput" placeholder="Venue name or address" style="margin-bottom:8px;">
+        <input class="form-input" type="text" id="cityInput" placeholder="City, Country">
+        <div class="helper-text">📌 Exact address is only visible to attendees</div>
+      </div>
+      <div id="locationOnline" style="display:none;">
+        <div class="loc-online-badge">
+          💻 Online Event (link shared after RSVP)
+        </div>
+        <input class="form-input" type="url" id="onlineLink" placeholder="Zoom / Meet / Discord link (optional)" style="margin-top:8px;">
+      </div>
+    </div>
+  </div>
+
+  <!-- CAPACITY -->
+  <div class="form-card">
+    <div class="form-section-title">Capacity</div>
+    <div class="form-row">
+      <label class="form-label">Max Attendees</label>
+      <div class="capacity-row">
+        <div class="capacity-btn" onclick="adjustCapacity(-5)">−</div>
+        <div class="capacity-display">
+          <span id="capacityNum">20</span>
+          <div class="capacity-unit">people</div>
+        </div>
+        <div class="capacity-btn" onclick="adjustCapacity(5)">+</div>
+      </div>
+      <div class="capacity-presets">
+        <div class="capacity-preset" onclick="setCapacity(10, this)">10</div>
+        <div class="capacity-preset selected" onclick="setCapacity(20, this)">20</div>
+        <div class="capacity-preset" onclick="setCapacity(30, this)">30</div>
+        <div class="capacity-preset" onclick="setCapacity(50, this)">50</div>
+        <div class="capacity-preset" onclick="setCapacity(0, this)">Unlimited</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- DESCRIPTION -->
+  <div class="form-card">
+    <div class="form-section-title">Description</div>
+    <div class="form-row">
+      <label class="form-label" for="eventDesc">About this event <span class="required">*</span></label>
+      <textarea class="form-textarea" id="eventDesc" placeholder="Tell people what to expect, what to bring, who it's for..." maxlength="500" oninput="updateChar(this,'descCount')"></textarea>
+      <div class="char-count"><span id="descCount">0</span>/500</div>
+    </div>
+  </div>
+
+  <!-- PRICING -->
+  <div class="form-card">
+    <div class="form-section-title">Pricing</div>
+    <div class="form-row">
+      <div class="pricing-toggle">
+        <button class="price-btn active-free" id="btnFree" onclick="switchPrice('free')">🟢 Free</button>
+        <button class="price-btn" id="btnPaid" onclick="switchPrice('paid')">💳 Paid</button>
+      </div>
+      <div class="paid-amount-wrap" id="paidAmountWrap">
+        <span class="currency-prefix">€</span>
+        <input class="form-input with-prefix" type="number" id="ticketPrice" placeholder="0.00" min="0" step="0.5">
+        <div class="helper-text">ℹ️ Processing fees apply. Attendees pay this amount.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SETTINGS -->
+  <div class="form-card">
+    <div class="form-section-title">Settings</div>
+
+    <div class="settings-row">
+      <div class="settings-row-left">
+        <span class="settings-icon">🌐</span>
+        <div>
+          <div class="settings-label">Visibility</div>
+          <div class="settings-value">Public — anyone can find it</div>
+        </div>
+      </div>
+      <span class="settings-arrow">›</span>
+    </div>
+
+    <div class="settings-row">
+      <div class="settings-row-left">
+        <span class="settings-icon">✅</span>
+        <div>
+          <div class="settings-label">Require Approval</div>
+          <div class="settings-value">Auto-accept RSVPs</div>
+        </div>
+      </div>
+      <label class="sm-toggle">
+        <input type="checkbox">
+        <div class="sm-toggle-track"></div>
+        <div class="sm-toggle-thumb"></div>
+      </label>
+    </div>
+
+    <div class="settings-row">
+      <div class="settings-row-left">
+        <span class="settings-icon">💬</span>
+        <div>
+          <div class="settings-label">Attendee Chat</div>
+          <div class="settings-value">Let attendees message each other</div>
+        </div>
+      </div>
+      <label class="sm-toggle">
+        <input type="checkbox" checked>
+        <div class="sm-toggle-track"></div>
+        <div class="sm-toggle-thumb"></div>
+      </label>
+    </div>
+
+    <div class="settings-row">
+      <div class="settings-row-left">
+        <span class="settings-icon">🔔</span>
+        <div>
+          <div class="settings-label">Remind Attendees</div>
+          <div class="settings-value">24h before the event</div>
+        </div>
+      </div>
+      <label class="sm-toggle">
+        <input type="checkbox" checked>
+        <div class="sm-toggle-track"></div>
+        <div class="sm-toggle-thumb"></div>
+      </label>
+    </div>
+  </div>
+
+  <!-- TAGS (optional) -->
+  <div class="form-card">
+    <div class="form-section-title">Tags (Optional)</div>
+    <div class="form-row">
+      <input class="form-input" type="text" placeholder="e.g. indie, networking, developers (comma separated)">
+      <div class="helper-text">🏷️ Tags help people discover your event</div>
+    </div>
+  </div>
+
+  <!-- SUBMIT -->
+  <div class="submit-area">
+    <button class="btn-publish" onclick="publishEvent()">
+      🚀 Publish Event
+    </button>
+    <button class="btn-draft" onclick="saveDraft()">
+      Save as Draft
+    </button>
+  </div>
+
+</div><!-- /page -->
+
+<!-- BOTTOM TAB BAR -->
+<div class="bottom-nav">
+  <button class="bottom-nav-item">
+    <span class="tab-icon">🏠</span>
+    <span>Feed</span>
+  </button>
+  <button class="bottom-nav-item">
+    <span class="tab-icon">👤</span>
+    <span>People</span>
+  </button>
+  <button class="bottom-nav-item">
+    <span class="tab-icon">🎮</span>
+    <span>Projects</span>
+  </button>
+  <button class="bottom-nav-item">
+    <span class="tab-icon">🏢</span>
+    <span>Orgs</span>
+  </button>
+  <button class="bottom-nav-item active">
+    <span class="tab-icon">📅</span>
+    <span>Events</span>
+  </button>
+</div>
+
+<script>
+  // Character counter
+  function updateChar(input, counterId) {
+    document.getElementById(counterId).textContent = input.value.length;
+  }
+
+  // Event type selection
+  function selectType(el) {
+    document.querySelectorAll('.type-chip').forEach(c => c.classList.remove('selected'));
+    el.classList.add('selected');
+  }
+
+  // Location toggle
+  function switchLocation(mode) {
+    const inPerson = document.getElementById('locationInPerson');
+    const online = document.getElementById('locationOnline');
+    const btnIP = document.getElementById('btnInPerson');
+    const btnOL = document.getElementById('btnOnline');
+    if (mode === 'inperson') {
+      inPerson.style.display = 'block';
+      online.style.display = 'none';
+      btnIP.classList.add('active');
+      btnOL.classList.remove('active');
+    } else {
+      inPerson.style.display = 'none';
+      online.style.display = 'block';
+      btnIP.classList.remove('active');
+      btnOL.classList.add('active');
+    }
+  }
+
+  // Capacity
+  let capacity = 20;
+  function adjustCapacity(delta) {
+    capacity = Math.max(1, capacity + delta);
+    document.getElementById('capacityNum').textContent = capacity === 0 ? '∞' : capacity;
+    document.querySelectorAll('.capacity-preset').forEach(p => p.classList.remove('selected'));
+  }
+  function setCapacity(val, el) {
+    capacity = val;
+    document.getElementById('capacityNum').textContent = val === 0 ? '∞' : val;
+    document.querySelectorAll('.capacity-preset').forEach(p => p.classList.remove('selected'));
+    el.classList.add('selected');
+  }
+
+  // Pricing
+  function switchPrice(mode) {
+    const btnFree = document.getElementById('btnFree');
+    const btnPaid = document.getElementById('btnPaid');
+    const paidWrap = document.getElementById('paidAmountWrap');
+    if (mode === 'free') {
+      btnFree.classList.add('active-free');
+      btnFree.classList.remove('active-paid');
+      btnPaid.classList.remove('active-free', 'active-paid');
+      paidWrap.classList.remove('visible');
+    } else {
+      btnPaid.classList.add('active-paid');
+      btnPaid.classList.remove('active-free');
+      btnFree.classList.remove('active-free', 'active-paid');
+      paidWrap.classList.add('visible');
+    }
+  }
+
+  // Cover preview
+  function previewCover(input) {
+    if (input.files && input.files[0]) {
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        const area = document.querySelector('.cover-area');
+        area.style.background = `url(${e.target.result}) center/cover no-repeat`;
+        document.getElementById('coverIcon').style.display = 'none';
+        document.getElementById('coverLabel').textContent = '✓ Cover photo added';
+        document.getElementById('coverLabel').style.color = 'rgba(255,255,255,0.9)';
+        document.getElementById('coverSub').textContent = 'Tap to change';
+      };
+      reader.readAsDataURL(input.files[0]);
+    }
+  }
+
+  // Publish
+  function publishEvent() {
+    const title = document.getElementById('eventTitle').value.trim();
+    if (!title) {
+      document.getElementById('eventTitle').focus();
+      document.getElementById('eventTitle').style.borderColor = '#d95f2b';
+      return;
+    }
+    // Simulate success
+    const btn = document.querySelector('.btn-publish');
+    btn.textContent = '✓ Published!';
+    btn.style.background = '#188038';
+    btn.style.boxShadow = '0 4px 14px rgba(24,128,56,0.3)';
+    setTimeout(() => {
+      btn.innerHTML = '🚀 Publish Event';
+      btn.style.background = '#d95f2b';
+      btn.style.boxShadow = '0 4px 14px rgba(217,95,43,0.35)';
+    }, 2500);
+  }
+
+  // Save draft
+  function saveDraft() {
+    const btn = document.querySelector('.btn-draft');
+    btn.textContent = '✓ Draft saved';
+    setTimeout(() => { btn.textContent = 'Save as Draft'; }, 2000);
+  }
+</script>
+</body>
+</html>

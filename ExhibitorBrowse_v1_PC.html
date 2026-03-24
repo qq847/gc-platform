@@ -1,0 +1,1315 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Exhibitor Browse — Game Connection 2026</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg: #e8e4da;
+    --primary: #d95f2b;
+    --primary-dark: #b84e22;
+    --primary-light: #f47d4e;
+    --surface: #ffffff;
+    --surface2: #f4f1ea;
+    --border: #d5cfc2;
+    --text: #1a1816;
+    --text-sub: #6b6459;
+    --text-muted: #9c9085;
+    --radius: 12px;
+    --radius-sm: 8px;
+    --shadow: 0 2px 8px rgba(0,0,0,0.08), 0 1px 2px rgba(0,0,0,0.04);
+    --shadow-lg: 0 8px 32px rgba(0,0,0,0.12), 0 2px 8px rgba(0,0,0,0.06);
+  }
+
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    line-height: 1.5;
+  }
+
+  /* ── HEADER ── */
+  .header {
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+  }
+  .header-inner {
+    max-width: 1280px;
+    margin: 0 auto;
+    padding: 0 32px;
+    height: 64px;
+    display: flex;
+    align-items: center;
+    gap: 32px;
+  }
+  .logo {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    text-decoration: none;
+    flex-shrink: 0;
+  }
+  .logo-mark {
+    width: 36px;
+    height: 36px;
+    background: var(--primary);
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #fff;
+    font-weight: 700;
+    font-size: 16px;
+    letter-spacing: -0.5px;
+  }
+  .logo-text {
+    font-size: 15px;
+    font-weight: 700;
+    color: var(--text);
+    letter-spacing: -0.3px;
+  }
+  .logo-text span { color: var(--primary); }
+  .header-nav {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    flex: 1;
+  }
+  .nav-link {
+    padding: 6px 14px;
+    border-radius: 6px;
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--text-sub);
+    text-decoration: none;
+    transition: background 0.15s, color 0.15s;
+  }
+  .nav-link:hover { background: var(--surface2); color: var(--text); }
+  .nav-link.active { background: var(--primary); color: #fff; }
+  .header-actions {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex-shrink: 0;
+  }
+  .btn-ghost {
+    padding: 8px 16px;
+    border-radius: var(--radius-sm);
+    font-size: 13px;
+    font-weight: 600;
+    font-family: inherit;
+    color: var(--text-sub);
+    background: transparent;
+    border: 1px solid var(--border);
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+  .btn-ghost:hover { background: var(--surface2); border-color: var(--text-sub); }
+  .btn-primary {
+    padding: 8px 16px;
+    border-radius: var(--radius-sm);
+    font-size: 13px;
+    font-weight: 600;
+    font-family: inherit;
+    color: #fff;
+    background: var(--primary);
+    border: none;
+    cursor: pointer;
+    transition: background 0.15s;
+  }
+  .btn-primary:hover { background: var(--primary-dark); }
+
+  /* ── PAGE LAYOUT ── */
+  .page {
+    max-width: 1280px;
+    margin: 0 auto;
+    padding: 32px 32px 64px;
+  }
+
+  /* ── PAGE TITLE ── */
+  .page-title-row {
+    margin-bottom: 28px;
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 16px;
+  }
+  .page-title {
+    font-size: 28px;
+    font-weight: 700;
+    letter-spacing: -0.5px;
+    color: var(--text);
+  }
+  .page-title span { color: var(--primary); }
+  .page-subtitle {
+    font-size: 14px;
+    color: var(--text-sub);
+    margin-top: 4px;
+  }
+  .result-count {
+    font-size: 13px;
+    color: var(--text-muted);
+    white-space: nowrap;
+  }
+  .result-count strong { color: var(--text-sub); }
+
+  /* ── SEARCH & FILTER BAR ── */
+  .filter-bar {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 20px 24px;
+    margin-bottom: 24px;
+    box-shadow: var(--shadow);
+  }
+  .search-row {
+    display: flex;
+    gap: 12px;
+    margin-bottom: 16px;
+  }
+  .search-wrap {
+    position: relative;
+    flex: 1;
+  }
+  .search-icon {
+    position: absolute;
+    left: 14px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--text-muted);
+    pointer-events: none;
+  }
+  .search-input {
+    width: 100%;
+    padding: 10px 14px 10px 42px;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    font-size: 14px;
+    font-family: inherit;
+    background: var(--surface);
+    color: var(--text);
+    transition: border-color 0.15s, box-shadow 0.15s;
+    outline: none;
+  }
+  .search-input::placeholder { color: var(--text-muted); }
+  .search-input:focus {
+    border-color: var(--primary);
+    box-shadow: 0 0 0 3px rgba(217,95,43,0.12);
+  }
+  .btn-clear {
+    padding: 10px 18px;
+    border-radius: var(--radius-sm);
+    font-size: 13px;
+    font-weight: 500;
+    font-family: inherit;
+    color: var(--text-sub);
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    cursor: pointer;
+    white-space: nowrap;
+    transition: all 0.15s;
+  }
+  .btn-clear:hover { background: var(--border); }
+
+  .filter-row {
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+    align-items: center;
+  }
+  .filter-label {
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    white-space: nowrap;
+  }
+  .filter-select {
+    padding: 8px 32px 8px 12px;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    font-size: 13px;
+    font-family: inherit;
+    background: var(--surface2);
+    color: var(--text);
+    cursor: pointer;
+    outline: none;
+    appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='%239c9085' viewBox='0 0 16 16'%3E%3Cpath d='M7.247 11.14L2.451 5.658C1.885 5.013 2.345 4 3.204 4h9.592a1 1 0 0 1 .753 1.659l-4.796 5.48a1 1 0 0 1-1.506 0z'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 10px center;
+    transition: border-color 0.15s;
+  }
+  .filter-select:focus { border-color: var(--primary); }
+
+  /* ── ACTIVE FILTERS ── */
+  .active-filters {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    margin-top: 12px;
+    padding-top: 12px;
+    border-top: 1px solid var(--border);
+  }
+  .active-filters:empty { display: none; }
+  .filter-chip {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 4px 10px;
+    background: rgba(217,95,43,0.1);
+    border: 1px solid rgba(217,95,43,0.25);
+    border-radius: 100px;
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--primary-dark);
+  }
+  .filter-chip button {
+    background: none;
+    border: none;
+    cursor: pointer;
+    color: var(--primary);
+    font-size: 14px;
+    line-height: 1;
+    padding: 0;
+    display: flex;
+  }
+
+  /* ── GRID ── */
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 20px;
+  }
+
+  /* ── EXHIBITOR CARD ── */
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    overflow: hidden;
+    cursor: pointer;
+    transition: transform 0.18s, box-shadow 0.18s, border-color 0.18s;
+    box-shadow: var(--shadow);
+    display: flex;
+    flex-direction: column;
+  }
+  .card:hover {
+    transform: translateY(-3px);
+    box-shadow: var(--shadow-lg);
+    border-color: rgba(217,95,43,0.3);
+  }
+
+  .card-header {
+    padding: 20px 20px 16px;
+    display: flex;
+    align-items: flex-start;
+    gap: 14px;
+    border-bottom: 1px solid var(--border);
+    background: var(--surface2);
+  }
+  .company-avatar {
+    width: 52px;
+    height: 52px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 20px;
+    font-weight: 700;
+    color: #fff;
+    flex-shrink: 0;
+    letter-spacing: -1px;
+  }
+  .card-header-info { flex: 1; min-width: 0; }
+  .company-name {
+    font-size: 15px;
+    font-weight: 700;
+    color: var(--text);
+    margin-bottom: 6px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .genre-tags {
+    display: flex;
+    gap: 6px;
+    flex-wrap: wrap;
+  }
+  .genre-tag {
+    padding: 2px 8px;
+    background: var(--border);
+    border-radius: 100px;
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--text-sub);
+    text-transform: uppercase;
+    letter-spacing: 0.3px;
+  }
+  .booth-badge {
+    flex-shrink: 0;
+    padding: 4px 10px;
+    border-radius: 6px;
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+  }
+  .booth-pod { background: #e8f4fd; color: #1a6fa8; border: 1px solid #b8d9f0; }
+  .booth-standard { background: #fdf3e8; color: #9a5b1c; border: 1px solid #f0d5b8; }
+
+  .card-body {
+    padding: 16px 20px;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+  .game-name {
+    font-size: 13px;
+    color: var(--text-sub);
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .game-name strong {
+    color: var(--text);
+    font-weight: 600;
+  }
+  .game-icon { color: var(--text-muted); font-size: 12px; }
+
+  .seeking-row {
+    display: flex;
+    gap: 6px;
+    flex-wrap: wrap;
+  }
+  .seeking-tag {
+    padding: 3px 9px;
+    border-radius: 100px;
+    font-size: 11px;
+    font-weight: 600;
+  }
+  .tag-publisher { background: #fde8f0; color: #a8174f; border: 1px solid #f5c0d5; }
+  .tag-investment { background: #e8fde8; color: #176b17; border: 1px solid #b0edb0; }
+  .tag-codev { background: #ede8fd; color: #4e17a8; border: 1px solid #cdb0f5; }
+  .tag-porting { background: #fdf9e8; color: #7a6000; border: 1px solid #f0e4b0; }
+
+  .platform-row {
+    display: flex;
+    gap: 6px;
+    align-items: center;
+    font-size: 12px;
+    color: var(--text-muted);
+  }
+  .platform-icon { font-size: 13px; }
+
+  .card-actions {
+    padding: 14px 20px;
+    display: flex;
+    gap: 8px;
+    border-top: 1px solid var(--border);
+  }
+  .btn-view {
+    flex: 1;
+    padding: 9px 12px;
+    border-radius: var(--radius-sm);
+    font-size: 13px;
+    font-weight: 600;
+    font-family: inherit;
+    color: var(--text);
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    cursor: pointer;
+    transition: all 0.15s;
+    text-align: center;
+  }
+  .btn-view:hover { background: var(--border); }
+  .btn-meet {
+    flex: 1;
+    padding: 9px 12px;
+    border-radius: var(--radius-sm);
+    font-size: 13px;
+    font-weight: 600;
+    font-family: inherit;
+    color: #fff;
+    background: var(--primary);
+    border: none;
+    cursor: pointer;
+    transition: background 0.15s;
+    text-align: center;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 5px;
+  }
+  .btn-meet:hover { background: var(--primary-dark); }
+
+  /* ── NO RESULTS ── */
+  .no-results {
+    grid-column: 1 / -1;
+    text-align: center;
+    padding: 80px 40px;
+    color: var(--text-muted);
+  }
+  .no-results-icon { font-size: 48px; margin-bottom: 16px; }
+  .no-results h3 { font-size: 18px; font-weight: 600; color: var(--text-sub); margin-bottom: 8px; }
+  .no-results p { font-size: 14px; }
+
+  /* ── MODAL OVERLAY ── */
+  .modal-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(26,24,22,0.5);
+    backdrop-filter: blur(4px);
+    z-index: 200;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 32px;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.2s;
+  }
+  .modal-overlay.open {
+    opacity: 1;
+    pointer-events: auto;
+  }
+  .modal {
+    background: var(--surface);
+    border-radius: 16px;
+    width: 100%;
+    max-width: 760px;
+    max-height: 88vh;
+    overflow-y: auto;
+    box-shadow: 0 24px 64px rgba(0,0,0,0.2);
+    transform: scale(0.96) translateY(8px);
+    transition: transform 0.2s;
+    scrollbar-width: thin;
+    scrollbar-color: var(--border) transparent;
+  }
+  .modal-overlay.open .modal {
+    transform: scale(1) translateY(0);
+  }
+  .modal::-webkit-scrollbar { width: 6px; }
+  .modal::-webkit-scrollbar-track { background: transparent; }
+  .modal::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+
+  .modal-header {
+    padding: 28px 32px 24px;
+    border-bottom: 1px solid var(--border);
+    background: var(--surface2);
+    display: flex;
+    align-items: flex-start;
+    gap: 20px;
+    position: relative;
+    border-radius: 16px 16px 0 0;
+  }
+  .modal-avatar {
+    width: 72px;
+    height: 72px;
+    border-radius: 14px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 28px;
+    font-weight: 700;
+    color: #fff;
+    flex-shrink: 0;
+    letter-spacing: -1px;
+  }
+  .modal-header-info { flex: 1; }
+  .modal-company-name {
+    font-size: 22px;
+    font-weight: 700;
+    color: var(--text);
+    letter-spacing: -0.3px;
+    margin-bottom: 8px;
+  }
+  .modal-meta {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex-wrap: wrap;
+  }
+  .modal-booth { font-size: 13px; font-weight: 600; }
+  .modal-seeking { display: flex; gap: 6px; flex-wrap: wrap; }
+
+  .modal-close {
+    position: absolute;
+    top: 20px;
+    right: 20px;
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    background: var(--border);
+    border: none;
+    cursor: pointer;
+    font-size: 18px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--text-sub);
+    transition: background 0.15s;
+  }
+  .modal-close:hover { background: #c8c2b5; color: var(--text); }
+
+  .modal-body {
+    padding: 28px 32px;
+    display: flex;
+    flex-direction: column;
+    gap: 28px;
+  }
+  .modal-section-title {
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+    color: var(--text-muted);
+    margin-bottom: 10px;
+  }
+  .company-desc {
+    font-size: 14px;
+    line-height: 1.65;
+    color: var(--text-sub);
+  }
+
+  /* Games list */
+  .games-list {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+  .game-item {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 14px 16px;
+    background: var(--surface2);
+    border-radius: var(--radius-sm);
+    border: 1px solid var(--border);
+  }
+  .game-thumb {
+    width: 48px;
+    height: 48px;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 22px;
+    flex-shrink: 0;
+  }
+  .game-item-info { flex: 1; }
+  .game-item-name {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--text);
+    margin-bottom: 3px;
+  }
+  .game-item-meta {
+    font-size: 12px;
+    color: var(--text-muted);
+  }
+  .game-status {
+    padding: 3px 8px;
+    border-radius: 100px;
+    font-size: 11px;
+    font-weight: 600;
+  }
+  .status-alpha { background: #fdf3e8; color: #9a5b1c; }
+  .status-demo { background: #e8fdf0; color: #176b3a; }
+  .status-release { background: #e8edf8; color: #1a3fa8; }
+
+  /* Mini map */
+  .mini-map {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    padding: 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+  .map-svg-wrap {
+    border-radius: 8px;
+    overflow: hidden;
+    background: #f8f5ef;
+    border: 1px solid var(--border);
+  }
+  .map-legend {
+    display: flex;
+    gap: 16px;
+    font-size: 12px;
+    color: var(--text-muted);
+    align-items: center;
+  }
+  .legend-dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 2px;
+    display: inline-block;
+    margin-right: 5px;
+    vertical-align: middle;
+  }
+
+  /* Contact box */
+  .contact-box {
+    padding: 16px 20px;
+    background: var(--surface2);
+    border-radius: var(--radius-sm);
+    border: 1px dashed var(--border);
+    display: flex;
+    align-items: center;
+    gap: 14px;
+  }
+  .contact-lock {
+    font-size: 24px;
+    flex-shrink: 0;
+  }
+  .contact-info { flex: 1; }
+  .contact-hint {
+    font-size: 13px;
+    color: var(--text-sub);
+    margin-bottom: 4px;
+  }
+  .contact-detail {
+    font-size: 13px;
+    color: var(--text-muted);
+  }
+  .btn-login-inline {
+    padding: 8px 16px;
+    background: var(--primary);
+    color: #fff;
+    border: none;
+    border-radius: var(--radius-sm);
+    font-size: 13px;
+    font-weight: 600;
+    font-family: inherit;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: background 0.15s;
+  }
+  .btn-login-inline:hover { background: var(--primary-dark); }
+
+  .modal-footer {
+    padding: 20px 32px 28px;
+    border-top: 1px solid var(--border);
+    display: flex;
+    gap: 12px;
+    align-items: center;
+  }
+  .btn-meet-large {
+    flex: 1;
+    padding: 14px 24px;
+    background: var(--primary);
+    color: #fff;
+    border: none;
+    border-radius: var(--radius-sm);
+    font-size: 15px;
+    font-weight: 700;
+    font-family: inherit;
+    cursor: pointer;
+    transition: background 0.15s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+  }
+  .btn-meet-large:hover { background: var(--primary-dark); }
+  .btn-fav {
+    width: 48px;
+    height: 48px;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    font-size: 20px;
+    transition: all 0.15s;
+    flex-shrink: 0;
+  }
+  .btn-fav:hover { background: var(--border); }
+  .btn-fav.active { background: #fde8e8; border-color: #f5b0b0; }
+
+  /* ── TOAST ── */
+  .toast {
+    position: fixed;
+    bottom: 32px;
+    left: 50%;
+    transform: translateX(-50%) translateY(20px);
+    background: #1a1816;
+    color: #fff;
+    padding: 12px 20px;
+    border-radius: var(--radius-sm);
+    font-size: 13px;
+    font-weight: 500;
+    opacity: 0;
+    transition: opacity 0.2s, transform 0.2s;
+    z-index: 999;
+    pointer-events: none;
+    white-space: nowrap;
+  }
+  .toast.show {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+  }
+
+  /* ── SCROLLBAR ── */
+  ::-webkit-scrollbar { width: 8px; }
+  ::-webkit-scrollbar-track { background: var(--bg); }
+  ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
+</style>
+</head>
+<body>
+
+<!-- HEADER -->
+<header class="header">
+  <div class="header-inner">
+    <a href="#" class="logo">
+      <div class="logo-mark">GC</div>
+      <span class="logo-text">Game<span>Connection</span></span>
+    </a>
+    <nav class="header-nav">
+      <a href="#" class="nav-link">Schedule</a>
+      <a href="#" class="nav-link active">Exhibitors</a>
+      <a href="#" class="nav-link">Let's Meet</a>
+      <a href="#" class="nav-link">Map</a>
+      <a href="#" class="nav-link">Speakers</a>
+    </nav>
+    <div class="header-actions">
+      <button class="btn-ghost">Log In</button>
+      <button class="btn-primary">Register</button>
+    </div>
+  </div>
+</header>
+
+<!-- MAIN -->
+<main class="page">
+  <div class="page-title-row">
+    <div>
+      <h1 class="page-title">Exhibitor <span>Directory</span></h1>
+      <p class="page-subtitle">Game Connection 2026 · Palais des Festivals, Cannes · March 18–20</p>
+    </div>
+    <div class="result-count">Showing <strong id="result-count">12</strong> exhibitors</div>
+  </div>
+
+  <!-- FILTER BAR -->
+  <div class="filter-bar">
+    <div class="search-row">
+      <div class="search-wrap">
+        <svg class="search-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+        <input type="text" class="search-input" id="searchInput" placeholder="Search by company or game name…">
+      </div>
+      <button class="btn-clear" id="clearBtn">Clear All</button>
+    </div>
+    <div class="filter-row">
+      <span class="filter-label">Filter:</span>
+      <select class="filter-select" id="filterBooth">
+        <option value="">All Booth Types</option>
+        <option value="Pod">Pod</option>
+        <option value="Standard Booth">Standard Booth</option>
+      </select>
+      <select class="filter-select" id="filterGenre">
+        <option value="">All Genres</option>
+        <option value="RPG">RPG</option>
+        <option value="Action">Action</option>
+        <option value="Strategy">Strategy</option>
+        <option value="Casual">Casual</option>
+        <option value="FPS">FPS</option>
+        <option value="Adventure">Adventure</option>
+        <option value="MMO">MMO</option>
+        <option value="Puzzle">Puzzle</option>
+        <option value="Horror">Horror</option>
+        <option value="Sports">Sports</option>
+        <option value="Simulation">Simulation</option>
+        <option value="Fighting">Fighting</option>
+      </select>
+      <select class="filter-select" id="filterPlatform">
+        <option value="">All Platforms</option>
+        <option value="PC">PC</option>
+        <option value="Mobile">Mobile</option>
+        <option value="Console">Console</option>
+      </select>
+      <select class="filter-select" id="filterSeeking">
+        <option value="">All Partnership Types</option>
+        <option value="Publisher">Publisher</option>
+        <option value="Investment">Investment</option>
+        <option value="Co-dev">Co-dev</option>
+        <option value="Porting">Porting</option>
+      </select>
+    </div>
+    <div class="active-filters" id="activeFilters"></div>
+  </div>
+
+  <!-- GRID -->
+  <div class="grid" id="cardGrid"></div>
+</main>
+
+<!-- MODAL -->
+<div class="modal-overlay" id="modalOverlay" onclick="closeModal(event)">
+  <div class="modal" id="modal">
+    <div class="modal-header" id="modalHeader">
+      <div class="modal-avatar" id="modalAvatar"></div>
+      <div class="modal-header-info">
+        <div class="modal-company-name" id="modalCompanyName"></div>
+        <div class="modal-meta">
+          <span class="modal-booth" id="modalBoothBadge"></span>
+          <div class="modal-seeking" id="modalSeeking"></div>
+        </div>
+      </div>
+      <button class="modal-close" onclick="document.getElementById('modalOverlay').classList.remove('open')">✕</button>
+    </div>
+    <div class="modal-body">
+      <!-- About -->
+      <div>
+        <div class="modal-section-title">About</div>
+        <div class="company-desc" id="modalDesc"></div>
+      </div>
+      <!-- Games -->
+      <div>
+        <div class="modal-section-title">Games at This Booth</div>
+        <div class="games-list" id="modalGames"></div>
+      </div>
+      <!-- Map -->
+      <div>
+        <div class="modal-section-title">Booth Location</div>
+        <div class="mini-map">
+          <div class="map-svg-wrap">
+            <svg id="mapSvg" viewBox="0 0 480 220" xmlns="http://www.w3.org/2000/svg" style="width:100%;display:block;"></svg>
+          </div>
+          <div class="map-legend">
+            <span><span class="legend-dot" style="background:#b8d9f0;border:1px solid #1a6fa8;"></span>Pod</span>
+            <span><span class="legend-dot" style="background:#f0d5b8;border:1px solid #9a5b1c;"></span>Standard Booth</span>
+            <span><span class="legend-dot" style="background:#d95f2b;border:1px solid #b84e22;"></span>This Booth</span>
+          </div>
+        </div>
+      </div>
+      <!-- Contact -->
+      <div>
+        <div class="modal-section-title">Contact</div>
+        <div class="contact-box">
+          <div class="contact-lock">🔒</div>
+          <div class="contact-info">
+            <div class="contact-hint">Contact information is available to registered attendees</div>
+            <div class="contact-detail">Log in to view email, phone & LinkedIn</div>
+          </div>
+          <button class="btn-login-inline">Log In</button>
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-fav" id="btnFav" onclick="toggleFav()" title="Save to favourites">🤍</button>
+      <button class="btn-meet-large" id="btnMeetModal">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01"/></svg>
+        Request Let's Meet
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- TOAST -->
+<div class="toast" id="toast"></div>
+
+<script>
+// ── DATA ──────────────────────────────────────────────────
+const EXHIBITORS = [
+  {
+    id: 1, company: "Pixelwave Studios", booth: "P01", boothType: "Pod",
+    genres: ["RPG"], platforms: ["PC", "Console"], seeking: ["Publisher", "Investment"],
+    mainGame: "Chronicles of Aether",
+    color: "#6366f1",
+    desc: "Pixelwave Studios is an award-winning indie developer based in Berlin, specializing in narrative-driven RPGs with deep world-building and emergent gameplay systems. Founded in 2018 with a team of 28.",
+    games: [
+      { name: "Chronicles of Aether", genre: "RPG", platform: "PC / Console", status: "demo", emoji: "⚔️" },
+      { name: "Aether: Prologue", genre: "RPG", platform: "PC", status: "release", emoji: "🗺️" },
+    ]
+  },
+  {
+    id: 2, company: "NeonArk Games", booth: "B02", boothType: "Standard Booth",
+    genres: ["Action"], platforms: ["Mobile"], seeking: ["Co-dev"],
+    mainGame: "Pulse Riders",
+    color: "#ec4899",
+    desc: "NeonArk is a mobile-first game studio from Seoul pushing the boundaries of touch-based action games. With 5 million downloads across their catalog, they're looking for technical co-development partners.",
+    games: [
+      { name: "Pulse Riders", genre: "Action", platform: "iOS / Android", status: "alpha", emoji: "🏎️" },
+      { name: "Neon Rush", genre: "Action", platform: "iOS / Android", status: "release", emoji: "⚡" },
+      { name: "Drift Protocol", genre: "Racing", platform: "iOS", status: "demo", emoji: "🌀" },
+    ]
+  },
+  {
+    id: 3, company: "StarForge Interactive", booth: "P03", boothType: "Pod",
+    genres: ["Strategy"], platforms: ["PC"], seeking: ["Publisher"],
+    mainGame: "Galactic Dominion",
+    color: "#0ea5e9",
+    desc: "StarForge Interactive crafts grand-scale strategy experiences from their studio in Warsaw. Their flagship title combines 4X mechanics with real-time tactical combat, targeting the PC strategy market.",
+    games: [
+      { name: "Galactic Dominion", genre: "4X Strategy", platform: "PC", status: "demo", emoji: "🌌" },
+      { name: "Ironfront Command", genre: "RTS", platform: "PC", status: "alpha", emoji: "🏰" },
+    ]
+  },
+  {
+    id: 4, company: "DreamByte Entertainment", booth: "B04", boothType: "Standard Booth",
+    genres: ["Casual"], platforms: ["Mobile"], seeking: ["Investment"],
+    mainGame: "Blossom Garden",
+    color: "#22c55e",
+    desc: "DreamByte creates cozy, accessible mobile games with strong retention mechanics. Their match-3 titles have accumulated over 20M downloads. They are actively seeking Series A investment to scale their live-ops team.",
+    games: [
+      { name: "Blossom Garden", genre: "Puzzle / Casual", platform: "iOS / Android", status: "release", emoji: "🌸" },
+      { name: "Cozy Cove", genre: "Simulation", platform: "iOS / Android", status: "demo", emoji: "🏡" },
+    ]
+  },
+  {
+    id: 5, company: "Iron Pulse Games", booth: "P05", boothType: "Pod",
+    genres: ["FPS"], platforms: ["PC", "Console"], seeking: ["Co-dev", "Publisher"],
+    mainGame: "Warzone Echo",
+    color: "#ef4444",
+    desc: "Iron Pulse is a veteran-led studio in Toronto focused on tactical FPS with authentic military simulation. Their engine tech for destructible environments is proprietary and licensable.",
+    games: [
+      { name: "Warzone Echo", genre: "Tactical FPS", platform: "PC / PS5 / Xbox", status: "alpha", emoji: "🎯" },
+      { name: "Echo Protocol", genre: "FPS", platform: "PC", status: "demo", emoji: "🔫" },
+    ]
+  },
+  {
+    id: 6, company: "Mystic Valley Studio", booth: "B06", boothType: "Standard Booth",
+    genres: ["Adventure"], platforms: ["PC"], seeking: ["Investment"],
+    mainGame: "Verdant Hollow",
+    color: "#84cc16",
+    desc: "Mystic Valley Studio blends hand-painted visuals with atmospheric storytelling. Their debut title Verdant Hollow was nominated for Best Art Direction at DevGAMM 2025. The studio is seeking investment to expand their team and build a sequel.",
+    games: [
+      { name: "Verdant Hollow", genre: "Adventure", platform: "PC / Mac", status: "release", emoji: "🌿" },
+      { name: "The Hollow Returns", genre: "Adventure", platform: "PC", status: "alpha", emoji: "🍂" },
+    ]
+  },
+  {
+    id: 7, company: "CyberNest Interactive", booth: "P07", boothType: "Pod",
+    genres: ["MMO"], platforms: ["PC"], seeking: ["Publisher", "Co-dev"],
+    mainGame: "Nexus Online",
+    color: "#8b5cf6",
+    desc: "CyberNest Interactive is building the next generation of browser-accessible MMORPG experiences with cross-platform cloud rendering. Based in Taipei, their 40-person team has combined industry experience of 200+ years.",
+    games: [
+      { name: "Nexus Online", genre: "MMORPG", platform: "PC / Browser", status: "alpha", emoji: "🌐" },
+      { name: "CyberNest Mobile", genre: "MMO Lite", platform: "iOS / Android", status: "demo", emoji: "📱" },
+      { name: "Nexus Arena", genre: "PvP", platform: "PC", status: "alpha", emoji: "⚔️" },
+    ]
+  },
+  {
+    id: 8, company: "Aurora Game Works", booth: "B08", boothType: "Standard Booth",
+    genres: ["Puzzle"], platforms: ["Mobile", "PC"], seeking: ["Investment"],
+    mainGame: "Prismatic",
+    color: "#06b6d4",
+    desc: "Aurora Game Works creates mind-bending puzzle games that bridge mobile and PC audiences. Their spatial puzzle mechanics use AR depth sensing on supported devices. The studio is looking for growth investment after a successful crowdfunding campaign.",
+    games: [
+      { name: "Prismatic", genre: "Puzzle", platform: "iOS / Android / PC", status: "release", emoji: "🔷" },
+      { name: "Prismatic II", genre: "Puzzle", platform: "PC / Mac", status: "demo", emoji: "💎" },
+    ]
+  },
+  {
+    id: 9, company: "Phantom Ridge Studio", booth: "P09", boothType: "Pod",
+    genres: ["Horror"], platforms: ["PC", "Console"], seeking: ["Publisher"],
+    mainGame: "Veil of Silence",
+    color: "#475569",
+    desc: "Phantom Ridge Studio creates psychologically disturbing survival horror experiences. Based in Kraków, their games have won multiple horror game awards. Looking for a publisher who understands the AA horror market and can support a global launch.",
+    games: [
+      { name: "Veil of Silence", genre: "Survival Horror", platform: "PC / PS5", status: "demo", emoji: "👁️" },
+      { name: "The Last Witness", genre: "Horror", platform: "PC", status: "release", emoji: "🕯️" },
+    ]
+  },
+  {
+    id: 10, company: "Vertex Play", booth: "B10", boothType: "Standard Booth",
+    genres: ["Sports"], platforms: ["Mobile"], seeking: ["Co-dev"],
+    mainGame: "Hyper Football",
+    color: "#f97316",
+    desc: "Vertex Play specialises in physics-based mobile sports games with a strong esports community angle. Hyper Football has 3M active players monthly and an active tournament scene. Seeking co-dev partners to expand into basketball and tennis.",
+    games: [
+      { name: "Hyper Football", genre: "Sports", platform: "iOS / Android", status: "release", emoji: "⚽" },
+      { name: "Hyper Basketball", genre: "Sports", platform: "iOS / Android", status: "alpha", emoji: "🏀" },
+      { name: "Court Clash", genre: "Sports", platform: "iOS", status: "demo", emoji: "🎾" },
+    ]
+  },
+  {
+    id: 11, company: "Eclipse Interactive", booth: "P11", boothType: "Pod",
+    genres: ["Simulation"], platforms: ["PC"], seeking: ["Publisher", "Investment"],
+    mainGame: "City Architect Pro",
+    color: "#d97706",
+    desc: "Eclipse Interactive builds hardcore simulation titles with a passionate niche community. City Architect Pro has sold 600K copies on Early Access. The team is ready for full launch and expansion into console markets with the right publisher support.",
+    games: [
+      { name: "City Architect Pro", genre: "City Builder", platform: "PC", status: "release", emoji: "🏙️" },
+      { name: "Transit Empire", genre: "Simulation", platform: "PC / Mac", status: "alpha", emoji: "🚇" },
+    ]
+  },
+  {
+    id: 12, company: "Radiant Forge Games", booth: "B12", boothType: "Standard Booth",
+    genres: ["Fighting"], platforms: ["Console"], seeking: ["Co-dev"],
+    mainGame: "Iron Clash",
+    color: "#dc2626",
+    desc: "Radiant Forge Games is a fighting game specialist studio in Montreal, with deep roots in the competitive FGC scene. Iron Clash features rollback netcode and advanced frame-data tooling. They're seeking a technical co-development partner for cross-platform porting.",
+    games: [
+      { name: "Iron Clash", genre: "Fighting", platform: "PS5 / Xbox Series", status: "demo", emoji: "🥊" },
+      { name: "Clash Origins", genre: "Fighting", platform: "PS4 / Xbox One", status: "release", emoji: "👊" },
+    ]
+  },
+];
+
+// ── STATE ──────────────────────────────────────────────────
+let filtered = [...EXHIBITORS];
+let activeModal = null;
+let favs = new Set();
+
+// ── FILTER & RENDER ────────────────────────────────────────
+function getFilters() {
+  return {
+    search: document.getElementById('searchInput').value.trim().toLowerCase(),
+    booth: document.getElementById('filterBooth').value,
+    genre: document.getElementById('filterGenre').value,
+    platform: document.getElementById('filterPlatform').value,
+    seeking: document.getElementById('filterSeeking').value,
+  };
+}
+
+function applyFilters() {
+  const f = getFilters();
+  filtered = EXHIBITORS.filter(ex => {
+    if (f.search) {
+      const hay = (ex.company + ' ' + ex.games.map(g => g.name).join(' ')).toLowerCase();
+      if (!hay.includes(f.search)) return false;
+    }
+    if (f.booth && ex.boothType !== f.booth) return false;
+    if (f.genre && !ex.genres.includes(f.genre)) return false;
+    if (f.platform && !ex.platforms.includes(f.platform)) return false;
+    if (f.seeking && !ex.seeking.includes(f.seeking)) return false;
+    return true;
+  });
+  renderGrid();
+  renderActiveFilters();
+  document.getElementById('result-count').textContent = filtered.length;
+}
+
+function seekingTagHTML(s) {
+  const cls = { Publisher: 'tag-publisher', Investment: 'tag-investment', 'Co-dev': 'tag-codev', Porting: 'tag-porting' };
+  return `<span class="seeking-tag ${cls[s] || ''}">${s}</span>`;
+}
+
+function platformIcon(p) {
+  const icons = { PC: '🖥️', Mobile: '📱', Console: '🎮' };
+  return icons[p] || '▪';
+}
+
+function boothBadgeHTML(ex) {
+  const cls = ex.boothType === 'Pod' ? 'booth-pod' : 'booth-standard';
+  return `<span class="booth-badge ${cls}">${ex.booth} · ${ex.boothType}</span>`;
+}
+
+function renderGrid() {
+  const grid = document.getElementById('cardGrid');
+  if (filtered.length === 0) {
+    grid.innerHTML = `<div class="no-results"><div class="no-results-icon">🔍</div><h3>No exhibitors found</h3><p>Try adjusting your search or filters</p></div>`;
+    return;
+  }
+  grid.innerHTML = filtered.map(ex => `
+    <div class="card" onclick="openModal(${ex.id})">
+      <div class="card-header">
+        <div class="company-avatar" style="background:${ex.color}">${ex.company.split(' ').map(w=>w[0]).slice(0,2).join('')}</div>
+        <div class="card-header-info">
+          <div class="company-name">${ex.company}</div>
+          <div class="genre-tags">${ex.genres.map(g=>`<span class="genre-tag">${g}</span>`).join('')}</div>
+        </div>
+        ${boothBadgeHTML(ex)}
+      </div>
+      <div class="card-body">
+        <div class="game-name">
+          <span class="game-icon">🎮</span>
+          <strong>${ex.mainGame}</strong>
+        </div>
+        <div class="seeking-row">
+          <span style="font-size:11px;color:var(--text-muted);margin-right:2px">Seeking:</span>
+          ${ex.seeking.map(seekingTagHTML).join('')}
+        </div>
+        <div class="platform-row">
+          ${ex.platforms.map(p=>`<span>${platformIcon(p)} ${p}</span>`).join('')}
+        </div>
+      </div>
+      <div class="card-actions" onclick="event.stopPropagation()">
+        <button class="btn-view" onclick="openModal(${ex.id})">View Booth</button>
+        <button class="btn-meet" onclick="showToast('Redirecting to Let\'s Meet…')">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01"/></svg>
+          Schedule Meeting
+        </button>
+      </div>
+    </div>
+  `).join('');
+}
+
+// ── ACTIVE FILTERS ─────────────────────────────────────────
+function renderActiveFilters() {
+  const f = getFilters();
+  const container = document.getElementById('activeFilters');
+  const chips = [];
+  if (f.search) chips.push({ label: `Search: "${f.search}"`, key: 'search' });
+  if (f.booth) chips.push({ label: `Type: ${f.booth}`, key: 'booth' });
+  if (f.genre) chips.push({ label: `Genre: ${f.genre}`, key: 'genre' });
+  if (f.platform) chips.push({ label: `Platform: ${f.platform}`, key: 'platform' });
+  if (f.seeking) chips.push({ label: `Seeking: ${f.seeking}`, key: 'seeking' });
+  container.innerHTML = chips.map(c => `
+    <div class="filter-chip">
+      ${c.label}
+      <button onclick="clearFilter('${c.key}')">✕</button>
+    </div>
+  `).join('');
+}
+
+function clearFilter(key) {
+  if (key === 'search') document.getElementById('searchInput').value = '';
+  else {
+    const map = { booth: 'filterBooth', genre: 'filterGenre', platform: 'filterPlatform', seeking: 'filterSeeking' };
+    document.getElementById(map[key]).value = '';
+  }
+  applyFilters();
+}
+
+document.getElementById('clearBtn').onclick = () => {
+  document.getElementById('searchInput').value = '';
+  document.getElementById('filterBooth').value = '';
+  document.getElementById('filterGenre').value = '';
+  document.getElementById('filterPlatform').value = '';
+  document.getElementById('filterSeeking').value = '';
+  applyFilters();
+};
+
+['searchInput','filterBooth','filterGenre','filterPlatform','filterSeeking'].forEach(id => {
+  document.getElementById(id).addEventListener('input', applyFilters);
+  document.getElementById(id).addEventListener('change', applyFilters);
+});
+
+// ── MINI MAP SVG ───────────────────────────────────────────
+function buildMap(targetBooth) {
+  const positions = {
+    'P01': {x:20,y:20,w:60,h:50,type:'pod'},
+    'P03': {x:90,y:20,w:60,h:50,type:'pod'},
+    'P05': {x:160,y:20,w:60,h:50,type:'pod'},
+    'P07': {x:230,y:20,w:60,h:50,type:'pod'},
+    'P09': {x:300,y:20,w:60,h:50,type:'pod'},
+    'P11': {x:370,y:20,w:80,h:50,type:'pod'},
+    'B02': {x:20,y:130,w:90,h:70,type:'booth'},
+    'B04': {x:120,y:130,w:90,h:70,type:'booth'},
+    'B06': {x:220,y:130,w:90,h:70,type:'booth'},
+    'B08': {x:20,y:210,w:90,h:70,type:'booth'},
+    'B10': {x:120,y:210,w:90,h:70,type:'booth'},
+    'B12': {x:220,y:210,w:90,h:70,type:'booth'},
+  };
+  const svg = document.getElementById('mapSvg');
+  svg.setAttribute('viewBox','0 0 480 300');
+  let html = `
+    <rect width="480" height="300" fill="#f8f5ef"/>
+    <!-- aisle -->
+    <rect x="0" y="85" width="480" height="35" fill="#ede9e0" rx="0"/>
+    <text x="240" y="107" text-anchor="middle" font-size="9" fill="#9c9085" font-family="DM Sans,sans-serif" letter-spacing="1">— MAIN AISLE —</text>
+    <!-- floor label -->
+    <text x="8" y="14" font-size="9" fill="#9c9085" font-family="DM Sans,sans-serif">PODS (North)</text>
+    <text x="8" y="128" font-size="9" fill="#9c9085" font-family="DM Sans,sans-serif">BOOTHS (South)</text>
+  `;
+  for (const [booth, pos] of Object.entries(positions)) {
+    const isTarget = booth === targetBooth;
+    const fill = isTarget ? '#d95f2b' : pos.type === 'pod' ? '#d6e8f8' : '#f0e2d0';
+    const stroke = isTarget ? '#b84e22' : pos.type === 'pod' ? '#1a6fa8' : '#9a5b1c';
+    const textColor = isTarget ? '#fff' : pos.type === 'pod' ? '#1a6fa8' : '#9a5b1c';
+    html += `
+      <rect x="${pos.x}" y="${pos.y}" width="${pos.w}" height="${pos.h}" rx="6" fill="${fill}" stroke="${stroke}" stroke-width="${isTarget?2:1}"/>
+      <text x="${pos.x+pos.w/2}" y="${pos.y+pos.h/2+4}" text-anchor="middle" font-size="11" font-weight="${isTarget?'700':'600'}" fill="${textColor}" font-family="DM Sans,sans-serif">${booth}</text>
+      ${isTarget?`<circle cx="${pos.x+pos.w/2}" cy="${pos.y+10}" r="4" fill="#fff"/>`:'' }
+    `;
+  }
+  svg.innerHTML = html;
+}
+
+// ── STATUS TAGS ────────────────────────────────────────────
+function statusTag(s) {
+  const map = { alpha: ['status-alpha','Alpha'], demo: ['status-demo','Playable Demo'], release: ['status-release','Released'] };
+  const [cls, label] = map[s] || ['status-alpha', s];
+  return `<span class="game-status ${cls}">${label}</span>`;
+}
+
+// ── MODAL ──────────────────────────────────────────────────
+function openModal(id) {
+  const ex = EXHIBITORS.find(e => e.id === id);
+  if (!ex) return;
+  activeModal = ex;
+
+  document.getElementById('modalAvatar').textContent = ex.company.split(' ').map(w=>w[0]).slice(0,2).join('');
+  document.getElementById('modalAvatar').style.background = ex.color;
+  document.getElementById('modalCompanyName').textContent = ex.company;
+
+  const boothCls = ex.boothType === 'Pod' ? 'booth-pod' : 'booth-standard';
+  document.getElementById('modalBoothBadge').className = `modal-booth booth-badge ${boothCls}`;
+  document.getElementById('modalBoothBadge').textContent = `${ex.booth} · ${ex.boothType}`;
+
+  document.getElementById('modalSeeking').innerHTML = ex.seeking.map(seekingTagHTML).join('');
+  document.getElementById('modalDesc').textContent = ex.desc;
+
+  document.getElementById('modalGames').innerHTML = ex.games.map(g => `
+    <div class="game-item">
+      <div class="game-thumb" style="background:${ex.color}22">${g.emoji}</div>
+      <div class="game-item-info">
+        <div class="game-item-name">${g.name}</div>
+        <div class="game-item-meta">${g.genre} · ${g.platform}</div>
+      </div>
+      ${statusTag(g.status)}
+    </div>
+  `).join('');
+
+  buildMap(ex.booth);
+
+  const btnFav = document.getElementById('btnFav');
+  btnFav.textContent = favs.has(id) ? '❤️' : '🤍';
+  btnFav.classList.toggle('active', favs.has(id));
+
+  document.getElementById('modalOverlay').classList.add('open');
+  document.body.style.overflow = 'hidden';
+}
+
+function closeModal(event) {
+  if (event.target === document.getElementById('modalOverlay')) {
+    document.getElementById('modalOverlay').classList.remove('open');
+    document.body.style.overflow = '';
+  }
+}
+
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape') {
+    document.getElementById('modalOverlay').classList.remove('open');
+    document.body.style.overflow = '';
+  }
+});
+
+function toggleFav() {
+  if (!activeModal) return;
+  const id = activeModal.id;
+  if (favs.has(id)) { favs.delete(id); document.getElementById('btnFav').textContent='🤍'; document.getElementById('btnFav').classList.remove('active'); showToast('Removed from favourites'); }
+  else { favs.add(id); document.getElementById('btnFav').textContent='❤️'; document.getElementById('btnFav').classList.add('active'); showToast('Added to favourites!'); }
+}
+
+document.getElementById('btnMeetModal').onclick = () => showToast('Opening Let\'s Meet scheduler…');
+
+// ── TOAST ──────────────────────────────────────────────────
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  clearTimeout(t._timer);
+  t._timer = setTimeout(() => t.classList.remove('show'), 2600);
+}
+
+// ── INIT ───────────────────────────────────────────────────
+renderGrid();
+</script>
+</body>
+</html>

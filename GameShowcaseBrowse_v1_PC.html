@@ -1,0 +1,695 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Game Showcase — Indie Game Fest 2026</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'DM Sans',sans-serif;background:#e8e4da;color:#1c1a17;min-height:100vh}
+
+/* ─── Top Nav ─── */
+.topnav{position:sticky;top:0;z-index:100;height:60px;background:#fff;border-bottom:1px solid #e0dbd0;display:flex;align-items:center;justify-content:space-between;padding:0 32px}
+.topnav-left{display:flex;align-items:center;gap:32px}
+.topnav-logo{font-weight:700;font-size:15px;color:#1c1a17;letter-spacing:.3px;white-space:nowrap}
+.topnav-logo span{color:#d95f2b}
+.topnav-links{display:flex;align-items:center;gap:4px}
+.nav-link{padding:6px 14px;border-radius:7px;font-size:13.5px;font-weight:500;color:#6b6660;text-decoration:none;cursor:pointer;transition:all .15s}
+.nav-link:hover{color:#1c1a17;background:#f5f3ef}
+.nav-link.active{color:#d95f2b;background:#fde8dc;font-weight:600}
+.topnav-right{display:flex;align-items:center;gap:12px}
+.event-badge{padding:5px 12px;background:#fde8dc;color:#d95f2b;border-radius:20px;font-size:12px;font-weight:600}
+.btn-login{padding:8px 18px;border-radius:8px;background:#1c1a17;color:#fff;font-size:13px;font-weight:600;cursor:pointer;border:none;font-family:'DM Sans',sans-serif;transition:background .15s}
+.btn-login:hover{background:#2d2b28}
+.user-avatar{width:34px;height:34px;border-radius:50%;background:linear-gradient(135deg,#d95f2b,#f08040);display:flex;align-items:center;justify-content:center;color:#fff;font-weight:700;font-size:13px;cursor:pointer}
+
+/* ─── Hero Banner ─── */
+.hero{background:linear-gradient(135deg,#1c1a17 0%,#2d2520 60%,#3a2010 100%);padding:40px 32px 36px;position:relative;overflow:hidden}
+.hero::before{content:'';position:absolute;top:-60px;right:-60px;width:320px;height:320px;border-radius:50%;background:radial-gradient(circle,rgba(217,95,43,.18),transparent 70%)}
+.hero::after{content:'';position:absolute;bottom:-40px;left:200px;width:200px;height:200px;border-radius:50%;background:radial-gradient(circle,rgba(217,95,43,.1),transparent 70%)}
+.hero-inner{max-width:1400px;margin:0 auto;position:relative;z-index:1}
+.hero h1{font-size:32px;font-weight:700;color:#fff;margin-bottom:6px;letter-spacing:-.3px}
+.hero h1 span{color:#d95f2b}
+.hero p{font-size:15px;color:#a09890;margin-bottom:24px}
+.hero-stats{display:flex;gap:24px}
+.hero-stat{text-align:center}
+.hero-stat-num{font-size:28px;font-weight:700;color:#fff}
+.hero-stat-label{font-size:12px;color:#a09890;margin-top:2px}
+
+/* ─── Search & Filter Bar ─── */
+.filter-bar{background:#fff;border-bottom:1px solid #e0dbd0;padding:0 32px;position:sticky;top:60px;z-index:90}
+.filter-inner{max-width:1400px;margin:0 auto;display:flex;align-items:center;gap:12px;height:60px;overflow-x:auto;scrollbar-width:none}
+.filter-inner::-webkit-scrollbar{display:none}
+.search-wrap{flex-shrink:0;position:relative;flex:1;max-width:320px}
+.search-wrap input{width:100%;padding:9px 12px 9px 36px;border:1.5px solid #e0dbd0;border-radius:9px;font-size:13.5px;font-family:'DM Sans',sans-serif;background:#f5f3ef;color:#1c1a17;outline:none;transition:border-color .15s}
+.search-wrap input:focus{border-color:#d95f2b;background:#fff}
+.search-wrap input::placeholder{color:#a09890}
+.search-icon{position:absolute;left:11px;top:50%;transform:translateY(-50%);font-size:14px;color:#a09890;pointer-events:none}
+.filter-divider{width:1px;height:28px;background:#e0dbd0;flex-shrink:0}
+.filter-select{padding:8px 12px;border:1.5px solid #e0dbd0;border-radius:9px;font-size:13px;font-family:'DM Sans',sans-serif;background:#f5f3ef;color:#1c1a17;outline:none;cursor:pointer;white-space:nowrap;flex-shrink:0;transition:border-color .15s;-webkit-appearance:none;appearance:none;padding-right:28px;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%23a09890' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 10px center}
+.filter-select:focus{border-color:#d95f2b}
+.filter-toggle{padding:8px 14px;border:1.5px solid #e0dbd0;border-radius:9px;font-size:13px;font-family:'DM Sans',sans-serif;background:#f5f3ef;color:#6b6660;cursor:pointer;white-space:nowrap;flex-shrink:0;transition:all .15s;font-weight:500}
+.filter-toggle:hover{border-color:#d95f2b;color:#d95f2b;background:#fff}
+.filter-toggle.on{border-color:#d95f2b;background:#fde8dc;color:#d95f2b;font-weight:600}
+.filter-count{margin-left:auto;font-size:13px;color:#6b6660;white-space:nowrap;flex-shrink:0}
+.sort-select{padding:8px 12px;border:1.5px solid #e0dbd0;border-radius:9px;font-size:13px;font-family:'DM Sans',sans-serif;background:#f5f3ef;color:#1c1a17;outline:none;cursor:pointer;flex-shrink:0;padding-right:28px;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%23a09890' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 10px center;-webkit-appearance:none;appearance:none}
+.sort-select:focus{border-color:#d95f2b}
+
+/* ─── Featured Strip ─── */
+.featured-strip{max-width:1400px;margin:24px auto 0;padding:0 32px}
+.section-label{font-size:12px;font-weight:700;color:#a09890;text-transform:uppercase;letter-spacing:.6px;margin-bottom:12px;display:flex;align-items:center;gap:8px}
+.section-label::after{content:'';flex:1;height:1px;background:#d0cbc0}
+.featured-scroll{display:flex;gap:14px;overflow-x:auto;padding-bottom:4px;scrollbar-width:none}
+.featured-scroll::-webkit-scrollbar{display:none}
+.featured-card{flex-shrink:0;width:200px;border-radius:10px;overflow:hidden;background:#fff;box-shadow:0 2px 8px rgba(0,0,0,.08);cursor:pointer;transition:transform .15s,box-shadow .15s;position:relative}
+.featured-card:hover{transform:translateY(-3px);box-shadow:0 6px 20px rgba(0,0,0,.12)}
+.featured-card-cover{width:100%;height:112px;display:flex;align-items:center;justify-content:center;font-size:28px;position:relative}
+.featured-badge{position:absolute;top:7px;left:7px;background:#d95f2b;color:#fff;font-size:10px;font-weight:700;padding:2px 7px;border-radius:4px;letter-spacing:.3px}
+.featured-card-body{padding:10px}
+.featured-card-title{font-size:13px;font-weight:600;color:#1c1a17;margin-bottom:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.featured-card-dev{font-size:11px;color:#6b6660}
+.featured-card-heat{font-size:11px;color:#d95f2b;font-weight:600;margin-top:4px}
+
+/* ─── Main Grid ─── */
+.main-content{max-width:1400px;margin:24px auto 40px;padding:0 32px}
+.grid-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px}
+.grid-header h2{font-size:18px;font-weight:700;color:#1c1a17}
+.view-toggle{display:flex;gap:4px}
+.view-btn{width:32px;height:32px;border:1.5px solid #e0dbd0;border-radius:7px;background:#fff;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:14px;transition:all .15s;color:#a09890}
+.view-btn.active{border-color:#d95f2b;background:#fde8dc;color:#d95f2b}
+
+.game-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:18px}
+
+/* ─── Game Card ─── */
+.game-card{background:#fff;border-radius:14px;overflow:hidden;box-shadow:0 1px 4px rgba(0,0,0,.07);cursor:pointer;transition:transform .2s,box-shadow .2s;position:relative;display:flex;flex-direction:column}
+.game-card:hover{transform:translateY(-4px);box-shadow:0 8px 24px rgba(0,0,0,.12)}
+.game-card-cover{width:100%;height:160px;display:flex;align-items:center;justify-content:center;font-size:40px;position:relative;flex-shrink:0}
+.card-featured-badge{position:absolute;top:10px;left:10px;background:#d95f2b;color:#fff;font-size:10px;font-weight:700;padding:3px 8px;border-radius:5px;letter-spacing:.4px}
+.card-seeking-badge{position:absolute;top:10px;right:10px;background:rgba(0,0,0,.55);color:#fff;font-size:10px;font-weight:600;padding:3px 8px;border-radius:5px;backdrop-filter:blur(4px)}
+.card-heat{position:absolute;bottom:10px;right:10px;background:rgba(0,0,0,.6);color:#fff;font-size:11px;font-weight:600;padding:3px 8px;border-radius:5px;display:flex;align-items:center;gap:4px}
+.game-card-body{padding:14px 14px 12px;flex:1;display:flex;flex-direction:column}
+.game-card-title{font-size:15px;font-weight:700;color:#1c1a17;margin-bottom:3px;display:-webkit-box;-webkit-line-clamp:1;-webkit-box-orient:vertical;overflow:hidden}
+.game-card-dev{font-size:12px;color:#6b6660;margin-bottom:10px;display:flex;align-items:center;gap:4px}
+.game-card-tags{display:flex;flex-wrap:wrap;gap:5px;margin-bottom:10px}
+.tag{padding:3px 9px;border-radius:5px;font-size:11px;font-weight:500;background:#f0ece4;color:#6b6660}
+.tag-genre{background:#e8f0fe;color:#3367d6}
+.tag-platform{background:#e8f5e9;color:#2e7d32}
+.tag-seeking{background:#fde8dc;color:#d95f2b}
+.game-card-footer{display:flex;align-items:center;justify-content:space-between;margin-top:auto;padding-top:10px;border-top:1px solid #f0ece4}
+.rating-stars{display:flex;align-items:center;gap:3px;font-size:12px;color:#6b6660}
+.rating-stars .stars{color:#f5a623;letter-spacing:-1px;font-size:13px}
+.platform-row{display:flex;gap:4px}
+.plat-pill{padding:2px 7px;background:#f5f3ef;border-radius:4px;font-size:10px;font-weight:500;color:#6b6660}
+
+/* ─── Detail Modal ─── */
+.modal-overlay{position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,.4);z-index:200;opacity:0;pointer-events:none;transition:opacity .2s;backdrop-filter:blur(2px)}
+.modal-overlay.open{opacity:1;pointer-events:all}
+
+.modal{position:fixed;top:50%;left:50%;transform:translate(-50%,-42%);width:900px;max-width:96vw;max-height:90vh;background:#fff;border-radius:18px;z-index:201;overflow:hidden;display:flex;flex-direction:column;opacity:0;transition:opacity .2s,transform .22s;box-shadow:0 20px 60px rgba(0,0,0,.22)}
+.modal.open{opacity:1;transform:translate(-50%,-50%)}
+
+.modal-close{position:absolute;top:16px;right:16px;width:34px;height:34px;border:none;background:rgba(0,0,0,.3);border-radius:50%;cursor:pointer;font-size:16px;display:flex;align-items:center;justify-content:center;color:#fff;z-index:1;transition:background .15s}
+.modal-close:hover{background:rgba(0,0,0,.5)}
+
+.modal-body{display:flex;flex:1;overflow:hidden}
+
+/* Left: media column */
+.modal-media{width:400px;flex-shrink:0;display:flex;flex-direction:column;background:#1c1a17;position:relative}
+.modal-cover{width:100%;height:220px;display:flex;align-items:center;justify-content:center;font-size:56px;position:relative;flex-shrink:0}
+.modal-cover-title{position:absolute;bottom:0;left:0;right:0;padding:12px 16px;background:linear-gradient(transparent,rgba(0,0,0,.7));color:#fff}
+.modal-cover-title .title{font-size:20px;font-weight:700}
+.modal-cover-title .dev{font-size:13px;color:rgba(255,255,255,.7);margin-top:2px}
+
+/* Trailer placeholder */
+.trailer-placeholder{margin:16px;border-radius:10px;background:#141210;height:160px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;cursor:pointer;position:relative;overflow:hidden;flex-shrink:0}
+.trailer-placeholder::before{content:'';position:absolute;inset:0;background:linear-gradient(135deg,rgba(217,95,43,.08),transparent)}
+.trailer-play{width:52px;height:52px;border-radius:50%;background:rgba(217,95,43,.9);display:flex;align-items:center;justify-content:center;font-size:20px;transition:transform .15s,background .15s}
+.trailer-placeholder:hover .trailer-play{transform:scale(1.08);background:#d95f2b}
+.trailer-label{font-size:12px;color:#a09890;font-weight:500}
+
+/* Modal tags & quick info */
+.modal-tags{padding:0 16px 12px;display:flex;flex-wrap:wrap;gap:6px}
+.modal-quick{padding:0 16px 16px;display:flex;flex-direction:column;gap:6px}
+.quick-row{display:flex;align-items:center;gap:8px;font-size:12.5px;color:#a09890}
+.quick-row .qval{color:#e8e4da;font-weight:500}
+.heat-bar-wrap{padding:0 16px 16px}
+.heat-label{font-size:11px;color:#a09890;margin-bottom:5px;display:flex;justify-content:space-between}
+.heat-bar-bg{height:5px;background:#2d2b28;border-radius:3px;overflow:hidden}
+.heat-bar-fill{height:5px;border-radius:3px;background:linear-gradient(90deg,#d95f2b,#f08040)}
+
+/* Right: info column */
+.modal-info{flex:1;overflow-y:auto;padding:24px;display:flex;flex-direction:column;gap:20px}
+.modal-info::-webkit-scrollbar{width:5px}
+.modal-info::-webkit-scrollbar-track{background:#f5f3ef}
+.modal-info::-webkit-scrollbar-thumb{background:#d0cbc0;border-radius:3px}
+
+.info-section h4{font-size:11px;font-weight:700;color:#a09890;text-transform:uppercase;letter-spacing:.6px;margin-bottom:10px}
+.info-desc{font-size:14px;color:#1c1a17;line-height:1.65}
+.info-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.info-item{display:flex;flex-direction:column;gap:2px}
+.info-item .il{font-size:11px;color:#a09890;font-weight:500}
+.info-item .iv{font-size:13px;color:#1c1a17;font-weight:500}
+
+/* Contact locked */
+.contact-locked{background:#f5f3ef;border-radius:10px;padding:16px;text-align:center}
+.lock-icon{font-size:28px;margin-bottom:8px}
+.contact-locked p{font-size:13px;color:#6b6660;margin-bottom:12px;line-height:1.5}
+.btn-signin{padding:9px 20px;border-radius:8px;background:#d95f2b;color:#fff;font-size:13px;font-weight:600;cursor:pointer;border:none;font-family:'DM Sans',sans-serif;transition:background .15s}
+.btn-signin:hover{background:#c4521f}
+
+/* CTA buttons */
+.modal-cta{display:flex;gap:10px;margin-top:auto;padding-top:16px;border-top:1px solid #f0ece4;flex-wrap:wrap}
+.btn-meeting{flex:1;padding:11px 20px;border-radius:9px;background:#d95f2b;color:#fff;font-size:14px;font-weight:600;cursor:pointer;border:none;font-family:'DM Sans',sans-serif;transition:background .15s;display:flex;align-items:center;justify-content:center;gap:6px;min-width:160px}
+.btn-meeting:hover{background:#c4521f}
+.btn-interest{flex:1;padding:11px 20px;border-radius:9px;background:#fff;color:#1c1a17;font-size:14px;font-weight:600;cursor:pointer;border:2px solid #1c1a17;font-family:'DM Sans',sans-serif;transition:all .15s;display:flex;align-items:center;justify-content:center;gap:6px;min-width:160px}
+.btn-interest:hover{background:#1c1a17;color:#fff}
+.btn-interest.sent{background:#d4f5e7;color:#0d9b72;border-color:#0d9b72}
+
+/* Interest toast */
+.toast{position:fixed;bottom:28px;left:50%;transform:translateX(-50%) translateY(20px);background:#1c1a17;color:#fff;padding:12px 22px;border-radius:10px;font-size:13.5px;font-weight:500;z-index:300;opacity:0;transition:all .3s;white-space:nowrap;pointer-events:none}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+
+/* ─── Empty state ─── */
+.empty-state{text-align:center;padding:60px 20px;color:#a09890}
+.empty-state .icon{font-size:40px;margin-bottom:12px}
+.empty-state p{font-size:15px}
+
+/* ─── Responsive tweaks ─── */
+@media(max-width:820px){
+  .modal{width:98vw}
+  .modal-media{width:340px}
+}
+@media(max-width:680px){
+  .modal-body{flex-direction:column}
+  .modal-media{width:100%;flex-shrink:0;max-height:340px}
+}
+</style>
+</head>
+<body>
+
+<!-- ═══ Top Nav ═══ -->
+<nav class="topnav">
+  <div class="topnav-left">
+    <div class="topnav-logo"><span>GAME CONNECTION</span> · Indie Game Fest 2026</div>
+    <div class="topnav-links">
+      <a class="nav-link" href="#">Program</a>
+      <a class="nav-link active" href="#">Game Showcase</a>
+      <a class="nav-link" href="#">Let's Meet</a>
+      <a class="nav-link" href="#">Schedule</a>
+      <a class="nav-link" href="#">Speakers</a>
+    </div>
+  </div>
+  <div class="topnav-right">
+    <span class="event-badge">📅 May 15–17, Lyon</span>
+    <button class="btn-login" onclick="showLoginToast()">Sign In</button>
+  </div>
+</nav>
+
+<!-- ═══ Hero ═══ -->
+<section class="hero">
+  <div class="hero-inner">
+    <h1>🎮 Game <span>Showcase</span></h1>
+    <p>Discover the most promising indie games — connect with developers, explore new titles.</p>
+    <div class="hero-stats">
+      <div class="hero-stat"><div class="hero-stat-num">12</div><div class="hero-stat-label">Games</div></div>
+      <div class="hero-stat"><div class="hero-stat-num">9</div><div class="hero-stat-label">Countries</div></div>
+      <div class="hero-stat"><div class="hero-stat-num">6</div><div class="hero-stat-label">Seeking Publisher</div></div>
+      <div class="hero-stat"><div class="hero-stat-num">5</div><div class="hero-stat-label">Genres</div></div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══ Filter Bar ═══ -->
+<div class="filter-bar">
+  <div class="filter-inner">
+    <div class="search-wrap">
+      <span class="search-icon">🔍</span>
+      <input type="text" id="searchInput" placeholder="Search games, developers…" oninput="applyFilters()">
+    </div>
+    <div class="filter-divider"></div>
+    <select class="filter-select" id="genreFilter" onchange="applyFilters()">
+      <option value="">All Genres</option>
+      <option value="RPG">RPG</option>
+      <option value="Puzzle">Puzzle</option>
+      <option value="Action">Action</option>
+      <option value="Strategy">Strategy</option>
+      <option value="Survival">Survival</option>
+      <option value="Adventure">Adventure</option>
+      <option value="Simulation">Simulation</option>
+      <option value="Casual">Casual</option>
+      <option value="Horror">Horror</option>
+    </select>
+    <select class="filter-select" id="platformFilter" onchange="applyFilters()">
+      <option value="">All Platforms</option>
+      <option value="PC">PC</option>
+      <option value="Console">Console</option>
+      <option value="Mobile">Mobile</option>
+    </select>
+    <select class="filter-select" id="sizeFilter" onchange="applyFilters()">
+      <option value="">All Studio Sizes</option>
+      <option value="Solo">Solo / 1–2</option>
+      <option value="Small">Small (3–10)</option>
+      <option value="Mid">Mid (11–50)</option>
+      <option value="Large">Large (50+)</option>
+    </select>
+    <button class="filter-toggle" id="seekingToggle" onclick="toggleSeeking()">🔍 Seeking Publisher</button>
+    <div class="filter-divider"></div>
+    <span class="filter-count" id="filterCount">12 games</span>
+    <select class="sort-select" id="sortSelect" onchange="applyFilters()">
+      <option value="heat">Sort: Most Popular</option>
+      <option value="rating">Sort: Top Rated</option>
+      <option value="new">Sort: Newest</option>
+      <option value="az">Sort: A–Z</option>
+    </select>
+  </div>
+</div>
+
+<!-- ═══ Featured Strip ═══ -->
+<div class="featured-strip">
+  <div class="section-label">⭐ Featured Games</div>
+  <div class="featured-scroll" id="featuredStrip"></div>
+</div>
+
+<!-- ═══ Main Grid ═══ -->
+<div class="main-content">
+  <div class="grid-header">
+    <h2 id="gridTitle">All Games <span style="color:#a09890;font-weight:400;font-size:15px">(12)</span></h2>
+    <div class="view-toggle">
+      <button class="view-btn active" title="Grid view">⊞</button>
+      <button class="view-btn" title="List view" onclick="alert('List view coming soon')">☰</button>
+    </div>
+  </div>
+  <div class="game-grid" id="gameGrid"></div>
+  <div class="empty-state" id="emptyState" style="display:none">
+    <div class="icon">🎮</div>
+    <p>No games match your filters. Try adjusting your search.</p>
+  </div>
+</div>
+
+<!-- ═══ Detail Modal ═══ -->
+<div class="modal-overlay" id="modalOverlay" onclick="closeModal(event)"></div>
+<div class="modal" id="gameModal" role="dialog" aria-modal="true">
+  <button class="modal-close" onclick="closeModal()" aria-label="Close">✕</button>
+  <div class="modal-body">
+    <!-- Left: media -->
+    <div class="modal-media" id="modalMedia">
+      <div class="modal-cover" id="modalCover">
+        <div class="modal-cover-title">
+          <div class="title" id="modalTitle">Game Title</div>
+          <div class="dev" id="modalDevFlag">Studio · 🇯🇵</div>
+        </div>
+      </div>
+      <!-- Trailer -->
+      <div class="trailer-placeholder" onclick="alert('Trailer not yet available — check back closer to the event!')">
+        <div class="trailer-play">▶</div>
+        <div class="trailer-label">Watch Trailer</div>
+      </div>
+      <!-- Tags -->
+      <div class="modal-tags" id="modalTagsLeft"></div>
+      <!-- Quick info -->
+      <div class="modal-quick" id="modalQuick"></div>
+      <!-- Heat bar -->
+      <div class="heat-bar-wrap">
+        <div class="heat-label"><span>Attendee Interest</span><span id="modalHeatPct">—</span></div>
+        <div class="heat-bar-bg"><div class="heat-bar-fill" id="modalHeatBar" style="width:0%"></div></div>
+      </div>
+    </div>
+    <!-- Right: info -->
+    <div class="modal-info">
+      <div class="info-section">
+        <h4>About This Game</h4>
+        <p class="info-desc" id="modalDesc">—</p>
+      </div>
+      <div class="info-section">
+        <h4>Game Details</h4>
+        <div class="info-grid" id="modalDetailsGrid"></div>
+      </div>
+      <div class="info-section">
+        <h4>Contact Developer</h4>
+        <div class="contact-locked" id="contactSection">
+          <div class="lock-icon">🔒</div>
+          <p>Sign in to view developer contact details, website, and request information.</p>
+          <button class="btn-signin" onclick="showLoginToast()">Sign In to View</button>
+        </div>
+      </div>
+      <div class="modal-cta">
+        <button class="btn-meeting" id="btnMeeting" onclick="requestMeeting()">
+          📅 Request Meeting
+        </button>
+        <button class="btn-interest" id="btnInterest" onclick="expressInterest()">
+          💌 Express Interest
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Toast -->
+<div class="toast" id="toast"></div>
+
+<script>
+// ─── Data ───────────────────────────────────────────────────────────────────
+const games = [
+  {
+    id:1,title:"Phantom Circuit",dev:"Akihabara Studio",country:"🇯🇵",
+    genres:["Puzzle","Horror"],platforms:["PC","Console"],
+    studioSize:"Small",seeking:true,featured:true,
+    rating:4.8,heat:94,reviews:312,
+    gradient:"linear-gradient(135deg,#6b48c0,#9b6fd4)",emoji:"👻",
+    desc:"A mind-bending puzzle-horror adventure set in a ghost-infested electronics district. Navigate corrupted circuits, solve optical illusions, and survive encounters with eight terrifying entities — each with unique AI patterns. Winner of Best Narrative at Tokyo Indie Awards 2025.",
+    engine:"Unity 2023",release:"Q3 2026",teamSize:"6 people",publisher:"Seeking"
+  },
+  {
+    id:2,title:"Echoes of Jade Dynasty",dev:"CloudPeak Games",country:"🇨🇳",
+    genres:["RPG"],platforms:["PC","Mobile"],
+    studioSize:"Mid",seeking:false,featured:true,
+    rating:4.7,heat:88,reviews:278,
+    gradient:"linear-gradient(135deg,#0a7fa8,#2eb5e0)",emoji:"🐉",
+    desc:"An epic open-world RPG set in a mythological ancient China. Command a dynasty, forge alliances, and unravel the secrets of jade-powered celestial magic. Features 60+ hours of main story, dynamic weather, and a cast of 200 voiced NPCs.",
+    engine:"Unreal Engine 5",release:"Q2 2026",teamSize:"28 people",publisher:"Self-publishing"
+  },
+  {
+    id:3,title:"Neon Requiem",dev:"Lumière Studio",country:"🇫🇷",
+    genres:["Action","RPG"],platforms:["PC"],
+    studioSize:"Small",seeking:true,featured:true,
+    rating:4.6,heat:82,reviews:201,
+    gradient:"linear-gradient(135deg,#e05a8a,#f78fb3)",emoji:"⚔️",
+    desc:"A cyberpunk action RPG where music is your weapon. Craft sonic attacks, hack urban infrastructure with beats, and uncover a corporate conspiracy through neon-drenched Paris streets. Fully original OST produced by acclaimed DJ collective Infrarouge.",
+    engine:"Godot 4",release:"Q4 2026",teamSize:"9 people",publisher:"Seeking"
+  },
+  {
+    id:4,title:"Jungle Protocol",dev:"Mekong Dev",country:"🇻🇳",
+    genres:["Survival"],platforms:["PC","Console"],
+    studioSize:"Small",seeking:true,featured:false,
+    rating:4.4,heat:74,reviews:156,
+    gradient:"linear-gradient(135deg,#2d8a3e,#52c041)",emoji:"🌿",
+    desc:"A hardcore survival game set in a procedurally generated jungle teeming with megafauna and ancient ruins. Manage hunger, disease, and tribal politics while deciphering a lost civilization's warnings about what sleeps beneath the canopy.",
+    engine:"Unity 2022",release:"Early Access Q1 2026",teamSize:"5 people",publisher:"Seeking"
+  },
+  {
+    id:5,title:"Island Keeper",dev:"Batik Games",country:"🇮🇩",
+    genres:["Casual","Simulation"],platforms:["Mobile"],
+    studioSize:"Solo",seeking:false,featured:false,
+    rating:4.3,heat:67,reviews:543,
+    gradient:"linear-gradient(135deg,#f5a623,#f7ca6d)",emoji:"🏝️",
+    desc:"A cozy island management sim inspired by Southeast Asian archipelago life. Grow exotic crops, trade with neighboring islands, befriend colorful sea creatures, and rebuild coral reef ecosystems. Perfect for 5-minute play sessions.",
+    engine:"Unity 2023",release:"Released Feb 2026",teamSize:"2 people",publisher:"Self-publishing"
+  },
+  {
+    id:6,title:"Steel Horizon",dev:"IronForge",country:"🇨🇳",
+    genres:["Strategy"],platforms:["PC"],
+    studioSize:"Mid",seeking:false,featured:true,
+    rating:4.5,heat:79,reviews:187,
+    gradient:"linear-gradient(135deg,#4a6fa5,#7695c9)",emoji:"⚙️",
+    desc:"A grand 4X strategy game set in an alternate 1930s where mechs replaced tanks. Build industrial empires, research diesel-punk technologies, and command massive land battles across a richly detailed hex map. Multiplayer for up to 8 players.",
+    engine:"Custom C++ Engine",release:"Q2 2026",teamSize:"22 people",publisher:"Self-publishing"
+  },
+  {
+    id:7,title:"Chronicle of Stars",dev:"Northern Lights",country:"🇨🇦",
+    genres:["Strategy","RPG"],platforms:["PC","Console"],
+    studioSize:"Small",seeking:true,featured:false,
+    rating:4.6,heat:81,reviews:164,
+    gradient:"linear-gradient(135deg,#1a6b7a,#2db3c8)",emoji:"⭐",
+    desc:"A tactical strategy RPG where you guide a band of starfarers across procedurally generated galaxies. Each crew member has a unique backstory that evolves based on your decisions. Features a branching narrative with 40+ distinct endings.",
+    engine:"Unity 2023",release:"Q3 2026",teamSize:"8 people",publisher:"Seeking"
+  },
+  {
+    id:8,title:"Roots & Ruins",dev:"Grünwald Games",country:"🇩🇪",
+    genres:["Simulation"],platforms:["PC"],
+    studioSize:"Small",seeking:false,featured:false,
+    rating:4.4,heat:70,reviews:132,
+    gradient:"linear-gradient(135deg,#5c7a35,#8ab553)",emoji:"🌳",
+    desc:"A slow-paced ecological simulation where you restore abandoned European landscapes. Plant native flora, reintroduce species, manage water tables, and watch ecosystems rebuild over decades of in-game time. A meditative experience with real conservation data.",
+    engine:"Godot 4",release:"Released Mar 2026",teamSize:"4 people",publisher:"Self-publishing"
+  },
+  {
+    id:9,title:"Void Wanderer",dev:"Starfield Games",country:"🇰🇷",
+    genres:["RPG"],platforms:["PC"],
+    studioSize:"Mid",seeking:true,featured:false,
+    rating:4.5,heat:76,reviews:98,
+    gradient:"linear-gradient(135deg,#3a3a6a,#6060a8)",emoji:"🚀",
+    desc:"A deep-space action RPG with rogue-like elements. Each run through the void reveals new anomalies, alien civilizations, and cosmic horror. Build your ship, recruit synthetic crew members, and piece together the mystery of the Void Signal transmitted from the galaxy's edge.",
+    engine:"Unreal Engine 5",release:"Q4 2026",teamSize:"18 people",publisher:"Seeking"
+  },
+  {
+    id:10,title:"Shadow Protocol",dev:"ByteWave Studio",country:"🇨🇳",
+    genres:["Action","RPG"],platforms:["PC","Console"],
+    studioSize:"Small",seeking:false,featured:false,
+    rating:4.2,heat:62,reviews:87,
+    gradient:"linear-gradient(135deg,#2a2a2a,#505050)",emoji:"🥷",
+    desc:"A stealth action RPG set in a near-future East Asian megacity. Play as a shadow operative navigating corporate espionage, gang warfare, and government conspiracies. Features a fully reactive city AI system that remembers your actions.",
+    engine:"Unity 2022",release:"Q1 2027",teamSize:"7 people",publisher:"Self-publishing"
+  },
+  {
+    id:11,title:"Desert Storm",dev:"Cairo Games",country:"🇪🇬",
+    genres:["Strategy"],platforms:["PC"],
+    studioSize:"Small",seeking:true,featured:false,
+    rating:4.3,heat:65,reviews:76,
+    gradient:"linear-gradient(135deg,#c4892b,#e0b060)",emoji:"🏜️",
+    desc:"A real-time strategy game set in ancient North Africa. Command armies of pharaohs, navigate the political intrigue of the Nile delta, and harness mythological gods as battlefield powers. Authentic historical research meets fast-paced RTS gameplay.",
+    engine:"Unity 2023",release:"Q3 2026",teamSize:"6 people",publisher:"Seeking"
+  },
+  {
+    id:12,title:"Forest Spirit",dev:"Bamboo Dev",country:"🇯🇵",
+    genres:["Adventure"],platforms:["Mobile","PC"],
+    studioSize:"Solo",seeking:false,featured:true,
+    rating:4.7,heat:85,reviews:421,
+    gradient:"linear-gradient(135deg,#2d7a4a,#55b070)",emoji:"🎋",
+    desc:"A hand-drawn adventure game about a young forest spirit navigating a world threatened by urbanization. Featuring stunning traditional ink art, a haiku-infused narrative, and a meditative soundtrack composed by Kyoto-based musicians. A love letter to Japanese environmental folklore.",
+    engine:"Godot 4",release:"Released Jan 2026",teamSize:"1 person",publisher:"Self-publishing"
+  }
+];
+
+// ─── State ──────────────────────────────────────────────────────────────────
+let seekingOnly = false;
+let currentGame = null;
+let interestSent = new Set();
+
+// ─── Render ─────────────────────────────────────────────────────────────────
+function renderFeatured(){
+  const strip = document.getElementById('featuredStrip');
+  strip.innerHTML = '';
+  games.filter(g=>g.featured).forEach(g=>{
+    strip.innerHTML += `
+    <div class="featured-card" onclick="openModal(${g.id})">
+      <div class="featured-card-cover" style="background:${g.gradient}">
+        <span style="font-size:28px">${g.emoji}</span>
+        <span class="featured-badge">FEATURED</span>
+      </div>
+      <div class="featured-card-body">
+        <div class="featured-card-title">${g.title}</div>
+        <div class="featured-card-dev">${g.dev} ${g.country}</div>
+        <div class="featured-card-heat">🔥 ${g.heat}% interest · ⭐ ${g.rating}</div>
+      </div>
+    </div>`;
+  });
+}
+
+function getFiltered(){
+  const q = document.getElementById('searchInput').value.toLowerCase();
+  const genre = document.getElementById('genreFilter').value;
+  const platform = document.getElementById('platformFilter').value;
+  const size = document.getElementById('sizeFilter').value;
+  const sort = document.getElementById('sortSelect').value;
+
+  let list = games.filter(g=>{
+    if(q && !g.title.toLowerCase().includes(q) && !g.dev.toLowerCase().includes(q) && !g.genres.join(' ').toLowerCase().includes(q)) return false;
+    if(genre && !g.genres.includes(genre)) return false;
+    if(platform && !g.platforms.includes(platform)) return false;
+    if(size){
+      const map={Solo:'Solo',Small:'Small',Mid:'Mid',Large:'Large'};
+      if(g.studioSize !== map[size]) return false;
+    }
+    if(seekingOnly && !g.seeking) return false;
+    return true;
+  });
+
+  if(sort==='heat') list.sort((a,b)=>b.heat-a.heat);
+  else if(sort==='rating') list.sort((a,b)=>b.rating-a.rating);
+  else if(sort==='new') list.sort((a,b)=>b.id-a.id);
+  else if(sort==='az') list.sort((a,b)=>a.title.localeCompare(b.title));
+
+  return list;
+}
+
+function renderGrid(list){
+  const grid = document.getElementById('gameGrid');
+  const empty = document.getElementById('emptyState');
+  const title = document.getElementById('gridTitle');
+
+  title.innerHTML = `All Games <span style="color:#a09890;font-weight:400;font-size:15px">(${list.length})</span>`;
+  document.getElementById('filterCount').textContent = `${list.length} game${list.length!==1?'s':''}`;
+
+  if(!list.length){
+    grid.innerHTML=''; empty.style.display='block'; return;
+  }
+  empty.style.display='none';
+
+  grid.innerHTML = list.map(g=>{
+    const starStr = '★'.repeat(Math.floor(g.rating)) + (g.rating%1>=.5?'½':'') + '☆'.repeat(5-Math.ceil(g.rating));
+    const stars = '★'.repeat(Math.round(g.rating));
+    return `
+    <div class="game-card" onclick="openModal(${g.id})">
+      <div class="game-card-cover" style="background:${g.gradient}">
+        <span>${g.emoji}</span>
+        ${g.featured?`<span class="card-featured-badge">⭐ FEATURED</span>`:''}
+        ${g.seeking?`<span class="card-seeking-badge">Seeking Publisher</span>`:''}
+        <div class="card-heat">🔥 ${g.heat}%</div>
+      </div>
+      <div class="game-card-body">
+        <div class="game-card-title">${g.title}</div>
+        <div class="game-card-dev"><span>${g.dev}</span> ${g.country}</div>
+        <div class="game-card-tags">
+          ${g.genres.map(gn=>`<span class="tag tag-genre">${gn}</span>`).join('')}
+          ${g.platforms.map(p=>`<span class="tag tag-platform">${p}</span>`).join('')}
+          ${g.seeking?`<span class="tag tag-seeking">Seeking Publisher</span>`:''}
+        </div>
+        <div class="game-card-footer">
+          <div class="rating-stars">
+            <span class="stars">${'★'.repeat(Math.round(g.rating))}</span>
+            <span>${g.rating} (${g.reviews})</span>
+          </div>
+          <div class="platform-row">
+            ${g.platforms.map(p=>`<span class="plat-pill">${p}</span>`).join('')}
+          </div>
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function applyFilters(){
+  renderGrid(getFiltered());
+}
+
+function toggleSeeking(){
+  seekingOnly = !seekingOnly;
+  const btn = document.getElementById('seekingToggle');
+  btn.classList.toggle('on', seekingOnly);
+  applyFilters();
+}
+
+// ─── Modal ───────────────────────────────────────────────────────────────────
+function openModal(id){
+  currentGame = games.find(g=>g.id===id);
+  const g = currentGame;
+
+  // Media side
+  document.getElementById('modalCover').style.background = g.gradient;
+  const coverEl = document.getElementById('modalCover');
+  // Remove old emoji if any
+  const oldEmoji = coverEl.querySelector('.cover-emoji');
+  if(oldEmoji) oldEmoji.remove();
+  const emojiEl = document.createElement('span');
+  emojiEl.className='cover-emoji';
+  emojiEl.style.cssText='font-size:52px;position:absolute;top:50%;left:50%;transform:translate(-50%,-60%)';
+  emojiEl.textContent = g.emoji;
+  coverEl.insertBefore(emojiEl, coverEl.firstChild);
+
+  document.getElementById('modalTitle').textContent = g.title;
+  document.getElementById('modalDevFlag').textContent = `${g.dev} · ${g.country}`;
+
+  document.getElementById('modalTagsLeft').innerHTML =
+    g.genres.map(gn=>`<span class="tag tag-genre">${gn}</span>`).join('') +
+    g.platforms.map(p=>`<span class="tag tag-platform">${p}</span>`).join('') +
+    (g.seeking?`<span class="tag tag-seeking">Seeking Publisher</span>`:'');
+
+  document.getElementById('modalQuick').innerHTML = `
+    <div class="quick-row">⭐ <span class="qval">${g.rating}/5</span>&nbsp; · &nbsp;${g.reviews} reviews</div>
+    <div class="quick-row">👥 <span class="qval">${g.teamSize}</span></div>
+    <div class="quick-row">🚀 <span class="qval">${g.release}</span></div>`;
+
+  const heat = g.heat;
+  document.getElementById('modalHeatPct').textContent = `${heat}%`;
+  document.getElementById('modalHeatBar').style.width = heat+'%';
+
+  // Info side
+  document.getElementById('modalDesc').textContent = g.desc;
+  document.getElementById('modalDetailsGrid').innerHTML = `
+    <div class="info-item"><div class="il">Genre</div><div class="iv">${g.genres.join(', ')}</div></div>
+    <div class="info-item"><div class="il">Platforms</div><div class="iv">${g.platforms.join(', ')}</div></div>
+    <div class="info-item"><div class="il">Engine</div><div class="iv">${g.engine}</div></div>
+    <div class="info-item"><div class="il">Team Size</div><div class="iv">${g.teamSize}</div></div>
+    <div class="info-item"><div class="il">Studio Size</div><div class="iv">${g.studioSize}</div></div>
+    <div class="info-item"><div class="il">Release</div><div class="iv">${g.release}</div></div>
+    <div class="info-item"><div class="il">Publisher</div><div class="iv">${g.publisher}</div></div>
+    <div class="info-item"><div class="il">Country</div><div class="iv">${g.country}</div></div>`;
+
+  // Interest button state
+  const btn = document.getElementById('btnInterest');
+  if(interestSent.has(g.id)){
+    btn.className='btn-interest sent';
+    btn.innerHTML='✅ Interest Sent';
+  } else {
+    btn.className='btn-interest';
+    btn.innerHTML='💌 Express Interest';
+  }
+
+  document.getElementById('modalOverlay').classList.add('open');
+  document.getElementById('gameModal').classList.add('open');
+  document.body.style.overflow='hidden';
+}
+
+function closeModal(e){
+  if(e && e.target !== document.getElementById('modalOverlay')) return;
+  document.getElementById('modalOverlay').classList.remove('open');
+  document.getElementById('gameModal').classList.remove('open');
+  document.body.style.overflow='';
+  currentGame = null;
+}
+
+// Close with Escape
+document.addEventListener('keydown',e=>{
+  if(e.key==='Escape') { closeModal(); }
+});
+
+// Override close button (no event arg)
+document.querySelector('.modal-close').addEventListener('click',()=>{
+  document.getElementById('modalOverlay').classList.remove('open');
+  document.getElementById('gameModal').classList.remove('open');
+  document.body.style.overflow='';
+  currentGame=null;
+});
+
+// ─── Actions ─────────────────────────────────────────────────────────────────
+function requestMeeting(){
+  if(!currentGame) return;
+  showToast(`📅 Redirecting to Let's Meet — ${currentGame.title}…`);
+  setTimeout(()=>{
+    // In production: window.location.href = '/lets-meet?game=' + currentGame.id;
+    showToast(`✅ Meeting request sent to ${currentGame.dev}!`);
+  }, 1400);
+}
+
+function expressInterest(){
+  if(!currentGame) return;
+  if(interestSent.has(currentGame.id)){
+    showToast('You already expressed interest in this game.');
+    return;
+  }
+  interestSent.add(currentGame.id);
+  const btn = document.getElementById('btnInterest');
+  btn.className='btn-interest sent';
+  btn.innerHTML='✅ Interest Sent';
+  showToast(`💌 Interest sent to ${currentGame.dev}! They'll be notified.`);
+}
+
+function showLoginToast(){
+  showToast('🔒 Please sign in to access this feature.');
+}
+
+function showToast(msg){
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  clearTimeout(t._timer);
+  t._timer = setTimeout(()=>t.classList.remove('show'), 3200);
+}
+
+// ─── Init ────────────────────────────────────────────────────────────────────
+renderFeatured();
+renderGrid(games);
+</script>
+</body>
+</html>

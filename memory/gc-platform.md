@@ -18,6 +18,24 @@
 
 ## Google Drive
 - 根目录 ID: 10000WlzNJtr1m4_3DTZ1wgEUIo1Rij88（Game Connection New - Platform）
+- **规则：每次推GitHub同时上传Drive对应文件夹**
+
+### Drive文件夹对应关系
+| 功能模块 | Drive文件夹ID |
+|---|---|
+| 01_Auth | 1P1rnM7Pyy1FA3HylTxiyZyABy7892DQx |
+| 02_Feed_Homepage | 1_46zr8QqxS645-M6oTH5CW8IXPJX9DPr |
+| 03_Profile | 1UdHUTy6C5nVOqfY5UkfqYHlIk1aXlWTS |
+| 04_Live | 17nHAOVbsA34vhXI0e7XbGj5WDHXusj34 |
+| 05_ConferenceCalendar | 1HGo_Y5Zxp2tUoBoM53u7_RQCnqdp-NJv |
+| 06_Projects | 16u0l2Mq3GQ-5g182GLC5YI4ZX2_KeeDb |
+| 07_Organizations | 1gdlAO1nccnzRx6cZG6EfHch3urlkHORm |
+| 08_Market | 1C2Du98i2AyIVhnWHvaBXRt0avshfMLsK |
+| 09_Messages | 1TJeaaLkhEPkzqsx4kO4LPdtWEEWkWU1N |
+| 10_Settings | 1Omf11ZlMTBWaB9x1vjyZyABy7892DQx |
+| 11_B2B_Events | 1GhtU5eGziUbinE51CHGjVjog_0ms54Ot |
+| 12_B2B_LetsMeet | 1zfb86_Qmn891vrHajCfBWlAkVLjncEIF |
+| 13_B2B_Commerce | 100v44pE7z3OG2VLCEinkLcjnlKpgP40G |
 - workspace已通过Google Drive桌面客户端同步（计算机→我的Mac→workspace）
 
 ## 技术要点

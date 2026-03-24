@@ -1,0 +1,1380 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Design Rationale v1 — Game Connection Platform</title>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg: #e8e4da;
+      --bg-card: #f0ece4;
+      --bg-card-alt: #ede9e1;
+      --primary: #d95f2b;
+      --primary-dark: #b84e20;
+      --primary-light: #f0845a;
+      --text: #1a1714;
+      --text-muted: #6b6560;
+      --text-light: #9b9590;
+      --border: rgba(0,0,0,0.08);
+      --border-strong: rgba(0,0,0,0.14);
+      --shadow-sm: 0 1px 3px rgba(0,0,0,0.06), 0 1px 2px rgba(0,0,0,0.04);
+      --shadow-md: 0 4px 12px rgba(0,0,0,0.08), 0 2px 4px rgba(0,0,0,0.04);
+      --shadow-lg: 0 8px 24px rgba(0,0,0,0.10), 0 4px 8px rgba(0,0,0,0.06);
+      --radius: 12px;
+      --radius-sm: 8px;
+    }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      font-family: 'DM Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.6;
+      min-height: 100vh;
+    }
+
+    /* ─── TOP NAV ─── */
+    .topnav {
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      background: rgba(232,228,218,0.92);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      border-bottom: 1px solid var(--border-strong);
+      padding: 0 48px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      height: 60px;
+    }
+
+    .topnav-brand {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      text-decoration: none;
+      color: inherit;
+    }
+
+    .brand-mark {
+      width: 32px;
+      height: 32px;
+      background: var(--primary);
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #fff;
+      font-size: 16px;
+      font-weight: 700;
+      letter-spacing: -0.5px;
+      flex-shrink: 0;
+    }
+
+    .brand-name {
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--text);
+      letter-spacing: -0.2px;
+    }
+
+    .brand-sub {
+      font-size: 12px;
+      color: var(--text-muted);
+      font-weight: 400;
+    }
+
+    .back-link {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 13px;
+      font-weight: 500;
+      color: var(--primary);
+      text-decoration: none;
+      padding: 7px 14px;
+      border: 1.5px solid var(--primary);
+      border-radius: 6px;
+      transition: background 0.15s, color 0.15s;
+    }
+    .back-link:hover {
+      background: var(--primary);
+      color: #fff;
+    }
+    .back-link svg { flex-shrink: 0; }
+
+    /* ─── HERO ─── */
+    .hero {
+      max-width: 960px;
+      margin: 0 auto;
+      padding: 72px 48px 48px;
+    }
+
+    .hero-eyebrow {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--primary);
+      background: rgba(217,95,43,0.10);
+      padding: 5px 12px;
+      border-radius: 100px;
+      margin-bottom: 24px;
+    }
+
+    .hero h1 {
+      font-size: 42px;
+      font-weight: 700;
+      letter-spacing: -1px;
+      line-height: 1.15;
+      color: var(--text);
+      margin-bottom: 16px;
+      max-width: 640px;
+    }
+
+    .hero h1 span { color: var(--primary); }
+
+    .hero-meta {
+      display: flex;
+      align-items: center;
+      gap: 20px;
+      font-size: 13px;
+      color: var(--text-muted);
+      margin-bottom: 32px;
+    }
+
+    .hero-meta-item {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .hero-desc {
+      font-size: 16px;
+      color: var(--text-muted);
+      max-width: 600px;
+      line-height: 1.7;
+      border-left: 3px solid var(--primary);
+      padding-left: 20px;
+    }
+
+    /* ─── PHASE OVERVIEW BAR ─── */
+    .phase-overview {
+      max-width: 960px;
+      margin: 0 auto 56px;
+      padding: 0 48px;
+    }
+
+    .phase-steps {
+      display: flex;
+      align-items: stretch;
+      gap: 0;
+      background: var(--bg-card);
+      border: 1px solid var(--border-strong);
+      border-radius: var(--radius);
+      overflow: hidden;
+      box-shadow: var(--shadow-sm);
+    }
+
+    .phase-step {
+      flex: 1;
+      padding: 18px 12px;
+      text-align: center;
+      border-right: 1px solid var(--border);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 4px;
+      cursor: default;
+      transition: background 0.15s;
+    }
+    .phase-step:last-child { border-right: none; }
+    .phase-step:hover { background: rgba(217,95,43,0.06); }
+
+    .phase-step-num {
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      color: var(--primary);
+      opacity: 0.7;
+    }
+
+    .phase-step-icon { font-size: 20px; line-height: 1; }
+
+    .phase-step-name {
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--text);
+      letter-spacing: -0.1px;
+    }
+
+    /* ─── CONTENT ─── */
+    .content {
+      max-width: 960px;
+      margin: 0 auto;
+      padding: 0 48px 80px;
+      display: flex;
+      flex-direction: column;
+      gap: 32px;
+    }
+
+    /* ─── PHASE CARD ─── */
+    .phase-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border-strong);
+      border-radius: var(--radius);
+      overflow: hidden;
+      box-shadow: var(--shadow-md);
+      transition: box-shadow 0.2s;
+    }
+    .phase-card:hover { box-shadow: var(--shadow-lg); }
+
+    .phase-header {
+      display: flex;
+      align-items: center;
+      gap: 20px;
+      padding: 28px 32px;
+      border-bottom: 1px solid var(--border);
+      position: relative;
+    }
+
+    .phase-header::before {
+      content: '';
+      position: absolute;
+      left: 0; top: 0; bottom: 0;
+      width: 4px;
+      background: var(--primary);
+      border-radius: 0 2px 2px 0;
+    }
+
+    .phase-icon-wrap {
+      width: 52px;
+      height: 52px;
+      background: rgba(217,95,43,0.10);
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 26px;
+      flex-shrink: 0;
+      border: 1px solid rgba(217,95,43,0.15);
+    }
+
+    .phase-title-block {}
+
+    .phase-tag {
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--primary);
+      margin-bottom: 4px;
+    }
+
+    .phase-name {
+      font-size: 22px;
+      font-weight: 700;
+      letter-spacing: -0.5px;
+      color: var(--text);
+      line-height: 1.2;
+    }
+
+    .phase-name em {
+      font-style: normal;
+      color: var(--text-muted);
+      font-weight: 400;
+      font-size: 18px;
+    }
+
+    .phase-badge {
+      margin-left: auto;
+      background: rgba(217,95,43,0.08);
+      color: var(--primary);
+      font-size: 11px;
+      font-weight: 600;
+      padding: 4px 12px;
+      border-radius: 100px;
+      border: 1px solid rgba(217,95,43,0.2);
+      white-space: nowrap;
+      flex-shrink: 0;
+    }
+
+    .phase-body {
+      padding: 28px 32px;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 0;
+    }
+
+    .phase-body.full { grid-template-columns: 1fr; }
+
+    .phase-section {
+      padding: 0 24px 0 0;
+    }
+
+    .phase-section + .phase-section {
+      padding: 0 0 0 24px;
+      border-left: 1px solid var(--border);
+    }
+
+    .section-label {
+      display: flex;
+      align-items: center;
+      gap: 7px;
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--text-light);
+      margin-bottom: 12px;
+    }
+
+    .section-label-dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: var(--primary);
+      opacity: 0.5;
+      flex-shrink: 0;
+    }
+
+    .why-text {
+      font-size: 15px;
+      color: var(--text);
+      line-height: 1.65;
+      margin-bottom: 16px;
+    }
+
+    .logic-box {
+      background: rgba(217,95,43,0.06);
+      border: 1px solid rgba(217,95,43,0.12);
+      border-radius: var(--radius-sm);
+      padding: 14px 16px;
+    }
+
+    .logic-box p {
+      font-size: 13.5px;
+      color: var(--text);
+      line-height: 1.6;
+    }
+
+    .logic-ref {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      margin-top: 10px;
+      font-size: 12px;
+      color: var(--text-muted);
+    }
+
+    /* Feature list */
+    .feat-list {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .feat-item {
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+      font-size: 14px;
+      color: var(--text);
+      line-height: 1.5;
+    }
+
+    .feat-icon {
+      width: 22px;
+      height: 22px;
+      border-radius: 6px;
+      background: rgba(217,95,43,0.10);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 12px;
+      flex-shrink: 0;
+      margin-top: 1px;
+      border: 1px solid rgba(217,95,43,0.12);
+    }
+
+    .feat-item-content {}
+    .feat-item-name {
+      font-weight: 600;
+      color: var(--text);
+      font-size: 13.5px;
+    }
+    .feat-item-desc {
+      font-size: 12.5px;
+      color: var(--text-muted);
+      margin-top: 1px;
+    }
+
+    /* ─── B2B / B2C TABLE ─── */
+    .bb-table-wrap {
+      padding: 0 32px 28px;
+    }
+
+    .bb-table-label {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--text-light);
+      margin-bottom: 14px;
+    }
+
+    .bb-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 13px;
+    }
+
+    .bb-table thead tr {
+      background: rgba(217,95,43,0.08);
+    }
+
+    .bb-table thead th {
+      padding: 10px 14px;
+      text-align: left;
+      font-weight: 600;
+      font-size: 11px;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+      color: var(--text-muted);
+      border: 1px solid var(--border-strong);
+    }
+
+    .bb-table thead th.col-b2b { color: #2563eb; }
+    .bb-table thead th.col-b2c { color: #059669; }
+
+    .bb-table tbody tr {
+      border-bottom: 1px solid var(--border);
+      transition: background 0.12s;
+    }
+
+    .bb-table tbody tr:hover { background: rgba(217,95,43,0.04); }
+
+    .bb-table tbody td {
+      padding: 10px 14px;
+      vertical-align: top;
+      border: 1px solid var(--border);
+      line-height: 1.5;
+    }
+
+    .bb-table tbody td:first-child {
+      font-size: 11px;
+      font-weight: 700;
+      color: var(--text-muted);
+      text-align: center;
+      width: 36px;
+    }
+
+    .bb-table .b2b-cell {
+      background: rgba(37,99,235,0.03);
+    }
+
+    .bb-table .b2c-cell {
+      background: rgba(5,150,105,0.03);
+    }
+
+    .cell-name {
+      font-weight: 600;
+      color: var(--text);
+      margin-bottom: 2px;
+    }
+
+    .cell-sub {
+      font-size: 12px;
+      color: var(--text-muted);
+    }
+
+    .arrow-cell {
+      text-align: center !important;
+      color: var(--primary);
+      font-size: 16px;
+      width: 32px;
+      background: transparent !important;
+    }
+
+    /* Phase 6 two-col mini */
+    .phase-body-cols3 {
+      padding: 28px 32px;
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: 0;
+    }
+
+    .phase-body-cols3 .phase-section + .phase-section {
+      padding: 0 0 0 24px;
+      border-left: 1px solid var(--border);
+    }
+
+    /* ─── SUMMARY ─── */
+    .summary-section {
+      max-width: 960px;
+      margin: 0 auto 80px;
+      padding: 0 48px;
+    }
+
+    .summary-card {
+      background: var(--text);
+      color: #fff;
+      border-radius: var(--radius);
+      padding: 48px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .summary-card::before {
+      content: '';
+      position: absolute;
+      top: -60px; right: -60px;
+      width: 240px; height: 240px;
+      background: var(--primary);
+      border-radius: 50%;
+      opacity: 0.12;
+    }
+
+    .summary-card::after {
+      content: '';
+      position: absolute;
+      bottom: -80px; left: 40px;
+      width: 200px; height: 200px;
+      background: var(--primary);
+      border-radius: 50%;
+      opacity: 0.07;
+    }
+
+    .summary-eyebrow {
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--primary-light);
+      margin-bottom: 16px;
+    }
+
+    .summary-card h2 {
+      font-size: 28px;
+      font-weight: 700;
+      letter-spacing: -0.5px;
+      margin-bottom: 20px;
+      position: relative;
+      z-index: 1;
+    }
+
+    .summary-card p {
+      font-size: 15px;
+      line-height: 1.75;
+      color: rgba(255,255,255,0.75);
+      max-width: 640px;
+      position: relative;
+      z-index: 1;
+      margin-bottom: 16px;
+    }
+
+    .summary-funnel {
+      display: flex;
+      align-items: center;
+      gap: 0;
+      margin-top: 36px;
+      position: relative;
+      z-index: 1;
+      flex-wrap: wrap;
+      gap: 4px;
+    }
+
+    .funnel-step {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 6px;
+      flex: 1;
+    }
+
+    .funnel-icon {
+      width: 48px;
+      height: 48px;
+      background: rgba(255,255,255,0.08);
+      border: 1px solid rgba(255,255,255,0.14);
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 22px;
+    }
+
+    .funnel-label {
+      font-size: 11px;
+      font-weight: 600;
+      color: rgba(255,255,255,0.6);
+      text-align: center;
+    }
+
+    .funnel-arrow {
+      color: var(--primary-light);
+      font-size: 18px;
+      flex-shrink: 0;
+      margin-top: -10px;
+      opacity: 0.6;
+    }
+
+    .philosophy-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 16px;
+      margin-top: 36px;
+      position: relative;
+      z-index: 1;
+    }
+
+    .philo-item {
+      background: rgba(255,255,255,0.05);
+      border: 1px solid rgba(255,255,255,0.1);
+      border-radius: var(--radius-sm);
+      padding: 20px;
+    }
+
+    .philo-item-icon { font-size: 22px; margin-bottom: 10px; }
+    .philo-item-title {
+      font-size: 13px;
+      font-weight: 600;
+      margin-bottom: 6px;
+      color: #fff;
+    }
+    .philo-item-desc {
+      font-size: 12.5px;
+      color: rgba(255,255,255,0.55);
+      line-height: 1.55;
+    }
+
+    /* ─── FOOTER ─── */
+    footer {
+      text-align: center;
+      padding: 32px 48px;
+      font-size: 12px;
+      color: var(--text-light);
+      border-top: 1px solid var(--border-strong);
+    }
+
+    footer strong { color: var(--text-muted); }
+
+    /* ─── DIVIDER ─── */
+    .divider {
+      border: none;
+      border-top: 1px solid var(--border);
+      margin: 20px 0;
+    }
+
+    /* Phase specific accent colors for icons */
+    .phase-1 .phase-icon-wrap { background: rgba(37,99,235,0.08); border-color: rgba(37,99,235,0.12); }
+    .phase-2 .phase-icon-wrap { background: rgba(124,58,237,0.08); border-color: rgba(124,58,237,0.12); }
+    .phase-3 .phase-icon-wrap { background: rgba(5,150,105,0.08); border-color: rgba(5,150,105,0.12); }
+    .phase-4 .phase-icon-wrap { background: rgba(217,119,6,0.08); border-color: rgba(217,119,6,0.12); }
+    .phase-5 .phase-icon-wrap { background: rgba(217,95,43,0.10); border-color: rgba(217,95,43,0.15); }
+    .phase-6 .phase-icon-wrap { background: rgba(234,179,8,0.10); border-color: rgba(234,179,8,0.15); }
+    .phase-7 .phase-icon-wrap { background: rgba(239,68,68,0.08); border-color: rgba(239,68,68,0.12); }
+  </style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav class="topnav">
+  <div class="topnav-brand">
+    <div class="brand-mark">GC</div>
+    <div>
+      <div class="brand-name">Game Connection Platform</div>
+      <div class="brand-sub">Product Design Rationale</div>
+    </div>
+  </div>
+  <a href="index.html" class="back-link">
+    <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+      <path d="M8.5 2.5L4 7l4.5 4.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+    </svg>
+    Back to Platform
+  </a>
+</nav>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="hero-eyebrow">
+    <svg width="10" height="10" viewBox="0 0 10 10" fill="currentColor"><circle cx="5" cy="5" r="5"/></svg>
+    Internal Reference Document
+  </div>
+  <h1>Product Design <span>Rationale</span></h1>
+  <div class="hero-meta">
+    <div class="hero-meta-item">
+      <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><rect x="1" y="2" width="12" height="11" rx="2" stroke="#9b9590" stroke-width="1.2"/><path d="M1 6h12" stroke="#9b9590" stroke-width="1.2"/><path d="M4 1v2M10 1v2" stroke="#9b9590" stroke-width="1.2" stroke-linecap="round"/></svg>
+      March 2026
+    </div>
+    <div class="hero-meta-item">
+      <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><circle cx="7" cy="7" r="5.5" stroke="#9b9590" stroke-width="1.2"/><path d="M7 4v3.5l2 1.5" stroke="#9b9590" stroke-width="1.2" stroke-linecap="round"/></svg>
+      Version 1.0
+    </div>
+    <div class="hero-meta-item">
+      <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><circle cx="5" cy="4" r="2.5" stroke="#9b9590" stroke-width="1.2"/><path d="M1 12c0-2.21 1.79-4 4-4h1" stroke="#9b9590" stroke-width="1.2" stroke-linecap="round"/><circle cx="10" cy="9" r="3" stroke="#9b9590" stroke-width="1.2"/><path d="M10 7.5V9l1 1" stroke="#9b9590" stroke-width="1.2" stroke-linecap="round"/></svg>
+      For: Lead Architect / Framework Designer
+    </div>
+  </div>
+  <p class="hero-desc">
+    This document explains the 7-phase development path for Game Connection Platform — a B2B exhibition platform for the games industry. Each phase articulates <em>why this sequence</em>, <em>what it contains</em>, and <em>the design rationale</em> behind each decision.
+  </p>
+</section>
+
+<!-- PHASE OVERVIEW BAR -->
+<div class="phase-overview">
+  <div class="phase-steps">
+    <div class="phase-step">
+      <div class="phase-step-num">01</div>
+      <div class="phase-step-icon">🔭</div>
+      <div class="phase-step-name">Discovery</div>
+    </div>
+    <div class="phase-step">
+      <div class="phase-step-num">02</div>
+      <div class="phase-step-icon">🪪</div>
+      <div class="phase-step-name">Identity</div>
+    </div>
+    <div class="phase-step">
+      <div class="phase-step-num">03</div>
+      <div class="phase-step-icon">💬</div>
+      <div class="phase-step-name">Connection</div>
+    </div>
+    <div class="phase-step">
+      <div class="phase-step-num">04</div>
+      <div class="phase-step-icon">🤝</div>
+      <div class="phase-step-name">Meetup</div>
+    </div>
+    <div class="phase-step">
+      <div class="phase-step-num">05</div>
+      <div class="phase-step-icon">🎪</div>
+      <div class="phase-step-name">Events</div>
+    </div>
+    <div class="phase-step">
+      <div class="phase-step-num">06</div>
+      <div class="phase-step-icon">🏅</div>
+      <div class="phase-step-name">Sponsorship</div>
+    </div>
+    <div class="phase-step">
+      <div class="phase-step-num">07</div>
+      <div class="phase-step-icon">💼</div>
+      <div class="phase-step-name">Commerce</div>
+    </div>
+  </div>
+</div>
+
+<!-- CONTENT -->
+<main class="content">
+
+  <!-- ── PHASE 1 ── -->
+  <article class="phase-card phase-1">
+    <div class="phase-header">
+      <div class="phase-icon-wrap">🔭</div>
+      <div class="phase-title-block">
+        <div class="phase-tag">Phase 01</div>
+        <div class="phase-name">Discovery <em>· 发现</em></div>
+      </div>
+      <div class="phase-badge">No Login Required</div>
+    </div>
+    <div class="phase-body">
+      <div class="phase-section">
+        <div class="section-label"><span class="section-label-dot"></span>Why First</div>
+        <p class="why-text">
+          Users arrive with zero context. Requiring registration before showing any value is the #1 reason B2B platforms fail to convert. Discovery lets users immediately experience the platform's core value — global conference intelligence — with zero friction. Only after they feel the pull do we ask for commitment.
+        </p>
+        <div class="logic-box">
+          <p><strong>Design Logic:</strong> Value before registration. Let users feel the product before asking for anything in return. The conversion funnel starts with genuine interest, not a gate.</p>
+          <div class="logic-ref">
+            <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><circle cx="6" cy="6" r="5" stroke="#9b9590" stroke-width="1"/><path d="M6 3.5v3l1.5 1.5" stroke="#9b9590" stroke-width="1" stroke-linecap="round"/></svg>
+            Benchmark: Eventbrite homepage · GDC schedule page
+          </div>
+        </div>
+      </div>
+      <div class="phase-section">
+        <div class="section-label"><span class="section-label-dot"></span>Includes</div>
+        <ul class="feat-list">
+          <li class="feat-item">
+            <div class="feat-icon">📰</div>
+            <div class="feat-item-content">
+              <div class="feat-item-name">Homepage Feed</div>
+              <div class="feat-item-desc">Curated content stream of industry news, upcoming events, and featured games — personalized over time.</div>
+            </div>
+          </li>
+          <li class="feat-item">
+            <div class="feat-icon">📅</div>
+            <div class="feat-item-content">
+              <div class="feat-item-name">Conference Calendar</div>
+              <div class="feat-item-desc">Global games industry event calendar. Dual data sources: web crawler (external events) + platform-hosted events. The crawler gives immediate content depth on day one.</div>
+            </div>
+          </li>
+          <li class="feat-item">
+            <div class="feat-icon">🗺️</div>
+            <div class="feat-item-content">
+              <div class="feat-item-name">Live Event Guide</div>
+              <div class="feat-item-desc">Real-time navigation during active conferences: schedules, speakers, side events, venue info. Goes live during each event window.</div>
+            </div>
+          </li>
+        </ul>
+      </div>
+    </div>
+  </article>
+
+  <!-- ── PHASE 2 ── -->
+  <article class="phase-card phase-2">
+    <div class="phase-header">
+      <div class="phase-icon-wrap">🪪</div>
+      <div class="phase-title-block">
+        <div class="phase-tag">Phase 02</div>
+        <div class="phase-name">Identity <em>· 身份</em></div>
+      </div>
+      <div class="phase-badge">Google Sign-In Only</div>
+    </div>
+    <div class="phase-body">
+      <div class="phase-section">
+        <div class="section-label"><span class="section-label-dot"></span>Why Second</div>
+        <p class="why-text">
+          After users discover value, they want to save content, follow people, and be seen. Identity unlocks the social layer. In B2B, your profile <em>is</em> your business card — a professional presence here carries real commercial weight at industry events.
+        </p>
+        <div class="logic-box">
+          <p><strong>Design Logic:</strong> Frictionless onboarding via Google Sign-In only. No email verification, no custom password. Profile doubles as a B2B business card: past events attended, talks given, availability windows for Let's Meet.</p>
+        </div>
+      </div>
+      <div class="phase-section">
+        <div class="section-label"><span class="section-label-dot"></span>Includes</div>
+        <ul class="feat-list">
+          <li class="feat-item">
+            <div class="feat-icon">🔑</div>
+            <div class="feat-item-content">
+              <div class="feat-item-name">Auth (Google)</div>
+              <div class="feat-item-desc">One-click registration via Google OAuth. No password, no verification email.</div>
+            </div>
+          </li>
+          <li class="feat-item">
+            <div class="feat-icon">👤</div>
+            <div class="feat-item-content">
+              <div class="feat-item-name">Profile</div>
+              <div class="feat-item-desc">Personal page with attended conferences, speaking records, and Let's Meet availability slots. Your public B2B identity.</div>
+            </div>
+          </li>
+          <li class="feat-item">
+            <div class="feat-icon">🎮</div>
+            <div class="feat-item-content">
+              <div class="feat-item-name">Projects</div>
+              <div class="feat-item-desc">Game project showcase — the creative portfolio for pitching to publishers and partners.</div>
+            </div>
+          </li>
+          <li class="feat-item">
+            <div class="feat-icon">🏢</div>
+            <div class="feat-item-content">
+              <div class="feat-item-name">Organizations</div>
+              <div class="feat-item-desc">Company pages — team members, projects, events organized. The institutional layer of identity.</div>
+            </div>
+          </li>
+          <li class="feat-item">
+            <div class="feat-icon">⚙️</div>
+            <div class="feat-item-content">
+              <div class="feat-item-name">Settings</div>
+              <div class="feat-item-desc">Notification preferences, privacy controls, account management.</div>
+            </div>
+          </li>
+        </ul>
+      </div>
+    </div>
+  </article>
+
+  <!-- ── PHASE 3 ── -->
+  <article class="phase-card phase-3">
+    <div class="phase-header">
+      <div class="phase-icon-wrap">💬</div>
+      <div class="phase-title-block">
+        <div class="phase-tag">Phase 03</div>
+        <div class="phase-name">Connection <em>· 连接</em></div>
+      </div>
+      <div class="phase-badge">1-to-1 First</div>
+    </div>
+    <div class="phase-body">
+      <div class="phase-section">
+        <div class="section-label"><span class="section-label-dot"></span>Why Third</div>
+        <p class="why-text">
+          Identities without communication channels are isolated nodes. Once users have profiles they're proud of, they need a way to reach each other directly. The messaging system turns a directory into a network. Building this before event tools ensures the human communication layer is solid before we add event complexity.
+        </p>
+        <div class="logic-box">
+          <p><strong>Design Logic:</strong> Start with the simplest primitive — 1-to-1 direct messages. Rich attachments (files, business cards, meeting invites) are included from the start because B2B conversations require them. Group chat and project channels are roadmap extensions on this foundation.</p>
+        </div>
+      </div>
+      <div class="phase-section">
+        <div class="section-label"><span class="section-label-dot"></span>Includes</div>
+        <ul class="feat-list">
+          <li class="feat-item">
+            <div class="feat-icon">✉️</div>
+            <div class="feat-item-content">
+              <div class="feat-item-name">Messages</div>
+              <div class="feat-item-desc">Private 1-to-1 messaging with support for: file attachments, digital business cards, and meeting invite sharing. Foundation for future group channels and project rooms.</div>
+            </div>
+          </li>
+        </ul>
+        <hr class="divider" style="margin-top: 24px;" />
+        <div style="font-size: 13px; color: var(--text-muted); line-height: 1.6;">
+          <strong style="color: var(--text);">Roadmap Extensions:</strong><br/>
+          Group messaging · Project channels · Read receipts · Message reactions · Bot integrations
+        </div>
+      </div>
+    </div>
+  </article>
+
+  <!-- ── PHASE 4 ── -->
+  <article class="phase-card phase-4">
+    <div class="phase-header">
+      <div class="phase-icon-wrap">🤝</div>
+      <div class="phase-title-block">
+        <div class="phase-tag">Phase 04</div>
+        <div class="phase-name">Meetup <em>· 小型活动</em></div>
+      </div>
+      <div class="phase-badge">MVP for Phase 5</div>
+    </div>
+    <div class="phase-body">
+      <div class="phase-section">
+        <div class="section-label"><span class="section-label-dot"></span>Why Fourth</div>
+        <p class="why-text">
+          Users are no longer purely passive attendees — they want to convene their own gatherings. Meetup is the lightweight, user-generated event layer. It also serves as a critical product validation step: before we build the full enterprise Events engine (Phase 5), we prove the event publishing flow with the simplest possible version.
+        </p>
+        <div class="logic-box">
+          <p><strong>Design Logic:</strong> Inspired by Meetup.com — minimal barrier to publishing. Events under 50 attendees require no Organizer account. This keeps the product accessible to indie developers and small studios, not just conference corporations.</p>
+        </div>
+      </div>
+      <div class="phase-section">
+        <div class="section-label"><span class="section-label-dot"></span>Includes</div>
+        <ul class="feat-list">
+          <li class="feat-item">
+            <div class="feat-icon">➕</div>
+            <div class="feat-item-content">
+              <div class="feat-item-name">MeetupPublish</div>
+              <div class="feat-item-desc">Any user can publish a small gathering — drinks after GDC, a developer meetup, a demo showcase. Under 50 attendees: no Organizer account required.</div>
+            </div>
+          </li>
+          <li class="feat-item">
+            <div class="feat-icon">📋</div>
+            <div class="feat-item-content">
+              <div class="feat-item-name">EventPublicPage</div>
+              <div class="feat-item-desc">Public-facing event detail page — shareable link, RSVP, attendee list. Reused in Phase 5 as the foundation for large-event public pages.</div>
+            </div>
+          </li>
+        </ul>
+      </div>
+    </div>
+  </article>
+
+  <!-- ── PHASE 5 ── -->
+  <article class="phase-card phase-5">
+    <div class="phase-header">
+      <div class="phase-icon-wrap">🎪</div>
+      <div class="phase-title-block">
+        <div class="phase-tag">Phase 05</div>
+        <div class="phase-name">Events <em>· 展会全功能</em></div>
+      </div>
+      <div class="phase-badge">12 Organizer Modules</div>
+    </div>
+    <div class="phase-body full" style="padding-bottom: 0;">
+      <div class="phase-section" style="padding: 0;">
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0;">
+          <div style="padding: 0 24px 0 0;">
+            <div class="section-label"><span class="section-label-dot"></span>Why Fifth</div>
+            <p class="why-text">
+              Phase 4 proved the event publishing flow at small scale. Now we expand to professional large-scale conferences — GDC-tier events with thousands of attendees, multiple tracks, exhibitor halls, and awards ceremonies. The key architectural decision: every B2B Organizer feature has a strict 1-to-1 B2C attendee counterpart.
+            </p>
+          </div>
+          <div style="padding: 0 0 0 24px; border-left: 1px solid var(--border);">
+            <div class="section-label"><span class="section-label-dot"></span>Core Design Logic</div>
+            <div class="logic-box">
+              <p><strong>B2B generates, B2C consumes.</strong> Organizers configure every feature; attendees experience the output. This strict pairing prevents orphaned features — if there's no attendee-facing interface, the Organizer module doesn't ship. Features unlock progressively based on event scale (tiered access model).</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- B2B ↔ B2C TABLE -->
+    <div class="bb-table-wrap" style="margin-top: 24px;">
+      <div class="bb-table-label">
+        <span class="section-label-dot"></span>
+        B2B Organizer Modules ↔ B2C Attendee Experience (12 Paired Features)
+      </div>
+      <table class="bb-table">
+        <thead>
+          <tr>
+            <th style="width:36px;">#</th>
+            <th class="col-b2b">B2B — Organizer (Configure)</th>
+            <th class="arrow-cell" style="width:32px;"></th>
+            <th class="col-b2c">B2C — Attendee (Experience)</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>1</td>
+            <td class="b2b-cell">
+              <div class="cell-name">Event Publishing</div>
+              <div class="cell-sub">Create and manage the event listing, branding, and metadata</div>
+            </td>
+            <td class="arrow-cell">→</td>
+            <td class="b2c-cell">
+              <div class="cell-name">EventPublicPage</div>
+              <div class="cell-sub">Public event detail page with all info and registration CTA</div>
+            </td>
+          </tr>
+          <tr>
+            <td>2</td>
+            <td class="b2b-cell">
+              <div class="cell-name">Free Registration Management</div>
+              <div class="cell-sub">Manage free ticket types, approval flows, capacity limits</div>
+            </td>
+            <td class="arrow-cell">→</td>
+            <td class="b2c-cell">
+              <div class="cell-name">Attendee Registration Flow</div>
+              <div class="cell-sub">Simple signup with confirmation and badge generation</div>
+            </td>
+          </tr>
+          <tr>
+            <td>3</td>
+            <td class="b2b-cell">
+              <div class="cell-name">Paid Ticketing Backend</div>
+              <div class="cell-sub">Ticket tiers, pricing, discount codes, payment reconciliation</div>
+            </td>
+            <td class="arrow-cell">→</td>
+            <td class="b2c-cell">
+              <div class="cell-name">TicketPurchase</div>
+              <div class="cell-sub">Browse ticket tiers, checkout, e-ticket delivery</div>
+            </td>
+          </tr>
+          <tr>
+            <td>4</td>
+            <td class="b2b-cell">
+              <div class="cell-name">Booth Management</div>
+              <div class="cell-sub">Assign exhibitor booths, manage floor layout, exhibitor info</div>
+            </td>
+            <td class="arrow-cell">→</td>
+            <td class="b2c-cell">
+              <div class="cell-name">ExhibitorBrowse</div>
+              <div class="cell-sub">Browse exhibitors by category, filter, view booth location</div>
+            </td>
+          </tr>
+          <tr>
+            <td>5</td>
+            <td class="b2b-cell">
+              <div class="cell-name">Session Management</div>
+              <div class="cell-sub">Build conference program, manage speakers, time slots, rooms</div>
+            </td>
+            <td class="arrow-cell">→</td>
+            <td class="b2c-cell">
+              <div class="cell-name">MySchedule</div>
+              <div class="cell-sub">Personal agenda builder, session bookmarks, conflict detection</div>
+            </td>
+          </tr>
+          <tr>
+            <td>6</td>
+            <td class="b2b-cell">
+              <div class="cell-name">Awards Management</div>
+              <div class="cell-sub">Create award categories, manage nominees, configure voting rules</div>
+            </td>
+            <td class="arrow-cell">→</td>
+            <td class="b2c-cell">
+              <div class="cell-name">AwardsVoting</div>
+              <div class="cell-sub">Browse nominees by category, cast votes, view live results</div>
+            </td>
+          </tr>
+          <tr>
+            <td>7</td>
+            <td class="b2b-cell">
+              <div class="cell-name">Game Showcase Management</div>
+              <div class="cell-sub">Curate showcased games, manage developer profiles and demo slots</div>
+            </td>
+            <td class="arrow-cell">→</td>
+            <td class="b2c-cell">
+              <div class="cell-name">GameShowcaseBrowse</div>
+              <div class="cell-sub">Discover showcased titles, filter by genre/platform, request demos</div>
+            </td>
+          </tr>
+          <tr>
+            <td>8</td>
+            <td class="b2b-cell">
+              <div class="cell-name">Let's Meet Setup</div>
+              <div class="cell-sub">Configure B2B matching rules, meeting time slots, eligible roles</div>
+            </td>
+            <td class="arrow-cell">→</td>
+            <td class="b2c-cell">
+              <div class="cell-name">LetsMeet Browse / Schedule</div>
+              <div class="cell-sub">Find and schedule 1-to-1 meetings with other attendees during event</div>
+            </td>
+          </tr>
+          <tr>
+            <td>9</td>
+            <td class="b2b-cell">
+              <div class="cell-name">Buyer Invitation</div>
+              <div class="cell-sub">Invite and manage vetted buyers, define access privileges</div>
+            </td>
+            <td class="arrow-cell">→</td>
+            <td class="b2c-cell">
+              <div class="cell-name">BuyerZone</div>
+              <div class="cell-sub">Exclusive area for invited buyers: curated pitches, private meetings</div>
+            </td>
+          </tr>
+          <tr>
+            <td>10</td>
+            <td class="b2b-cell">
+              <div class="cell-name">Conference Schedule Builder</div>
+              <div class="cell-sub">Drag-and-drop multi-track program editor, publish to calendar</div>
+            </td>
+            <td class="arrow-cell">→</td>
+            <td class="b2c-cell">
+              <div class="cell-name">Conference Calendar Integration</div>
+              <div class="cell-sub">Event synced to platform calendar feed; attendees see full program</div>
+            </td>
+          </tr>
+          <tr>
+            <td>11</td>
+            <td class="b2b-cell">
+              <div class="cell-name">Venue Map Management</div>
+              <div class="cell-sub">Upload floor plans, tag booths, sessions, facilities, and entrances</div>
+            </td>
+            <td class="arrow-cell">→</td>
+            <td class="b2c-cell">
+              <div class="cell-name">VenueMap</div>
+              <div class="cell-sub">Interactive venue navigator: find booths, sessions, and amenities</div>
+            </td>
+          </tr>
+          <tr>
+            <td>12</td>
+            <td class="b2b-cell">
+              <div class="cell-name">Event HQ Dashboard</div>
+              <div class="cell-sub">Real-time command center: registrations, check-ins, session attendance, revenue</div>
+            </td>
+            <td class="arrow-cell">→</td>
+            <td class="b2c-cell">
+              <div class="cell-name">(Internal — No B2C counterpart)</div>
+              <div class="cell-sub">Organizer-only analytics and live operations view</div>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    <div style="padding: 20px 32px 28px;">
+      <div class="logic-box">
+        <p>The <strong>tiered unlock model</strong>: small events (&lt;500 attendees) get modules 1–5. Mid-scale (500–5,000) unlock 6–9. Enterprise-tier events (&gt;5,000) unlock all 12. This prevents Organizer overwhelm and lets the platform grow with the event.</p>
+      </div>
+    </div>
+  </article>
+
+  <!-- ── PHASE 6 ── -->
+  <article class="phase-card phase-6">
+    <div class="phase-header">
+      <div class="phase-icon-wrap">🏅</div>
+      <div class="phase-title-block">
+        <div class="phase-tag">Phase 06</div>
+        <div class="phase-name">Sponsorship <em>· 赞助商</em></div>
+      </div>
+      <div class="phase-badge">Revenue Accelerator</div>
+    </div>
+    <div class="phase-body full" style="padding-bottom: 0;">
+      <div class="phase-section" style="padding: 0;">
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0;">
+          <div style="padding: 0 24px 0 0;">
+            <div class="section-label"><span class="section-label-dot"></span>Why Sixth</div>
+            <p class="why-text">
+              Once events reach meaningful scale, sponsorship becomes the platform's most significant revenue lever — both for the platform and for Organizers. Sponsors are a unique user type: they're simultaneously buyers (purchasing visibility) and exhibitors (presenting their brand). This dual role requires a dedicated module.
+            </p>
+            <div class="logic-box">
+              <p><strong>Design Logic:</strong> Flexible package tiers (Title / Gold / Silver / Bronze) with configurable benefits per tier. Sponsors can customize their rights. Early introduction of the sponsorship module is a deliberate monetization strategy — revenue doesn't wait until Phase 7.</p>
+            </div>
+          </div>
+          <div style="padding: 0 0 0 24px; border-left: 1px solid var(--border);">
+            <div class="section-label"><span class="section-label-dot"></span>B2B ↔ B2C Split</div>
+            <ul class="feat-list">
+              <li class="feat-item">
+                <div class="feat-icon">⚙️</div>
+                <div class="feat-item-content">
+                  <div class="feat-item-name">6.1 · SponsorshipManagement (B2B)</div>
+                  <div class="feat-item-desc">Organizer configures sponsorship packages: tier names, pricing, benefit lists (logo placement, booth priority, speaking slots, networking access), availability limits.</div>
+                </div>
+              </li>
+              <li class="feat-item" style="margin-top: 8px;">
+                <div class="feat-icon">🛍️</div>
+                <div class="feat-item-content">
+                  <div class="feat-item-name">6.2 · SponsorExplore (B2C)</div>
+                  <div class="feat-item-desc">Sponsors browse available packages across events, compare tier benefits, and purchase directly. Self-serve reduces Organizer sales overhead significantly.</div>
+                </div>
+              </li>
+            </ul>
+            <div style="margin-top: 16px; padding: 14px; background: rgba(234,179,8,0.08); border: 1px solid rgba(234,179,8,0.2); border-radius: var(--radius-sm);">
+              <div style="font-size: 12px; font-weight: 600; color: #92400e; margin-bottom: 6px;">Package Tiers</div>
+              <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+                <span style="font-size: 12px; padding: 3px 10px; background: #1a1714; color: #fff; border-radius: 4px; font-weight: 600;">Title</span>
+                <span style="font-size: 12px; padding: 3px 10px; background: #ca8a04; color: #fff; border-radius: 4px; font-weight: 600;">Gold</span>
+                <span style="font-size: 12px; padding: 3px 10px; background: #9ca3af; color: #fff; border-radius: 4px; font-weight: 600;">Silver</span>
+                <span style="font-size: 12px; padding: 3px 10px; background: #b45309; color: #fff; border-radius: 4px; font-weight: 600;">Bronze</span>
+                <span style="font-size: 12px; padding: 3px 10px; background: rgba(217,95,43,0.12); color: var(--primary); border: 1px dashed rgba(217,95,43,0.3); border-radius: 4px; font-weight: 600;">Custom ✦</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div style="padding: 20px 32px 28px;"></div>
+  </article>
+
+  <!-- ── PHASE 7 ── -->
+  <article class="phase-card phase-7">
+    <div class="phase-header">
+      <div class="phase-icon-wrap">💼</div>
+      <div class="phase-title-block">
+        <div class="phase-tag">Phase 07</div>
+        <div class="phase-name">Commerce <em>· 商务</em></div>
+      </div>
+      <div class="phase-badge">Deal Closing Layer</div>
+    </div>
+    <div class="phase-body">
+      <div class="phase-section">
+        <div class="section-label"><span class="section-label-dot"></span>Why Seventh</div>
+        <p class="why-text">
+          The platform's ultimate value proposition is not just connecting people — it's closing deals. The first six phases build the trust, identity, and network required for high-stakes publishing negotiations. Phase 7 converts those relationships into signed contracts.
+        </p>
+        <div class="logic-box">
+          <p><strong>Design Logic:</strong> LinkedIn built the world's largest professional network but deliberately keeps commerce off the platform. We do the opposite — build the network (Phases 1–6) then open a full deal pipeline (Phase 7). The complete arc: discover → connect → negotiate → sign → publish.</p>
+          <div class="logic-ref">
+            <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><circle cx="6" cy="6" r="5" stroke="#9b9590" stroke-width="1"/><path d="M6 3.5v3l1.5 1.5" stroke="#9b9590" stroke-width="1" stroke-linecap="round"/></svg>
+            Analogy: LinkedIn for social graph · AngelList for deal flow · DocuSign for execution — unified in one platform
+          </div>
+        </div>
+      </div>
+      <div class="phase-section">
+        <div class="section-label"><span class="section-label-dot"></span>Includes</div>
+        <ul class="feat-list">
+          <li class="feat-item">
+            <div class="feat-icon">📊</div>
+            <div class="feat-item-content">
+              <div class="feat-item-name">ProjectBiz</div>
+              <div class="feat-item-desc">Business-layer extension of a game project: financial projections, revenue expectations, publishing territory requirements, deal terms overview. Shown only to invited parties under NDA.</div>
+            </div>
+          </li>
+          <li class="feat-item">
+            <div class="feat-icon">🔄</div>
+            <div class="feat-item-content">
+              <div class="feat-item-name">DealNegotiation</div>
+              <div class="feat-item-desc">Structured deal pipeline tracker: NDA → Term Sheet → Contract. Timestamped milestones, comment threads, version history per deal.</div>
+            </div>
+          </li>
+          <li class="feat-item">
+            <div class="feat-icon">✍️</div>
+            <div class="feat-item-content">
+              <div class="feat-item-name">ContractSign</div>
+              <div class="feat-item-desc">In-platform e-signature for finalized contracts. No need to export to DocuSign — the deal closes where it was negotiated.</div>
+            </div>
+          </li>
+          <li class="feat-item">
+            <div class="feat-icon">🏛️</div>
+            <div class="feat-item-content">
+              <div class="feat-item-name">DealRoom</div>
+              <div class="feat-item-desc">Unified private workspace per deal: all documents, messages, milestones, and signatories in one secure room. The command center for a publishing partnership.</div>
+            </div>
+          </li>
+        </ul>
+      </div>
+    </div>
+  </article>
+
+</main>
+
+<!-- SUMMARY / PHILOSOPHY -->
+<section class="summary-section">
+  <div class="summary-card">
+    <div class="summary-eyebrow">Design Philosophy</div>
+    <h2>From Discovery to Deal — A Trust-First Funnel</h2>
+    <p>
+      The 7-phase sequence is not arbitrary. It mirrors how trust is actually built in professional relationships: you discover, you identify yourself, you communicate, you gather, you engage at scale, you attract investment, and finally — when trust is deep enough — you transact.
+    </p>
+    <p>
+      Each phase creates the precondition for the next. You can't have meaningful Commerce (Phase 7) without the trust network built in Phases 1–6. You can't have Events (Phase 5) without the identity infrastructure of Phase 2 or the messaging of Phase 3. The sequence is load-bearing.
+    </p>
+
+    <div class="funnel-summary" style="margin-top: 32px; display: grid; grid-template-columns: repeat(7,1fr); gap: 8px; position: relative; z-index: 1;">
+      <div style="background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.1); border-radius: 10px; padding: 16px 10px; text-align: center;">
+        <div style="font-size: 22px; margin-bottom: 8px;">🔭</div>
+        <div style="font-size: 10px; font-weight: 700; color: rgba(255,255,255,0.5); letter-spacing: 0.06em; text-transform: uppercase; margin-bottom: 4px;">Phase 1</div>
+        <div style="font-size: 12px; font-weight: 600; color: #fff;">Discovery</div>
+        <div style="font-size: 11px; color: rgba(255,255,255,0.4); margin-top: 4px;">Feel value</div>
+      </div>
+      <div style="background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.1); border-radius: 10px; padding: 16px 10px; text-align: center;">
+        <div style="font-size: 22px; margin-bottom: 8px;">🪪</div>
+        <div style="font-size: 10px; font-weight: 700; color: rgba(255,255,255,0.5); letter-spacing: 0.06em; text-transform: uppercase; margin-bottom: 4px;">Phase 2</div>
+        <div style="font-size: 12px; font-weight: 600; color: #fff;">Identity</div>
+        <div style="font-size: 11px; color: rgba(255,255,255,0.4); margin-top: 4px;">Be seen</div>
+      </div>
+      <div style="background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.1); border-radius: 10px; padding: 16px 10px; text-align: center;">
+        <div style="font-size: 22px; margin-bottom: 8px;">💬</div>
+        <div style="font-size: 10px; font-weight: 700; color: rgba(255,255,255,0.5); letter-spacing: 0.06em; text-transform: uppercase; margin-bottom: 4px;">Phase 3</div>
+        <div style="font-size: 12px; font-weight: 600; color: #fff;">Connection</div>
+        <div style="font-size: 11px; color: rgba(255,255,255,0.4); margin-top: 4px;">Communicate</div>
+      </div>
+      <div style="background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.1); border-radius: 10px; padding: 16px 10px; text-align: center;">
+        <div style="font-size: 22px; margin-bottom: 8px;">🤝</div>
+        <div style="font-size: 10px; font-weight: 700; color: rgba(255,255,255,0.5); letter-spacing: 0.06em; text-transform: uppercase; margin-bottom: 4px;">Phase 4</div>
+        <div style="font-size: 12px; font-weight: 600; color: #fff;">Meetup</div>
+        <div style="font-size: 11px; color: rgba(255,255,255,0.4); margin-top: 4px;">Gather</div>
+      </div>
+      <div style="background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.1); border-radius: 10px; padding: 16px 10px; text-align: center;">
+        <div style="font-size: 22px; margin-bottom: 8px;">🎪</div>
+        <div style="font-size: 10px; font-weight: 700; color: rgba(255,255,255,0.5); letter-spacing: 0.06em; text-transform: uppercase; margin-bottom: 4px;">Phase 5</div>
+        <div style="font-size: 12px; font-weight: 600; color: #fff;">Events</div>
+        <div style="font-size: 11px; color: rgba(255,255,255,0.4); margin-top: 4px;">Scale up</div>
+      </div>
+      <div style="background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.1); border-radius: 10px; padding: 16px 10px; text-align: center;">
+        <div style="font-size: 22px; margin-bottom: 8px;">🏅</div>
+        <div style="font-size: 10px; font-weight: 700; color: rgba(255,255,255,0.5); letter-spacing: 0.06em; text-transform: uppercase; margin-bottom: 4px;">Phase 6</div>
+        <div style="font-size: 12px; font-weight: 600; color: #fff;">Sponsorship</div>
+        <div style="font-size: 11px; color: rgba(255,255,255,0.4); margin-top: 4px;">Monetize</div>
+      </div>
+      <div style="background: rgba(217,95,43,0.25); border: 1px solid rgba(217,95,43,0.4); border-radius: 10px; padding: 16px 10px; text-align: center;">
+        <div style="font-size: 22px; margin-bottom: 8px;">💼</div>
+        <div style="font-size: 10px; font-weight: 700; color: rgba(217,95,43,0.8); letter-spacing: 0.06em; text-transform: uppercase; margin-bottom: 4px;">Phase 7</div>
+        <div style="font-size: 12px; font-weight: 600; color: #fff;">Commerce</div>
+        <div style="font-size: 11px; color: rgba(255,255,255,0.5); margin-top: 4px;">Close deals</div>
+      </div>
+    </div>
+
+    <div class="philosophy-grid">
+      <div class="philo-item">
+        <div class="philo-item-icon">🏗️</div>
+        <div class="philo-item-title">Each Phase is Load-Bearing</div>
+        <div class="philo-item-desc">Remove any phase and the ones after it collapse. Identity without Discovery means no users. Commerce without Connection means no trust. The sequence is architectural.</div>
+      </div>
+      <div class="philo-item">
+        <div class="philo-item-icon">🔁</div>
+        <div class="philo-item-title">B2B Generates, B2C Consumes</div>
+        <div class="philo-item-desc">Every Organizer action has an attendee-facing output. This symmetry is the platform's core content engine — professional supply meets professional demand.</div>
+      </div>
+      <div class="philo-item">
+        <div class="philo-item-icon">📈</div>
+        <div class="philo-item-title">Value Before Commitment</div>
+        <div class="philo-item-desc">Users experience the platform before registering. Organizers publish small events before paying for enterprise features. Trust is earned at every layer before commitment is asked.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <strong>Game Connection Platform</strong> · Product Design Rationale · v1.0 · March 2026<br/>
+  <span style="margin-top: 6px; display: block;">Internal reference document for lead architects and framework designers. Not for external distribution.</span>
+</footer>
+
+</body>
+</html>

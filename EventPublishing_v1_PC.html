@@ -1,0 +1,1914 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Publish Event — GAME CONNECTION Organizer HQ</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: #e8e4da;
+    color: #1a1a1a;
+    min-height: 100vh;
+  }
+
+  /* ─── NAV ─── */
+  .nav {
+    background: #1a1a1a;
+    padding: 0 32px;
+    height: 56px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+  }
+  .nav-brand {
+    font-size: 15px;
+    font-weight: 700;
+    color: #fff;
+    letter-spacing: 0.5px;
+  }
+  .nav-brand span { color: #d95f2b; }
+  .nav-right {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+  }
+  .nav-event-label {
+    font-size: 13px;
+    color: #888;
+  }
+  .nav-event-label strong { color: #ccc; font-weight: 600; }
+  .nav-avatar {
+    width: 32px; height: 32px;
+    border-radius: 50%;
+    background: #d95f2b;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 13px; font-weight: 700; color: #fff;
+    cursor: pointer;
+  }
+
+  /* ─── LAYOUT ─── */
+  .layout {
+    max-width: 1400px;
+    margin: 0 auto;
+    display: flex;
+    gap: 0;
+    min-height: calc(100vh - 56px);
+  }
+
+  /* ─── SIDEBAR ─── */
+  .sidebar {
+    width: 260px;
+    flex-shrink: 0;
+    padding: 40px 24px;
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+  }
+  .sidebar-title {
+    font-size: 11px;
+    font-weight: 700;
+    color: #999;
+    letter-spacing: 1.2px;
+    text-transform: uppercase;
+    margin-bottom: 24px;
+    padding: 0 4px;
+  }
+  .step-nav {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+  .step-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 14px;
+    padding: 14px 16px;
+    border-radius: 10px;
+    cursor: pointer;
+    transition: background 0.18s;
+    position: relative;
+  }
+  .step-item:not(:last-child)::after {
+    content: '';
+    position: absolute;
+    left: 27px;
+    top: 46px;
+    width: 2px;
+    height: 18px;
+    background: #d4d0c8;
+    border-radius: 2px;
+  }
+  .step-item.active { background: rgba(217,95,43,0.1); }
+  .step-item.done { background: rgba(13,155,114,0.07); }
+  .step-item:hover:not(.active):not(.done) { background: rgba(0,0,0,0.04); }
+  .step-badge {
+    width: 28px; height: 28px;
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 12px; font-weight: 700;
+    flex-shrink: 0;
+    margin-top: 1px;
+  }
+  .step-badge.active { background: #d95f2b; color: #fff; box-shadow: 0 2px 8px rgba(217,95,43,0.35); }
+  .step-badge.done { background: #0d9b72; color: #fff; }
+  .step-badge.todo { background: #ddd9d0; color: #999; }
+  .step-info {}
+  .step-info .step-n { font-size: 11px; color: #aaa; font-weight: 500; margin-bottom: 1px; }
+  .step-info .step-label {
+    font-size: 14px;
+    font-weight: 600;
+    color: #888;
+    line-height: 1.2;
+  }
+  .step-item.active .step-label { color: #d95f2b; }
+  .step-item.done .step-label { color: #0d9b72; }
+
+  .sidebar-divider {
+    height: 1px;
+    background: #d4d0c8;
+    margin: 28px 0;
+  }
+  .sidebar-tip {
+    background: #fff;
+    border-radius: 10px;
+    padding: 16px;
+    border-left: 3px solid #d95f2b;
+  }
+  .sidebar-tip h4 { font-size: 12px; font-weight: 700; color: #d95f2b; margin-bottom: 6px; letter-spacing: 0.3px; }
+  .sidebar-tip p { font-size: 12px; color: #666; line-height: 1.5; }
+
+  /* ─── CONTENT ─── */
+  .content {
+    flex: 1;
+    padding: 40px 48px 80px 24px;
+    min-width: 0;
+  }
+
+  .page-header {
+    margin-bottom: 32px;
+  }
+  .page-header h1 {
+    font-size: 26px;
+    font-weight: 700;
+    color: #1a1a1a;
+    margin-bottom: 4px;
+  }
+  .page-header p {
+    font-size: 14px;
+    color: #666;
+  }
+  .page-header .breadcrumb {
+    font-size: 12px;
+    color: #aaa;
+    margin-bottom: 8px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .breadcrumb span { color: #d95f2b; cursor: pointer; }
+  .breadcrumb span:hover { text-decoration: underline; }
+
+  /* ─── STEP PANELS ─── */
+  .step-panel {
+    display: none;
+    animation: fadeSlide 0.3s ease;
+  }
+  .step-panel.active {
+    display: block;
+  }
+  @keyframes fadeSlide {
+    from { opacity: 0; transform: translateX(16px); }
+    to   { opacity: 1; transform: translateX(0); }
+  }
+
+  /* ─── CARD ─── */
+  .card {
+    background: #fff;
+    border-radius: 14px;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+    padding: 28px 32px;
+    margin-bottom: 20px;
+  }
+  .card-title {
+    font-size: 16px;
+    font-weight: 700;
+    color: #1a1a1a;
+    margin-bottom: 20px;
+    padding-bottom: 16px;
+    border-bottom: 1px solid #f0ede8;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .card-title-icon {
+    width: 28px; height: 28px;
+    background: rgba(217,95,43,0.12);
+    border-radius: 7px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 15px;
+  }
+
+  /* ─── FORM ELEMENTS ─── */
+  .form-group {
+    margin-bottom: 24px;
+  }
+  .form-group:last-child { margin-bottom: 0; }
+  .form-label {
+    display: block;
+    font-size: 13px;
+    font-weight: 600;
+    color: #333;
+    margin-bottom: 8px;
+  }
+  .form-label .req { color: #d95f2b; margin-left: 2px; }
+  .form-hint {
+    font-size: 12px;
+    color: #999;
+    font-weight: 400;
+    margin-left: 4px;
+  }
+  .form-input, .form-select, .form-textarea {
+    width: 100%;
+    padding: 11px 14px;
+    border: 1.5px solid #e0ddd6;
+    border-radius: 8px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 14px;
+    color: #1a1a1a;
+    background: #fafaf8;
+    outline: none;
+    transition: border-color 0.18s, box-shadow 0.18s;
+  }
+  .form-input:focus, .form-select:focus, .form-textarea:focus {
+    border-color: #d95f2b;
+    box-shadow: 0 0 0 3px rgba(217,95,43,0.1);
+    background: #fff;
+  }
+  .form-input.error, .form-select.error, .form-textarea.error {
+    border-color: #e03e3e;
+    box-shadow: 0 0 0 3px rgba(224,62,62,0.1);
+  }
+  .form-error-msg {
+    font-size: 12px;
+    color: #e03e3e;
+    margin-top: 5px;
+    display: none;
+  }
+  .form-error-msg.visible { display: block; }
+  .form-textarea {
+    resize: vertical;
+    min-height: 96px;
+    line-height: 1.5;
+  }
+  .form-select {
+    appearance: none;
+    cursor: pointer;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%23999' stroke-width='2'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 12px center;
+    padding-right: 36px;
+  }
+
+  .char-counter {
+    display: flex;
+    justify-content: flex-end;
+    font-size: 12px;
+    color: #aaa;
+    margin-top: 5px;
+  }
+  .char-counter.warning { color: #d95f2b; }
+  .char-counter.over { color: #e03e3e; }
+
+  /* ─── EVENT TYPE CARDS ─── */
+  .type-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 12px;
+  }
+  .type-card {
+    border: 1.5px solid #e0ddd6;
+    border-radius: 10px;
+    padding: 16px 14px;
+    cursor: pointer;
+    transition: all 0.18s;
+    text-align: center;
+    background: #fafaf8;
+    user-select: none;
+  }
+  .type-card:hover { border-color: #d95f2b; background: rgba(217,95,43,0.04); }
+  .type-card.selected {
+    border-color: #d95f2b;
+    background: rgba(217,95,43,0.08);
+    box-shadow: 0 0 0 3px rgba(217,95,43,0.12);
+  }
+  .type-card .type-icon { font-size: 24px; margin-bottom: 6px; }
+  .type-card .type-name {
+    font-size: 13px;
+    font-weight: 600;
+    color: #333;
+  }
+  .type-card.selected .type-name { color: #d95f2b; }
+
+  /* ─── FORM ROW ─── */
+  .form-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+  }
+  .form-row-3 {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 16px;
+  }
+
+  /* ─── BOTTOM ACTIONS ─── */
+  .step-actions {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 24px 32px;
+    background: #fff;
+    border-radius: 14px;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+    margin-bottom: 20px;
+  }
+  .btn {
+    padding: 11px 22px;
+    border-radius: 8px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    border: none;
+    transition: all 0.18s;
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+  }
+  .btn-ghost {
+    background: transparent;
+    border: 1.5px solid #d4d0c8;
+    color: #555;
+  }
+  .btn-ghost:hover { border-color: #aaa; color: #1a1a1a; }
+  .btn-outline-primary {
+    background: transparent;
+    border: 1.5px solid #d95f2b;
+    color: #d95f2b;
+  }
+  .btn-outline-primary:hover { background: rgba(217,95,43,0.08); }
+  .btn-primary {
+    background: #d95f2b;
+    color: #fff;
+    box-shadow: 0 2px 8px rgba(217,95,43,0.3);
+  }
+  .btn-primary:hover { background: #c2541f; box-shadow: 0 4px 14px rgba(217,95,43,0.4); }
+  .btn-primary:active { transform: translateY(1px); }
+  .btn-success {
+    background: #0d9b72;
+    color: #fff;
+    box-shadow: 0 2px 8px rgba(13,155,114,0.3);
+  }
+  .btn-success:hover { background: #0a8562; }
+  .btn-large {
+    padding: 14px 32px;
+    font-size: 15px;
+    border-radius: 10px;
+  }
+
+  /* ─── RICH TEXT AREA ─── */
+  .rich-toolbar {
+    display: flex;
+    gap: 2px;
+    padding: 8px 10px;
+    background: #f5f3ef;
+    border: 1.5px solid #e0ddd6;
+    border-bottom: none;
+    border-radius: 8px 8px 0 0;
+    flex-wrap: wrap;
+  }
+  .rich-btn {
+    width: 30px; height: 30px;
+    border: none;
+    background: transparent;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 13px;
+    font-weight: 700;
+    color: #555;
+    display: flex; align-items: center; justify-content: center;
+    transition: background 0.15s;
+    font-family: 'DM Sans', sans-serif;
+  }
+  .rich-btn:hover { background: #e0ddd6; color: #1a1a1a; }
+  .rich-btn.active { background: #d95f2b; color: #fff; }
+  .rich-sep {
+    width: 1px;
+    background: #d4d0c8;
+    margin: 4px 4px;
+  }
+  .rich-area {
+    min-height: 160px;
+    border: 1.5px solid #e0ddd6;
+    border-top: none;
+    border-radius: 0 0 8px 8px;
+    padding: 14px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 14px;
+    line-height: 1.6;
+    background: #fafaf8;
+    outline: none;
+    color: #1a1a1a;
+  }
+  .rich-area:focus {
+    border-color: #d95f2b;
+    box-shadow: 0 0 0 3px rgba(217,95,43,0.1);
+    background: #fff;
+  }
+  .rich-area:empty::before {
+    content: attr(data-placeholder);
+    color: #bbb;
+  }
+
+  /* ─── UPLOAD ZONES ─── */
+  .upload-zone {
+    border: 2px dashed #d4d0c8;
+    border-radius: 10px;
+    padding: 32px 20px;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.2s;
+    background: #fafaf8;
+    position: relative;
+  }
+  .upload-zone:hover, .upload-zone.dragover {
+    border-color: #d95f2b;
+    background: rgba(217,95,43,0.04);
+  }
+  .upload-zone input[type="file"] {
+    position: absolute; inset: 0;
+    opacity: 0; cursor: pointer;
+    width: 100%; height: 100%;
+  }
+  .upload-icon { font-size: 32px; margin-bottom: 10px; }
+  .upload-title { font-size: 14px; font-weight: 600; color: #333; margin-bottom: 4px; }
+  .upload-sub { font-size: 12px; color: #999; }
+  .upload-tag {
+    display: inline-block;
+    margin-top: 10px;
+    padding: 4px 10px;
+    background: rgba(217,95,43,0.1);
+    color: #d95f2b;
+    border-radius: 20px;
+    font-size: 11px;
+    font-weight: 600;
+  }
+  .upload-preview {
+    display: none;
+    width: 100%;
+    border-radius: 8px;
+    overflow: hidden;
+    background: #f0ede8;
+    position: relative;
+  }
+  .upload-preview img {
+    width: 100%;
+    height: 180px;
+    object-fit: cover;
+    display: block;
+  }
+  .upload-preview .remove-img {
+    position: absolute;
+    top: 8px; right: 8px;
+    width: 26px; height: 26px;
+    background: rgba(0,0,0,0.6);
+    color: #fff;
+    border: none;
+    border-radius: 50%;
+    cursor: pointer;
+    font-size: 13px;
+    display: flex; align-items: center; justify-content: center;
+  }
+
+  .gallery-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 12px;
+    margin-top: 12px;
+  }
+  .gallery-cell {
+    aspect-ratio: 4/3;
+    border: 2px dashed #d4d0c8;
+    border-radius: 8px;
+    background: #fafaf8;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    font-size: 22px;
+    color: #ccc;
+    transition: all 0.18s;
+    position: relative;
+    overflow: hidden;
+  }
+  .gallery-cell:hover { border-color: #d95f2b; color: #d95f2b; }
+  .gallery-cell input[type="file"] {
+    position: absolute; inset: 0;
+    opacity: 0; cursor: pointer;
+    width: 100%; height: 100%;
+  }
+  .gallery-cell img {
+    position: absolute; inset: 0;
+    width: 100%; height: 100%;
+    object-fit: cover;
+  }
+  .gallery-cell .rm-gal {
+    position: absolute;
+    top: 4px; right: 4px;
+    width: 22px; height: 22px;
+    background: rgba(0,0,0,0.55);
+    color: #fff;
+    border: none;
+    border-radius: 50%;
+    cursor: pointer;
+    font-size: 11px;
+    display: none;
+    align-items: center; justify-content: center;
+    z-index: 2;
+  }
+  .gallery-cell:hover .rm-gal { display: flex; }
+  .gallery-cell .gal-n {
+    font-size: 11px;
+    color: #ccc;
+    margin-top: 4px;
+  }
+
+  /* ─── SOCIAL LINKS ─── */
+  .social-input-wrap {
+    display: flex;
+    align-items: center;
+    border: 1.5px solid #e0ddd6;
+    border-radius: 8px;
+    overflow: hidden;
+    background: #fafaf8;
+    transition: border-color 0.18s;
+  }
+  .social-input-wrap:focus-within {
+    border-color: #d95f2b;
+    box-shadow: 0 0 0 3px rgba(217,95,43,0.1);
+    background: #fff;
+  }
+  .social-prefix {
+    padding: 11px 14px;
+    background: #f0ede8;
+    font-size: 13px;
+    color: #666;
+    border-right: 1.5px solid #e0ddd6;
+    white-space: nowrap;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .social-input-wrap input {
+    flex: 1;
+    padding: 11px 14px;
+    border: none;
+    background: transparent;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 14px;
+    color: #1a1a1a;
+    outline: none;
+  }
+
+  /* ─── FORMAT TOGGLE ─── */
+  .format-toggle {
+    display: flex;
+    gap: 0;
+    border: 1.5px solid #e0ddd6;
+    border-radius: 8px;
+    overflow: hidden;
+    display: inline-flex;
+  }
+  .format-btn {
+    padding: 10px 20px;
+    border: none;
+    background: #fafaf8;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 14px;
+    font-weight: 500;
+    color: #666;
+    cursor: pointer;
+    border-right: 1px solid #e0ddd6;
+    transition: all 0.18s;
+    display: flex;
+    align-items: center;
+    gap: 7px;
+  }
+  .format-btn:last-child { border-right: none; }
+  .format-btn.active {
+    background: #d95f2b;
+    color: #fff;
+  }
+  .format-btn:hover:not(.active) { background: rgba(217,95,43,0.06); }
+
+  /* ─── LOCATION FIELDS ─── */
+  .location-fields {
+    margin-top: 20px;
+  }
+
+  /* ─── DATE-TIME ─── */
+  .datetime-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 16px;
+  }
+
+  /* ─── TOGGLE SWITCH ─── */
+  .toggle-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 16px 0;
+    border-top: 1px solid #f0ede8;
+  }
+  .toggle-info .toggle-title { font-size: 14px; font-weight: 600; color: #1a1a1a; }
+  .toggle-info .toggle-sub { font-size: 12px; color: #999; margin-top: 2px; }
+  .toggle-switch {
+    position: relative;
+    width: 44px; height: 24px;
+    cursor: pointer;
+  }
+  .toggle-switch input { opacity: 0; width: 0; height: 0; }
+  .toggle-track {
+    position: absolute;
+    inset: 0;
+    background: #d4d0c8;
+    border-radius: 24px;
+    transition: background 0.2s;
+  }
+  .toggle-thumb {
+    position: absolute;
+    top: 3px; left: 3px;
+    width: 18px; height: 18px;
+    background: #fff;
+    border-radius: 50%;
+    transition: transform 0.2s;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.2);
+  }
+  .toggle-switch input:checked ~ .toggle-track { background: #d95f2b; }
+  .toggle-switch input:checked ~ .toggle-thumb { transform: translateX(20px); }
+
+  /* ─── PREVIEW CARD ─── */
+  .preview-card {
+    background: #fff;
+    border-radius: 14px;
+    overflow: hidden;
+    box-shadow: 0 2px 16px rgba(0,0,0,0.1);
+    max-width: 480px;
+  }
+  .preview-cover {
+    height: 180px;
+    background: linear-gradient(135deg, #d95f2b 0%, #1a1a1a 100%);
+    position: relative;
+    display: flex;
+    align-items: flex-end;
+    padding: 16px;
+  }
+  .preview-cover .preview-type-badge {
+    padding: 4px 10px;
+    background: rgba(255,255,255,0.2);
+    border: 1px solid rgba(255,255,255,0.3);
+    border-radius: 20px;
+    font-size: 11px;
+    font-weight: 700;
+    color: #fff;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+  }
+  .preview-body { padding: 20px; }
+  .preview-title {
+    font-size: 18px;
+    font-weight: 700;
+    color: #1a1a1a;
+    margin-bottom: 8px;
+  }
+  .preview-desc {
+    font-size: 13px;
+    color: #666;
+    line-height: 1.5;
+    margin-bottom: 14px;
+  }
+  .preview-meta {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+  .preview-meta-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 13px;
+    color: #555;
+  }
+  .preview-meta-row .icon { font-size: 14px; }
+  .preview-footer {
+    padding: 14px 20px;
+    border-top: 1px solid #f0ede8;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+  .preview-footer .preview-category {
+    padding: 4px 10px;
+    background: rgba(217,95,43,0.1);
+    color: #d95f2b;
+    border-radius: 20px;
+    font-size: 11px;
+    font-weight: 700;
+  }
+
+  /* ─── VISIBILITY ─── */
+  .visibility-options {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 12px;
+  }
+  .visibility-opt {
+    border: 1.5px solid #e0ddd6;
+    border-radius: 10px;
+    padding: 16px;
+    cursor: pointer;
+    text-align: center;
+    transition: all 0.18s;
+    background: #fafaf8;
+  }
+  .visibility-opt:hover { border-color: #d95f2b; }
+  .visibility-opt.selected {
+    border-color: #d95f2b;
+    background: rgba(217,95,43,0.07);
+    box-shadow: 0 0 0 3px rgba(217,95,43,0.12);
+  }
+  .visibility-opt .vis-icon { font-size: 24px; margin-bottom: 8px; }
+  .visibility-opt .vis-label { font-size: 13px; font-weight: 700; color: #333; }
+  .visibility-opt .vis-desc { font-size: 11px; color: #999; margin-top: 3px; }
+  .visibility-opt.selected .vis-label { color: #d95f2b; }
+
+  /* ─── SUCCESS OVERLAY ─── */
+  .success-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.5);
+    z-index: 999;
+    align-items: center;
+    justify-content: center;
+    animation: fadeIn 0.25s ease;
+  }
+  .success-overlay.visible { display: flex; }
+  @keyframes fadeIn {
+    from { opacity: 0; }
+    to   { opacity: 1; }
+  }
+  .success-modal {
+    background: #fff;
+    border-radius: 20px;
+    padding: 48px 52px;
+    text-align: center;
+    max-width: 460px;
+    width: 90%;
+    animation: scaleIn 0.3s cubic-bezier(0.34,1.56,0.64,1);
+  }
+  @keyframes scaleIn {
+    from { transform: scale(0.8); opacity: 0; }
+    to   { transform: scale(1); opacity: 1; }
+  }
+  .success-icon {
+    width: 72px; height: 72px;
+    background: linear-gradient(135deg, #0d9b72, #0a7a5c);
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 34px;
+    margin: 0 auto 20px;
+    box-shadow: 0 8px 24px rgba(13,155,114,0.3);
+    animation: popIn 0.5s 0.2s cubic-bezier(0.34,1.56,0.64,1) both;
+  }
+  @keyframes popIn {
+    from { transform: scale(0); }
+    to   { transform: scale(1); }
+  }
+  .success-title {
+    font-size: 24px;
+    font-weight: 700;
+    color: #1a1a1a;
+    margin-bottom: 8px;
+  }
+  .success-sub {
+    font-size: 14px;
+    color: #666;
+    line-height: 1.6;
+    margin-bottom: 28px;
+  }
+  .success-sub strong { color: #d95f2b; }
+  .success-actions { display: flex; gap: 12px; justify-content: center; }
+
+  /* ─── MISC ─── */
+  .tag {
+    display: inline-flex;
+    align-items: center;
+    padding: 4px 10px;
+    border-radius: 20px;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.3px;
+  }
+  .tag-orange { background: rgba(217,95,43,0.1); color: #d95f2b; }
+  .tag-green { background: rgba(13,155,114,0.1); color: #0d9b72; }
+
+  .info-banner {
+    background: rgba(217,95,43,0.08);
+    border: 1px solid rgba(217,95,43,0.2);
+    border-radius: 8px;
+    padding: 12px 16px;
+    font-size: 13px;
+    color: #555;
+    margin-bottom: 20px;
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+  }
+  .info-banner .ib-icon { font-size: 16px; flex-shrink: 0; margin-top: 1px; }
+
+  .section-sub-title {
+    font-size: 13px;
+    font-weight: 700;
+    color: #888;
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+    margin: 24px 0 14px;
+  }
+
+  .input-with-icon {
+    position: relative;
+  }
+  .input-with-icon .form-input {
+    padding-left: 38px;
+  }
+  .input-icon {
+    position: absolute;
+    left: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    font-size: 15px;
+    color: #aaa;
+  }
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav class="nav">
+  <div class="nav-brand">GAME <span>CONNECTION</span> · Organizer HQ</div>
+  <div class="nav-right">
+    <div class="nav-event-label">New Event</div>
+    <div class="nav-avatar">OG</div>
+  </div>
+</nav>
+
+<!-- SUCCESS OVERLAY -->
+<div class="success-overlay" id="successOverlay">
+  <div class="success-modal">
+    <div class="success-icon">🎉</div>
+    <div class="success-title">Event Published!</div>
+    <div class="success-sub">
+      Your event <strong id="publishedName">Game Connection Summit 2025</strong> is now live and visible to attendees.<br><br>
+      You'll be redirected to your Event Dashboard shortly.
+    </div>
+    <div class="success-actions">
+      <button class="btn btn-ghost" onclick="closeSuccess()">Stay Here</button>
+      <button class="btn btn-primary" onclick="closeSuccess()">Go to Dashboard →</button>
+    </div>
+  </div>
+</div>
+
+<!-- LAYOUT -->
+<div class="layout">
+
+  <!-- SIDEBAR -->
+  <aside class="sidebar">
+    <div class="sidebar-title">Publication Steps</div>
+    <nav class="step-nav">
+      <div class="step-item active" data-step="1" onclick="goToStep(1)">
+        <div class="step-badge active" id="badge-1">1</div>
+        <div class="step-info">
+          <div class="step-n">Step 1</div>
+          <div class="step-label">Basic Info</div>
+        </div>
+      </div>
+      <div class="step-item todo" data-step="2" onclick="goToStep(2)">
+        <div class="step-badge todo" id="badge-2">2</div>
+        <div class="step-info">
+          <div class="step-n">Step 2</div>
+          <div class="step-label">Details & Media</div>
+        </div>
+      </div>
+      <div class="step-item todo" data-step="3" onclick="goToStep(3)">
+        <div class="step-badge todo" id="badge-3">3</div>
+        <div class="step-info">
+          <div class="step-n">Step 3</div>
+          <div class="step-label">Location & Dates</div>
+        </div>
+      </div>
+      <div class="step-item todo" data-step="4" onclick="goToStep(4)">
+        <div class="step-badge todo" id="badge-4">4</div>
+        <div class="step-info">
+          <div class="step-n">Step 4</div>
+          <div class="step-label">Preview & Publish</div>
+        </div>
+      </div>
+    </nav>
+
+    <div class="sidebar-divider"></div>
+
+    <div class="sidebar-tip">
+      <h4>💡 Pro Tip</h4>
+      <p>Complete all steps for the best visibility. Events with cover images get <strong>3× more</strong> interest from buyers.</p>
+    </div>
+  </aside>
+
+  <!-- CONTENT -->
+  <main class="content">
+    <div class="page-header">
+      <div class="breadcrumb">
+        <span>Dashboard</span> › <span>My Events</span> › New Event
+      </div>
+      <h1 id="mainTitle">Create New Event</h1>
+      <p id="mainSub">Fill in the details below to publish your event on Game Connection.</p>
+    </div>
+
+    <!-- ══════════════════════════════════════════ -->
+    <!-- STEP 1 — BASIC INFO -->
+    <!-- ══════════════════════════════════════════ -->
+    <div class="step-panel active" id="step-panel-1">
+
+      <!-- Event Name -->
+      <div class="card">
+        <div class="card-title">
+          <div class="card-title-icon">📝</div>
+          Event Identity
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="eventName">Event Name <span class="req">*</span></label>
+          <input type="text" class="form-input" id="eventName" placeholder="e.g. Game Connection Europe 2025" oninput="syncPreview()">
+          <div class="form-error-msg" id="err-eventName">Event name is required.</div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Event Type <span class="req">*</span> <span class="form-hint">Select one</span></label>
+          <div class="type-grid" id="typeGrid">
+            <div class="type-card" onclick="selectType(this,'Meetup')">
+              <div class="type-icon">🤝</div>
+              <div class="type-name">Meetup</div>
+            </div>
+            <div class="type-card" onclick="selectType(this,'Conference')">
+              <div class="type-icon">🎤</div>
+              <div class="type-name">Conference</div>
+            </div>
+            <div class="type-card" onclick="selectType(this,'Expo')">
+              <div class="type-icon">🏢</div>
+              <div class="type-name">Expo</div>
+            </div>
+            <div class="type-card" onclick="selectType(this,'Festival')">
+              <div class="type-icon">🎮</div>
+              <div class="type-name">Festival</div>
+            </div>
+            <div class="type-card" onclick="selectType(this,'Workshop')">
+              <div class="type-icon">🛠️</div>
+              <div class="type-name">Workshop</div>
+            </div>
+            <div class="type-card" onclick="selectType(this,'Online')">
+              <div class="type-icon">🌐</div>
+              <div class="type-name">Online</div>
+            </div>
+          </div>
+          <div class="form-error-msg" id="err-eventType">Please select an event type.</div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="shortDesc">Short Description <span class="req">*</span> <span class="form-hint">Shown in event cards</span></label>
+          <textarea class="form-textarea" id="shortDesc" maxlength="140" placeholder="A brief, compelling summary of your event (max 140 characters)..." oninput="updateCharCount(this,'charCount')"></textarea>
+          <div class="char-counter" id="charCount">0 / 140</div>
+          <div class="form-error-msg" id="err-shortDesc">Short description is required.</div>
+        </div>
+      </div>
+
+      <!-- Category & Language -->
+      <div class="card">
+        <div class="card-title">
+          <div class="card-title-icon">🏷️</div>
+          Classification
+        </div>
+
+        <div class="form-row">
+          <div class="form-group" style="margin-bottom:0">
+            <label class="form-label" for="eventCategory">Event Category <span class="req">*</span></label>
+            <select class="form-select" id="eventCategory" onchange="syncPreview()">
+              <option value="">— Select category —</option>
+              <option value="b2b">Game Industry B2B</option>
+              <option value="indie">Indie Games</option>
+              <option value="consumer">Consumer Gaming</option>
+              <option value="devconf">Developer Conference</option>
+              <option value="mixed">Mixed</option>
+            </select>
+            <div class="form-error-msg" id="err-eventCategory">Please select a category.</div>
+          </div>
+          <div class="form-group" style="margin-bottom:0">
+            <label class="form-label" for="eventLang">Primary Language <span class="req">*</span></label>
+            <select class="form-select" id="eventLang">
+              <option value="">— Select language —</option>
+              <option value="en">English</option>
+              <option value="zh">Chinese</option>
+              <option value="ja">Japanese</option>
+              <option value="ko">Korean</option>
+              <option value="fr">French</option>
+              <option value="de">German</option>
+              <option value="multi">Multi-language</option>
+            </select>
+            <div class="form-error-msg" id="err-eventLang">Please select a language.</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="step-actions">
+        <button class="btn btn-ghost">← Back to Dashboard</button>
+        <div style="display:flex;gap:12px;align-items:center;">
+          <button class="btn btn-outline-primary" onclick="saveDraft()">💾 Save Draft</button>
+          <button class="btn btn-primary" onclick="nextStep(1)">Next Step → Details</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══════════════════════════════════════════ -->
+    <!-- STEP 2 — DETAILS & MEDIA -->
+    <!-- ══════════════════════════════════════════ -->
+    <div class="step-panel" id="step-panel-2">
+
+      <!-- Full Description -->
+      <div class="card">
+        <div class="card-title">
+          <div class="card-title-icon">📄</div>
+          Full Description
+        </div>
+        <div class="rich-toolbar">
+          <button class="rich-btn" onclick="fmt('bold')" title="Bold"><b>B</b></button>
+          <button class="rich-btn" onclick="fmt('italic')" title="Italic"><i>I</i></button>
+          <button class="rich-btn" onclick="fmt('underline')" title="Underline"><u>U</u></button>
+          <div class="rich-sep"></div>
+          <button class="rich-btn" onclick="fmt('insertUnorderedList')" title="Bullet List">☰</button>
+          <button class="rich-btn" onclick="fmt('insertOrderedList')" title="Numbered List">①</button>
+          <div class="rich-sep"></div>
+          <button class="rich-btn" onclick="fmt('formatBlock','h3')" title="Heading">H</button>
+          <button class="rich-btn" onclick="fmt('removeFormat')" title="Clear Format">✕</button>
+        </div>
+        <div class="rich-area" id="fullDesc" contenteditable="true" data-placeholder="Describe your event in detail — agenda, speakers, why attend..."></div>
+      </div>
+
+      <!-- Cover Image -->
+      <div class="card">
+        <div class="card-title">
+          <div class="card-title-icon">🖼️</div>
+          Media & Assets
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Cover Image <span class="req">*</span> <span class="form-hint">16:9 ratio recommended</span></label>
+          <div class="upload-zone" id="coverZone" ondragover="handleDragOver(event,'coverZone')" ondragleave="handleDragLeave(event,'coverZone')" ondrop="handleDrop(event,'coverZone','coverPreview','coverZoneInner')">
+            <input type="file" accept="image/*" onchange="handleFileSelect(this,'coverZone','coverPreview','coverZoneInner')">
+            <div id="coverZoneInner">
+              <div class="upload-icon">🏔️</div>
+              <div class="upload-title">Drag & drop your cover image</div>
+              <div class="upload-sub">PNG, JPG, WebP · Max 5MB</div>
+              <span class="upload-tag">16:9 Recommended</span>
+            </div>
+            <div class="upload-preview" id="coverPreview">
+              <img id="coverPreviewImg" src="" alt="Cover preview">
+              <button class="remove-img" onclick="removeImg(event,'coverPreview','coverZoneInner')">✕</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group" style="margin-bottom:0">
+            <label class="form-label">Event Logo <span class="form-hint">Square format, transparent bg</span></label>
+            <div class="upload-zone" style="padding:20px" id="logoZone" ondragover="handleDragOver(event,'logoZone')" ondragleave="handleDragLeave(event,'logoZone')" ondrop="handleDrop(event,'logoZone','logoPreview','logoZoneInner')">
+              <input type="file" accept="image/*" onchange="handleFileSelect(this,'logoZone','logoPreview','logoZoneInner')">
+              <div id="logoZoneInner">
+                <div class="upload-icon" style="font-size:24px">🎫</div>
+                <div class="upload-title" style="font-size:13px">Logo image</div>
+                <div class="upload-sub">PNG with transparency preferred</div>
+              </div>
+              <div class="upload-preview" id="logoPreview">
+                <img id="logoPreviewImg" src="" alt="" style="height:120px">
+                <button class="remove-img" onclick="removeImg(event,'logoPreview','logoZoneInner')">✕</button>
+              </div>
+            </div>
+          </div>
+          <div class="form-group" style="margin-bottom:0">
+            <label class="form-label">Gallery <span class="form-hint">Up to 6 images</span></label>
+            <div class="gallery-grid">
+              <div class="gallery-cell" id="gal-0" onclick="triggerGalInput(0)">
+                <input type="file" accept="image/*" id="gal-input-0" style="display:none" onchange="galSelect(this,0)">
+                <span>＋</span>
+                <span class="gal-n">Photo 1</span>
+                <button class="rm-gal" onclick="rmGal(event,0)">✕</button>
+              </div>
+              <div class="gallery-cell" id="gal-1" onclick="triggerGalInput(1)">
+                <input type="file" accept="image/*" id="gal-input-1" style="display:none" onchange="galSelect(this,1)">
+                <span>＋</span>
+                <span class="gal-n">Photo 2</span>
+                <button class="rm-gal" onclick="rmGal(event,1)">✕</button>
+              </div>
+              <div class="gallery-cell" id="gal-2" onclick="triggerGalInput(2)">
+                <input type="file" accept="image/*" id="gal-input-2" style="display:none" onchange="galSelect(this,2)">
+                <span>＋</span>
+                <span class="gal-n">Photo 3</span>
+                <button class="rm-gal" onclick="rmGal(event,2)">✕</button>
+              </div>
+              <div class="gallery-cell" id="gal-3" onclick="triggerGalInput(3)">
+                <input type="file" accept="image/*" id="gal-input-3" style="display:none" onchange="galSelect(this,3)">
+                <span>＋</span>
+                <span class="gal-n">Photo 4</span>
+                <button class="rm-gal" onclick="rmGal(event,3)">✕</button>
+              </div>
+              <div class="gallery-cell" id="gal-4" onclick="triggerGalInput(4)">
+                <input type="file" accept="image/*" id="gal-input-4" style="display:none" onchange="galSelect(this,4)">
+                <span>＋</span>
+                <span class="gal-n">Photo 5</span>
+                <button class="rm-gal" onclick="rmGal(event,4)">✕</button>
+              </div>
+              <div class="gallery-cell" id="gal-5" onclick="triggerGalInput(5)">
+                <input type="file" accept="image/*" id="gal-input-5" style="display:none" onchange="galSelect(this,5)">
+                <span>＋</span>
+                <span class="gal-n">Photo 6</span>
+                <button class="rm-gal" onclick="rmGal(event,5)">✕</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Links -->
+      <div class="card">
+        <div class="card-title">
+          <div class="card-title-icon">🔗</div>
+          Links & Online Presence
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Website URL</label>
+          <div class="input-with-icon">
+            <span class="input-icon">🌐</span>
+            <input type="url" class="form-input" placeholder="https://your-event-website.com" style="padding-left:38px">
+          </div>
+        </div>
+
+        <div class="section-sub-title">Social Links</div>
+
+        <div class="form-group">
+          <label class="form-label">Twitter / X</label>
+          <div class="social-input-wrap">
+            <div class="social-prefix">𝕏 x.com/</div>
+            <input type="text" placeholder="yourhandle">
+          </div>
+        </div>
+        <div class="form-group">
+          <label class="form-label">LinkedIn</label>
+          <div class="social-input-wrap">
+            <div class="social-prefix">in linkedin.com/in/</div>
+            <input type="text" placeholder="company-name">
+          </div>
+        </div>
+        <div class="form-group" style="margin-bottom:0">
+          <label class="form-label">Instagram</label>
+          <div class="social-input-wrap">
+            <div class="social-prefix">📷 instagram.com/</div>
+            <input type="text" placeholder="yourhandle">
+          </div>
+        </div>
+      </div>
+
+      <div class="step-actions">
+        <button class="btn btn-ghost" onclick="prevStep(2)">← Back</button>
+        <div style="display:flex;gap:12px">
+          <button class="btn btn-outline-primary" onclick="saveDraft()">💾 Save Draft</button>
+          <button class="btn btn-primary" onclick="nextStep(2)">Next → Location & Dates</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══════════════════════════════════════════ -->
+    <!-- STEP 3 — LOCATION & DATES -->
+    <!-- ══════════════════════════════════════════ -->
+    <div class="step-panel" id="step-panel-3">
+
+      <!-- Format -->
+      <div class="card">
+        <div class="card-title">
+          <div class="card-title-icon">📍</div>
+          Event Format
+        </div>
+        <div class="form-group">
+          <label class="form-label">Format <span class="req">*</span></label>
+          <div class="format-toggle">
+            <button class="format-btn active" id="fmt-inperson" onclick="selectFormat('in-person')">🏢 In-Person</button>
+            <button class="format-btn" id="fmt-online" onclick="selectFormat('online')">🌐 Online</button>
+            <button class="format-btn" id="fmt-hybrid" onclick="selectFormat('hybrid')">🔀 Hybrid</button>
+          </div>
+        </div>
+
+        <!-- In-Person Fields -->
+        <div class="location-fields" id="locationFields">
+          <div class="form-row" style="margin-bottom:16px">
+            <div class="form-group" style="margin-bottom:0">
+              <label class="form-label" for="country">Country <span class="req">*</span></label>
+              <select class="form-select" id="country">
+                <option value="">— Select country —</option>
+                <option>France</option>
+                <option>Germany</option>
+                <option>United States</option>
+                <option>United Kingdom</option>
+                <option>Japan</option>
+                <option>South Korea</option>
+                <option>China</option>
+                <option>Canada</option>
+                <option>Spain</option>
+                <option>Netherlands</option>
+                <option>Other</option>
+              </select>
+            </div>
+            <div class="form-group" style="margin-bottom:0">
+              <label class="form-label" for="city">City <span class="req">*</span></label>
+              <input type="text" class="form-input" id="city" placeholder="e.g. Lyon, Paris, Berlin…">
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="venueName">Venue Name</label>
+            <input type="text" class="form-input" id="venueName" placeholder="e.g. Cité des Congrès">
+          </div>
+          <div class="form-group" style="margin-bottom:0">
+            <label class="form-label" for="address">Full Address</label>
+            <input type="text" class="form-input" id="address" placeholder="Street address, building, floor…">
+          </div>
+        </div>
+
+        <!-- Online Fields -->
+        <div class="location-fields" id="onlineFields" style="display:none">
+          <div class="form-group" style="margin-bottom:0">
+            <label class="form-label">Streaming Platform / Join Link</label>
+            <div class="input-with-icon">
+              <span class="input-icon">🎥</span>
+              <input type="url" class="form-input" placeholder="https://zoom.us/j/... or stream URL" style="padding-left:38px">
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Dates & Times -->
+      <div class="card">
+        <div class="card-title">
+          <div class="card-title-icon">📅</div>
+          Dates & Times
+        </div>
+
+        <div class="form-row" style="margin-bottom:20px">
+          <div class="form-group" style="margin-bottom:0">
+            <label class="form-label" for="startDate">Start Date <span class="req">*</span></label>
+            <input type="date" class="form-input" id="startDate" oninput="syncPreview()">
+            <div class="form-error-msg" id="err-startDate">Start date is required.</div>
+          </div>
+          <div class="form-group" style="margin-bottom:0">
+            <label class="form-label" for="endDate">End Date <span class="req">*</span></label>
+            <input type="date" class="form-input" id="endDate" oninput="syncPreview()">
+            <div class="form-error-msg" id="err-endDate">End date is required.</div>
+          </div>
+        </div>
+
+        <div class="form-row-3" style="margin-bottom:20px">
+          <div class="form-group" style="margin-bottom:0">
+            <label class="form-label" for="startTime">Start Time</label>
+            <input type="time" class="form-input" id="startTime" value="09:00">
+          </div>
+          <div class="form-group" style="margin-bottom:0">
+            <label class="form-label" for="endTime">End Time</label>
+            <input type="time" class="form-input" id="endTime" value="18:00">
+          </div>
+          <div class="form-group" style="margin-bottom:0">
+            <label class="form-label" for="timezone">Timezone</label>
+            <select class="form-select" id="timezone">
+              <option value="CET">CET (UTC+1)</option>
+              <option value="CEST">CEST (UTC+2)</option>
+              <option value="UTC">UTC</option>
+              <option value="EST">EST (UTC-5)</option>
+              <option value="PST">PST (UTC-8)</option>
+              <option value="JST">JST (UTC+9)</option>
+              <option value="CST">CST (UTC+8)</option>
+              <option value="KST">KST (UTC+9)</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="toggle-row">
+          <div class="toggle-info">
+            <div class="toggle-title">🔄 Recurring Event</div>
+            <div class="toggle-sub">Enable if this event runs on a regular schedule (monthly, annually…)</div>
+          </div>
+          <label class="toggle-switch">
+            <input type="checkbox" id="recurringToggle" onchange="toggleRecurring()">
+            <div class="toggle-track"></div>
+            <div class="toggle-thumb"></div>
+          </label>
+        </div>
+
+        <div id="recurringOptions" style="display:none; margin-top:16px">
+          <div class="info-banner">
+            <span class="ib-icon">ℹ️</span>
+            Recurring events are shown in the calendar with each occurrence. You can manage individual dates after publishing.
+          </div>
+          <div class="form-row">
+            <div class="form-group" style="margin-bottom:0">
+              <label class="form-label">Frequency</label>
+              <select class="form-select">
+                <option>Monthly</option>
+                <option>Quarterly</option>
+                <option>Bi-annually</option>
+                <option>Annually</option>
+              </select>
+            </div>
+            <div class="form-group" style="margin-bottom:0">
+              <label class="form-label">Ends After</label>
+              <select class="form-select">
+                <option>1 year</option>
+                <option>2 years</option>
+                <option>5 years</option>
+                <option>Never (ongoing)</option>
+              </select>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="step-actions">
+        <button class="btn btn-ghost" onclick="prevStep(3)">← Back</button>
+        <div style="display:flex;gap:12px">
+          <button class="btn btn-outline-primary" onclick="saveDraft()">💾 Save Draft</button>
+          <button class="btn btn-primary" onclick="nextStep(3)">Next → Preview & Publish</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══════════════════════════════════════════ -->
+    <!-- STEP 4 — PREVIEW & PUBLISH -->
+    <!-- ══════════════════════════════════════════ -->
+    <div class="step-panel" id="step-panel-4">
+
+      <div class="info-banner">
+        <span class="ib-icon">👁️</span>
+        <span>Review how your event will appear to attendees. Make sure everything looks correct before publishing.</span>
+      </div>
+
+      <div style="display:grid; grid-template-columns:1fr 1fr; gap:24px; align-items:start">
+
+        <!-- LEFT: Preview Card -->
+        <div>
+          <div class="card" style="padding:0; overflow:hidden">
+            <div style="padding:16px 20px; border-bottom:1px solid #f0ede8; font-size:13px; font-weight:700; color:#888; letter-spacing:0.5px; text-transform:uppercase;">Preview</div>
+            <div style="padding:20px">
+              <div class="preview-card">
+                <div class="preview-cover">
+                  <span class="preview-type-badge" id="prev-type-badge">CONFERENCE</span>
+                </div>
+                <div class="preview-body">
+                  <div class="preview-title" id="prev-name">Your Event Name</div>
+                  <div class="preview-desc" id="prev-desc">Short description will appear here...</div>
+                  <div class="preview-meta">
+                    <div class="preview-meta-row">
+                      <span class="icon">📅</span>
+                      <span id="prev-dates">Date TBD</span>
+                    </div>
+                    <div class="preview-meta-row">
+                      <span class="icon">📍</span>
+                      <span id="prev-location">Location TBD</span>
+                    </div>
+                  </div>
+                </div>
+                <div class="preview-footer">
+                  <span class="preview-category" id="prev-category">Category TBD</span>
+                  <span class="tag tag-orange" id="prev-lang">English</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- RIGHT: Publish Settings -->
+        <div>
+          <!-- Visibility -->
+          <div class="card">
+            <div class="card-title">
+              <div class="card-title-icon">👁️</div>
+              Visibility
+            </div>
+            <div class="visibility-options">
+              <div class="visibility-opt selected" onclick="selectVisibility(this,'Public')">
+                <div class="vis-icon">🌍</div>
+                <div class="vis-label">Public</div>
+                <div class="vis-desc">Visible to everyone</div>
+              </div>
+              <div class="visibility-opt" onclick="selectVisibility(this,'Private')">
+                <div class="vis-icon">🔒</div>
+                <div class="vis-label">Private</div>
+                <div class="vis-desc">Link access only</div>
+              </div>
+              <div class="visibility-opt" onclick="selectVisibility(this,'Invite Only')">
+                <div class="vis-icon">✉️</div>
+                <div class="vis-label">Invite Only</div>
+                <div class="vis-desc">Invited guests only</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Expected Attendees -->
+          <div class="card">
+            <div class="card-title">
+              <div class="card-title-icon">👥</div>
+              Capacity Planning
+            </div>
+            <div class="form-group" style="margin-bottom:12px">
+              <label class="form-label" for="expectedAttendees">Expected Attendees</label>
+              <div class="input-with-icon">
+                <span class="input-icon">👥</span>
+                <input type="number" class="form-input" id="expectedAttendees" placeholder="e.g. 500" min="1" style="padding-left:38px" oninput="updateModuleHint()">
+              </div>
+            </div>
+            <div id="moduleHint" style="display:none; background:#f5f3ef; border-radius:8px; padding:12px; font-size:12px; color:#666; line-height:1.5">
+              <strong style="color:#d95f2b">📦 Module Recommendation:</strong><br>
+              <span id="moduleHintText"></span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Publish Actions -->
+      <div class="card" style="margin-top:4px">
+        <div style="display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:16px">
+          <div>
+            <div style="font-size:16px; font-weight:700; color:#1a1a1a; margin-bottom:4px">Ready to go live?</div>
+            <div style="font-size:13px; color:#888">Once published, your event will be visible to the Game Connection community.</div>
+          </div>
+          <div style="display:flex; gap:12px; align-items:center">
+            <button class="btn btn-ghost" onclick="prevStep(4)">← Back</button>
+            <button class="btn btn-outline-primary btn-large" onclick="saveDraft()">💾 Save as Draft</button>
+            <button class="btn btn-primary btn-large" onclick="publishEvent()">🚀 Publish Now</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </main>
+</div>
+
+<script>
+// ─── STATE ───────────────────────────────────────
+let currentStep = 1;
+let selectedType = '';
+let selectedVisibility = 'Public';
+let eventFormat = 'in-person';
+
+// ─── STEP NAVIGATION ─────────────────────────────
+function goToStep(n) {
+  // Allow navigating to completed steps or the next available step
+  if (n > currentStep) return; // Only allow going back or staying
+  setStep(n);
+}
+
+function setStep(n) {
+  // Hide current
+  document.getElementById('step-panel-' + currentStep).classList.remove('active');
+  // Update sidebar
+  const oldItem = document.querySelector('.step-item[data-step="' + currentStep + '"]');
+  oldItem.classList.remove('active');
+  if (currentStep < n) {
+    oldItem.classList.add('done');
+    document.getElementById('badge-' + currentStep).classList.remove('active');
+    document.getElementById('badge-' + currentStep).classList.add('done');
+    document.getElementById('badge-' + currentStep).textContent = '✓';
+  }
+
+  currentStep = n;
+
+  // Show new
+  const panel = document.getElementById('step-panel-' + n);
+  panel.classList.add('active');
+
+  const newItem = document.querySelector('.step-item[data-step="' + n + '"]');
+  newItem.classList.remove('todo', 'done');
+  newItem.classList.add('active');
+  document.getElementById('badge-' + n).className = 'step-badge active';
+  document.getElementById('badge-' + n).textContent = n;
+
+  // Update header
+  const titles = ['Create New Event', 'Details & Media', 'Location & Dates', 'Preview & Publish'];
+  const subs = [
+    'Fill in the details below to publish your event on Game Connection.',
+    'Add rich content, images, and links for your event page.',
+    'Specify where and when your event takes place.',
+    "Review your event and choose publishing settings."
+  ];
+  document.getElementById('mainTitle').textContent = titles[n-1];
+  document.getElementById('mainSub').textContent = subs[n-1];
+
+  if (n === 4) syncPreview();
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+function nextStep(from) {
+  if (!validateStep(from)) return;
+  const nextN = from + 1;
+  // Mark current as done
+  const item = document.querySelector('.step-item[data-step="' + from + '"]');
+  item.classList.remove('active');
+  item.classList.add('done');
+  document.getElementById('badge-' + from).className = 'step-badge done';
+  document.getElementById('badge-' + from).textContent = '✓';
+
+  // Activate next
+  const nextItem = document.querySelector('.step-item[data-step="' + nextN + '"]');
+  nextItem.classList.remove('todo');
+
+  // Hide current panel
+  document.getElementById('step-panel-' + from).classList.remove('active');
+  currentStep = nextN;
+  document.getElementById('step-panel-' + nextN).classList.add('active');
+
+  // Update sidebar active
+  document.querySelectorAll('.step-item').forEach(i => i.classList.remove('active'));
+  nextItem.classList.add('active');
+  document.getElementById('badge-' + nextN).className = 'step-badge active';
+  document.getElementById('badge-' + nextN).textContent = nextN;
+
+  // Update header
+  const titles = ['Create New Event', 'Details & Media', 'Location & Dates', 'Preview & Publish'];
+  const subs = [
+    'Fill in the details below to publish your event on Game Connection.',
+    'Add rich content, images, and links for your event page.',
+    'Specify where and when your event takes place.',
+    "Review your event and choose publishing settings."
+  ];
+  document.getElementById('mainTitle').textContent = titles[nextN - 1];
+  document.getElementById('mainSub').textContent = subs[nextN - 1];
+
+  if (nextN === 4) syncPreview();
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+function prevStep(from) {
+  if (from <= 1) return;
+  const prevN = from - 1;
+
+  // Deactivate current
+  document.getElementById('step-panel-' + from).classList.remove('active');
+  const fromItem = document.querySelector('.step-item[data-step="' + from + '"]');
+  fromItem.classList.remove('active');
+  fromItem.classList.add('todo');
+  document.getElementById('badge-' + from).className = 'step-badge todo';
+  document.getElementById('badge-' + from).textContent = from;
+
+  // Activate previous
+  const prevPanel = document.getElementById('step-panel-' + prevN);
+  prevPanel.classList.add('active');
+  currentStep = prevN;
+
+  document.querySelectorAll('.step-item').forEach(i => i.classList.remove('active'));
+  const prevItem = document.querySelector('.step-item[data-step="' + prevN + '"]');
+  prevItem.classList.remove('done', 'todo');
+  prevItem.classList.add('active');
+  document.getElementById('badge-' + prevN).className = 'step-badge active';
+  document.getElementById('badge-' + prevN).textContent = prevN;
+
+  const titles = ['Create New Event', 'Details & Media', 'Location & Dates', 'Preview & Publish'];
+  const subs = [
+    'Fill in the details below to publish your event on Game Connection.',
+    'Add rich content, images, and links for your event page.',
+    'Specify where and when your event takes place.',
+    "Review your event and choose publishing settings."
+  ];
+  document.getElementById('mainTitle').textContent = titles[prevN - 1];
+  document.getElementById('mainSub').textContent = subs[prevN - 1];
+
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+// ─── VALIDATION ───────────────────────────────────
+function validateStep(step) {
+  let valid = true;
+
+  if (step === 1) {
+    const name = document.getElementById('eventName');
+    const desc = document.getElementById('shortDesc');
+    const cat = document.getElementById('eventCategory');
+    const lang = document.getElementById('eventLang');
+
+    if (!name.value.trim()) {
+      showErr(name, 'err-eventName'); valid = false;
+    } else clearErr(name, 'err-eventName');
+
+    if (!selectedType) {
+      document.getElementById('err-eventType').classList.add('visible');
+      valid = false;
+    } else {
+      document.getElementById('err-eventType').classList.remove('visible');
+    }
+
+    if (!desc.value.trim()) {
+      showErr(desc, 'err-shortDesc'); valid = false;
+    } else clearErr(desc, 'err-shortDesc');
+
+    if (!cat.value) {
+      showErr(cat, 'err-eventCategory'); valid = false;
+    } else clearErr(cat, 'err-eventCategory');
+
+    if (!lang.value) {
+      showErr(lang, 'err-eventLang'); valid = false;
+    } else clearErr(lang, 'err-eventLang');
+  }
+
+  if (step === 3) {
+    const sd = document.getElementById('startDate');
+    const ed = document.getElementById('endDate');
+    if (!sd.value) { showErr(sd, 'err-startDate'); valid = false; }
+    else clearErr(sd, 'err-startDate');
+    if (!ed.value) { showErr(ed, 'err-endDate'); valid = false; }
+    else clearErr(ed, 'err-endDate');
+  }
+
+  return valid;
+}
+
+function showErr(el, errId) {
+  el.classList.add('error');
+  document.getElementById(errId).classList.add('visible');
+}
+function clearErr(el, errId) {
+  el.classList.remove('error');
+  document.getElementById(errId).classList.remove('visible');
+}
+
+// ─── EVENT TYPE SELECTION ─────────────────────────
+function selectType(card, type) {
+  document.querySelectorAll('.type-card').forEach(c => c.classList.remove('selected'));
+  card.classList.add('selected');
+  selectedType = type;
+  document.getElementById('err-eventType').classList.remove('visible');
+  syncPreview();
+}
+
+// ─── CHAR COUNTER ─────────────────────────────────
+function updateCharCount(el, counterId) {
+  const max = parseInt(el.getAttribute('maxlength') || '140');
+  const len = el.value.length;
+  const counter = document.getElementById(counterId);
+  counter.textContent = len + ' / ' + max;
+  counter.className = 'char-counter';
+  if (len > max * 0.85) counter.classList.add('warning');
+  if (len >= max) counter.classList.add('over');
+}
+
+// ─── RICH TEXT FORMAT ─────────────────────────────
+function fmt(cmd, val) {
+  document.getElementById('fullDesc').focus();
+  document.execCommand(cmd, false, val || null);
+}
+
+// ─── FILE UPLOAD ──────────────────────────────────
+function handleDragOver(e, zoneId) {
+  e.preventDefault();
+  document.getElementById(zoneId).classList.add('dragover');
+}
+function handleDragLeave(e, zoneId) {
+  document.getElementById(zoneId).classList.remove('dragover');
+}
+function handleDrop(e, zoneId, previewId, innerId) {
+  e.preventDefault();
+  document.getElementById(zoneId).classList.remove('dragover');
+  const file = e.dataTransfer.files[0];
+  if (file && file.type.startsWith('image/')) {
+    showPreview(file, previewId, innerId);
+  }
+}
+function handleFileSelect(input, zoneId, previewId, innerId) {
+  if (input.files && input.files[0]) {
+    showPreview(input.files[0], previewId, innerId);
+  }
+}
+function showPreview(file, previewId, innerId) {
+  const reader = new FileReader();
+  reader.onload = function(e) {
+    const preview = document.getElementById(previewId);
+    const inner = document.getElementById(innerId);
+    const img = preview.querySelector('img');
+    img.src = e.target.result;
+    preview.style.display = 'block';
+    inner.style.display = 'none';
+  };
+  reader.readAsDataURL(file);
+}
+function removeImg(e, previewId, innerId) {
+  e.stopPropagation();
+  document.getElementById(previewId).style.display = 'none';
+  document.getElementById(innerId).style.display = '';
+}
+
+// ─── GALLERY ──────────────────────────────────────
+function triggerGalInput(idx) {
+  document.getElementById('gal-input-' + idx).click();
+}
+function galSelect(input, idx) {
+  if (input.files && input.files[0]) {
+    const reader = new FileReader();
+    reader.onload = function(e) {
+      const cell = document.getElementById('gal-' + idx);
+      // Clear text children
+      const spans = cell.querySelectorAll('span');
+      spans.forEach(s => s.style.display = 'none');
+      // Remove existing img if any
+      const existImg = cell.querySelector('img');
+      if (existImg) existImg.remove();
+      const img = document.createElement('img');
+      img.src = e.target.result;
+      cell.insertBefore(img, cell.firstChild);
+    };
+    reader.readAsDataURL(input.files[0]);
+  }
+}
+function rmGal(e, idx) {
+  e.stopPropagation();
+  const cell = document.getElementById('gal-' + idx);
+  const img = cell.querySelector('img');
+  if (img) img.remove();
+  const spans = cell.querySelectorAll('span');
+  spans.forEach(s => s.style.display = '');
+}
+
+// ─── EVENT FORMAT ─────────────────────────────────
+function selectFormat(fmt) {
+  eventFormat = fmt;
+  ['in-person','online','hybrid'].forEach(f => {
+    document.getElementById('fmt-' + f.replace('-','')).classList.remove('active');
+  });
+  document.getElementById('fmt-' + fmt.replace('-','')).classList.add('active');
+
+  const locFields = document.getElementById('locationFields');
+  const onlineFields = document.getElementById('onlineFields');
+  if (fmt === 'online') {
+    locFields.style.display = 'none';
+    onlineFields.style.display = 'block';
+  } else if (fmt === 'hybrid') {
+    locFields.style.display = 'block';
+    onlineFields.style.display = 'block';
+  } else {
+    locFields.style.display = 'block';
+    onlineFields.style.display = 'none';
+  }
+  syncPreview();
+}
+
+// ─── RECURRING TOGGLE ─────────────────────────────
+function toggleRecurring() {
+  const opts = document.getElementById('recurringOptions');
+  opts.style.display = document.getElementById('recurringToggle').checked ? 'block' : 'none';
+}
+
+// ─── VISIBILITY ───────────────────────────────────
+function selectVisibility(el, val) {
+  document.querySelectorAll('.visibility-opt').forEach(o => o.classList.remove('selected'));
+  el.classList.add('selected');
+  selectedVisibility = val;
+}
+
+// ─── MODULE HINT ──────────────────────────────────
+function updateModuleHint() {
+  const n = parseInt(document.getElementById('expectedAttendees').value) || 0;
+  const hint = document.getElementById('moduleHint');
+  const text = document.getElementById('moduleHintText');
+  if (n === 0) { hint.style.display = 'none'; return; }
+  hint.style.display = 'block';
+  if (n < 100) {
+    text.innerHTML = 'Small event: <strong>Networking + Meeting Scheduler</strong> modules recommended.';
+  } else if (n < 500) {
+    text.innerHTML = 'Medium event: <strong>Networking, Talks, Expo Booths</strong> + Meeting Scheduler recommended.';
+  } else if (n < 2000) {
+    text.innerHTML = 'Large event: <strong>Full module suite</strong> — Networking, Talks, Expo, Matchmaking, Press & Awards.';
+  } else {
+    text.innerHTML = 'Major event: <strong>All modules</strong> + dedicated <strong>B2B Matchmaking AI</strong> strongly recommended.';
+  }
+}
+
+// ─── SYNC PREVIEW ────────────────────────────────
+function syncPreview() {
+  const name = document.getElementById('eventName').value.trim() || 'Your Event Name';
+  const desc = document.getElementById('shortDesc').value.trim() || 'Short description will appear here...';
+  const type = selectedType || 'EVENT';
+  const catEl = document.getElementById('eventCategory');
+  const catText = catEl.options[catEl.selectedIndex]?.text || 'Category TBD';
+  const langEl = document.getElementById('eventLang');
+  const langText = langEl.options[langEl.selectedIndex]?.text || 'English';
+
+  document.getElementById('prev-name').textContent = name;
+  document.getElementById('prev-desc').textContent = desc.substring(0, 100) + (desc.length > 100 ? '...' : '');
+  document.getElementById('prev-type-badge').textContent = type.toUpperCase();
+  document.getElementById('prev-category').textContent = catText !== '— Select category —' ? catText : 'Category TBD';
+  document.getElementById('prev-lang').textContent = langText !== '— Select language —' ? langText : 'English';
+
+  // Dates
+  const sd = document.getElementById('startDate')?.value;
+  const ed = document.getElementById('endDate')?.value;
+  if (sd && ed) {
+    const s = new Date(sd + 'T12:00:00');
+    const e = new Date(ed + 'T12:00:00');
+    const opts = { month: 'short', day: 'numeric', year: 'numeric' };
+    if (sd === ed) {
+      document.getElementById('prev-dates').textContent = s.toLocaleDateString('en-US', opts);
+    } else {
+      document.getElementById('prev-dates').textContent =
+        s.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) +
+        ' — ' + e.toLocaleDateString('en-US', opts);
+    }
+  } else {
+    document.getElementById('prev-dates').textContent = 'Date TBD';
+  }
+
+  // Location
+  const city = document.getElementById('city')?.value;
+  const country = document.getElementById('country');
+  const countryText = country?.options[country?.selectedIndex]?.text;
+  if (eventFormat === 'online') {
+    document.getElementById('prev-location').textContent = '🌐 Online Event';
+  } else if (city && countryText && countryText !== '— Select country —') {
+    document.getElementById('prev-location').textContent = city + ', ' + countryText;
+  } else if (city) {
+    document.getElementById('prev-location').textContent = city;
+  } else {
+    document.getElementById('prev-location').textContent = 'Location TBD';
+  }
+
+  // Update published name in success modal
+  document.getElementById('publishedName').textContent = name;
+}
+
+// ─── SAVE DRAFT ───────────────────────────────────
+function saveDraft() {
+  const btn = event.currentTarget;
+  const orig = btn.innerHTML;
+  btn.innerHTML = '✅ Saved!';
+  btn.style.color = '#0d9b72';
+  btn.style.borderColor = '#0d9b72';
+  setTimeout(() => {
+    btn.innerHTML = orig;
+    btn.style.color = '';
+    btn.style.borderColor = '';
+  }, 2000);
+}
+
+// ─── PUBLISH ──────────────────────────────────────
+function publishEvent() {
+  syncPreview();
+  document.getElementById('successOverlay').classList.add('visible');
+}
+function closeSuccess() {
+  document.getElementById('successOverlay').classList.remove('visible');
+}
+
+// ─── INIT ─────────────────────────────────────────
+document.addEventListener('DOMContentLoaded', function() {
+  // Set default date to today + 30 days for start
+  const today = new Date();
+  const start = new Date(today);
+  start.setDate(start.getDate() + 30);
+  const end = new Date(start);
+  end.setDate(end.getDate() + 2);
+  const fmt2 = d => d.toISOString().split('T')[0];
+  document.getElementById('startDate').value = fmt2(start);
+  document.getElementById('endDate').value = fmt2(end);
+  syncPreview();
+});
+</script>
+
+</body>
+</html>

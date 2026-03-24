@@ -1,0 +1,727 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Buyer Zone — Game Connection (Mobile)</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'DM Sans', sans-serif; background: #e8e4da; color: #1a1a1a; min-height: 100vh; padding-bottom: 80px; }
+
+  /* NAV */
+  .nav {
+    background: #1a1a2e;
+    height: 52px;
+    display: flex;
+    align-items: center;
+    padding: 0 16px;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+  }
+  .nav-logo { color: #fff; font-weight: 700; font-size: 16px; letter-spacing: 1px; flex: 1; }
+  .nav-logo span { color: #d95f2b; }
+  .nav-right { display: flex; align-items: center; gap: 14px; }
+  .nav-avatar { width: 30px; height: 30px; border-radius: 50%; background: #d95f2b; display: flex; align-items: center; justify-content: center; color: #fff; font-size: 11px; font-weight: 700; }
+  .nav-notif { color: #aaa; font-size: 18px; cursor: pointer; }
+
+  /* BOTTOM TAB BAR */
+  .bottom-nav {
+    position: fixed;
+    bottom: 0; left: 0; right: 0;
+    height: 60px;
+    background: #1a1a2e;
+    display: flex;
+    align-items: stretch;
+    z-index: 100;
+    border-top: 1px solid rgba(255,255,255,0.08);
+  }
+  .bottom-nav-item {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    color: #666;
+    font-size: 10px;
+    gap: 3px;
+    cursor: pointer;
+    text-decoration: none;
+  }
+  .bottom-nav-item.active { color: #d95f2b; }
+  .tab-icon { font-size: 18px; line-height: 1; }
+
+  /* CONTAINER */
+  .container { max-width: 480px; margin: 0 auto; padding: 12px; display: flex; flex-direction: column; gap: 12px; }
+
+  /* BUYER HEADER BANNER */
+  .buyer-header {
+    background: linear-gradient(135deg, #1a1a2e 0%, #2d1810 60%, #d95f2b 100%);
+    border-radius: 12px;
+    padding: 20px 18px;
+    position: relative;
+    overflow: hidden;
+  }
+  .buyer-header::before {
+    content: '';
+    position: absolute;
+    top: -30px; right: -30px;
+    width: 150px; height: 150px;
+    border-radius: 50%;
+    background: rgba(217,95,43,0.15);
+  }
+  .buyer-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: rgba(217,95,43,0.25);
+    border: 1.5px solid #d95f2b;
+    border-radius: 20px;
+    padding: 5px 12px;
+    margin-bottom: 12px;
+    position: relative;
+  }
+  .buyer-badge-text { color: #ffb896; font-size: 11px; font-weight: 700; letter-spacing: 0.5px; }
+  .buyer-header h1 { color: #fff; font-size: 20px; font-weight: 700; margin-bottom: 6px; position: relative; }
+  .buyer-header p { color: rgba(255,255,255,0.6); font-size: 12px; line-height: 1.6; position: relative; }
+  .buyer-perks-row {
+    display: flex;
+    gap: 8px;
+    margin-top: 14px;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    padding-bottom: 2px;
+    position: relative;
+  }
+  .buyer-perks-row::-webkit-scrollbar { display: none; }
+  .buyer-perk {
+    flex-shrink: 0;
+    background: rgba(255,255,255,0.1);
+    border: 1px solid rgba(255,255,255,0.15);
+    border-radius: 8px;
+    padding: 7px 10px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .buyer-perk-text { color: rgba(255,255,255,0.85); font-size: 11px; font-weight: 500; white-space: nowrap; }
+  .header-stats-row {
+    display: flex;
+    gap: 10px;
+    margin-top: 14px;
+    position: relative;
+  }
+  .header-stat {
+    flex: 1;
+    background: rgba(0,0,0,0.2);
+    border-radius: 8px;
+    padding: 10px;
+    text-align: center;
+  }
+  .header-stat-value { color: #ffb896; font-size: 18px; font-weight: 700; }
+  .header-stat-label { color: rgba(255,255,255,0.5); font-size: 10px; margin-top: 2px; }
+
+  /* CARDS */
+  .card { background: #fff; border-radius: 12px; overflow: hidden; border: 1px solid rgba(0,0,0,0.05); }
+
+  /* SECTION */
+  .section { padding: 16px; }
+  .section-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px; }
+  .section-title { font-size: 13px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.8px; color: #888; display: flex; align-items: center; gap: 6px; }
+  .section-dot { width: 7px; height: 7px; border-radius: 50%; background: #d95f2b; }
+  .section-count { font-size: 12px; color: #aaa; }
+
+  /* FILTER SCROLL */
+  .filter-scroll {
+    display: flex;
+    gap: 8px;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    padding: 0 16px 14px;
+    margin-bottom: -2px;
+  }
+  .filter-scroll::-webkit-scrollbar { display: none; }
+  .filter-chip {
+    flex-shrink: 0;
+    padding: 6px 14px;
+    border-radius: 20px;
+    border: 1.5px solid #ccc;
+    background: #fff;
+    color: #555;
+    font-size: 12px;
+    font-weight: 500;
+    cursor: pointer;
+    font-family: 'DM Sans', sans-serif;
+    white-space: nowrap;
+  }
+  .filter-chip.active { background: #d95f2b; color: #fff; border-color: #d95f2b; }
+
+  /* GAME CARD (single column) */
+  .game-card {
+    background: #fff;
+    border-radius: 12px;
+    overflow: hidden;
+    border: 1px solid rgba(0,0,0,0.06);
+  }
+  .game-thumb {
+    height: 130px;
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: rgba(255,255,255,0.4);
+    font-size: 12px;
+  }
+  .thumb-c1 { background: linear-gradient(135deg, #667eea, #764ba2); }
+  .thumb-c2 { background: linear-gradient(135deg, #f093fb, #f5576c); }
+  .thumb-c3 { background: linear-gradient(135deg, #4facfe, #00f2fe); }
+  .thumb-c4 { background: linear-gradient(135deg, #43e97b, #38f9d7); }
+  .thumb-c5 { background: linear-gradient(135deg, #fa709a, #fee140); }
+  .thumb-c6 { background: linear-gradient(135deg, #a18cd1, #fbc2eb); }
+  .thumb-c7 { background: linear-gradient(135deg, #fda085, #f6d365); }
+  .thumb-c8 { background: linear-gradient(135deg, #89f7fe, #66a6ff); }
+
+  .platform-row {
+    position: absolute;
+    bottom: 8px;
+    left: 10px;
+    display: flex;
+    gap: 4px;
+  }
+  .platform-tag {
+    background: rgba(0,0,0,0.55);
+    color: #fff;
+    font-size: 10px;
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-weight: 600;
+  }
+  .unlock-badge {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    background: #d95f2b;
+    color: #fff;
+    font-size: 10px;
+    font-weight: 700;
+    padding: 3px 8px;
+    border-radius: 4px;
+  }
+
+  .game-body { padding: 14px; }
+  .game-name { font-size: 16px; font-weight: 700; color: #1a1a2e; }
+  .game-dev { font-size: 12px; color: #888; margin-top: 2px; }
+  .genre-row { display: flex; gap: 6px; margin-top: 8px; flex-wrap: wrap; }
+  .genre-tag { padding: 3px 9px; border-radius: 12px; font-size: 11px; font-weight: 500; background: #f0ece4; color: #555; }
+  .genre-tag.hl { background: #fff0e8; color: #d95f2b; }
+
+  /* FINANCE GRID */
+  .finance-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 8px;
+    margin-top: 12px;
+    padding: 12px;
+    background: #f8f6f2;
+    border-radius: 8px;
+  }
+  .finance-item { text-align: center; }
+  .finance-value { font-size: 14px; font-weight: 700; color: #1a1a2e; }
+  .finance-label { font-size: 10px; color: #999; margin-top: 2px; }
+
+  /* TERMS */
+  .terms-preview {
+    margin-top: 10px;
+    padding: 10px 12px;
+    background: #fff8f0;
+    border: 1px solid #ffe0c8;
+    border-radius: 8px;
+  }
+  .terms-title { font-size: 10px; font-weight: 700; color: #d95f2b; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 6px; }
+  .terms-chips { display: flex; gap: 6px; flex-wrap: wrap; }
+  .term-chip { background: rgba(217,95,43,0.1); color: #d95f2b; padding: 3px 8px; border-radius: 4px; font-size: 11px; font-weight: 500; }
+
+  /* CONTACT */
+  .contact-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-top: 10px;
+    padding: 8px 10px;
+    background: #f0f7f0;
+    border-radius: 7px;
+    font-size: 12px;
+    color: #2a6a2a;
+  }
+
+  /* ACTION BUTTONS */
+  .card-actions { display: flex; gap: 8px; margin-top: 14px; }
+  .btn {
+    flex: 1;
+    padding: 10px 12px;
+    border-radius: 8px;
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    border: none;
+    font-family: 'DM Sans', sans-serif;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 5px;
+    min-height: 42px;
+  }
+  .btn-primary { background: #d95f2b; color: #fff; }
+  .btn-outline { background: #fff; color: #d95f2b; border: 1.5px solid #d95f2b; }
+
+  /* EXCLUSIVE EVENTS */
+  .exclusive-event {
+    border: 1px solid #eee;
+    border-radius: 10px;
+    padding: 14px;
+    margin-bottom: 10px;
+    position: relative;
+  }
+  .exclusive-event:last-child { margin-bottom: 0; }
+  .exc-type { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.7px; color: #d95f2b; margin-bottom: 5px; }
+  .exc-name { font-size: 14px; font-weight: 600; color: #1a1a2e; margin-bottom: 4px; }
+  .exc-time { font-size: 12px; color: #888; }
+  .exc-spots {
+    position: absolute;
+    top: 12px;
+    right: 12px;
+    background: #fff3ee;
+    color: #d95f2b;
+    font-size: 11px;
+    font-weight: 600;
+    padding: 3px 8px;
+    border-radius: 4px;
+  }
+  .exc-btn {
+    margin-top: 10px;
+    width: 100%;
+    padding: 10px;
+    background: #d95f2b;
+    color: #fff;
+    border: none;
+    border-radius: 8px;
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    font-family: 'DM Sans', sans-serif;
+  }
+
+  /* ACTIVITY STATS */
+  .activity-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; }
+  .activity-item {
+    background: #f8f6f2;
+    border-radius: 8px;
+    padding: 12px;
+    text-align: center;
+  }
+  .ai-value { font-size: 20px; font-weight: 700; color: #d95f2b; }
+  .ai-label { font-size: 10px; color: #888; margin-top: 2px; }
+
+  /* SCHEDULE */
+  .schedule-row {
+    display: flex;
+    gap: 12px;
+    padding: 10px 0;
+    border-bottom: 1px solid #f0f0f0;
+  }
+  .schedule-row:last-child { border-bottom: none; }
+  .sched-time { color: #d95f2b; font-size: 12px; font-weight: 700; flex-shrink: 0; width: 42px; text-align: right; padding-top: 2px; }
+  .sched-name { font-size: 13px; font-weight: 600; color: #1a1a2e; }
+  .sched-desc { font-size: 11px; color: #888; margin-top: 2px; }
+</style>
+</head>
+<body>
+
+<!-- TOP NAV -->
+<div class="nav">
+  <div class="nav-logo">GAME<span>CONNECTION</span></div>
+  <div class="nav-right">
+    <span class="nav-notif">🔔</span>
+    <div class="nav-avatar">SC</div>
+  </div>
+</div>
+
+<div class="container">
+
+  <!-- BUYER HEADER -->
+  <div class="buyer-header">
+    <div class="buyer-badge">
+      <span style="font-size:13px;">🏅</span>
+      <span class="buyer-badge-text">VERIFIED BUYER · Publisher Track</span>
+    </div>
+    <h1>Buyer Zone</h1>
+    <p>Exclusive access granted by Game Connection. Full data, direct contacts & VIP meeting slots.</p>
+    <div class="buyer-perks-row">
+      <div class="buyer-perk"><span>🔓</span><span class="buyer-perk-text">Full Financial Data</span></div>
+      <div class="buyer-perk"><span>📞</span><span class="buyer-perk-text">Direct Contacts</span></div>
+      <div class="buyer-perk"><span>🗓️</span><span class="buyer-perk-text">VIP Meeting Slots</span></div>
+      <div class="buyer-perk"><span>🔐</span><span class="buyer-perk-text">NDA-Protected Terms</span></div>
+    </div>
+    <div class="header-stats-row">
+      <div class="header-stat">
+        <div class="header-stat-value">8</div>
+        <div class="header-stat-label">Projects</div>
+      </div>
+      <div class="header-stat">
+        <div class="header-stat-value">3</div>
+        <div class="header-stat-label">Meetings</div>
+      </div>
+      <div class="header-stat">
+        <div class="header-stat-value">Mar 28</div>
+        <div class="header-stat-label">Access Expires</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- FILTER CHIPS (scroll) -->
+  <div class="filter-scroll" style="margin:0 -12px;padding:0 12px 0 12px;">
+    <button class="filter-chip active">All</button>
+    <button class="filter-chip">RPG</button>
+    <button class="filter-chip">Action</button>
+    <button class="filter-chip">Strategy</button>
+    <button class="filter-chip">Simulation</button>
+    <button class="filter-chip">Casual</button>
+    <button class="filter-chip">Seeking Publisher</button>
+    <button class="filter-chip">Seeking Investment</button>
+  </div>
+
+  <!-- GAMES LIST HEADER -->
+  <div style="display:flex;align-items:center;justify-content:space-between;padding:0 2px;">
+    <span style="font-size:14px;font-weight:700;color:#1a1a2e;">Curated Game Projects</span>
+    <span style="font-size:12px;color:#888;">8 unlocked</span>
+  </div>
+
+  <!-- GAME 1 -->
+  <div class="game-card">
+    <div class="game-thumb thumb-c1">
+      Game Art
+      <div class="platform-row"><span class="platform-tag">PC</span><span class="platform-tag">Console</span></div>
+      <div class="unlock-badge">🔓 Unlocked</div>
+    </div>
+    <div class="game-body">
+      <div class="game-name">Project Aurora</div>
+      <div class="game-dev">Indie Storm Studio · Shanghai</div>
+      <div class="genre-row"><span class="genre-tag hl">RPG</span><span class="genre-tag">Open World</span><span class="genre-tag">PC / Console</span></div>
+      <div class="finance-grid">
+        <div class="finance-item"><div class="finance-value">$2.4M</div><div class="finance-label">Budget</div></div>
+        <div class="finance-item"><div class="finance-value">68%</div><div class="finance-label">Complete</div></div>
+        <div class="finance-item"><div class="finance-value">$8M</div><div class="finance-label">Rev. Target</div></div>
+      </div>
+      <div class="terms-preview">
+        <div class="terms-title">Publishing Terms Preview</div>
+        <div class="terms-chips"><span class="term-chip">Rev Share: 70/30</span><span class="term-chip">Min. $500K</span><span class="term-chip">Global</span></div>
+      </div>
+      <div class="contact-row"><span>📧</span><strong>Contact:</strong><span>liu.wei@indiestorm.com</span></div>
+      <div class="card-actions">
+        <button class="btn btn-primary">📅 Request Meeting</button>
+        <button class="btn btn-outline">💌 Express Interest</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- GAME 2 -->
+  <div class="game-card">
+    <div class="game-thumb thumb-c2">
+      Game Art
+      <div class="platform-row"><span class="platform-tag">Mobile</span></div>
+      <div class="unlock-badge">🔓 Unlocked</div>
+    </div>
+    <div class="game-body">
+      <div class="game-name">Neon Runners</div>
+      <div class="game-dev">PixelCraft Games · Seoul</div>
+      <div class="genre-row"><span class="genre-tag hl">Action</span><span class="genre-tag">Runner</span><span class="genre-tag">Mobile</span></div>
+      <div class="finance-grid">
+        <div class="finance-item"><div class="finance-value">$800K</div><div class="finance-label">Budget</div></div>
+        <div class="finance-item"><div class="finance-value">85%</div><div class="finance-label">Complete</div></div>
+        <div class="finance-item"><div class="finance-value">$3.2M</div><div class="finance-label">Rev. Target</div></div>
+      </div>
+      <div class="terms-preview">
+        <div class="terms-title">Publishing Terms Preview</div>
+        <div class="terms-chips"><span class="term-chip">Rev Share: 65/35</span><span class="term-chip">Asia-Pacific</span></div>
+      </div>
+      <div class="contact-row"><span>📧</span><strong>Contact:</strong><span>kim.j@pixelcraft.kr</span></div>
+      <div class="card-actions">
+        <button class="btn btn-primary">📅 Request Meeting</button>
+        <button class="btn btn-outline">💌 Express Interest</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- GAME 3 -->
+  <div class="game-card">
+    <div class="game-thumb thumb-c3">
+      Game Art
+      <div class="platform-row"><span class="platform-tag">PC</span></div>
+      <div class="unlock-badge">🔓 Unlocked</div>
+    </div>
+    <div class="game-body">
+      <div class="game-name">Shadow Keep</div>
+      <div class="game-dev">DarkForge Interactive · Berlin</div>
+      <div class="genre-row"><span class="genre-tag hl">Strategy</span><span class="genre-tag">Tower Defense</span><span class="genre-tag">PC</span></div>
+      <div class="finance-grid">
+        <div class="finance-item"><div class="finance-value">$1.1M</div><div class="finance-label">Budget</div></div>
+        <div class="finance-item"><div class="finance-value">55%</div><div class="finance-label">Complete</div></div>
+        <div class="finance-item"><div class="finance-value">$4.5M</div><div class="finance-label">Rev. Target</div></div>
+      </div>
+      <div class="terms-preview">
+        <div class="terms-title">Publishing Terms Preview</div>
+        <div class="terms-chips"><span class="term-chip">Rev Share: 75/25</span><span class="term-chip">Europe</span><span class="term-chip">Min. $200K</span></div>
+      </div>
+      <div class="contact-row"><span>📧</span><strong>Contact:</strong><span>alex@darkforge.de</span></div>
+      <div class="card-actions">
+        <button class="btn btn-primary">📅 Request Meeting</button>
+        <button class="btn btn-outline">💌 Express Interest</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- GAME 4 -->
+  <div class="game-card">
+    <div class="game-thumb thumb-c4">
+      Game Art
+      <div class="platform-row"><span class="platform-tag">Mobile</span><span class="platform-tag">PC</span></div>
+      <div class="unlock-badge">🔓 Unlocked</div>
+    </div>
+    <div class="game-body">
+      <div class="game-name">Void Protocol</div>
+      <div class="game-dev">CyberLeaf Studio · Tokyo</div>
+      <div class="genre-row"><span class="genre-tag hl">Puzzle</span><span class="genre-tag">Sci-Fi</span><span class="genre-tag">Cross-platform</span></div>
+      <div class="finance-grid">
+        <div class="finance-item"><div class="finance-value">$650K</div><div class="finance-label">Budget</div></div>
+        <div class="finance-item"><div class="finance-value">90%</div><div class="finance-label">Complete</div></div>
+        <div class="finance-item"><div class="finance-value">$2.8M</div><div class="finance-label">Rev. Target</div></div>
+      </div>
+      <div class="terms-preview">
+        <div class="terms-title">Publishing Terms Preview</div>
+        <div class="terms-chips"><span class="term-chip">Rev Share: 60/40</span><span class="term-chip">Global Rights</span></div>
+      </div>
+      <div class="contact-row"><span>📧</span><strong>Contact:</strong><span>yuki@cyberleaf.jp</span></div>
+      <div class="card-actions">
+        <button class="btn btn-primary">📅 Request Meeting</button>
+        <button class="btn btn-outline">💌 Express Interest</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- GAME 5 -->
+  <div class="game-card">
+    <div class="game-thumb thumb-c5">
+      Game Art
+      <div class="platform-row"><span class="platform-tag">Console</span></div>
+      <div class="unlock-badge">🔓 Unlocked</div>
+    </div>
+    <div class="game-body">
+      <div class="game-name">Starfall Chronicles</div>
+      <div class="game-dev">Nova Games · Montreal</div>
+      <div class="genre-row"><span class="genre-tag hl">RPG</span><span class="genre-tag">Narrative</span><span class="genre-tag">Console</span></div>
+      <div class="finance-grid">
+        <div class="finance-item"><div class="finance-value">$3.8M</div><div class="finance-label">Budget</div></div>
+        <div class="finance-item"><div class="finance-value">40%</div><div class="finance-label">Complete</div></div>
+        <div class="finance-item"><div class="finance-value">$15M</div><div class="finance-label">Rev. Target</div></div>
+      </div>
+      <div class="terms-preview">
+        <div class="terms-title">Publishing Terms Preview</div>
+        <div class="terms-chips"><span class="term-chip">Rev Share: 70/30</span><span class="term-chip">Min. $1.2M</span><span class="term-chip">NA Rights</span></div>
+      </div>
+      <div class="contact-row"><span>📧</span><strong>Contact:</strong><span>marc@novagames.ca</span></div>
+      <div class="card-actions">
+        <button class="btn btn-primary">📅 Request Meeting</button>
+        <button class="btn btn-outline">💌 Express Interest</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- GAME 6 -->
+  <div class="game-card">
+    <div class="game-thumb thumb-c6">
+      Game Art
+      <div class="platform-row"><span class="platform-tag">PC</span></div>
+      <div class="unlock-badge">🔓 Unlocked</div>
+    </div>
+    <div class="game-body">
+      <div class="game-name">Iron Fields</div>
+      <div class="game-dev">Ember Workshop · Warsaw</div>
+      <div class="genre-row"><span class="genre-tag hl">Simulation</span><span class="genre-tag">Farming</span><span class="genre-tag">PC</span></div>
+      <div class="finance-grid">
+        <div class="finance-item"><div class="finance-value">$480K</div><div class="finance-label">Budget</div></div>
+        <div class="finance-item"><div class="finance-value">75%</div><div class="finance-label">Complete</div></div>
+        <div class="finance-item"><div class="finance-value">$2.1M</div><div class="finance-label">Rev. Target</div></div>
+      </div>
+      <div class="terms-preview">
+        <div class="terms-title">Publishing Terms Preview</div>
+        <div class="terms-chips"><span class="term-chip">Rev Share: 80/20</span><span class="term-chip">EU Rights</span></div>
+      </div>
+      <div class="contact-row"><span>📧</span><strong>Contact:</strong><span>anna@emberws.pl</span></div>
+      <div class="card-actions">
+        <button class="btn btn-primary">📅 Request Meeting</button>
+        <button class="btn btn-outline">💌 Express Interest</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- GAME 7 -->
+  <div class="game-card">
+    <div class="game-thumb thumb-c7">
+      Game Art
+      <div class="platform-row"><span class="platform-tag">PC</span><span class="platform-tag">Mobile</span></div>
+      <div class="unlock-badge">🔓 Unlocked</div>
+    </div>
+    <div class="game-body">
+      <div class="game-name">Desert Bloom</div>
+      <div class="game-dev">Sandstone Labs · Dubai</div>
+      <div class="genre-row"><span class="genre-tag hl">Casual</span><span class="genre-tag">Match-3</span><span class="genre-tag">Cross-platform</span></div>
+      <div class="finance-grid">
+        <div class="finance-item"><div class="finance-value">$320K</div><div class="finance-label">Budget</div></div>
+        <div class="finance-item"><div class="finance-value">95%</div><div class="finance-label">Complete</div></div>
+        <div class="finance-item"><div class="finance-value">$1.5M</div><div class="finance-label">Rev. Target</div></div>
+      </div>
+      <div class="terms-preview">
+        <div class="terms-title">Publishing Terms Preview</div>
+        <div class="terms-chips"><span class="term-chip">Rev Share: 65/35</span><span class="term-chip">MENA</span><span class="term-chip">Global Optional</span></div>
+      </div>
+      <div class="contact-row"><span>📧</span><strong>Contact:</strong><span>omar@sandstone.ae</span></div>
+      <div class="card-actions">
+        <button class="btn btn-primary">📅 Request Meeting</button>
+        <button class="btn btn-outline">💌 Express Interest</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- GAME 8 -->
+  <div class="game-card">
+    <div class="game-thumb thumb-c8">
+      Game Art
+      <div class="platform-row"><span class="platform-tag">PC</span><span class="platform-tag">Console</span></div>
+      <div class="unlock-badge">🔓 Unlocked</div>
+    </div>
+    <div class="game-body">
+      <div class="game-name">Aqua Drift</div>
+      <div class="game-dev">Tidal Wave Games · Sydney</div>
+      <div class="genre-row"><span class="genre-tag hl">Action</span><span class="genre-tag">Sports</span><span class="genre-tag">Multiplayer</span></div>
+      <div class="finance-grid">
+        <div class="finance-item"><div class="finance-value">$1.6M</div><div class="finance-label">Budget</div></div>
+        <div class="finance-item"><div class="finance-value">60%</div><div class="finance-label">Complete</div></div>
+        <div class="finance-item"><div class="finance-value">$6M</div><div class="finance-label">Rev. Target</div></div>
+      </div>
+      <div class="terms-preview">
+        <div class="terms-title">Publishing Terms Preview</div>
+        <div class="terms-chips"><span class="term-chip">Rev Share: 72/28</span><span class="term-chip">Min. $400K</span><span class="term-chip">Global</span></div>
+      </div>
+      <div class="contact-row"><span>📧</span><strong>Contact:</strong><span>sophie@tidalwave.au</span></div>
+      <div class="card-actions">
+        <button class="btn btn-primary">📅 Request Meeting</button>
+        <button class="btn btn-outline">💌 Express Interest</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- DIVIDER -->
+  <div style="border-top:1.5px solid rgba(0,0,0,0.08);margin:4px 0;"></div>
+
+  <!-- MY ACTIVITY -->
+  <div class="card">
+    <div class="section">
+      <div class="section-header">
+        <div class="section-title"><span class="section-dot"></span> My Activity</div>
+      </div>
+      <div class="activity-grid">
+        <div class="activity-item"><div class="ai-value">3</div><div class="ai-label">Meetings Booked</div></div>
+        <div class="activity-item"><div class="ai-value">5</div><div class="ai-label">Interests Sent</div></div>
+        <div class="activity-item"><div class="ai-value">2</div><div class="ai-label">In Negotiation</div></div>
+        <div class="activity-item"><div class="ai-value">8</div><div class="ai-label">Projects Viewed</div></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- TODAY'S EXCLUSIVE EVENTS -->
+  <div class="card">
+    <div class="section">
+      <div class="section-header">
+        <div class="section-title"><span class="section-dot"></span> Today's Exclusive Events</div>
+      </div>
+
+      <div class="exclusive-event">
+        <div class="exc-type">🔐 Private Roundtable</div>
+        <div class="exc-name">Publisher Strategy: Asia Market Entry</div>
+        <div class="exc-time">⏰ 10:00 – 11:30 · Room VIP-A</div>
+        <div class="exc-spots">4 spots left</div>
+        <button class="exc-btn">Join Roundtable</button>
+      </div>
+
+      <div class="exclusive-event">
+        <div class="exc-type">🤝 1-on-1 Speed Meeting</div>
+        <div class="exc-name">VIP Buyer × Developer Session</div>
+        <div class="exc-time">⏰ 14:00 – 16:00 · Let's Meet Floor</div>
+        <div class="exc-spots">Booking open</div>
+        <button class="exc-btn">Book a Slot</button>
+      </div>
+
+      <div class="exclusive-event">
+        <div class="exc-type">🍷 Buyer Cocktail</div>
+        <div class="exc-name">Exclusive Networking Reception</div>
+        <div class="exc-time">⏰ 18:30 – 20:00 · Terrace</div>
+        <div class="exc-spots">Invite only</div>
+        <button class="exc-btn" style="background:#2a7a2a;">RSVP Confirmed ✓</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MY SCHEDULE -->
+  <div class="card">
+    <div class="section">
+      <div class="section-header">
+        <div class="section-title"><span class="section-dot"></span> My Schedule Today</div>
+      </div>
+      <div class="schedule-row">
+        <div class="sched-time">09:30</div>
+        <div><div class="sched-name">Breakfast Briefing</div><div class="sched-desc">Buyer onboarding · Hall B</div></div>
+      </div>
+      <div class="schedule-row">
+        <div class="sched-time">11:00</div>
+        <div><div class="sched-name">Meeting: Indie Storm</div><div class="sched-desc">Project Aurora deal discussion</div></div>
+      </div>
+      <div class="schedule-row">
+        <div class="sched-time">14:30</div>
+        <div><div class="sched-name">Meeting: CyberLeaf</div><div class="sched-desc">Void Protocol terms review</div></div>
+      </div>
+      <div class="schedule-row">
+        <div class="sched-time">16:00</div>
+        <div><div class="sched-name">Roundtable: Asia Markets</div><div class="sched-desc">Room VIP-A</div></div>
+      </div>
+    </div>
+  </div>
+
+</div><!-- /container -->
+
+<!-- BOTTOM TAB BAR -->
+<div class="bottom-nav">
+  <div class="bottom-nav-item">
+    <span class="tab-icon">🏠</span>
+    <span>Feed</span>
+  </div>
+  <div class="bottom-nav-item">
+    <span class="tab-icon">🎮</span>
+    <span>Projects</span>
+  </div>
+  <div class="bottom-nav-item active">
+    <span class="tab-icon">🏅</span>
+    <span>Buyer Zone</span>
+  </div>
+  <div class="bottom-nav-item">
+    <span class="tab-icon">📅</span>
+    <span>Meetings</span>
+  </div>
+  <div class="bottom-nav-item">
+    <span class="tab-icon">👤</span>
+    <span>Profile</span>
+  </div>
+</div>
+
+</body>
+</html>

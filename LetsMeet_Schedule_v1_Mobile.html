@@ -1,0 +1,887 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>Let's Meet – My Schedule</title>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --orange:  #d95f2b;
+      --teal:    #0a7fa8;
+      --green:   #0d9b72;
+      --yellow:  #f5a623;
+      --bg:      #e8e4da;
+      --card-bg: #ffffff;
+      --text:    #1a1a1a;
+      --muted:   #8a8580;
+      --border:  #d8d4ca;
+      --nav-h:   56px;
+      --tab-h:   64px;
+    }
+
+    html, body {
+      height: 100%;
+      background: #c8c4ba;
+      font-family: 'DM Sans', sans-serif;
+      color: var(--text);
+    }
+
+    /* ── Wrapper ── */
+    #app {
+      max-width: 480px;
+      min-height: 100vh;
+      margin: 0 auto;
+      background: var(--bg);
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+
+    /* ── Top Nav ── */
+    .top-nav {
+      position: fixed;
+      top: 0;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 100%;
+      max-width: 480px;
+      height: var(--nav-h);
+      background: var(--bg);
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 16px;
+      z-index: 100;
+      backdrop-filter: blur(8px);
+    }
+    .nav-logo {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .nav-logo-icon {
+      width: 30px; height: 30px;
+      background: var(--orange);
+      border-radius: 8px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 16px;
+    }
+    .nav-logo-text {
+      font-weight: 700;
+      font-size: 16px;
+      color: var(--text);
+    }
+    .nav-logo-text span { color: var(--orange); }
+    .nav-actions { display: flex; gap: 10px; align-items: center; }
+    .nav-icon-btn {
+      width: 34px; height: 34px;
+      border: none; background: transparent;
+      border-radius: 50%; cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 18px;
+      color: var(--text);
+      transition: background .15s;
+    }
+    .nav-icon-btn:hover { background: rgba(0,0,0,.06); }
+    .nav-avatar {
+      width: 32px; height: 32px; border-radius: 50%;
+      background: var(--orange);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 13px; font-weight: 700; color: #fff;
+      cursor: pointer;
+    }
+
+    /* ── Scroll Body ── */
+    .body {
+      margin-top: var(--nav-h);
+      margin-bottom: var(--tab-h);
+      overflow-y: auto;
+      flex: 1;
+      -webkit-overflow-scrolling: touch;
+    }
+
+    /* ── Page Header ── */
+    .page-header {
+      padding: 20px 16px 12px;
+    }
+    .page-title {
+      font-size: 24px;
+      font-weight: 700;
+      letter-spacing: -.3px;
+    }
+    .page-subtitle {
+      font-size: 13px;
+      color: var(--muted);
+      margin-top: 2px;
+    }
+
+    /* ── Date Strip ── */
+    .date-strip-wrap {
+      padding: 0 0 12px;
+      overflow: hidden;
+    }
+    .date-strip {
+      display: flex;
+      gap: 8px;
+      overflow-x: auto;
+      padding: 4px 16px 4px;
+      scrollbar-width: none;
+      -webkit-overflow-scrolling: touch;
+      scroll-snap-type: x mandatory;
+    }
+    .date-strip::-webkit-scrollbar { display: none; }
+    .date-item {
+      flex: 0 0 auto;
+      scroll-snap-align: start;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      width: 52px; height: 64px;
+      border-radius: 16px;
+      background: var(--card-bg);
+      cursor: pointer;
+      border: 2px solid transparent;
+      transition: all .18s;
+      user-select: none;
+    }
+    .date-item:hover { border-color: var(--orange); }
+    .date-item.active {
+      background: var(--orange);
+      border-color: var(--orange);
+    }
+    .date-item .day-name {
+      font-size: 11px;
+      font-weight: 500;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: .4px;
+    }
+    .date-item.active .day-name { color: rgba(255,255,255,.8); }
+    .date-item .day-num {
+      font-size: 20px;
+      font-weight: 700;
+      color: var(--text);
+      line-height: 1.1;
+    }
+    .date-item.active .day-num { color: #fff; }
+    .date-item .has-dot {
+      width: 5px; height: 5px;
+      border-radius: 50%;
+      background: var(--orange);
+      margin-top: 3px;
+    }
+    .date-item.active .has-dot { background: rgba(255,255,255,.7); }
+    .date-item.no-event .has-dot { display: none; }
+
+    /* ── Stats Row ── */
+    .stats-row {
+      display: flex;
+      gap: 10px;
+      padding: 0 16px 16px;
+    }
+    .stat-card {
+      flex: 1;
+      background: var(--card-bg);
+      border-radius: 14px;
+      padding: 12px 10px;
+      text-align: center;
+    }
+    .stat-num {
+      font-size: 26px;
+      font-weight: 700;
+      line-height: 1;
+    }
+    .stat-num.green  { color: var(--green); }
+    .stat-num.yellow { color: var(--yellow); }
+    .stat-num.teal   { color: var(--teal); }
+    .stat-label {
+      font-size: 10px;
+      font-weight: 500;
+      color: var(--muted);
+      margin-top: 4px;
+      text-transform: uppercase;
+      letter-spacing: .3px;
+    }
+
+    /* ── Timeline ── */
+    .timeline {
+      padding: 0 16px 24px;
+    }
+    .tl-row {
+      display: flex;
+      gap: 12px;
+      margin-bottom: 12px;
+      align-items: flex-start;
+    }
+    .tl-time {
+      width: 44px;
+      flex: 0 0 44px;
+      padding-top: 14px;
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--muted);
+      text-align: right;
+      letter-spacing: -.2px;
+    }
+    .tl-line-col {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      flex: 0 0 20px;
+      padding-top: 14px;
+    }
+    .tl-dot {
+      width: 10px; height: 10px;
+      border-radius: 50%;
+      border: 2px solid var(--border);
+      background: var(--bg);
+      flex-shrink: 0;
+    }
+    .tl-dot.confirmed { border-color: var(--green);  background: var(--green); }
+    .tl-dot.pending   { border-color: var(--yellow); background: var(--yellow); }
+    .tl-dot.available { border-color: var(--border); background: var(--bg); }
+    .tl-vline {
+      width: 2px;
+      flex: 1;
+      min-height: 60px;
+      background: var(--border);
+      margin-top: 4px;
+    }
+    .tl-card-wrap { flex: 1; }
+
+    /* Meeting Card */
+    .meeting-card {
+      background: var(--card-bg);
+      border-radius: 16px;
+      padding: 14px 14px 10px;
+      box-shadow: 0 2px 8px rgba(0,0,0,.06);
+      border-left: 4px solid transparent;
+    }
+    .meeting-card.confirmed { border-left-color: var(--green); }
+    .meeting-card.pending   { border-left-color: var(--yellow); }
+
+    .card-top {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 10px;
+    }
+    .avatar {
+      width: 42px; height: 42px;
+      border-radius: 12px;
+      flex-shrink: 0;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 16px; font-weight: 700;
+      color: #fff;
+    }
+    .card-info { flex: 1; min-width: 0; }
+    .card-name {
+      font-size: 15px;
+      font-weight: 700;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .card-company {
+      font-size: 12px;
+      color: var(--muted);
+      margin-top: 1px;
+    }
+    .card-badges {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-end;
+      gap: 4px;
+    }
+    .badge {
+      font-size: 10px;
+      font-weight: 700;
+      padding: 3px 8px;
+      border-radius: 20px;
+      text-transform: uppercase;
+      letter-spacing: .4px;
+    }
+    .badge.confirmed { background: #d4f5e9; color: var(--green); }
+    .badge.pending   { background: #fef3d0; color: #c48a00; }
+    .room-badge {
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--teal);
+      background: #e0f3fa;
+      padding: 3px 8px;
+      border-radius: 20px;
+    }
+
+    .card-meta {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      margin-bottom: 10px;
+    }
+    .card-meta-item {
+      font-size: 11px;
+      color: var(--muted);
+      display: flex; align-items: center; gap: 3px;
+    }
+    .card-meta-item span { font-size: 13px; }
+
+    .card-divider {
+      height: 1px;
+      background: var(--border);
+      margin: 0 -14px 10px;
+    }
+    .card-actions {
+      display: flex;
+      gap: 8px;
+      justify-content: flex-end;
+    }
+    .btn {
+      font-family: 'DM Sans', sans-serif;
+      font-size: 12px;
+      font-weight: 600;
+      padding: 7px 16px;
+      border-radius: 20px;
+      border: none;
+      cursor: pointer;
+      transition: all .15s;
+      letter-spacing: .1px;
+    }
+    .btn-cancel {
+      background: #f2ede6;
+      color: var(--muted);
+    }
+    .btn-cancel:hover { background: #e5dfd8; }
+    .btn-accept {
+      background: var(--green);
+      color: #fff;
+    }
+    .btn-accept:hover { background: #0b8662; }
+
+    /* Available Slot */
+    .available-card {
+      background: rgba(255,255,255,.45);
+      border: 2px dashed var(--border);
+      border-radius: 14px;
+      padding: 14px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      cursor: pointer;
+      transition: all .18s;
+    }
+    .available-card:hover {
+      background: rgba(255,255,255,.7);
+      border-color: var(--orange);
+    }
+    .avail-label {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 13px;
+      font-weight: 500;
+      color: var(--muted);
+    }
+    .avail-icon {
+      width: 30px; height: 30px;
+      border-radius: 50%;
+      background: var(--border);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 15px;
+    }
+    .avail-cta {
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--orange);
+      background: rgba(217,95,43,.1);
+      padding: 5px 12px;
+      border-radius: 20px;
+    }
+
+    /* ── Bottom Tab Bar ── */
+    .tab-bar {
+      position: fixed;
+      bottom: 0;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 100%;
+      max-width: 480px;
+      height: var(--tab-h);
+      background: var(--card-bg);
+      border-top: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      z-index: 100;
+      padding-bottom: env(safe-area-inset-bottom, 0);
+    }
+    .tab-item {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 3px;
+      cursor: pointer;
+      padding: 8px 0;
+      transition: all .15s;
+      border: none;
+      background: transparent;
+      font-family: 'DM Sans', sans-serif;
+    }
+    .tab-icon { font-size: 20px; line-height: 1; }
+    .tab-label {
+      font-size: 10px;
+      font-weight: 500;
+      color: var(--muted);
+      letter-spacing: .2px;
+    }
+    .tab-item.active .tab-label { color: var(--orange); font-weight: 700; }
+    .tab-item.active .tab-icon { filter: none; }
+    .tab-indicator {
+      position: absolute;
+      top: 0;
+      height: 2px;
+      width: 20%;
+      background: var(--orange);
+      border-radius: 0 0 4px 4px;
+      transition: left .2s cubic-bezier(.4,0,.2,1);
+    }
+
+    /* ── FAB ── */
+    .fab {
+      position: fixed;
+      bottom: calc(var(--tab-h) + 16px);
+      right: max(16px, calc(50vw - 240px + 16px));
+      width: 56px; height: 56px;
+      border-radius: 50%;
+      background: var(--orange);
+      color: #fff;
+      border: none;
+      cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 24px;
+      box-shadow: 0 4px 18px rgba(217,95,43,.45);
+      transition: all .18s;
+      z-index: 99;
+    }
+    .fab:hover {
+      background: #c44e1f;
+      transform: scale(1.06);
+      box-shadow: 0 6px 24px rgba(217,95,43,.55);
+    }
+    .fab:active { transform: scale(.96); }
+    .fab-tooltip {
+      position: fixed;
+      bottom: calc(var(--tab-h) + 78px);
+      right: max(16px, calc(50vw - 240px + 16px));
+      background: rgba(26,26,26,.88);
+      color: #fff;
+      font-size: 12px;
+      font-weight: 600;
+      padding: 6px 12px;
+      border-radius: 8px;
+      white-space: nowrap;
+      pointer-events: none;
+      opacity: 0;
+      transform: translateY(6px);
+      transition: all .2s;
+      z-index: 99;
+    }
+    .fab:hover + .fab-tooltip,
+    .fab:focus + .fab-tooltip {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    /* ── Section divider ── */
+    .section-divider {
+      font-size: 11px;
+      font-weight: 700;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: .8px;
+      padding: 4px 0 10px;
+    }
+
+    /* ── Toast ── */
+    .toast {
+      position: fixed;
+      top: calc(var(--nav-h) + 12px);
+      left: 50%;
+      transform: translateX(-50%) translateY(-20px);
+      background: #1a1a1a;
+      color: #fff;
+      font-size: 13px;
+      font-weight: 500;
+      padding: 10px 20px;
+      border-radius: 24px;
+      z-index: 200;
+      opacity: 0;
+      pointer-events: none;
+      transition: all .3s;
+      white-space: nowrap;
+      max-width: 90%;
+    }
+    .toast.show {
+      opacity: 1;
+      transform: translateX(-50%) translateY(0);
+    }
+  </style>
+</head>
+<body>
+<div id="app">
+
+  <!-- TOP NAV -->
+  <nav class="top-nav">
+    <div class="nav-logo">
+      <div class="nav-logo-icon">🤝</div>
+      <div class="nav-logo-text">Let's<span>Meet</span></div>
+    </div>
+    <div class="nav-actions">
+      <button class="nav-icon-btn" title="Search" onclick="showToast('Search coming soon')">🔍</button>
+      <button class="nav-icon-btn" title="Notifications" onclick="showToast('No new notifications')">🔔</button>
+      <div class="nav-avatar" title="My Profile">QQ</div>
+    </div>
+  </nav>
+
+  <!-- SCROLL BODY -->
+  <div class="body" id="scrollBody">
+
+    <!-- Page Header -->
+    <div class="page-header">
+      <div class="page-title">My Schedule</div>
+      <div class="page-subtitle" id="headerSubtitle">March 2026 · GDC San Francisco</div>
+    </div>
+
+    <!-- Date Strip -->
+    <div class="date-strip-wrap">
+      <div class="date-strip" id="dateStrip"></div>
+    </div>
+
+    <!-- Stats Row -->
+    <div class="stats-row" id="statsRow">
+      <div class="stat-card">
+        <div class="stat-num green" id="statConfirmed">3</div>
+        <div class="stat-label">Confirmed</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-num yellow" id="statPending">1</div>
+        <div class="stat-label">Pending</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-num teal" id="statAvail">3</div>
+        <div class="stat-label">Available</div>
+      </div>
+    </div>
+
+    <!-- Timeline -->
+    <div class="timeline" id="timeline"></div>
+
+  </div><!-- /body -->
+
+  <!-- FAB -->
+  <button class="fab" id="fab" title="Find People" onclick="showToast('Opening People Finder…')">👥</button>
+  <div class="fab-tooltip">Find People</div>
+
+  <!-- Bottom Tab Bar -->
+  <div class="tab-bar">
+    <div class="tab-indicator" id="tabIndicator"></div>
+    <button class="tab-item" data-tab="0" onclick="switchTab(0)">
+      <span class="tab-icon">🏠</span>
+      <span class="tab-label">Home</span>
+    </button>
+    <button class="tab-item" data-tab="1" onclick="switchTab(1)">
+      <span class="tab-icon">📺</span>
+      <span class="tab-label">Live</span>
+    </button>
+    <button class="tab-item active" data-tab="2" onclick="switchTab(2)">
+      <span class="tab-icon">🤝</span>
+      <span class="tab-label">Meet</span>
+    </button>
+    <button class="tab-item" data-tab="3" onclick="switchTab(3)">
+      <span class="tab-icon">🛒</span>
+      <span class="tab-label">Market</span>
+    </button>
+    <button class="tab-item" data-tab="4" onclick="switchTab(4)">
+      <span class="tab-icon">👤</span>
+      <span class="tab-label">Profile</span>
+    </button>
+  </div>
+
+</div><!-- /app -->
+
+<!-- Toast -->
+<div class="toast" id="toast"></div>
+
+<script>
+// ─────────────────────────────────────────────
+// Data
+// ─────────────────────────────────────────────
+const DAYS = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+const MONTHS = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+
+// Meetings by date key "YYYY-MM-DD"
+const meetingsDB = {
+  '2026-03-28': [
+    { time:'10:00', end:'10:20', type:'confirmed', name:'Alex Rivera', company:'Storm Studios',    room:'A-2', color:'#0a7fa8' },
+    { time:'11:00', end:'11:20', type:'available' },
+    { time:'14:00', end:'14:20', type:'pending',   name:'Priya Nair', company:'BlueSky Games',    room:'B-3', color:'#9b59b6' },
+  ],
+  '2026-03-29': [
+    { time:'09:30', end:'09:50', type:'confirmed', name:'Tom Bradley', company:'VR Frontier',    room:'C-1', color:'#e74c3c' },
+    { time:'10:30', end:'10:50', type:'available' },
+    { time:'15:00', end:'15:20', type:'pending',   name:'Mei Lin',    company:'Shanghai Interactive', room:'A-4', color:'#16a085' },
+  ],
+  '2026-03-30': [
+    { time:'09:00', end:'09:20', type:'confirmed', name:'Emma Chen',   company:'Indie Forge',    room:'A-3', color:'#e67e22' },
+    { time:'09:30', end:'09:50', type:'available' },
+    { time:'10:00', end:'10:20', type:'pending',   name:'Marcus Webb', company:'Nordic Games',   room:'B-1', color:'#8e44ad' },
+    { time:'10:30', end:'10:50', type:'available' },
+    { time:'11:00', end:'11:20', type:'confirmed', name:'Sarah Kim',   company:'Nexus Ventures', room:'A-1', color:'#2980b9' },
+    { time:'14:00', end:'14:20', type:'available' },
+    { time:'14:30', end:'14:50', type:'confirmed', name:'Yuki Tanaka', company:'Pixel Dreams',   room:'C-2', color:'#c0392b' },
+  ],
+  '2026-03-31': [
+    { time:'10:00', end:'10:20', type:'confirmed', name:'Jake Moore',  company:'Apex Media',     room:'B-2', color:'#27ae60' },
+    { time:'11:30', end:'11:50', type:'available' },
+  ],
+  '2026-04-01': [
+    { time:'09:00', end:'09:20', type:'available' },
+    { time:'13:00', end:'13:20', type:'pending',   name:'Liu Yang',    company:'Dragon Works',   room:'D-1', color:'#d35400' },
+  ],
+};
+
+// Generate date strip: Mar 27 – Apr 5 centered on Mar 30
+let selectedDate = '2026-03-30';
+
+function getDateKey(y, m, d) {
+  return `${y}-${String(m+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+}
+
+function buildDateStrip() {
+  const strip = document.getElementById('dateStrip');
+  strip.innerHTML = '';
+  const base = new Date(2026, 2, 26); // Mar 26
+  for (let i = 0; i < 14; i++) {
+    const d = new Date(base);
+    d.setDate(base.getDate() + i);
+    const key = getDateKey(d.getFullYear(), d.getMonth(), d.getDate());
+    const hasEvent = !!meetingsDB[key];
+    const item = document.createElement('div');
+    item.className = 'date-item' + (key === selectedDate ? ' active' : '') + (!hasEvent ? ' no-event' : '');
+    item.dataset.key = key;
+    item.innerHTML = `
+      <span class="day-name">${DAYS[d.getDay()]}</span>
+      <span class="day-num">${d.getDate()}</span>
+      ${hasEvent ? '<div class="has-dot"></div>' : '<div class="has-dot"></div>'}
+    `;
+    item.addEventListener('click', () => selectDate(key));
+    strip.appendChild(item);
+  }
+  // Scroll active into view
+  setTimeout(() => {
+    const active = strip.querySelector('.active');
+    if (active) active.scrollIntoView({ inline: 'center', behavior: 'smooth', block: 'nearest' });
+  }, 80);
+}
+
+function selectDate(key) {
+  selectedDate = key;
+  // Update strip
+  document.querySelectorAll('.date-item').forEach(el => {
+    el.classList.toggle('active', el.dataset.key === key);
+  });
+  renderTimeline(key);
+  updateStats(key);
+  updateSubtitle(key);
+}
+
+function updateSubtitle(key) {
+  const d = new Date(key);
+  const label = `${MONTHS[d.getMonth()]} ${d.getDate()}, ${d.getFullYear()} · GDC San Francisco`;
+  document.getElementById('headerSubtitle').textContent = label;
+}
+
+function updateStats(key) {
+  const items = meetingsDB[key] || [];
+  let confirmed = 0, pending = 0, avail = 0;
+  items.forEach(m => {
+    if (m.type === 'confirmed') confirmed++;
+    else if (m.type === 'pending') pending++;
+    else avail++;
+  });
+  document.getElementById('statConfirmed').textContent = confirmed;
+  document.getElementById('statPending').textContent = pending;
+  document.getElementById('statAvail').textContent = avail;
+}
+
+function getInitials(name) {
+  return name.split(' ').map(w => w[0]).join('').slice(0,2).toUpperCase();
+}
+
+function renderTimeline(key) {
+  const tl = document.getElementById('timeline');
+  const items = meetingsDB[key] || [];
+  if (items.length === 0) {
+    tl.innerHTML = `<div style="text-align:center;padding:40px 0;color:var(--muted);font-size:14px;">
+      <div style="font-size:40px;margin-bottom:12px">📅</div>
+      No meetings scheduled for this day.
+    </div>`;
+    return;
+  }
+  tl.innerHTML = '';
+  items.forEach((slot, idx) => {
+    const isLast = idx === items.length - 1;
+    const row = document.createElement('div');
+    row.className = 'tl-row';
+
+    const dotClass = slot.type === 'confirmed' ? 'confirmed'
+                   : slot.type === 'pending'   ? 'pending'
+                   : 'available';
+
+    row.innerHTML = `
+      <div class="tl-time">${slot.time}</div>
+      <div class="tl-line-col">
+        <div class="tl-dot ${dotClass}"></div>
+        ${!isLast ? '<div class="tl-vline"></div>' : ''}
+      </div>
+      <div class="tl-card-wrap"></div>
+    `;
+
+    const cardWrap = row.querySelector('.tl-card-wrap');
+
+    if (slot.type === 'available') {
+      cardWrap.innerHTML = `
+        <div class="available-card" onclick="showToast('Slot ${slot.time}–${slot.end} is open for booking')">
+          <div class="avail-label">
+            <div class="avail-icon">➕</div>
+            <div>
+              <div style="font-size:13px;font-weight:600;color:#6b6760">Available</div>
+              <div style="font-size:11px;color:var(--muted)">${slot.time} – ${slot.end}</div>
+            </div>
+          </div>
+          <div class="avail-cta">Book slot</div>
+        </div>
+      `;
+    } else {
+      // Determine unique ID for cancel/accept actions
+      const uid = `${key}-${slot.time.replace(':','')}`;
+      const actionsHtml = slot.type === 'confirmed'
+        ? `<button class="btn btn-cancel" onclick="cancelMeeting('${uid}', this)">✕ Cancel</button>`
+        : `<button class="btn btn-cancel" onclick="cancelMeeting('${uid}', this)">✕ Cancel</button>
+           <button class="btn btn-accept" onclick="acceptMeeting('${uid}', this)">✓ Accept</button>`;
+
+      cardWrap.innerHTML = `
+        <div class="meeting-card ${slot.type}" id="card-${uid}">
+          <div class="card-top">
+            <div class="avatar" style="background:${slot.color}">${getInitials(slot.name)}</div>
+            <div class="card-info">
+              <div class="card-name">${slot.name}</div>
+              <div class="card-company">🏢 ${slot.company}</div>
+            </div>
+            <div class="card-badges">
+              <span class="badge ${slot.type}">${slot.type === 'confirmed' ? '✓ Confirmed' : '⏳ Pending'}</span>
+              <span class="room-badge">📍 ${slot.room}</span>
+            </div>
+          </div>
+          <div class="card-meta">
+            <div class="card-meta-item"><span>🕐</span>${slot.time} – ${slot.end} (20 min)</div>
+          </div>
+          <div class="card-divider"></div>
+          <div class="card-actions">${actionsHtml}</div>
+        </div>
+      `;
+    }
+    tl.appendChild(row);
+  });
+}
+
+// ─────────────────────────────────────────────
+// Actions
+// ─────────────────────────────────────────────
+function cancelMeeting(uid, btn) {
+  const card = document.getElementById('card-' + uid);
+  if (!card) return;
+  card.style.transition = 'all .3s';
+  card.style.opacity = '0';
+  card.style.transform = 'translateX(-20px)';
+  showToast('Meeting cancelled');
+  setTimeout(() => {
+    const row = card.closest('.tl-row');
+    if (row) row.remove();
+    // Update stats
+    updateStats(selectedDate);
+  }, 320);
+}
+
+function acceptMeeting(uid, btn) {
+  const card = document.getElementById('card-' + uid);
+  if (!card) return;
+  // Change to confirmed style
+  card.classList.remove('pending');
+  card.classList.add('confirmed');
+  const badge = card.querySelector('.badge');
+  if (badge) { badge.className = 'badge confirmed'; badge.textContent = '✓ Confirmed'; }
+  // Update dot
+  const row = card.closest('.tl-row');
+  if (row) {
+    const dot = row.querySelector('.tl-dot');
+    if (dot) { dot.className = 'tl-dot confirmed'; }
+  }
+  // Replace actions
+  const actions = card.querySelector('.card-actions');
+  if (actions) {
+    actions.innerHTML = `<button class="btn btn-cancel" onclick="cancelMeeting('${uid}', this)">✕ Cancel</button>`;
+  }
+  showToast('Meeting accepted! ✓');
+  // Update stats
+  updateStats(selectedDate);
+}
+
+// ─────────────────────────────────────────────
+// Tab Bar
+// ─────────────────────────────────────────────
+function switchTab(idx) {
+  document.querySelectorAll('.tab-item').forEach((t, i) => {
+    t.classList.toggle('active', i === idx);
+  });
+  const indicator = document.getElementById('tabIndicator');
+  indicator.style.left = (idx * 20) + '%';
+  if (idx !== 2) {
+    const labels = ['Home','Live','Meet','Market','Profile'];
+    showToast(`${labels[idx]} tab coming soon`);
+    // Return to Meet after brief moment
+    setTimeout(() => switchTab(2), 1200);
+  }
+}
+
+// init indicator
+document.getElementById('tabIndicator').style.left = '40%';
+
+// ─────────────────────────────────────────────
+// Toast
+// ─────────────────────────────────────────────
+let toastTimer = null;
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => t.classList.remove('show'), 2200);
+}
+
+// ─────────────────────────────────────────────
+// Init
+// ─────────────────────────────────────────────
+buildDateStrip();
+renderTimeline(selectedDate);
+updateStats(selectedDate);
+updateSubtitle(selectedDate);
+</script>
+</body>
+</html>

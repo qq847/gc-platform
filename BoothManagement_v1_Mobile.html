@@ -1,0 +1,473 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Booth Management — Game Connection</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: #e8e4da;
+    color: #1a1a1a;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+  .app {
+    width: 100%;
+    max-width: 480px;
+    min-height: 100vh;
+    background: #e8e4da;
+  }
+
+  /* TOP NAV */
+  .top-nav {
+    position: fixed; top: 0; left: 50%; transform: translateX(-50%);
+    width: 100%; max-width: 480px;
+    background: #1a1a1a; color: #fff;
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 14px 20px; z-index: 100; height: 56px;
+  }
+  .top-nav .event-name { font-size: 15px; font-weight: 700; }
+  .hamburger { display: flex; flex-direction: column; gap: 5px; cursor: pointer; padding: 4px; }
+  .hamburger span { display: block; width: 22px; height: 2px; background: #fff; border-radius: 2px; }
+
+  /* DRAWER */
+  .drawer-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.4); z-index: 200; }
+  .drawer-overlay.open { display: block; }
+  .drawer { position: fixed; top: 0; right: -280px; width: 260px; height: 100%; background: #fff; z-index: 300; transition: right 0.28s ease; padding: 60px 24px 24px; }
+  .drawer.open { right: 0; }
+  .drawer h3 { font-size: 16px; font-weight: 700; margin-bottom: 20px; }
+  .drawer a { display: block; padding: 12px 0; border-bottom: 1px solid #eee; color: #333; text-decoration: none; font-size: 15px; font-weight: 500; }
+
+  /* CONTENT */
+  .content { margin-top: 56px; margin-bottom: 72px; padding: 20px 16px; }
+
+  /* PAGE HEADER */
+  .page-header { margin-bottom: 18px; }
+  .page-header h1 { font-size: 22px; font-weight: 700; }
+  .page-header p { font-size: 13px; color: #888; margin-top: 2px; }
+
+  /* SECTION */
+  .section-title {
+    font-size: 13px; font-weight: 700; letter-spacing: 1px;
+    text-transform: uppercase; color: #888; margin-bottom: 10px;
+  }
+
+  /* STATS GRID */
+  .stats-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    margin-bottom: 20px;
+  }
+  .stat-card {
+    background: #fff;
+    border-radius: 14px;
+    padding: 18px 16px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+  }
+  .stat-card .stat-icon { font-size: 24px; margin-bottom: 8px; }
+  .stat-card .stat-main {
+    font-size: 26px;
+    font-weight: 700;
+    color: #d95f2b;
+    line-height: 1;
+  }
+  .stat-card .stat-sub {
+    font-size: 12px;
+    color: #888;
+    font-weight: 600;
+    margin-top: 3px;
+  }
+  .stat-card .stat-total {
+    font-size: 12px;
+    color: #bbb;
+    font-weight: 600;
+  }
+
+  /* PROGRESS MINI */
+  .mini-progress {
+    margin-top: 8px;
+    height: 5px;
+    background: #f0ede8;
+    border-radius: 3px;
+    overflow: hidden;
+  }
+  .mini-fill { height: 100%; border-radius: 3px; background: #d95f2b; }
+
+  /* FLOOR MAP */
+  .floormap-card {
+    background: #fff;
+    border-radius: 14px;
+    padding: 16px;
+    margin-bottom: 20px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+  }
+  .floormap-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 12px;
+  }
+  .floormap-header h3 { font-size: 15px; font-weight: 700; }
+  .legend {
+    display: flex;
+    gap: 10px;
+    font-size: 10px;
+    font-weight: 600;
+    color: #888;
+  }
+  .legend-dot {
+    display: inline-block;
+    width: 8px; height: 8px;
+    border-radius: 2px;
+    margin-right: 3px;
+    vertical-align: middle;
+  }
+  .floor-grid {
+    display: grid;
+    grid-template-columns: repeat(8, 1fr);
+    gap: 4px;
+  }
+  .booth-cell {
+    aspect-ratio: 1;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: transform 0.15s, opacity 0.15s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 8px;
+    font-weight: 700;
+    color: rgba(255,255,255,0.8);
+  }
+  .booth-cell:active { transform: scale(0.9); }
+  .booth-cell.sold { background: #d95f2b; }
+  .booth-cell.available { background: #e8f5e9; border: 1.5px solid #a5d6a7; }
+  .booth-cell.pending { background: #fff9c4; border: 1.5px solid #f9a825; }
+  .booth-cell.empty { background: transparent; pointer-events: none; }
+  .booth-cell.aisle { background: #f0ede8; pointer-events: none; border-radius: 0; }
+  .booth-cell.pod { background: #3b82f6; }
+  .booth-cell.pod.available { background: #dbeafe; border: 1.5px solid #93c5fd; }
+
+  /* TOOLTIP */
+  .map-tooltip {
+    display: none;
+    background: #1a1a1a;
+    color: #fff;
+    border-radius: 10px;
+    padding: 10px 14px;
+    font-size: 13px;
+    margin-top: 10px;
+    line-height: 1.5;
+  }
+  .map-tooltip.show { display: block; }
+  .map-tooltip strong { display: block; font-size: 14px; margin-bottom: 4px; }
+
+  /* APPLICATIONS */
+  .app-card {
+    background: #fff;
+    border-radius: 14px;
+    padding: 16px;
+    margin-bottom: 10px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+  }
+  .app-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 6px;
+  }
+  .app-company { font-size: 16px; font-weight: 700; }
+  .badge {
+    display: inline-flex;
+    align-items: center;
+    padding: 4px 10px;
+    border-radius: 20px;
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.3px;
+    flex-shrink: 0;
+  }
+  .badge-pending { background: #fef9c3; color: #ca8a04; }
+  .badge-approved { background: #dcfce7; color: #16a34a; }
+  .badge-rejected { background: #fee2e2; color: #dc2626; }
+  .app-meta { font-size: 12px; color: #888; margin-bottom: 12px; }
+  .app-actions { display: flex; gap: 8px; }
+  .btn-approve {
+    flex: 1;
+    padding: 10px;
+    background: #d95f2b;
+    color: #fff;
+    border: none;
+    border-radius: 10px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 13px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: opacity 0.15s;
+  }
+  .btn-approve:active { opacity: 0.8; }
+  .btn-reject {
+    flex: 1;
+    padding: 10px;
+    background: #f0ede8;
+    color: #666;
+    border: none;
+    border-radius: 10px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.15s;
+  }
+  .btn-reject:active { background: #e0ddd8; }
+  .btn-detail {
+    padding: 10px 14px;
+    background: transparent;
+    color: #888;
+    border: 2px solid #e0ddd8;
+    border-radius: 10px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+  }
+
+  /* BOTTOM TAB */
+  .bottom-tab {
+    position: fixed; bottom: 0; left: 50%; transform: translateX(-50%);
+    width: 100%; max-width: 480px;
+    background: #fff; border-top: 1px solid #e0ddd8;
+    display: flex; height: 68px; z-index: 100;
+  }
+  .tab-item {
+    flex: 1; display: flex; flex-direction: column;
+    align-items: center; justify-content: center; gap: 3px;
+    cursor: pointer; color: #999; font-size: 10px; font-weight: 600;
+    text-decoration: none; padding: 8px 0;
+  }
+  .tab-item .tab-icon { font-size: 22px; line-height: 1; }
+  .tab-item.active { color: #d95f2b; }
+</style>
+</head>
+<body>
+<div class="app">
+
+  <!-- TOP NAV -->
+  <nav class="top-nav">
+    <span class="event-name">Game Connection 2025</span>
+    <div class="hamburger" onclick="openDrawer()">
+      <span></span><span></span><span></span>
+    </div>
+  </nav>
+
+  <!-- DRAWER -->
+  <div class="drawer-overlay" id="drawerOverlay" onclick="closeDrawer()"></div>
+  <div class="drawer" id="drawer">
+    <h3>Menu</h3>
+    <a href="#">Dashboard</a>
+    <a href="#">Export Floor Plan</a>
+    <a href="#">Booth Pricing</a>
+    <a href="#">Settings</a>
+    <a href="#">Help</a>
+  </div>
+
+  <!-- CONTENT -->
+  <div class="content">
+
+    <div class="page-header">
+      <h1>Booth Management</h1>
+      <p>Game Connection B2B Summit 2025</p>
+    </div>
+
+    <!-- Stats -->
+    <p class="section-title">Availability Overview</p>
+    <div class="stats-grid">
+      <div class="stat-card">
+        <div class="stat-icon">🟦</div>
+        <div class="stat-main">24</div>
+        <div class="stat-sub">Pods Sold</div>
+        <div class="stat-total">of 30 total</div>
+        <div class="mini-progress"><div class="mini-fill" style="width:80%;background:#3b82f6;"></div></div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon">🟧</div>
+        <div class="stat-main">38</div>
+        <div class="stat-sub">Booths Sold</div>
+        <div class="stat-total">of 50 total</div>
+        <div class="mini-progress"><div class="mini-fill" style="width:76%;"></div></div>
+      </div>
+    </div>
+
+    <!-- Floor Map -->
+    <div class="floormap-card">
+      <div class="floormap-header">
+        <h3>🗺️ Floor Plan</h3>
+        <div class="legend">
+          <span><span class="legend-dot" style="background:#d95f2b;"></span>Sold</span>
+          <span><span class="legend-dot" style="background:#3b82f6;"></span>Pod</span>
+          <span><span class="legend-dot" style="background:#fef9c4;border:1px solid #f9a825;"></span>Pending</span>
+          <span><span class="legend-dot" style="background:#e8f5e9;border:1px solid #a5d6a7;"></span>Free</span>
+        </div>
+      </div>
+      <div class="floor-grid" id="floorGrid"></div>
+      <div class="map-tooltip" id="mapTooltip"></div>
+    </div>
+
+    <!-- Applications -->
+    <p class="section-title">Pending Applications</p>
+
+    <div class="app-card" id="appCard1">
+      <div class="app-header">
+        <div class="app-company">Ubisoft Mobile</div>
+        <span class="badge badge-pending">Pending</span>
+      </div>
+      <div class="app-meta">📦 2× Standard Booth · Applied 2 days ago</div>
+      <div class="app-actions">
+        <button class="btn-approve" onclick="approveApp('appCard1')">✓ Approve</button>
+        <button class="btn-reject" onclick="rejectApp('appCard1')">✗ Reject</button>
+        <button class="btn-detail">Details</button>
+      </div>
+    </div>
+
+    <div class="app-card" id="appCard2">
+      <div class="app-header">
+        <div class="app-company">Square Enix Europe</div>
+        <span class="badge badge-pending">Pending</span>
+      </div>
+      <div class="app-meta">🏛️ 1× Large Booth · Applied 3 days ago</div>
+      <div class="app-actions">
+        <button class="btn-approve" onclick="approveApp('appCard2')">✓ Approve</button>
+        <button class="btn-reject" onclick="rejectApp('appCard2')">✗ Reject</button>
+        <button class="btn-detail">Details</button>
+      </div>
+    </div>
+
+    <div class="app-card" id="appCard3">
+      <div class="app-header">
+        <div class="app-company">Indie Hub Studios</div>
+        <span class="badge badge-pending">Pending</span>
+      </div>
+      <div class="app-meta">🟦 1× Pod · Applied today</div>
+      <div class="app-actions">
+        <button class="btn-approve" onclick="approveApp('appCard3')">✓ Approve</button>
+        <button class="btn-reject" onclick="rejectApp('appCard3')">✗ Reject</button>
+        <button class="btn-detail">Details</button>
+      </div>
+    </div>
+
+    <div class="app-card">
+      <div class="app-header">
+        <div class="app-company">Paradox Interactive</div>
+        <span class="badge badge-approved">Approved</span>
+      </div>
+      <div class="app-meta">📦 1× Standard Booth · B-12 · Assigned</div>
+      <div class="app-actions">
+        <button class="btn-detail" style="flex:1;">View Details</button>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- BOTTOM TAB -->
+  <nav class="bottom-tab">
+    <a class="tab-item" href="#"><span class="tab-icon">🏠</span>Dashboard</a>
+    <a class="tab-item active" href="#"><span class="tab-icon">📋</span>Events</a>
+    <a class="tab-item" href="#"><span class="tab-icon">🎟</span>Sales</a>
+    <a class="tab-item" href="#"><span class="tab-icon">👥</span>Attendees</a>
+    <a class="tab-item" href="#"><span class="tab-icon">⚙️</span>Settings</a>
+  </nav>
+
+</div>
+
+<script>
+  function openDrawer() {
+    document.getElementById('drawer').classList.add('open');
+    document.getElementById('drawerOverlay').classList.add('open');
+  }
+  function closeDrawer() {
+    document.getElementById('drawer').classList.remove('open');
+    document.getElementById('drawerOverlay').classList.remove('open');
+  }
+
+  // Generate floor map
+  const floorData = [
+    // Row 0
+    ['sold','sold','sold','aisle','sold','sold','available','available'],
+    // Row 1
+    ['sold','sold','sold','aisle','sold','sold','available','available'],
+    // Row 2
+    ['aisle','aisle','aisle','aisle','aisle','aisle','aisle','aisle'],
+    // Row 3
+    ['pod','pod','aisle','sold','sold','pending','aisle','available'],
+    // Row 4
+    ['pod','pod','aisle','sold','sold','pending','aisle','available'],
+    // Row 5
+    ['aisle','aisle','aisle','aisle','aisle','aisle','aisle','aisle'],
+    // Row 6
+    ['sold','available','sold','aisle','pod','pod','sold','sold'],
+    // Row 7
+    ['sold','available','sold','aisle','pod','pod','sold','sold'],
+  ];
+
+  const boothInfo = {
+    sold: { label: 'Booked Booth', company: 'Assigned', status: '✅ Occupied' },
+    available: { label: 'Available Booth', company: 'Not assigned', status: '🟢 Open for booking' },
+    pending: { label: 'Pending Booth', company: 'Under review', status: '🟡 Awaiting approval' },
+    pod: { label: 'Pod Space', company: 'Pod zone', status: '🔵 Pod (compact unit)' },
+  };
+
+  const grid = document.getElementById('floorGrid');
+  const tooltip = document.getElementById('mapTooltip');
+
+  floorData.forEach((row, ri) => {
+    row.forEach((type, ci) => {
+      const cell = document.createElement('div');
+      cell.className = `booth-cell ${type}`;
+      if (type !== 'aisle' && type !== 'empty') {
+        const id = String.fromCharCode(65 + ri) + '-' + (ci + 1);
+        cell.textContent = type === 'pod' ? 'P' : '';
+        cell.title = id;
+        cell.addEventListener('click', () => {
+          const info = boothInfo[type] || {};
+          tooltip.className = 'map-tooltip show';
+          tooltip.innerHTML = `<strong>${id} — ${info.label}</strong>${info.company}<br><span style="color:#aaa;font-size:11px;">${info.status}</span>`;
+        });
+      }
+      grid.appendChild(cell);
+    });
+  });
+
+  document.addEventListener('click', (e) => {
+    if (!e.target.classList.contains('booth-cell')) {
+      tooltip.className = 'map-tooltip';
+    }
+  });
+
+  function approveApp(id) {
+    const card = document.getElementById(id);
+    const badge = card.querySelector('.badge');
+    badge.className = 'badge badge-approved';
+    badge.textContent = 'Approved';
+    const actions = card.querySelector('.app-actions');
+    actions.innerHTML = '<button class="btn-detail" style="flex:1;">View Details</button>';
+  }
+
+  function rejectApp(id) {
+    const card = document.getElementById(id);
+    const badge = card.querySelector('.badge');
+    badge.className = 'badge badge-rejected';
+    badge.textContent = 'Rejected';
+    const actions = card.querySelector('.app-actions');
+    actions.innerHTML = '<button class="btn-detail" style="flex:1;">View Details</button>';
+    card.style.opacity = '0.6';
+  }
+</script>
+</body>
+</html>

@@ -1,0 +1,876 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Event Module Setup — GAME CONNECTION Event HQ</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: #e8e4da;
+    color: #1a1a1a;
+    min-height: 100vh;
+  }
+
+  /* NAV */
+  .nav {
+    background: #1a1a1a;
+    padding: 0 32px;
+    height: 56px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+  .nav-brand {
+    font-size: 15px;
+    font-weight: 700;
+    color: #fff;
+    letter-spacing: 0.5px;
+  }
+  .nav-brand span { color: #d95f2b; }
+  .nav-right {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+  }
+  .nav-avatar {
+    width: 32px; height: 32px;
+    border-radius: 50%;
+    background: #d95f2b;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 13px; font-weight: 700; color: #fff;
+  }
+  .nav-event-label {
+    font-size: 13px;
+    color: #aaa;
+  }
+
+  /* MAIN */
+  .main {
+    max-width: 960px;
+    margin: 0 auto;
+    padding: 40px 20px 80px;
+  }
+
+  /* PAGE HEADER */
+  .page-header {
+    margin-bottom: 32px;
+  }
+  .page-header h1 {
+    font-size: 26px;
+    font-weight: 700;
+    color: #1a1a1a;
+    margin-bottom: 4px;
+  }
+  .page-header p {
+    font-size: 14px;
+    color: #666;
+  }
+
+  /* STEPPER */
+  .stepper {
+    display: flex;
+    align-items: center;
+    margin-bottom: 32px;
+    background: #fff;
+    border-radius: 12px;
+    padding: 20px 28px;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+  }
+  .step {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex: 1;
+  }
+  .step-circle {
+    width: 32px; height: 32px;
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 13px; font-weight: 700;
+    flex-shrink: 0;
+  }
+  .step-circle.done { background: #0d9b72; color: #fff; }
+  .step-circle.active { background: #d95f2b; color: #fff; }
+  .step-circle.todo { background: #e0ddd6; color: #999; }
+  .step-text { }
+  .step-text .step-num { font-size: 11px; color: #999; font-weight: 500; }
+  .step-text .step-name { font-size: 14px; font-weight: 600; color: #1a1a1a; }
+  .step-text .step-name.active-label { color: #d95f2b; }
+  .step-text .step-name.todo-label { color: #999; }
+  .step-connector {
+    flex: 0 0 40px;
+    height: 2px;
+    background: #e0ddd6;
+    margin: 0 8px;
+  }
+  .step-connector.done-conn { background: #0d9b72; }
+
+  /* ATTENDEES SCALE PANEL */
+  .scale-panel {
+    background: #fff;
+    border-radius: 12px;
+    padding: 24px 28px;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+    margin-bottom: 28px;
+    display: flex;
+    align-items: center;
+    gap: 24px;
+    flex-wrap: wrap;
+  }
+  .scale-panel-left {
+    flex: 1;
+    min-width: 200px;
+  }
+  .scale-panel-left h3 {
+    font-size: 15px;
+    font-weight: 700;
+    color: #1a1a1a;
+    margin-bottom: 3px;
+  }
+  .scale-panel-left p {
+    font-size: 12px;
+    color: #888;
+  }
+  .scale-panel-right {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    flex: 2;
+    min-width: 300px;
+  }
+  .scale-slider-wrap {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+  .scale-slider {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 100%;
+    height: 6px;
+    border-radius: 3px;
+    background: #e0ddd6;
+    outline: none;
+    cursor: pointer;
+    position: relative;
+  }
+  .scale-slider::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    background: #d95f2b;
+    cursor: pointer;
+    box-shadow: 0 2px 6px rgba(217,95,43,0.35);
+    transition: transform 0.15s;
+  }
+  .scale-slider::-webkit-slider-thumb:hover { transform: scale(1.15); }
+  .scale-slider::-moz-range-thumb {
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    background: #d95f2b;
+    cursor: pointer;
+    border: none;
+    box-shadow: 0 2px 6px rgba(217,95,43,0.35);
+  }
+  .scale-ticks {
+    display: flex;
+    justify-content: space-between;
+    font-size: 10px;
+    color: #bbb;
+    padding: 0 2px;
+  }
+  .scale-input-wrap {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    min-width: 90px;
+  }
+  .scale-input {
+    width: 90px;
+    text-align: center;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 20px;
+    font-weight: 700;
+    color: #1a1a1a;
+    border: 2px solid #e0ddd6;
+    border-radius: 8px;
+    padding: 6px 8px;
+    outline: none;
+    transition: border-color 0.2s;
+  }
+  .scale-input:focus { border-color: #d95f2b; }
+  .scale-size-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 5px 14px;
+    border-radius: 20px;
+    font-size: 13px;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+    transition: background 0.2s, color 0.2s;
+  }
+  .size-xs { background: #f0ede6; color: #999; }
+  .size-s  { background: #daf0e8; color: #0d9b72; }
+  .size-m  { background: #fff3eb; color: #d95f2b; }
+  .size-l  { background: #1a1a1a; color: #fff; }
+
+  .unlock-legend {
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+    align-items: center;
+    border-top: 1px solid #f0ede6;
+    padding-top: 16px;
+    margin-top: 8px;
+  }
+  .legend-item {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 11px;
+    color: #888;
+  }
+  .legend-dot {
+    width: 10px; height: 10px;
+    border-radius: 50%;
+    flex-shrink: 0;
+  }
+  .legend-dot.free   { background: #0d9b72; }
+  .legend-dot.s100   { background: #0a7fa8; }
+  .legend-dot.s500   { background: #d95f2b; }
+  .legend-dot.s2000  { background: #1a1a1a; }
+
+  /* SECTION TITLE */
+  .section-title {
+    font-size: 13px;
+    font-weight: 700;
+    color: #999;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    margin-bottom: 16px;
+  }
+
+  /* MODULE GRID */
+  .module-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 16px;
+    margin-bottom: 32px;
+  }
+
+  .module-card {
+    background: #fff;
+    border-radius: 12px;
+    padding: 20px;
+    border: 2px solid transparent;
+    position: relative;
+    transition: box-shadow 0.2s, border-color 0.2s, opacity 0.2s;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+  }
+  .module-card:hover:not(.locked) { box-shadow: 0 4px 16px rgba(0,0,0,0.10); }
+  .module-card.off { opacity: 0.7; border: 2px dashed #ccc; }
+  .module-card.exclusive { border: 2px solid #d95f2b; }
+  .module-card.locked {
+    opacity: 0.5;
+    background: #f5f3ef;
+    border: 2px dashed #d6d1c8;
+    cursor: default;
+  }
+
+  /* TOGGLE */
+  .toggle-wrap {
+    position: absolute;
+    top: 16px; right: 16px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .toggle {
+    position: relative;
+    width: 40px; height: 22px;
+    cursor: pointer;
+  }
+  .toggle input { opacity: 0; width: 0; height: 0; }
+  .slider {
+    position: absolute; top: 0; left: 0; right: 0; bottom: 0;
+    background: #ccc;
+    border-radius: 22px;
+    transition: background 0.2s;
+  }
+  .slider::before {
+    content: '';
+    position: absolute;
+    width: 16px; height: 16px;
+    left: 3px; top: 3px;
+    background: #fff;
+    border-radius: 50%;
+    transition: transform 0.2s;
+  }
+  .toggle input:checked + .slider { background: #0d9b72; }
+  .toggle input:checked + .slider::before { transform: translateX(18px); }
+  .toggle.disabled {
+    cursor: not-allowed;
+    opacity: 0.5;
+  }
+  .toggle.locked-toggle {
+    cursor: not-allowed;
+  }
+  .toggle.always-on {
+    cursor: not-allowed;
+  }
+
+  /* LOCK OVERLAY */
+  .lock-overlay {
+    display: none;
+    position: absolute;
+    bottom: 16px;
+    left: 20px;
+    right: 20px;
+    background: rgba(240,237,230,0.9);
+    border-radius: 6px;
+    padding: 6px 10px;
+    font-size: 11px;
+    font-weight: 600;
+    color: #999;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+  }
+  .module-card.locked .lock-overlay { display: flex; }
+  .module-card:not(.locked) .lock-overlay { display: none; }
+
+  /* LOCK ICON on toggle */
+  .lock-icon {
+    font-size: 13px;
+    color: #bbb;
+  }
+
+  /* BADGE */
+  .badge {
+    display: inline-block;
+    font-size: 10px;
+    font-weight: 700;
+    padding: 2px 7px;
+    border-radius: 20px;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+  }
+  .badge-exclusive {
+    background: #d95f2b;
+    color: #fff;
+    font-size: 9px;
+    letter-spacing: 0.4px;
+  }
+  .badge-unlock-free  { background: #daf0e8; color: #0d9b72; }
+  .badge-unlock-100   { background: #ddf0f8; color: #0a7fa8; }
+  .badge-unlock-500   { background: #fff3eb; color: #d95f2b; }
+  .badge-unlock-2000  { background: #1a1a1a; color: #fff; }
+
+  .module-badge-row {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin-bottom: 10px;
+    flex-wrap: wrap;
+  }
+
+  .module-icon {
+    font-size: 28px;
+    margin-bottom: 8px;
+    display: block;
+  }
+  .module-name {
+    font-size: 15px;
+    font-weight: 700;
+    color: #1a1a1a;
+    margin-bottom: 4px;
+    line-height: 1.3;
+  }
+  .module-desc {
+    font-size: 12px;
+    color: #777;
+    line-height: 1.5;
+    margin-bottom: 36px;
+  }
+
+  /* SUMMARY BAR */
+  .summary-bar {
+    background: #fff;
+    border-radius: 12px;
+    padding: 24px 28px;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 24px;
+  }
+  .summary-left h3 {
+    font-size: 16px;
+    font-weight: 700;
+    color: #1a1a1a;
+    margin-bottom: 4px;
+  }
+  .summary-left p {
+    font-size: 13px;
+    color: #888;
+  }
+  .summary-stats {
+    display: flex;
+    gap: 32px;
+  }
+  .summary-stat {
+    text-align: center;
+  }
+  .summary-stat .num {
+    font-size: 28px;
+    font-weight: 700;
+    color: #d95f2b;
+  }
+  .summary-stat .label {
+    font-size: 12px;
+    color: #999;
+    margin-top: 2px;
+  }
+
+  /* FOOTER ACTIONS */
+  .footer-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 12px;
+    margin-top: 8px;
+  }
+  .btn {
+    padding: 12px 24px;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    border: none;
+    font-family: 'DM Sans', sans-serif;
+    transition: opacity 0.15s;
+  }
+  .btn:hover { opacity: 0.88; }
+  .btn-primary { background: #d95f2b; color: #fff; }
+  .btn-secondary { background: #fff; color: #1a1a1a; border: 1.5px solid #ddd; }
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav class="nav">
+  <div class="nav-brand"><span>GAME CONNECTION</span> · Event HQ</div>
+  <div class="nav-right">
+    <span class="nav-event-label">Indie Game Fest 2026</span>
+    <div class="nav-avatar">QQ</div>
+  </div>
+</nav>
+
+<!-- MAIN -->
+<div class="main">
+  <div class="page-header">
+    <h1>Event Setup</h1>
+    <p>Configure your event modules. More modules unlock as your event grows.</p>
+  </div>
+
+  <!-- STEPPER -->
+  <div class="stepper">
+    <div class="step">
+      <div class="step-circle done">✓</div>
+      <div class="step-text">
+        <div class="step-num">Step 1</div>
+        <div class="step-name">Basic Info</div>
+      </div>
+    </div>
+    <div class="step-connector done-conn"></div>
+    <div class="step">
+      <div class="step-circle active">2</div>
+      <div class="step-text">
+        <div class="step-num">Step 2</div>
+        <div class="step-name active-label">Module Setup</div>
+      </div>
+    </div>
+    <div class="step-connector"></div>
+    <div class="step">
+      <div class="step-circle todo">3</div>
+      <div class="step-text">
+        <div class="step-num">Step 3</div>
+        <div class="step-name todo-label">Sponsorship Setup</div>
+      </div>
+    </div>
+    <div class="step-connector"></div>
+    <div class="step">
+      <div class="step-circle todo">4</div>
+      <div class="step-text">
+        <div class="step-num">Step 4</div>
+        <div class="step-name todo-label">Review</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- EXPECTED ATTENDEES SCALE PANEL -->
+  <div class="scale-panel">
+    <div class="scale-panel-left">
+      <h3>Expected Attendees</h3>
+      <p>Drag to set your estimated attendance.<br>More attendees unlock more modules.</p>
+    </div>
+    <div class="scale-panel-right" style="flex-direction:column; align-items:flex-start; gap:16px;">
+      <div style="display:flex; align-items:center; gap:20px; width:100%;">
+        <div class="scale-slider-wrap">
+          <input type="range" class="scale-slider" id="attendeeSlider"
+            min="10" max="5000" step="10" value="500"
+            oninput="onSliderChange(this.value)">
+          <div class="scale-ticks">
+            <span>10</span>
+            <span>100</span>
+            <span>500</span>
+            <span>2000</span>
+            <span>5000+</span>
+          </div>
+        </div>
+        <div class="scale-input-wrap">
+          <input type="number" class="scale-input" id="attendeeInput"
+            min="1" max="99999" value="500"
+            oninput="onInputChange(this.value)">
+          <span id="sizeBadge" class="scale-size-badge size-m">⚡ M Scale</span>
+        </div>
+      </div>
+      <div class="unlock-legend" style="width:100%;">
+        <div class="legend-item"><div class="legend-dot free"></div> All scales — 活动发布 · 免费报名</div>
+        <div class="legend-item"><div class="legend-dot s100"></div> 100+ — 付费票务 · Pod · 赞助套餐 · Awards</div>
+        <div class="legend-item"><div class="legend-dot s500"></div> 500+ — 标准展位 · Session · Let's Meet · Game Showcase · 买家邀请</div>
+        <div class="legend-item"><div class="legend-dot s2000"></div> 2000+ — 展会地图</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODULE GRID -->
+  <div class="section-title">Select Modules</div>
+  <div class="module-grid" id="moduleGrid">
+    <!-- Cards are rendered by JS -->
+  </div>
+
+  <!-- SUMMARY BAR -->
+  <div class="summary-bar">
+    <div class="summary-left">
+      <h3>Module Summary</h3>
+      <p>Active modules define your event experience.</p>
+    </div>
+    <div class="summary-stats">
+      <div class="summary-stat">
+        <div class="num" id="activeModules">0</div>
+        <div class="label">Modules ON</div>
+      </div>
+      <div class="summary-stat">
+        <div class="num" id="unlockedModules">0</div>
+        <div class="label">Modules Unlocked</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- FOOTER ACTIONS -->
+  <div class="footer-actions">
+    <button class="btn btn-secondary">← Back</button>
+    <button class="btn btn-primary">Save &amp; Continue →</button>
+  </div>
+</div>
+
+<script>
+// ─── Module Definitions ───────────────────────────────────────────────────────
+const MODULES = [
+  {
+    id: 1,
+    icon: '📢',
+    name: '活动发布 Event Publishing',
+    desc: 'Create and publish your event page with details, schedule, and media.',
+    minAttendees: 0,
+    defaultOn: true,
+    alwaysOn: true,
+    exclusive: false,
+  },
+  {
+    id: 2,
+    icon: '🎫',
+    name: '免费报名 Free Registration',
+    desc: 'Allow attendees to register for free with a simple form.',
+    minAttendees: 0,
+    defaultOn: true,
+    alwaysOn: false,
+    exclusive: false,
+  },
+  {
+    id: 3,
+    icon: '💳',
+    name: '付费票务 Paid Ticketing',
+    desc: 'Sell tickets with multiple tiers, early bird pricing, and QR codes.',
+    minAttendees: 100,
+    defaultOn: false,
+    alwaysOn: false,
+    exclusive: false,
+  },
+  {
+    id: 4,
+    icon: '🪑',
+    name: 'Pod / 小展位 Pod Booth',
+    desc: 'Small table-top booths for indie developers and small studios.',
+    minAttendees: 100,
+    defaultOn: false,
+    alwaysOn: false,
+    exclusive: false,
+  },
+  {
+    id: 5,
+    icon: '💰',
+    name: '赞助套餐 Sponsorship Packages',
+    desc: 'Offer branding, logo placement, and other sponsor benefits.',
+    minAttendees: 100,
+    defaultOn: false,
+    alwaysOn: false,
+    exclusive: false,
+  },
+  {
+    id: 6,
+    icon: '🏆',
+    name: 'Awards 评奖',
+    desc: 'Run game awards with nominations, jury voting, and live results.',
+    minAttendees: 100,
+    defaultOn: false,
+    alwaysOn: false,
+    exclusive: false,
+  },
+  {
+    id: 7,
+    icon: '🏢',
+    name: '标准展位 Standard Booth',
+    desc: 'Full-size exhibition booths with customizable floor plan placement.',
+    minAttendees: 500,
+    defaultOn: false,
+    alwaysOn: false,
+    exclusive: false,
+  },
+  {
+    id: 8,
+    icon: '🎤',
+    name: 'Session / Panel',
+    desc: 'Keynotes, panels, and workshops with speaker management.',
+    minAttendees: 500,
+    defaultOn: false,
+    alwaysOn: false,
+    exclusive: false,
+  },
+  {
+    id: 9,
+    icon: '🤝',
+    name: "Let's Meet 配对",
+    desc: 'AI-powered 1-on-1 meeting scheduling between attendees.',
+    minAttendees: 500,
+    defaultOn: false,
+    alwaysOn: false,
+    exclusive: true,
+  },
+  {
+    id: 10,
+    icon: '🎮',
+    name: 'Game Showcase',
+    desc: 'Featured game demos and presentations from exhibitors.',
+    minAttendees: 500,
+    defaultOn: false,
+    alwaysOn: false,
+    exclusive: false,
+  },
+  {
+    id: 11,
+    icon: '🧲',
+    name: '买家邀请 Buyer Invitation',
+    desc: 'Invite qualified buyers, publishers, and investors with curated access.',
+    minAttendees: 500,
+    defaultOn: false,
+    alwaysOn: false,
+    exclusive: false,
+  },
+  {
+    id: 12,
+    icon: '🗺️',
+    name: '展会地图 Venue Map',
+    desc: 'Interactive floor map with booth locations, rooms, and navigation.',
+    minAttendees: 2000,
+    defaultOn: false,
+    alwaysOn: false,
+    exclusive: false,
+  },
+];
+
+// Module enabled state
+const moduleState = {};
+MODULES.forEach(m => { moduleState[m.id] = m.defaultOn; });
+
+// ─── Scale helpers ────────────────────────────────────────────────────────────
+function getScale(n) {
+  if (n < 100)  return { label: 'XS Scale', cls: 'size-xs', icon: '·' };
+  if (n < 500)  return { label: 'S Scale',  cls: 'size-s',  icon: '▲' };
+  if (n < 2000) return { label: 'M Scale',  cls: 'size-m',  icon: '⚡' };
+  return              { label: 'L Scale',  cls: 'size-l',  icon: '★' };
+}
+
+function unlockBadgeFor(min) {
+  if (min === 0)    return { cls: 'badge-unlock-free', text: 'All scales' };
+  if (min === 100)  return { cls: 'badge-unlock-100',  text: '100+ attendees' };
+  if (min === 500)  return { cls: 'badge-unlock-500',  text: '500+ attendees' };
+  if (min === 2000) return { cls: 'badge-unlock-2000', text: '2000+ attendees' };
+  return { cls: 'badge-unlock-free', text: 'All scales' };
+}
+
+// ─── Slider / Input sync ──────────────────────────────────────────────────────
+// Map slider (log-ish) to nice values
+// Slider is linear 10–5000; we just use the value directly
+function onSliderChange(val) {
+  val = parseInt(val, 10);
+  document.getElementById('attendeeInput').value = val;
+  applyAttendees(val);
+}
+
+function onInputChange(val) {
+  val = parseInt(val, 10) || 1;
+  if (val < 10) val = 10;
+  if (val > 99999) val = 99999;
+  // Clamp slider
+  const sliderVal = Math.min(val, 5000);
+  document.getElementById('attendeeSlider').value = sliderVal;
+  applyAttendees(val);
+}
+
+function applyAttendees(n) {
+  const scale = getScale(n);
+  const badge = document.getElementById('sizeBadge');
+  badge.className = 'scale-size-badge ' + scale.cls;
+  badge.textContent = scale.icon + ' ' + scale.label;
+  renderGrid(n);
+  updateSummary(n);
+}
+
+// ─── Grid render ──────────────────────────────────────────────────────────────
+function renderGrid(attendees) {
+  const grid = document.getElementById('moduleGrid');
+  grid.innerHTML = '';
+
+  MODULES.forEach(m => {
+    const unlocked = attendees >= m.minAttendees || m.minAttendees === 0;
+    const isOn     = moduleState[m.id] && unlocked;
+    const ub       = unlockBadgeFor(m.minAttendees);
+
+    let cardClass = 'module-card';
+    if (!unlocked) {
+      cardClass += ' locked';
+    } else if (m.exclusive && isOn) {
+      cardClass += ' exclusive';
+    } else if (!isOn) {
+      cardClass += ' off';
+    }
+
+    // Toggle HTML
+    let toggleHtml;
+    if (m.alwaysOn) {
+      toggleHtml = `
+        <div class="toggle-wrap">
+          <label class="toggle always-on" title="Always enabled">
+            <input type="checkbox" checked disabled>
+            <span class="slider"></span>
+          </label>
+          <span class="lock-icon" title="Cannot be disabled">🔒</span>
+        </div>`;
+    } else if (!unlocked) {
+      toggleHtml = `
+        <div class="toggle-wrap">
+          <label class="toggle locked-toggle" title="Locked">
+            <input type="checkbox" disabled>
+            <span class="slider"></span>
+          </label>
+          <span class="lock-icon">🔒</span>
+        </div>`;
+    } else {
+      toggleHtml = `
+        <div class="toggle-wrap">
+          <label class="toggle">
+            <input type="checkbox" ${isOn ? 'checked' : ''}
+              onchange="toggleModule(${m.id}, this.checked, ${attendees})">
+            <span class="slider"></span>
+          </label>
+        </div>`;
+    }
+
+    // Badge row
+    let badgeRowHtml = '<div class="module-badge-row">';
+    if (m.exclusive) {
+      badgeRowHtml += `<span class="badge badge-exclusive">★ GAME CONNECTION EXCLUSIVE</span>`;
+    }
+    badgeRowHtml += `<span class="badge ${ub.cls}">${ub.text}</span>`;
+    badgeRowHtml += '</div>';
+
+    // Lock overlay (only shown when locked)
+    let lockOverlayHtml = '';
+    if (!unlocked) {
+      lockOverlayHtml = `<div class="lock-overlay">🔒 Unlocks at ${m.minAttendees.toLocaleString()}+ attendees</div>`;
+    }
+
+    grid.innerHTML += `
+      <div class="${cardClass}" id="card-${m.id}">
+        ${toggleHtml}
+        ${badgeRowHtml}
+        <span class="module-icon">${m.icon}</span>
+        <div class="module-name">${m.name}</div>
+        <div class="module-desc">${m.desc}</div>
+        ${lockOverlayHtml}
+      </div>`;
+  });
+}
+
+function toggleModule(id, checked, attendees) {
+  moduleState[id] = checked;
+  // Re-render just the card state without full rebuild for performance
+  const m = MODULES.find(x => x.id === id);
+  const card = document.getElementById('card-' + id);
+  if (!card || !m) return;
+
+  const unlocked = attendees >= m.minAttendees || m.minAttendees === 0;
+  const isOn = checked && unlocked;
+
+  card.className = 'module-card';
+  if (m.exclusive && isOn) {
+    card.className += ' exclusive';
+  } else if (!isOn) {
+    card.className += ' off';
+  }
+  updateSummary(attendees);
+}
+
+// ─── Summary ──────────────────────────────────────────────────────────────────
+function updateSummary(attendees) {
+  let active = 0;
+  let unlocked = 0;
+  MODULES.forEach(m => {
+    const isUnlocked = attendees >= m.minAttendees || m.minAttendees === 0;
+    if (isUnlocked) unlocked++;
+    if (isUnlocked && moduleState[m.id]) active++;
+  });
+  document.getElementById('activeModules').textContent = active;
+  document.getElementById('unlockedModules').textContent = unlocked;
+}
+
+// ─── Init ─────────────────────────────────────────────────────────────────────
+(function init() {
+  const defaultAttendees = 500;
+  renderGrid(defaultAttendees);
+  updateSummary(defaultAttendees);
+  applyAttendees(defaultAttendees);
+})();
+</script>
+</body>
+</html>
