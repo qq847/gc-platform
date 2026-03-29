@@ -241,6 +241,11 @@ The goal: Be helpful without being annoying. Check in a few times a day, do usef
 
 少一个就是没做完。
 
+**做"新版本"或"合并版本"前，必须先跑功能对比：**
+- 列出原版所有功能（交互/动画/数据/特殊UI）
+- 逐一确认新版都有对应
+- 对比完再动手，不是出错后补救
+
 ## Make It Yours
 
 This is a starting point. Add your own conventions, style, and rules as you figure out what works.
