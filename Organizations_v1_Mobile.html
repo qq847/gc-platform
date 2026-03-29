@@ -1,0 +1,1215 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>Organizations – Game Connection</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg: #e8e4da;
+    --orange: #d95f2b;
+    --teal: #0a7fa8;
+    --green: #0d9b72;
+    --card: #fff;
+    --text: #1c1a17;
+    --text-sec: #6b6660;
+    --text-weak: #a09890;
+    --radius: 10px;
+    --radius-lg: 12px;
+    --tab-h: 64px;
+  }
+
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: #c8c4ba;
+    color: var(--text);
+    display: flex;
+    justify-content: center;
+    min-height: 100vh;
+  }
+
+  .phone-frame {
+    width: 100%;
+    max-width: 480px;
+    background: var(--bg);
+    min-height: 100vh;
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
+
+  /* ── TOP BAR ── */
+  .top-bar {
+    background: var(--card);
+    padding: 14px 16px 12px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    border-bottom: 1px solid #e0dbd2;
+    flex-shrink: 0;
+    position: sticky;
+    top: 0;
+    z-index: 50;
+  }
+  .search-wrap {
+    flex: 1;
+    position: relative;
+  }
+  .search-wrap input {
+    width: 100%;
+    padding: 9px 14px 9px 36px;
+    border: 1.5px solid #ddd8ce;
+    border-radius: 22px;
+    font-family: inherit;
+    font-size: 14px;
+    background: var(--bg);
+    color: var(--text);
+    outline: none;
+    transition: border-color .2s;
+  }
+  .search-wrap input:focus { border-color: var(--teal); }
+  .search-icon {
+    position: absolute;
+    left: 11px; top: 50%;
+    transform: translateY(-50%);
+    color: var(--text-weak);
+  }
+  .avatar-sm {
+    width: 36px; height: 36px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, var(--orange), #f4a261);
+    color: #fff;
+    display: grid;
+    place-items: center;
+    font-weight: 700;
+    font-size: 13px;
+    cursor: pointer;
+    flex-shrink: 0;
+  }
+
+  /* ── SCROLL CONTENT ── */
+  .scroll-content {
+    flex: 1;
+    overflow-y: auto;
+    padding-bottom: calc(var(--tab-h) + 8px);
+  }
+  .scroll-content::-webkit-scrollbar { display: none; }
+
+  /* ── HEADER ── */
+  .page-header {
+    padding: 20px 16px 12px;
+  }
+  .page-header h1 {
+    font-size: 24px;
+    font-weight: 700;
+    color: var(--text);
+    margin-bottom: 4px;
+  }
+  .page-header p {
+    font-size: 13.5px;
+    color: var(--text-sec);
+  }
+
+  /* ── FILTER CHIPS ── */
+  .filter-scroll {
+    padding: 0 16px 10px;
+    overflow-x: auto;
+    white-space: nowrap;
+    -webkit-overflow-scrolling: touch;
+  }
+  .filter-scroll::-webkit-scrollbar { display: none; }
+  .chip-row { display: inline-flex; gap: 6px; }
+  .chip {
+    display: inline-flex;
+    align-items: center;
+    padding: 7px 14px;
+    border-radius: 20px;
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    border: 1.5px solid #ddd8ce;
+    background: var(--card);
+    color: var(--text-sec);
+    transition: all .18s;
+    white-space: nowrap;
+  }
+  .chip:hover { border-color: var(--teal); color: var(--teal); }
+  .chip.active {
+    background: var(--teal);
+    border-color: var(--teal);
+    color: #fff;
+  }
+
+  .filter-divider {
+    height: 1px;
+    background: #ddd8ce;
+    margin: 0 16px 10px;
+  }
+
+  /* ── ORG CARD ── */
+  .org-card {
+    margin: 0 12px 12px;
+    background: var(--card);
+    border-radius: var(--radius-lg);
+    border: 1px solid #ece9e1;
+    overflow: hidden;
+    transition: box-shadow .2s;
+  }
+  .org-card.expanded { box-shadow: 0 4px 20px rgba(0,0,0,.1); }
+
+  .org-card-main {
+    padding: 16px;
+    cursor: pointer;
+  }
+
+  .org-top {
+    display: flex;
+    gap: 12px;
+    align-items: flex-start;
+    margin-bottom: 10px;
+  }
+  .org-logo {
+    width: 52px; height: 52px;
+    border-radius: 12px;
+    display: grid;
+    place-items: center;
+    font-size: 18px;
+    font-weight: 800;
+    color: #fff;
+    flex-shrink: 0;
+    letter-spacing: -.5px;
+  }
+  .org-head { flex: 1; min-width: 0; }
+  .org-name {
+    font-size: 15px;
+    font-weight: 700;
+    color: var(--text);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    margin-bottom: 4px;
+  }
+  .org-badges { display: flex; gap: 5px; flex-wrap: wrap; }
+  .type-badge {
+    font-size: 11px;
+    font-weight: 600;
+    padding: 2px 9px;
+    border-radius: 8px;
+  }
+  .badge-publisher { background: #fdf0e9; color: var(--orange); }
+  .badge-developer { background: #e6f7f2; color: var(--green); }
+  .badge-investor { background: #e6f3f9; color: var(--teal); }
+  .badge-service { background: #f0ede7; color: var(--text-sec); }
+  .badge-distributor { background: #f3e9f7; color: #8b2ab5; }
+
+  .org-location {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    font-size: 12.5px;
+    color: var(--text-sec);
+    margin-bottom: 8px;
+  }
+  .org-desc {
+    font-size: 13px;
+    color: var(--text-sec);
+    line-height: 1.55;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    margin-bottom: 10px;
+  }
+  .org-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 5px;
+    margin-bottom: 12px;
+  }
+  .org-tag {
+    font-size: 11.5px;
+    padding: 3px 9px;
+    background: var(--bg);
+    color: var(--text-sec);
+    border-radius: 6px;
+    font-weight: 500;
+  }
+  .org-footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding-top: 10px;
+    border-top: 1px solid #f0ede7;
+  }
+  .org-stats {
+    display: flex;
+    gap: 12px;
+    font-size: 12px;
+    color: var(--text-weak);
+  }
+  .org-stats span { display: flex; align-items: center; gap: 3px; }
+  .btn-follow {
+    padding: 7px 18px;
+    border-radius: 20px;
+    border: 1.5px solid var(--teal);
+    background: transparent;
+    font-family: inherit;
+    font-size: 12.5px;
+    color: var(--teal);
+    font-weight: 600;
+    cursor: pointer;
+    transition: all .18s;
+  }
+  .btn-follow:hover, .btn-follow.following {
+    background: var(--teal);
+    color: #fff;
+  }
+
+  /* ── EXPANDED DETAIL ── */
+  .org-detail {
+    display: none;
+    padding: 0 16px 16px;
+    border-top: 1px solid #f0ede7;
+  }
+  .org-card.expanded .org-detail { display: block; }
+
+  .detail-section { margin-top: 14px; }
+  .detail-section h4 {
+    font-size: 11.5px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: .07em;
+    color: var(--text-weak);
+    margin-bottom: 8px;
+  }
+  .detail-section p {
+    font-size: 13px;
+    color: var(--text-sec);
+    line-height: 1.6;
+  }
+
+  .game-chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+  }
+  .game-chip {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 10px;
+    background: var(--bg);
+    border-radius: 8px;
+    font-size: 12.5px;
+    color: var(--text);
+    font-weight: 500;
+  }
+  .game-chip-dot {
+    width: 8px; height: 8px;
+    border-radius: 50%;
+    flex-shrink: 0;
+  }
+
+  .contact-info {
+    font-size: 13px;
+    color: var(--text-sec);
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+  }
+  .contact-info a { color: var(--teal); text-decoration: none; }
+
+  .detail-actions {
+    display: flex;
+    gap: 8px;
+    margin-top: 14px;
+  }
+  .btn-primary {
+    flex: 1;
+    padding: 10px;
+    border-radius: 10px;
+    border: none;
+    background: var(--orange);
+    font-family: inherit;
+    font-size: 13px;
+    color: #fff;
+    font-weight: 600;
+    cursor: pointer;
+    transition: opacity .18s;
+    text-align: center;
+  }
+  .btn-primary:hover { opacity: .88; }
+  .btn-secondary {
+    flex: 1;
+    padding: 10px;
+    border-radius: 10px;
+    border: 1.5px solid #ddd8ce;
+    background: transparent;
+    font-family: inherit;
+    font-size: 13px;
+    color: var(--text-sec);
+    font-weight: 600;
+    cursor: pointer;
+    transition: border-color .18s, color .18s;
+    text-align: center;
+  }
+  .btn-secondary:hover { border-color: var(--text-sec); color: var(--text); }
+  .btn-tertiary {
+    flex: 1;
+    padding: 10px;
+    border-radius: 10px;
+    border: 1.5px solid var(--teal);
+    background: transparent;
+    font-family: inherit;
+    font-size: 13px;
+    color: var(--teal);
+    font-weight: 600;
+    cursor: pointer;
+    transition: all .18s;
+    text-align: center;
+  }
+  .btn-tertiary:hover { background: var(--teal); color: #fff; }
+
+  .expand-icon {
+    display: flex;
+    justify-content: center;
+    padding: 4px 0 0;
+    color: var(--text-weak);
+    font-size: 14px;
+    transition: transform .25s;
+  }
+  .org-card.expanded .expand-icon { transform: rotate(180deg); }
+
+  /* ── BOTTOM TAB ── */
+  .tab-bar {
+    position: fixed;
+    bottom: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 100%;
+    max-width: 480px;
+    height: var(--tab-h);
+    background: var(--card);
+    border-top: 1px solid #e0dbd2;
+    display: flex;
+    align-items: center;
+    justify-content: space-around;
+    z-index: 100;
+    padding-bottom: 4px;
+  }
+  .tab-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 3px;
+    cursor: pointer;
+    padding: 6px 12px;
+    border-radius: 10px;
+    transition: background .15s;
+    min-width: 52px;
+  }
+  .tab-item:hover { background: #f5f3ef; }
+  .tab-icon { font-size: 20px; line-height: 1; }
+  .tab-label { font-size: 10.5px; font-weight: 500; color: var(--text-weak); }
+  .tab-item.active .tab-label { color: var(--teal); font-weight: 600; }
+  .tab-item.active .tab-icon { filter: none; }
+  .tab-dot {
+    width: 5px; height: 5px;
+    border-radius: 50%;
+    background: var(--teal);
+    margin-top: -2px;
+  }
+</style>
+</head>
+<body>
+
+<div class="phone-frame">
+
+  <!-- TOP BAR -->
+  <div class="top-bar">
+    <div class="search-wrap">
+      <svg class="search-icon" width="15" height="15" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2">
+        <circle cx="9" cy="9" r="6"/><path d="M15 15l3 3"/>
+      </svg>
+      <input type="text" placeholder="Search organizations...">
+    </div>
+    <div class="avatar-sm">Q</div>
+  </div>
+
+  <!-- SCROLL CONTENT -->
+  <div class="scroll-content">
+
+    <!-- Page Header -->
+    <div class="page-header">
+      <h1>Organizations</h1>
+      <p>Publishers, studios, investors & service providers</p>
+    </div>
+
+    <!-- Type Filter -->
+    <div class="filter-scroll">
+      <div class="chip-row" id="typeFilter">
+        <div class="chip active" data-filter="type">All</div>
+        <div class="chip" data-filter="type">Publisher</div>
+        <div class="chip" data-filter="type">Developer</div>
+        <div class="chip" data-filter="type">Investor</div>
+        <div class="chip" data-filter="type">Service Provider</div>
+        <div class="chip" data-filter="type">Distributor</div>
+      </div>
+    </div>
+
+    <!-- Region Filter -->
+    <div class="filter-scroll" style="padding-top:0;">
+      <div class="chip-row" id="regionFilter">
+        <div class="chip active" data-filter="region" style="font-size:12px; padding:5px 12px;">🌏 All Regions</div>
+        <div class="chip" data-filter="region" style="font-size:12px; padding:5px 12px;">🌏 Asia</div>
+        <div class="chip" data-filter="region" style="font-size:12px; padding:5px 12px;">🌍 Europe</div>
+        <div class="chip" data-filter="region" style="font-size:12px; padding:5px 12px;">🌎 Americas</div>
+      </div>
+    </div>
+
+    <div class="filter-divider"></div>
+
+    <!-- ORG CARDS -->
+
+    <!-- 1. Dragon Gate Publishing (CN Publisher) -->
+    <div class="org-card" id="card1">
+      <div class="org-card-main" onclick="toggleCard('card1')">
+        <div class="org-top">
+          <div class="org-logo" style="background: linear-gradient(135deg,#c0392b,#e74c3c);">DG</div>
+          <div class="org-head">
+            <div class="org-name">Dragon Gate Publishing</div>
+            <div class="org-badges">
+              <span class="type-badge badge-publisher">Publisher</span>
+            </div>
+          </div>
+        </div>
+        <div class="org-location">🇨🇳 Beijing, China</div>
+        <div class="org-desc">One of China's leading independent game publishers specializing in bringing Asian-developed titles to global markets including Southeast Asia, Japan, and Europe.</div>
+        <div class="org-tags">
+          <span class="org-tag">RPG</span>
+          <span class="org-tag">Global Distribution</span>
+          <span class="org-tag">Mobile</span>
+          <span class="org-tag">PC</span>
+        </div>
+        <div class="org-footer">
+          <div class="org-stats">
+            <span>👥 240</span>
+            <span>🔗 1.2K connected</span>
+          </div>
+          <button class="btn-follow">Follow</button>
+        </div>
+        <div class="expand-icon">▾</div>
+      </div>
+      <div class="org-detail">
+        <div class="detail-section">
+          <h4>About</h4>
+          <p>Founded in 2012, Dragon Gate Publishing has published over 80 titles across PC, console, and mobile platforms. Known for culturally sensitive localization strategies and strong relationships with Asian regulatory bodies. Revenue exceeded ¥2.3B in 2024.</p>
+        </div>
+        <div class="detail-section">
+          <h4>Representative Titles</h4>
+          <div class="game-chips">
+            <div class="game-chip"><div class="game-chip-dot" style="background:#d95f2b"></div>Dynasty Echoes</div>
+            <div class="game-chip"><div class="game-chip-dot" style="background:#0a7fa8"></div>Sky Warlords</div>
+            <div class="game-chip"><div class="game-chip-dot" style="background:#0d9b72"></div>Jade Realm Online</div>
+          </div>
+        </div>
+        <div class="detail-section">
+          <h4>Contact</h4>
+          <div class="contact-info">
+            <span>🌐 <a href="#">dragongate-pub.com</a></span>
+            <span>✉️ <a href="#">partnerships@dragongate.cn</a></span>
+          </div>
+        </div>
+        <div class="detail-actions">
+          <button class="btn-primary">Connect</button>
+          <button class="btn-secondary">Message</button>
+          <button class="btn-tertiary">Follow</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- 2. Phoenix Media Group (CN Publisher) -->
+    <div class="org-card" id="card2">
+      <div class="org-card-main" onclick="toggleCard('card2')">
+        <div class="org-top">
+          <div class="org-logo" style="background: linear-gradient(135deg,#e67e22,#f39c12);">PH</div>
+          <div class="org-head">
+            <div class="org-name">Phoenix Media Group</div>
+            <div class="org-badges">
+              <span class="type-badge badge-publisher">Publisher</span>
+            </div>
+          </div>
+        </div>
+        <div class="org-location">🇨🇳 Shanghai, China</div>
+        <div class="org-desc">Premium publisher focused on narrative-driven experiences. Strong track record in co-production with Japanese and Korean studios for cross-cultural IP development.</div>
+        <div class="org-tags">
+          <span class="org-tag">Narrative</span>
+          <span class="org-tag">Console</span>
+          <span class="org-tag">Co-production</span>
+          <span class="org-tag">IP Development</span>
+        </div>
+        <div class="org-footer">
+          <div class="org-stats">
+            <span>👥 185</span>
+            <span>🔗 890 connected</span>
+          </div>
+          <button class="btn-follow">Follow</button>
+        </div>
+        <div class="expand-icon">▾</div>
+      </div>
+      <div class="org-detail">
+        <div class="detail-section">
+          <h4>About</h4>
+          <p>Phoenix Media Group operates across publishing, animation, and transmedia licensing. Their game division focuses on premium titles with cinematic production quality. Currently seeking indie studios with strong storytelling concepts for 2025-2026 slate.</p>
+        </div>
+        <div class="detail-section">
+          <h4>Representative Titles</h4>
+          <div class="game-chips">
+            <div class="game-chip"><div class="game-chip-dot" style="background:#e67e22"></div>Phoenix Chronicles</div>
+            <div class="game-chip"><div class="game-chip-dot" style="background:#9b59b6"></div>Night Lotus</div>
+          </div>
+        </div>
+        <div class="detail-section">
+          <h4>Contact</h4>
+          <div class="contact-info">
+            <span>🌐 <a href="#">phoenix-mg.com</a></span>
+            <span>✉️ <a href="#">gamedev@phoenix-mg.cn</a></span>
+          </div>
+        </div>
+        <div class="detail-actions">
+          <button class="btn-primary">Connect</button>
+          <button class="btn-secondary">Message</button>
+          <button class="btn-tertiary">Follow</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- 3. Kunlun Interactive (CN Publisher) -->
+    <div class="org-card" id="card3">
+      <div class="org-card-main" onclick="toggleCard('card3')">
+        <div class="org-top">
+          <div class="org-logo" style="background: linear-gradient(135deg,#1abc9c,#16a085);">KL</div>
+          <div class="org-head">
+            <div class="org-name">Kunlun Interactive</div>
+            <div class="org-badges">
+              <span class="type-badge badge-publisher">Publisher</span>
+            </div>
+          </div>
+        </div>
+        <div class="org-location">🇨🇳 Chengdu, China</div>
+        <div class="org-desc">Mobile-first publisher with deep roots in casual and mid-core gaming. Extensive distribution channels across 40+ countries with dedicated UA and monetization teams.</div>
+        <div class="org-tags">
+          <span class="org-tag">Mobile</span>
+          <span class="org-tag">Casual</span>
+          <span class="org-tag">UA</span>
+          <span class="org-tag">Global</span>
+        </div>
+        <div class="org-footer">
+          <div class="org-stats">
+            <span>👥 320</span>
+            <span>🔗 2.1K connected</span>
+          </div>
+          <button class="btn-follow following">Following</button>
+        </div>
+        <div class="expand-icon">▾</div>
+      </div>
+      <div class="org-detail">
+        <div class="detail-section">
+          <h4>About</h4>
+          <p>Kunlun Interactive has been a mobile publishing pioneer since 2009. Their proprietary analytics platform "LunarLens" helps optimize monetization for partner titles. They offer end-to-end publishing services including localization, QA, customer support, and live ops management.</p>
+        </div>
+        <div class="detail-section">
+          <h4>Representative Titles</h4>
+          <div class="game-chips">
+            <div class="game-chip"><div class="game-chip-dot" style="background:#1abc9c"></div>MountainFarm Go</div>
+            <div class="game-chip"><div class="game-chip-dot" style="background:#e74c3c"></div>Dragon Rush</div>
+            <div class="game-chip"><div class="game-chip-dot" style="background:#3498db"></div>City Legends Mobile</div>
+          </div>
+        </div>
+        <div class="detail-section">
+          <h4>Contact</h4>
+          <div class="contact-info">
+            <span>🌐 <a href="#">kunlun-interactive.com</a></span>
+            <span>✉️ <a href="#">publish@kunlun.cn</a></span>
+          </div>
+        </div>
+        <div class="detail-actions">
+          <button class="btn-primary">Connect</button>
+          <button class="btn-secondary">Message</button>
+          <button class="btn-tertiary">Unfollow</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- 4. Borealis Games (EU Publisher) -->
+    <div class="org-card" id="card4">
+      <div class="org-card-main" onclick="toggleCard('card4')">
+        <div class="org-top">
+          <div class="org-logo" style="background: linear-gradient(135deg,#2c3e50,#3498db);">BG</div>
+          <div class="org-head">
+            <div class="org-name">Borealis Games</div>
+            <div class="org-badges">
+              <span class="type-badge badge-publisher">Publisher</span>
+            </div>
+          </div>
+        </div>
+        <div class="org-location">🇸🇪 Stockholm, Sweden</div>
+        <div class="org-desc">European indie champion with a focus on innovative mechanics and artistic excellence. Known for nurturing small teams and providing patient, milestone-based publishing deals.</div>
+        <div class="org-tags">
+          <span class="org-tag">Indie</span>
+          <span class="org-tag">Artistic</span>
+          <span class="org-tag">PC</span>
+          <span class="org-tag">Innovation</span>
+        </div>
+        <div class="org-footer">
+          <div class="org-stats">
+            <span>👥 45</span>
+            <span>🔗 670 connected</span>
+          </div>
+          <button class="btn-follow">Follow</button>
+        </div>
+        <div class="expand-icon">▾</div>
+      </div>
+      <div class="org-detail">
+        <div class="detail-section">
+          <h4>About</h4>
+          <p>Borealis Games believes in the long game — they've never cancelled a project mid-development. With offices in Stockholm and Amsterdam, they provide full marketing support, Steam optimization, and press relations. Actively looking for projects from non-Western developers with unique cultural perspectives.</p>
+        </div>
+        <div class="detail-section">
+          <h4>Representative Titles</h4>
+          <div class="game-chips">
+            <div class="game-chip"><div class="game-chip-dot" style="background:#3498db"></div>Fjord Crossing</div>
+            <div class="game-chip"><div class="game-chip-dot" style="background:#9b59b6"></div>Whiteout Protocol</div>
+          </div>
+        </div>
+        <div class="detail-section">
+          <h4>Contact</h4>
+          <div class="contact-info">
+            <span>🌐 <a href="#">borealispublishing.eu</a></span>
+            <span>✉️ <a href="#">hello@borealispublishing.eu</a></span>
+          </div>
+        </div>
+        <div class="detail-actions">
+          <button class="btn-primary">Connect</button>
+          <button class="btn-secondary">Message</button>
+          <button class="btn-tertiary">Follow</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- 5. Meridiem Publishing (EU Publisher) -->
+    <div class="org-card" id="card5">
+      <div class="org-card-main" onclick="toggleCard('card5')">
+        <div class="org-top">
+          <div class="org-logo" style="background: linear-gradient(135deg,#8e44ad,#c0392b);">MP</div>
+          <div class="org-head">
+            <div class="org-name">Meridiem Publishing</div>
+            <div class="org-badges">
+              <span class="type-badge badge-publisher">Publisher</span>
+            </div>
+          </div>
+        </div>
+        <div class="org-location">🇫🇷 Lyon, France</div>
+        <div class="org-desc">Boutique publisher specializing in premium PC and console titles with strong European cultural identity. Known for acclaimed physical edition releases and collector's market expertise.</div>
+        <div class="org-tags">
+          <span class="org-tag">Premium</span>
+          <span class="org-tag">Console</span>
+          <span class="org-tag">Collector</span>
+          <span class="org-tag">PC</span>
+        </div>
+        <div class="org-footer">
+          <div class="org-stats">
+            <span>👥 28</span>
+            <span>🔗 430 connected</span>
+          </div>
+          <button class="btn-follow">Follow</button>
+        </div>
+        <div class="expand-icon">▾</div>
+      </div>
+      <div class="org-detail">
+        <div class="detail-section">
+          <h4>About</h4>
+          <p>Meridiem Publishing handles retail distribution across 35 European territories. Their strong relationships with FNAC, MediaMarkt, and GameStop Europe make them valuable partners for titles seeking physical presence. They also have an active Asian market division seeking Asian content for European audiences.</p>
+        </div>
+        <div class="detail-section">
+          <h4>Representative Titles</h4>
+          <div class="game-chips">
+            <div class="game-chip"><div class="game-chip-dot" style="background:#8e44ad"></div>Lumières Éternelles</div>
+            <div class="game-chip"><div class="game-chip-dot" style="background:#c0392b"></div>Bastille Reborn</div>
+          </div>
+        </div>
+        <div class="detail-section">
+          <h4>Contact</h4>
+          <div class="contact-info">
+            <span>🌐 <a href="#">meridiem-pub.fr</a></span>
+            <span>✉️ <a href="#">acquisitions@meridiem-pub.fr</a></span>
+          </div>
+        </div>
+        <div class="detail-actions">
+          <button class="btn-primary">Connect</button>
+          <button class="btn-secondary">Message</button>
+          <button class="btn-tertiary">Follow</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- 6. Cascade Entertainment (NA Publisher) -->
+    <div class="org-card" id="card6">
+      <div class="org-card-main" onclick="toggleCard('card6')">
+        <div class="org-top">
+          <div class="org-logo" style="background: linear-gradient(135deg,#d35400,#e67e22);">CE</div>
+          <div class="org-head">
+            <div class="org-name">Cascade Entertainment</div>
+            <div class="org-badges">
+              <span class="type-badge badge-publisher">Publisher</span>
+            </div>
+          </div>
+        </div>
+        <div class="org-location">🇺🇸 Seattle, WA, USA</div>
+        <div class="org-desc">Mid-size North American publisher with a strong presence on Steam, Epic Games Store, and console platforms. Specialist in action and survival genres with competitive marketing budgets.</div>
+        <div class="org-tags">
+          <span class="org-tag">Action</span>
+          <span class="org-tag">Survival</span>
+          <span class="org-tag">Steam</span>
+          <span class="org-tag">PC/Console</span>
+        </div>
+        <div class="org-footer">
+          <div class="org-stats">
+            <span>👥 90</span>
+            <span>🔗 1.4K connected</span>
+          </div>
+          <button class="btn-follow">Follow</button>
+        </div>
+        <div class="expand-icon">▾</div>
+      </div>
+      <div class="org-detail">
+        <div class="detail-section">
+          <h4>About</h4>
+          <p>Cascade Entertainment has published 30+ titles since 2008. Their dedicated community management team runs active Discord servers for partner titles with combined memberships exceeding 2M. Currently exploring partnerships with Asian studios to diversify their portfolio with Eastern-inspired titles.</p>
+        </div>
+        <div class="detail-section">
+          <h4>Representative Titles</h4>
+          <div class="game-chips">
+            <div class="game-chip"><div class="game-chip-dot" style="background:#d35400"></div>Wildstrike</div>
+            <div class="game-chip"><div class="game-chip-dot" style="background:#27ae60"></div>Forest Protocol</div>
+            <div class="game-chip"><div class="game-chip-dot" style="background:#2980b9"></div>Arctic Zero</div>
+          </div>
+        </div>
+        <div class="detail-section">
+          <h4>Contact</h4>
+          <div class="contact-info">
+            <span>🌐 <a href="#">cascade-ent.com</a></span>
+            <span>✉️ <a href="#">submissions@cascade-ent.com</a></span>
+          </div>
+        </div>
+        <div class="detail-actions">
+          <button class="btn-primary">Connect</button>
+          <button class="btn-secondary">Message</button>
+          <button class="btn-tertiary">Follow</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- 7. Redwood Interactive (NA Publisher) -->
+    <div class="org-card" id="card7">
+      <div class="org-card-main" onclick="toggleCard('card7')">
+        <div class="org-top">
+          <div class="org-logo" style="background: linear-gradient(135deg,#c0392b,#922b21);">RI</div>
+          <div class="org-head">
+            <div class="org-name">Redwood Interactive</div>
+            <div class="org-badges">
+              <span class="type-badge badge-publisher">Publisher</span>
+            </div>
+          </div>
+        </div>
+        <div class="org-location">🇨🇦 Toronto, Canada</div>
+        <div class="org-desc">Canadian publisher with a focus on narrative games and simulation titles. Strong ties to Canadian media funding (CMF) and experience co-producing with European and Asian studios.</div>
+        <div class="org-tags">
+          <span class="org-tag">Narrative</span>
+          <span class="org-tag">Simulation</span>
+          <span class="org-tag">Co-production</span>
+        </div>
+        <div class="org-footer">
+          <div class="org-stats">
+            <span>👥 55</span>
+            <span>🔗 760 connected</span>
+          </div>
+          <button class="btn-follow">Follow</button>
+        </div>
+        <div class="expand-icon">▾</div>
+      </div>
+      <div class="org-detail">
+        <div class="detail-section">
+          <h4>About</h4>
+          <p>Redwood Interactive helps developers navigate Canadian and international funding structures. Their in-house narrative designers offer co-development services, and they have a dedicated QA team in Montréal. Focused on titles with strong replay value and community features.</p>
+        </div>
+        <div class="detail-section">
+          <h4>Representative Titles</h4>
+          <div class="game-chips">
+            <div class="game-chip"><div class="game-chip-dot" style="background:#c0392b"></div>Maple Drift</div>
+            <div class="game-chip"><div class="game-chip-dot" style="background:#27ae60"></div>Cascade Valley</div>
+          </div>
+        </div>
+        <div class="detail-section">
+          <h4>Contact</h4>
+          <div class="contact-info">
+            <span>🌐 <a href="#">redwoodinteractive.ca</a></span>
+            <span>✉️ <a href="#">dev@redwoodinteractive.ca</a></span>
+          </div>
+        </div>
+        <div class="detail-actions">
+          <button class="btn-primary">Connect</button>
+          <button class="btn-secondary">Message</button>
+          <button class="btn-tertiary">Follow</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- 8. Peak Ventures (Investor) -->
+    <div class="org-card" id="card8">
+      <div class="org-card-main" onclick="toggleCard('card8')">
+        <div class="org-top">
+          <div class="org-logo" style="background: linear-gradient(135deg,#0a7fa8,#0d9b72);">PV</div>
+          <div class="org-head">
+            <div class="org-name">Peak Ventures</div>
+            <div class="org-badges">
+              <span class="type-badge badge-investor">Investor</span>
+            </div>
+          </div>
+        </div>
+        <div class="org-location">🇸🇬 Singapore</div>
+        <div class="org-desc">Asia-Pacific focused venture capital firm with $200M+ dedicated to interactive entertainment. Seed to Series B investments with strong portfolio in Southeast Asia and China.</div>
+        <div class="org-tags">
+          <span class="org-tag">VC</span>
+          <span class="org-tag">Seed–Series B</span>
+          <span class="org-tag">APAC</span>
+          <span class="org-tag">Mobile</span>
+        </div>
+        <div class="org-footer">
+          <div class="org-stats">
+            <span>👥 18</span>
+            <span>🔗 2.8K connected</span>
+          </div>
+          <button class="btn-follow">Follow</button>
+        </div>
+        <div class="expand-icon">▾</div>
+      </div>
+      <div class="org-detail">
+        <div class="detail-section">
+          <h4>About</h4>
+          <p>Peak Ventures has backed 45 game studios since 2015. Their investment thesis centers on games with strong monetization models, scalable live-service potential, and culturally resonant content. They provide not just capital but also go-to-market expertise and regional networks.</p>
+        </div>
+        <div class="detail-section">
+          <h4>Portfolio Highlights</h4>
+          <div class="game-chips">
+            <div class="game-chip"><div class="game-chip-dot" style="background:#0a7fa8"></div>ArcLight Games</div>
+            <div class="game-chip"><div class="game-chip-dot" style="background:#0d9b72"></div>Monsoon Studios</div>
+            <div class="game-chip"><div class="game-chip-dot" style="background:#d95f2b"></div>Sakura Labs</div>
+          </div>
+        </div>
+        <div class="detail-section">
+          <h4>Contact</h4>
+          <div class="contact-info">
+            <span>🌐 <a href="#">peak-vc.sg</a></span>
+            <span>✉️ <a href="#">pitch@peak-vc.sg</a></span>
+          </div>
+        </div>
+        <div class="detail-actions">
+          <button class="btn-primary">Connect</button>
+          <button class="btn-secondary">Message</button>
+          <button class="btn-tertiary">Follow</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- 9. Horizon Capital (Investor) -->
+    <div class="org-card" id="card9">
+      <div class="org-card-main" onclick="toggleCard('card9')">
+        <div class="org-top">
+          <div class="org-logo" style="background: linear-gradient(135deg,#2c3e50,#4ca1af);">HC</div>
+          <div class="org-head">
+            <div class="org-name">Horizon Capital</div>
+            <div class="org-badges">
+              <span class="type-badge badge-investor">Investor</span>
+            </div>
+          </div>
+        </div>
+        <div class="org-location">🇬🇧 London, UK</div>
+        <div class="org-desc">European gaming investment fund with global reach. Specializes in Series A and B rounds for studios with proven traction. Average check size $3–15M with board seat participation.</div>
+        <div class="org-tags">
+          <span class="org-tag">Series A–B</span>
+          <span class="org-tag">Europe</span>
+          <span class="org-tag">AAA-adjacent</span>
+        </div>
+        <div class="org-footer">
+          <div class="org-stats">
+            <span>👥 12</span>
+            <span>🔗 1.9K connected</span>
+          </div>
+          <button class="btn-follow">Follow</button>
+        </div>
+        <div class="expand-icon">▾</div>
+      </div>
+      <div class="org-detail">
+        <div class="detail-section">
+          <h4>About</h4>
+          <p>Horizon Capital manages a €320M fund dedicated exclusively to interactive entertainment. They have a track record of 8 successful exits and actively support their portfolio companies with strategic introductions to major publishers. Increasingly interested in Asian market content for cross-border IP opportunities.</p>
+        </div>
+        <div class="detail-section">
+          <h4>Portfolio Highlights</h4>
+          <div class="game-chips">
+            <div class="game-chip"><div class="game-chip-dot" style="background:#4ca1af"></div>NovaStar Games</div>
+            <div class="game-chip"><div class="game-chip-dot" style="background:#e74c3c"></div>Stellar Forge</div>
+          </div>
+        </div>
+        <div class="detail-section">
+          <h4>Contact</h4>
+          <div class="contact-info">
+            <span>🌐 <a href="#">horizoncap.vc</a></span>
+            <span>✉️ <a href="#">deals@horizoncap.vc</a></span>
+          </div>
+        </div>
+        <div class="detail-actions">
+          <button class="btn-primary">Connect</button>
+          <button class="btn-secondary">Message</button>
+          <button class="btn-tertiary">Follow</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- 10. LinguaPlay (Service - Localization) -->
+    <div class="org-card" id="card10">
+      <div class="org-card-main" onclick="toggleCard('card10')">
+        <div class="org-top">
+          <div class="org-logo" style="background: linear-gradient(135deg,#f39c12,#d35400);">LP</div>
+          <div class="org-head">
+            <div class="org-name">LinguaPlay</div>
+            <div class="org-badges">
+              <span class="type-badge badge-service">Service Provider</span>
+            </div>
+          </div>
+        </div>
+        <div class="org-location">🇯🇵 Tokyo, Japan</div>
+        <div class="org-desc">Premier game localization studio serving 28 languages. Deep expertise in Chinese–Japanese–Korean and Western market adaptation. Native speaker teams for 18 major gaming markets.</div>
+        <div class="org-tags">
+          <span class="org-tag">Localization</span>
+          <span class="org-tag">CJK</span>
+          <span class="org-tag">28 Languages</span>
+          <span class="org-tag">Voice Acting</span>
+        </div>
+        <div class="org-footer">
+          <div class="org-stats">
+            <span>👥 130</span>
+            <span>🔗 3.2K connected</span>
+          </div>
+          <button class="btn-follow">Follow</button>
+        </div>
+        <div class="expand-icon">▾</div>
+      </div>
+      <div class="org-detail">
+        <div class="detail-section">
+          <h4>About</h4>
+          <p>LinguaPlay has localized 300+ game titles since 2010. Beyond text translation, they offer cultural consulting, UI/UX adaptation, voice recording coordination, and LQA (Linguistic Quality Assurance). Their proprietary "GameLingua TMS" platform integrates with Unity, Unreal, and Godot workflows.</p>
+        </div>
+        <div class="detail-section">
+          <h4>Notable Projects</h4>
+          <div class="game-chips">
+            <div class="game-chip"><div class="game-chip-dot" style="background:#f39c12"></div>200+ Indie Titles</div>
+            <div class="game-chip"><div class="game-chip-dot" style="background:#d35400"></div>15 AAA Partners</div>
+          </div>
+        </div>
+        <div class="detail-section">
+          <h4>Contact</h4>
+          <div class="contact-info">
+            <span>🌐 <a href="#">linguaplay.jp</a></span>
+            <span>✉️ <a href="#">localize@linguaplay.jp</a></span>
+          </div>
+        </div>
+        <div class="detail-actions">
+          <button class="btn-primary">Connect</button>
+          <button class="btn-secondary">Message</button>
+          <button class="btn-tertiary">Follow</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- 11. QualityForge (Service - QA) -->
+    <div class="org-card" id="card11">
+      <div class="org-card-main" onclick="toggleCard('card11')">
+        <div class="org-top">
+          <div class="org-logo" style="background: linear-gradient(135deg,#27ae60,#1e8449);">QF</div>
+          <div class="org-head">
+            <div class="org-name">QualityForge</div>
+            <div class="org-badges">
+              <span class="type-badge badge-service">Service Provider</span>
+            </div>
+          </div>
+        </div>
+        <div class="org-location">🇵🇱 Warsaw, Poland</div>
+        <div class="org-desc">Full-service game QA and testing studio with a team of 200+ dedicated testers. Rapid turnaround times, competitive pricing, and deep expertise in cross-platform compatibility testing.</div>
+        <div class="org-tags">
+          <span class="org-tag">QA Testing</span>
+          <span class="org-tag">Compatibility</span>
+          <span class="org-tag">Bug Tracking</span>
+          <span class="org-tag">LQA</span>
+        </div>
+        <div class="org-footer">
+          <div class="org-stats">
+            <span>👥 210</span>
+            <span>🔗 1.6K connected</span>
+          </div>
+          <button class="btn-follow">Follow</button>
+        </div>
+        <div class="expand-icon">▾</div>
+      </div>
+      <div class="org-detail">
+        <div class="detail-section">
+          <h4>About</h4>
+          <p>QualityForge operates dedicated QA labs with 500+ device testing capability. Their services include functional testing, performance profiling, certification support (PEGI, ESRB, regional), and automated regression testing. They work with studios at any stage — from alpha builds to post-launch patches.</p>
+        </div>
+        <div class="detail-section">
+          <h4>Services</h4>
+          <div class="game-chips">
+            <div class="game-chip"><div class="game-chip-dot" style="background:#27ae60"></div>Functional QA</div>
+            <div class="game-chip"><div class="game-chip-dot" style="background:#3498db"></div>Performance Testing</div>
+            <div class="game-chip"><div class="game-chip-dot" style="background:#e67e22"></div>Certification</div>
+          </div>
+        </div>
+        <div class="detail-section">
+          <h4>Contact</h4>
+          <div class="contact-info">
+            <span>🌐 <a href="#">qualityforge.eu</a></span>
+            <span>✉️ <a href="#">quote@qualityforge.eu</a></span>
+          </div>
+        </div>
+        <div class="detail-actions">
+          <button class="btn-primary">Connect</button>
+          <button class="btn-secondary">Message</button>
+          <button class="btn-tertiary">Follow</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- 12. GlobalArc Distribution (Distributor) -->
+    <div class="org-card" id="card12">
+      <div class="org-card-main" onclick="toggleCard('card12')">
+        <div class="org-top">
+          <div class="org-logo" style="background: linear-gradient(135deg,#8e44ad,#6c3483);">GA</div>
+          <div class="org-head">
+            <div class="org-name">GlobalArc Distribution</div>
+            <div class="org-badges">
+              <span class="type-badge badge-distributor">Distributor</span>
+            </div>
+          </div>
+        </div>
+        <div class="org-location">🇦🇪 Dubai, UAE</div>
+        <div class="org-desc">Global digital and physical distribution network connecting Asian game studios with Middle Eastern, African, and South Asian markets. 180+ retail and digital platform partnerships.</div>
+        <div class="org-tags">
+          <span class="org-tag">MENA</span>
+          <span class="org-tag">South Asia</span>
+          <span class="org-tag">Digital</span>
+          <span class="org-tag">Physical</span>
+        </div>
+        <div class="org-footer">
+          <div class="org-stats">
+            <span>👥 75</span>
+            <span>🔗 980 connected</span>
+          </div>
+          <button class="btn-follow">Follow</button>
+        </div>
+        <div class="expand-icon">▾</div>
+      </div>
+      <div class="org-detail">
+        <div class="detail-section">
+          <h4>About</h4>
+          <p>GlobalArc Distribution bridges the gap between content creators in Asia and underserved markets in MENA and South Asia. They handle platform submissions (regional app stores, console certification), payment localization, and regulatory compliance across 35 countries. Their logistics network covers physical goods distribution for console titles.</p>
+        </div>
+        <div class="detail-section">
+          <h4>Market Reach</h4>
+          <div class="game-chips">
+            <div class="game-chip"><div class="game-chip-dot" style="background:#8e44ad"></div>35 Countries</div>
+            <div class="game-chip"><div class="game-chip-dot" style="background:#e67e22"></div>180+ Platforms</div>
+            <div class="game-chip"><div class="game-chip-dot" style="background:#27ae60"></div>50M+ Users</div>
+          </div>
+        </div>
+        <div class="detail-section">
+          <h4>Contact</h4>
+          <div class="contact-info">
+            <span>🌐 <a href="#">globalarc.ae</a></span>
+            <span>✉️ <a href="#">partners@globalarc.ae</a></span>
+          </div>
+        </div>
+        <div class="detail-actions">
+          <button class="btn-primary">Connect</button>
+          <button class="btn-secondary">Message</button>
+          <button class="btn-tertiary">Follow</button>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- /scroll-content -->
+
+  <!-- BOTTOM TAB BAR -->
+  <div class="tab-bar">
+    <div class="tab-item">
+      <div class="tab-icon">🏠</div>
+      <div class="tab-label">Home</div>
+    </div>
+    <div class="tab-item active">
+      <div class="tab-icon">👥</div>
+      <div class="tab-label" style="color:var(--teal);">People</div>
+      <div class="tab-dot"></div>
+    </div>
+    <div class="tab-item">
+      <div class="tab-icon">🎮</div>
+      <div class="tab-label">Projects</div>
+    </div>
+    <div class="tab-item">
+      <div class="tab-icon">📅</div>
+      <div class="tab-label">Events</div>
+    </div>
+    <div class="tab-item" style="position:relative;">
+      <div class="tab-icon">💬</div>
+      <div class="tab-label">Messages</div>
+      <div style="position:absolute;top:6px;right:12px;width:8px;height:8px;background:var(--orange);border-radius:50%;border:2px solid #fff;"></div>
+    </div>
+  </div>
+
+</div><!-- /phone-frame -->
+
+<script>
+  function toggleCard(id) {
+    const card = document.getElementById(id);
+    card.classList.toggle('expanded');
+  }
+
+  // Filter chips
+  document.querySelectorAll('[data-filter="type"]').forEach(chip => {
+    chip.addEventListener('click', () => {
+      document.querySelectorAll('[data-filter="type"]').forEach(c => c.classList.remove('active'));
+      chip.classList.add('active');
+    });
+  });
+  document.querySelectorAll('[data-filter="region"]').forEach(chip => {
+    chip.addEventListener('click', () => {
+      document.querySelectorAll('[data-filter="region"]').forEach(c => c.classList.remove('active'));
+      chip.classList.add('active');
+    });
+  });
+
+  // Follow buttons
+  document.querySelectorAll('.btn-follow').forEach(btn => {
+    btn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      const isFollowing = btn.classList.contains('following');
+      btn.classList.toggle('following');
+      btn.textContent = isFollowing ? 'Follow' : 'Following';
+    });
+  });
+</script>
+</body>
+</html>

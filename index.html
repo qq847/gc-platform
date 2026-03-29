@@ -1,0 +1,2675 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Game Connection — Platform Map</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:"DM Sans",sans-serif;background:#e8e4da;color:#1c1a17;padding:36px 32px 60px;min-height:100vh}
+@media print{
+  body{background:#fff !important;color:#000 !important;padding:16px !important;font-size:11px}
+  .right-panel{display:none !important}
+  .main-layout{display:block !important}
+  .card{background:#fff !important;border:1px solid #ccc !important;box-shadow:none !important;break-inside:avoid;page-break-inside:avoid}
+  .phase-block{break-before:auto;page-break-before:auto}
+  .platform{background:#f5f5f5 !important;border:1px solid #ddd !important;color:#000 !important}
+  .platform.active{background:#e8f4e8 !important}
+  a{color:#000 !important;text-decoration:none}
+  .hdr .meta .btn,.export-btn{display:none !important}
+  .note-label,.card-note,.phase-note{display:none !important}
+  .phase-header{background:#f0f0f0 !important;border:1px solid #ccc !important}
+  details{display:block}
+  details summary{display:none}
+  details>*{display:block !important}
+  .phase-grid{grid-template-columns:repeat(3,1fr) !important}
+}
+:root{
+  --orange:#d95f2b;--teal:#0a7fa8;--green:#0d9b72;--purple:#7c3aed;
+  --text1:#1c1a17;--text2:#6b6660;--text3:#a09890;--border:rgba(0,0,0,0.09);
+}
+
+/* ===== MAIN LAYOUT ===== */
+.main-layout { display:flex; gap:32px; max-width:1600px; margin:0 auto; align-items:flex-start; }
+.left-content { flex:1; min-width:0; }
+
+/* ===== RIGHT PANEL ===== */
+.right-panel {
+  width:37%;
+  min-width:320px;
+  flex-shrink:0;
+  position:sticky;
+  top:20px;
+  max-height:calc(100vh - 40px);
+  overflow-y:auto;
+  background:#fff;
+  border-radius:14px;
+  border:1px solid #ddd;
+  padding:24px;
+}
+.right-panel-title { font-size:13px; font-weight:800; color:var(--text1); margin-bottom:4px; }
+.right-panel-subtitle { font-size:11px; color:var(--text3); margin-bottom:16px; }
+.right-panel-section { display:none; }
+.right-panel-section.active { display:block; }
+.panel-phase-header { display:flex; align-items:center; gap:10px; margin-bottom:16px; padding-bottom:12px; border-bottom:1px solid #f0ede8; }
+.panel-phase-num { width:32px; height:32px; border-radius:8px; background:var(--orange); color:#fff; font-size:14px; font-weight:800; display:flex; align-items:center; justify-content:center; flex-shrink:0; }
+.panel-phase-name { font-size:14px; font-weight:800; color:var(--text1); }
+.panel-field-label { font-size:11px; font-weight:700; color:#d95f2b; text-transform:uppercase; letter-spacing:0.5px; margin:16px 0 4px; }
+.panel-field {
+  width:100%; min-height:60px; border:1px dashed #ccc; border-radius:8px;
+  padding:10px 12px; font-size:13px; color:#444; line-height:1.6;
+  outline:none; background:#fafaf8; cursor:text; font-family:"DM Sans",sans-serif;
+}
+.panel-field:focus { border-color:#d95f2b; background:#fffde7; }
+.panel-field:empty:before { content:attr(data-placeholder); color:#bbb; }
+
+@media (max-width:1200px) {
+  .right-panel { display:none !important; }
+  .main-layout { display:block; }
+}
+
+/* Header */
+.hdr{margin-bottom:28px}
+.eyebrow{font-size:10px;letter-spacing:3px;font-weight:800;color:var(--orange);text-transform:uppercase;margin-bottom:8px}
+h1{font-size:30px;font-weight:800;letter-spacing:-.8px;margin-bottom:4px}
+.sub{font-size:13px;color:var(--text2);margin-bottom:14px}
+.meta{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.tag{display:inline-flex;align-items:center;gap:5px;font-size:11px;color:var(--text3);background:rgba(0,0,0,0.05);border:1px solid var(--border);padding:3px 11px;border-radius:20px}
+
+/* View Tabs */
+.view-tabs { display:flex; gap:8px; margin-bottom:24px; }
+.view-tab { padding:8px 20px; border-radius:8px; border:1px solid var(--border); background:#fff; font-family:'DM Sans',sans-serif; font-size:13px; font-weight:600; cursor:pointer; color:var(--text2); }
+.view-tab.active { background:var(--orange); color:#fff; border-color:var(--orange); }
+
+/* Stats */
+.stats{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:32px}
+.stat{background:#fff;border:1px solid var(--border);border-radius:10px;padding:11px 18px}
+.stat-n{font-size:20px;font-weight:800}
+.stat-l{font-size:9px;color:var(--text3);font-weight:700;text-transform:uppercase;letter-spacing:.5px;margin-top:1px}
+
+/* Legend */
+.legend{display:flex;gap:16px;margin-bottom:28px;flex-wrap:wrap;align-items:center}
+.legend-title{font-size:11px;color:var(--text3);font-weight:600}
+.leg{display:flex;align-items:center;gap:5px;font-size:11px;color:var(--text2)}
+.leg-dot{width:8px;height:8px;border-radius:50%}
+
+/* Section */
+.section{margin-bottom:24px}
+.sec-hdr{display:flex;align-items:center;gap:10px;margin-bottom:10px}
+.sec-num{width:24px;height:24px;border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:800;color:#fff;flex-shrink:0}
+.sec-title{font-size:14px;font-weight:800}
+.sec-desc{font-size:11px;color:var(--text3);margin-left:34px;margin-top:-6px;margin-bottom:8px}
+
+/* Grid */
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:8px;margin-left:34px}
+
+/* Card */
+.card{background:#fff;border:1px solid var(--border);border-radius:12px;padding:14px 16px;transition:all .15s}
+.card:hover{box-shadow:0 3px 12px rgba(0,0,0,0.1);border-color:rgba(217,95,43,0.25)}
+.card-title{font-size:13px;font-weight:700;color:var(--text1);margin-bottom:10px;display:flex;align-items:center;gap:7px}
+.card-icon{font-size:15px}
+
+/* Platform rows */
+.platforms{display:flex;flex-direction:column;gap:5px}
+.platform{display:flex;align-items:center;gap:8px;padding:6px 10px;border-radius:8px;text-decoration:none;transition:all .15s}
+
+/* Active = has a page */
+.platform.active{background:rgba(0,0,0,0.03);cursor:pointer}
+.platform.active:hover{background:rgba(217,95,43,0.08);border-color:rgba(217,95,43,0.3)}
+.platform.active:hover .pname{color:var(--orange)}
+
+/* Inactive = not done yet */
+.platform.inactive{opacity:.4;cursor:not-allowed;background:rgba(0,0,0,0.02)}
+
+.picon{font-size:14px;flex-shrink:0;width:22px;text-align:center}
+.pname{font-size:12px;font-weight:600;color:var(--text2);flex:1}
+.platform.active .pname{color:var(--text1)}
+.pver{font-size:10px;color:var(--text3);font-weight:500}
+.pdot{width:7px;height:7px;border-radius:50%;flex-shrink:0}
+.pdot-on{background:var(--green)}
+.pdot-off{background:#d0cdc8}
+
+/* Latest version highlight */
+.platform.latest {
+  background: rgba(13,155,114,0.06);
+  border-left: 3px solid var(--green);
+  padding-left: 8px;
+}
+.platform.latest .pname { font-size: 13px; color: var(--text1); font-weight: 700; }
+.platform.latest .pver { color: var(--green); font-weight: 600; }
+
+/* Old versions collapsible */
+details { margin-top: 4px; }
+details summary {
+  font-size: 11px; color: var(--text3); cursor: pointer;
+  padding: 4px 8px; border-radius: 6px;
+  list-style: none;
+}
+details summary::-webkit-details-marker { display: none; }
+details summary:hover { background: rgba(0,0,0,0.04); color: var(--text2); }
+details .platform { padding: 4px 8px; }
+details .pname { font-size: 11px; color: var(--text3); }
+
+/* Archive */
+.archive{background:rgba(0,0,0,0.03);border:1px dashed var(--border);border-radius:10px;padding:11px 16px;font-size:11px;color:var(--text3);margin-top:20px;display:flex;align-items:center;gap:8px}
+
+/* Phase blocks */
+.phase-block { margin-bottom:32px; }
+.phase-header { display:flex; align-items:center; gap:10px; margin-bottom:12px; padding:6px 0; background:transparent; border-radius:0; border:none; border-bottom:1px solid var(--border); }
+.phase-num { width:36px; height:36px; border-radius:8px; background:var(--orange); color:#fff; font-size:16px; font-weight:800; display:flex; align-items:center; justify-content:center; flex-shrink:0; }
+.phase-name { font-size:14px; font-weight:800; }
+.phase-desc { font-size:11px; color:var(--text3); margin-top:1px; }
+.phase-status { margin-left:auto; font-size:11px; font-weight:600; color:var(--text3); }
+.coming-soon-card { background:#fff; border:1px dashed var(--border); border-radius:12px; padding:14px 16px; opacity:0.5; }
+.coming-soon-card .card-title { color:var(--text3); }
+.phase-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(260px,1fr)); gap:8px; }
+
+/* ===== B2B / B2C DUAL COLUMN (Phase 5) ===== */
+.b2b-b2c-header { display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-bottom:8px; }
+.b2b-b2c-col-label { font-size:12px; font-weight:700; color:var(--text2); padding:6px 10px; background:rgba(0,0,0,0.04); border-radius:6px; }
+.b2b-b2c-grid { display:grid; grid-template-columns:1fr 1fr; gap:8px; }
+.b2b-cell { display:flex; flex-direction:column; gap:8px; }
+.attendee-placeholder {
+  display:flex; align-items:center; padding:14px 16px;
+  background:#f5f5f3; border:1px dashed #d0cdc8; border-radius:12px;
+  color:#a09890; font-size:12px; font-style:italic;
+  min-height:60px;
+}
+
+/* ===== EDITABLE NOTES SYSTEM ===== */
+.phase-note {
+  background: #fff8e1;
+  border-left: 3px solid #d95f2b;
+  border-radius: 6px;
+  padding: 8px 12px;
+  margin: 8px 0 12px 0;
+  font-size: 13px;
+  color: #555;
+  cursor: text;
+  min-height: 36px;
+  outline: none;
+  transition: background 0.2s;
+}
+.phase-note:focus { background: #fffde7; border-left-color: #f57c00; }
+.phase-note:empty:before { content: attr(data-placeholder); color: #bbb; }
+
+.card-note {
+  background: #f5f5f0;
+  border-radius: 6px;
+  padding: 6px 10px;
+  margin-top: 8px;
+  font-size: 12px;
+  color: #666;
+  cursor: text;
+  min-height: 28px;
+  outline: none;
+  border: 1px dashed #ccc;
+  transition: border-color 0.2s, background 0.2s;
+}
+.card-note:focus { border-color: #d95f2b; background: #fffde7; }
+.card-note:empty:before { content: attr(data-placeholder); color: #bbb; }
+
+.note-label {
+  font-size: 10px;
+  color: #d95f2b;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-top: 10px;
+  margin-bottom: 2px;
+}
+
+/* ===== DESIGN PHILOSOPHY ===== */
+.design-philosophy {
+  background: #1c1a17;
+  border-radius: 16px;
+  padding: 28px 32px;
+  margin-top: 40px;
+  color: #fff;
+}
+.design-philosophy h2 { font-size:18px; font-weight:800; margin-bottom:20px; }
+.philosophy-principles { display:flex; flex-direction:column; gap:14px; }
+.philosophy-item { display:flex; gap:14px; align-items:flex-start; }
+.philosophy-icon { font-size:20px; flex-shrink:0; margin-top:2px; }
+.philosophy-content { flex:1; }
+.philosophy-title { font-size:13px; font-weight:700; color:#f5c77e; margin-bottom:3px; }
+.philosophy-desc { font-size:12px; color:rgba(255,255,255,0.65); line-height:1.6; }
+
+/* ===== EXPORT MODAL ===== */
+.export-modal-overlay {
+  position:fixed; inset:0; background:rgba(0,0,0,0.55); z-index:9999;
+  align-items:center; justify-content:center;
+}
+.export-modal-inner {
+  background:#fff; border-radius:16px; padding:28px;
+  max-width:600px; width:90%; max-height:80vh; overflow:auto;
+}
+.export-modal-header { display:flex; align-items:center; justify-content:space-between; margin-bottom:16px; }
+.export-modal-close { background:none; border:none; cursor:pointer; font-size:22px; color:#888; line-height:1; }
+.export-btn-copy {
+  margin-top:12px; background:var(--orange); color:#fff; border:none;
+  border-radius:8px; padding:10px 20px; cursor:pointer;
+  font-weight:700; font-size:13px; font-family:"DM Sans",sans-serif;
+}
+</style>
+</head>
+<body>
+
+<!-- Export Modal -->
+<div id="export-modal" class="export-modal-overlay" style="display:none;">
+  <div class="export-modal-inner">
+    <div class="export-modal-header">
+      <h3 style="font-size:16px;font-weight:800;">📋 导出备注</h3>
+      <button class="export-modal-close" onclick="document.getElementById('export-modal').style.display='none'">✕</button>
+    </div>
+    <textarea id="export-output" readonly style="width:100%;height:300px;font-size:12px;font-family:monospace;border:1px solid #ddd;border-radius:8px;padding:12px;resize:none;"></textarea>
+    <button class="export-btn-copy" onclick="navigator.clipboard.writeText(document.getElementById('export-output').value).then(()=>this.textContent='✅ 已复制').catch(()=>this.textContent='复制失败')">📋 复制到剪贴板</button>
+  </div>
+</div>
+
+<div class="main-layout">
+
+<!-- ===== LEFT CONTENT ===== -->
+<div class="left-content">
+
+<div class="hdr">
+  <h1>Game Connection Index <span style="font-size:14px;font-weight:500;color:#a09890;">v3</span></h1>
+
+</div>
+
+<div class="view-tabs">
+  <button class="view-tab active" onclick="switchView('roadmap')">📍 Roadmap View</button>
+  <button class="view-tab" onclick="switchView('module')">🧩 Module View</button>
+  <button class="view-tab" onclick="switchView('journey')">🚀 Journey</button>
+  <button class="view-tab" onclick="switchView('vi')">🎨 VI</button>
+  <button class="view-tab" onclick="switchView('bp')">📊 BP</button>
+</div>
+
+
+
+<!-- ===== ROADMAP VIEW ===== -->
+<div id="roadmap-view">
+
+  <!-- Phase 1: Discovery -->
+  <div class="phase-block" data-phase-id="1">
+    <div class="phase-header">
+      <div class="phase-num">1</div>
+      <div class="phase-info">
+        <div class="phase-name">Discovery</div>
+        <div class="phase-desc">无需注册即可使用 · SEO入口 · 冷启动</div>
+      </div>
+      <div class="phase-status">✅ Prototyped</div>
+    </div>
+    <div class="phase-grid">
+      <!-- Homepage Feed -->
+      <div class="card">
+        <div class="card-title"><span class="card-icon">🏠</span>Homepage Feed</div>
+        <div class="platforms">
+          <a class="platform active latest" href="https://qq847.github.io/gc-platform/Homepage_Feed_v2_PC.html" target="_blank"><span class="picon">🖥️</span><span class="pname">PC Feed ★</span><span class="pver">v2</span><span class="pdot pdot-on"></span></a>
+          <a class="platform active latest" href="https://qq847.github.io/gc-platform/Homepage_Feed_v1_Mobile.html" target="_blank"><span class="picon">📱</span><span class="pname">Mobile Feed ★</span><span class="pver">v1</span><span class="pdot pdot-on"></span></a>
+          <details>
+            <summary>旧版本 ▼</summary>
+            <a class="platform active" href="https://qq847.github.io/gc-platform/Homepage_Feed_v2_PC.html" target="_blank"><span class="picon">🖥️</span><span class="pname">PC Feed</span><span class="pver">v1</span><span class="pdot pdot-on"></span></a>
+            <a class="platform active" href="https://qq847.github.io/gc-platform/Homepage_v1_PC.html" target="_blank"><span class="picon">🖥️</span><span class="pname">PC</span><span class="pver">v1 original</span><span class="pdot pdot-on"></span></a>
+            <a class="platform active" href="https://qq847.github.io/gc-platform/Homepage_V7_Mobile.html" target="_blank"><span class="picon">📱</span><span class="pname">Mobile</span><span class="pver">V7 original</span><span class="pdot pdot-on"></span></a>
+          </details>
+        </div>
+      </div>
+      <!-- Event Hub -->
+      <div class="card">
+        <div class="card-title"><span class="card-icon">🗓️</span>Event Hub</div>
+        <div class="card-note" style="font-size:10px;color:var(--text3);margin-bottom:6px;">Calendar + Live 统一视图</div>
+        <div class="platforms">
+          <a class="platform active latest" href="https://qq847.github.io/gc-platform/EventHub_v1_PC.html" target="_blank"><span class="picon">🖥️</span><span class="pname">PC ★</span><span class="pver">v1</span><span class="pdot pdot-on"></span></a>
+          <a class="platform active latest" href="https://qq847.github.io/gc-platform/MobileHub_v11.html" target="_blank"><span class="picon">📱</span><span class="pname">Mobile ★</span><span class="pver">v11</span><span class="pdot pdot-on"></span></a>
+          <details>
+            <summary>旧版本 ▼</summary>
+            <a class="platform active" href="https://qq847.github.io/gc-platform/MobileHub_v3.html" target="_blank"><span class="picon">📱</span><span class="pname">Mobile</span><span class="pver">v3</span><span class="pdot pdot-on"></span></a>
+            <a class="platform active" href="https://qq847.github.io/gc-platform/MobileHub_v2.html" target="_blank"><span class="picon">📱</span><span class="pname">Mobile</span><span class="pver">v2</span><span class="pdot pdot-on"></span></a>
+            <a class="platform active" href="https://qq847.github.io/gc-platform/MobileHub_v1.html" target="_blank"><span class="picon">📱</span><span class="pname">Mobile</span><span class="pver">v1</span><span class="pdot pdot-on"></span></a>
+            <a class="platform active" href="https://qq847.github.io/gc-platform/Live_v43_Mobile.html" target="_blank"><span class="picon">📱</span><span class="pname">Live Mobile</span><span class="pver">v43</span><span class="pdot pdot-on"></span></a>
+            <a class="platform active" href="https://qq847.github.io/gc-platform/Live_v41_Mobile.html" target="_blank"><span class="picon">📱</span><span class="pname">Live Mobile reskinned</span><span class="pver">v41</span><span class="pdot pdot-on"></span></a>
+            <a class="platform active" href="https://qq847.github.io/gc-platform/Live_v40_Mobile.html" target="_blank"><span class="picon">📱</span><span class="pname">Live Mobile original</span><span class="pver">v40</span><span class="pdot pdot-on"></span></a>
+            <a class="platform active" href="https://qq847.github.io/gc-platform/Live_v44_PC.html" target="_blank"><span class="picon">🖥️</span><span class="pname">Live PC</span><span class="pver">v44</span><span class="pdot pdot-on"></span></a>
+            <a class="platform active" href="https://qq847.github.io/gc-platform/ConferenceCalendar_v3_PC.html" target="_blank"><span class="picon">🖥️</span><span class="pname">Calendar PC</span><span class="pver">v3</span><span class="pdot pdot-on"></span></a>
+            <a class="platform active" href="https://qq847.github.io/gc-platform/ConferenceCalendar_v2_Mobile.html" target="_blank"><span class="picon">📱</span><span class="pname">Calendar Mobile</span><span class="pver">v2</span><span class="pdot pdot-on"></span></a>
+          </details>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Phase 2: Identity -->
+  <div class="phase-block" data-phase-id="2">
+    <div class="phase-header">
+      <div class="phase-num">2</div>
+      <div class="phase-info">
+        <div class="phase-name">Identity</div>
+        <div class="phase-desc">注册登录 · 个人主页 · 项目 · 组织</div>
+      </div>
+      <div class="phase-status">✅ Prototyped</div>
+    </div>
+    <div class="phase-grid">
+      <!-- Login -->
+      <div class="card">
+        <div class="card-title"><span class="card-icon">🔐</span>Login</div>
+        <div class="platforms">
+          <a class="platform active latest" href="https://qq847.github.io/gc-platform/Login_v1.html" target="_blank"><span class="picon">🖥️</span><span class="pname">PC</span><span class="pver">v1</span><span class="pdot pdot-on"></span></a>
+          <a class="platform active latest" href="https://qq847.github.io/gc-platform/Login_v1_Mobile.html" target="_blank"><span class="picon">📱</span><span class="pname">Mobile</span><span class="pver">v1</span><span class="pdot pdot-on"></span></a>
+        </div>
+      </div>
+      <!-- Onboarding -->
+      <div class="card">
+        <div class="card-title"><span class="card-icon">👤</span>Onboarding</div>
+        <div class="platforms">
+          <a class="platform active latest" href="https://qq847.github.io/gc-platform/Onboarding_v1.html" target="_blank"><span class="picon">🖥️</span><span class="pname">PC</span><span class="pver">v1</span><span class="pdot pdot-on"></span></a>
+          <a class="platform active latest" href="https://qq847.github.io/gc-platform/Onboarding_v1_Mobile.html" target="_blank"><span class="picon">📱</span><span class="pname">Mobile</span><span class="pver">v1</span><span class="pdot pdot-on"></span></a>
+        </div>
+      </div>
+      <!-- Profile -->
+      <div class="card">
+        <div class="card-title"><span class="card-icon">👤</span>User Profile</div>
+        <div class="platforms">
+          <a class="platform active latest" href="https://qq847.github.io/gc-platform/Profile_v2_PC.html" target="_blank"><span class="picon">🖥️</span><span class="pname">PC + Attending/Speaking/Availability ★</span><span class="pver">v2</span><span class="pdot pdot-on"></span></a>
+          <a class="platform active latest" href="https://qq847.github.io/gc-platform/Profile_v2_Mobile.html" target="_blank"><span class="picon">📱</span><span class="pname">Mobile ★</span><span class="pver">v11</span><span class="pdot pdot-on"></span></a>
+          <details>
+            <summary>旧版本 ▼</summary>
+            <a class="platform active" href="https://qq847.github.io/gc-platform/Profile_V1_PC.html" target="_blank"><span class="picon">🖥️</span><span class="pname">PC</span><span class="pver">v1</span><span class="pdot pdot-on"></span></a>
+            <a class="platform active" href="https://qq847.github.io/gc-platform/Profile_v1_Mobile.html" target="_blank"><span class="picon">📱</span><span class="pname">Mobile</span><span class="pver">v1</span><span class="pdot pdot-on"></span></a>
+          </details>
+        </div>
+      </div>
+      <!-- Organization -->
+      <div class="card">
+        <div class="card-title"><span class="card-icon">🏢</span>Organization</div>
+        <div class="platforms">
+          <a class="platform active latest" href="https://qq847.github.io/gc-platform/Organizations_v1_PC.html" target="_blank"><span class="picon">🖥️</span><span class="pname">PC</span><span class="pver">v1</span><span class="pdot pdot-on"></span></a>
+          <a class="platform active latest" href="https://qq847.github.io/gc-platform/Organizations_v1_Mobile.html" target="_blank"><span class="picon">📱</span><span class="pname">Mobile</span><span class="pver">v1</span><span class="pdot pdot-on"></span></a>
+        </div>
+      </div>
+      <!-- Project -->
+      <div class="card">
+        <div class="card-title"><span class="card-icon">🎮</span>Project</div>
+        <div class="platforms">
+          <a class="platform active latest" href="https://qq847.github.io/gc-platform/Projects_v1_PC.html" target="_blank"><span class="picon">🖥️</span><span class="pname">PC</span><span class="pver">v1</span><span class="pdot pdot-on"></span></a>
+          <a class="platform active latest" href="https://qq847.github.io/gc-platform/Projects_v1_Mobile.html" target="_blank"><span class="picon">📱</span><span class="pname">Mobile</span><span class="pver">v1</span><span class="pdot pdot-on"></span></a>
+        </div>
+      </div>
+      <!-- Settings -->
+      <div class="card">
+        <div class="card-title"><span class="card-icon">⚙️</span>Settings</div>
+        <div class="platforms">
+          <a class="platform active latest" href="https://qq847.github.io/gc-platform/Settings_v1_PC.html" target="_blank"><span class="picon">🖥️</span><span class="pname">PC</span><span class="pver">v1</span><span class="pdot pdot-on"></span></a>
+          <a class="platform active latest" href="https://qq847.github.io/gc-platform/Settings_v1_Mobile.html" target="_blank"><span class="picon">📱</span><span class="pname">Mobile</span><span class="pver">v1</span><span class="pdot pdot-on"></span></a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Phase 3: Messaging -->
+  <div class="phase-block" data-phase-id="3">
+    <div class="phase-header">
+      <div class="phase-num">3</div>
+      <div class="phase-info">
+        <div class="phase-name">Messaging</div>
+        <div class="phase-desc">私信 · 社交连接</div>
+      </div>
+      <div class="phase-status">✅ Prototyped</div>
+    </div>
+    <div class="phase-grid">
+      <!-- Messages -->
+      <div class="card">
+        <div class="card-title"><span class="card-icon">✉️</span>Messages</div>
+        <div class="platforms">
+          <a class="platform active latest" href="https://qq847.github.io/gc-platform/Messages_v1_PC.html" target="_blank"><span class="picon">🖥️</span><span class="pname">PC</span><span class="pver">v1</span><span class="pdot pdot-on"></span></a>
+          <a class="platform active latest" href="https://qq847.github.io/gc-platform/Messages_v1_Mobile.html" target="_blank"><span class="picon">📱</span><span class="pname">Mobile</span><span class="pver">v1</span><span class="pdot pdot-on"></span></a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Phase 4: Event Publishing + Project Showcase -->
+  <div class="phase-block" data-phase-id="4">
+    <div class="phase-header">
+      <div class="phase-num">4</div>
+      <div class="phase-info">
+        <div class="phase-name">Event Publishing + Project Showcase</div>
+        <div class="phase-desc">活动发布 · 项目展示 · 公共页面</div>
+      </div>
+      <div class="phase-status">✅ Prototyped</div>
+    </div>
+    <div class="phase-grid">
+      <!-- Event Setup Wizard -->
+      <div class="card">
+        <div class="card-title"><span class="card-icon">🪄</span>Event Setup Wizard</div>
+        <div class="platforms">
+          <a class="platform active latest" href="https://qq847.github.io/gc-platform/EventSetupWizard_v2_PC.html" target="_blank"><span class="picon">🖥️</span><span class="pname">PC 4-step ★</span><span class="pver">v2</span><span class="pdot pdot-on"></span></a>
+          <details>
+            <summary>旧版本 ▼</summary>
+            <a class="platform active" href="https://qq847.github.io/gc-platform/EventSetupWizard_v1_PC.html" target="_blank"><span class="picon">🖥️</span><span class="pname">PC</span><span class="pver">v1</span><span class="pdot pdot-on"></span></a>
+          </details>
+          <div class="platform inactive"><span class="picon">📱</span><span class="pname">Mobile</span><span class="pver">—</span><span class="pdot pdot-off"></span></div>
+        </div>
+      </div>
+      <!-- Event Publishing -->
+      <div class="card">
+        <div class="card-title"><span class="card-icon">📢</span>Event Publishing</div>
+        <div class="platforms">
+          <a class="platform active latest" href="https://qq847.github.io/gc-platform/EventPublishing_v1_PC.html" target="_blank"><span class="picon">🖥️</span><span class="pname">PC</span><span class="pver">v1</span><span class="pdot pdot-on"></span></a>
+          <a class="platform active latest" href="https://qq847.github.io/gc-platform/EventPublishing_v1_Mobile.html" target="_blank"><span class="picon">📱</span><span class="pname">Mobile</span><span class="pver">v1</span><span class="pdot pdot-on"></span></a>
+        </div>
+      </div>
+      <!-- Event Public Page -->
+      <div class="card">
+        <div class="card-title"><span class="card-icon">🌐</span>Event Public Page</div>
+        <div class="platforms">
+          <a class="platform active latest" href="https://qq847.github.io/gc-platform/EventPublicPage_v2_PC.html" target="_blank"><span class="picon">🖥️</span><span class="pname">PC + Live entry ★</span><span class="pver">v2</span><span class="pdot pdot-on"></span></a>
+          <a class="platform active latest" href="https://qq847.github.io/gc-platform/EventPublicPage_v2_Mobile.html" target="_blank"><span class="picon">📱</span><span class="pname">Mobile + Live entry ★</span><span class="pver">v2</span><span class="pdot pdot-on"></span></a>
+          <details>
+            <summary>旧版本 ▼</summary>
+            <a class="platform active" href="https://qq847.github.io/gc-platform/EventPublicPage_v1_PC.html" target="_blank"><span class="picon">🖥️</span><span class="pname">PC</span><span class="pver">v1</span><span class="pdot pdot-on"></span></a>
+            <a class="platform active" href="https://qq847.github.io/gc-platform/EventPublicPage_v1_Mobile.html" target="_blank"><span class="picon">📱</span><span class="pname">Mobile</span><span class="pver">v1</span><span class="pdot pdot-on"></span></a>
+          </details>
+        </div>
+      </div>
+      <!-- Meetup Publish -->
+      <div class="card">
+        <div class="card-title"><span class="card-icon">📝</span>Meetup Publish</div>
+        <div class="platforms">
+          <a class="platform active latest" href="https://qq847.github.io/gc-platform/MeetupPublish_v1_Mobile.html" target="_blank"><span class="picon">📱</span><span class="pname">Mobile ★</span><span class="pver">v11</span><span class="pdot pdot-on"></span></a>
+          <div class="platform inactive"><span class="picon">🖥️</span><span class="pname">PC</span><span class="pver">—</span><span class="pdot pdot-off"></span></div>
+        </div>
+      </div>
+      <!-- Project Showcase - Organizer -->
+      <div class="card">
+        <div class="card-title"><span class="card-icon">🎮</span>Project Showcase - Organizer</div>
+        <div class="platforms">
+          <a class="platform active latest" href="https://qq847.github.io/gc-platform/GameShowcase_v1_PC.html" target="_blank"><span class="picon">🖥️</span><span class="pname">PC</span><span class="pver">v1</span><span class="pdot pdot-on"></span></a>
+          <div class="platform inactive"><span class="picon">📱</span><span class="pname">Mobile</span><span class="pver">—</span><span class="pdot pdot-off"></span></div>
+        </div>
+      </div>
+      <!-- Project Showcase - Browse -->
+      <div class="card">
+        <div class="card-title"><span class="card-icon">🎮</span>Project Showcase - Browse</div>
+        <div class="platforms">
+          <a class="platform active latest" href="https://qq847.github.io/gc-platform/GameShowcaseBrowse_v1_PC.html" target="_blank"><span class="picon">🖥️</span><span class="pname">PC ★</span><span class="pver">v1</span><span class="pdot pdot-on"></span></a>
+          <a class="platform active latest" href="https://qq847.github.io/gc-platform/GameShowcaseBrowse_v1_Mobile.html" target="_blank"><span class="picon">📱</span><span class="pname">Mobile ★</span><span class="pver">v11</span><span class="pdot pdot-on"></span></a>
+        </div>
+      </div>
+      <!-- Event Module Setup (legacy) -->
+      <div class="card">
+        <div class="card-title"><span class="card-icon">🧩</span>Event Module Setup</div>
+        <div class="platforms">
+          <a class="platform active latest" href="https://qq847.github.io/gc-platform/EventModuleSetup_v3_PC.html" target="_blank"><span class="picon">🖥️</span><span class="pname">PC 12模块+规模解锁 ★</span><span class="pver">v11</span><span class="pdot pdot-on"></span></a>
+          <details>
+            <summary>旧版本 ▼</summary>
+            <a class="platform active" href="https://qq847.github.io/gc-platform/EventModuleSetup_v2_PC.html" target="_blank"><span class="picon">🖥️</span><span class="pname">PC + Let's Meet</span><span class="pver">v2</span><span class="pdot pdot-on"></span></a>
+            <a class="platform active" href="https://qq847.github.io/gc-platform/EventModuleSetup_v1_PC.html" target="_blank"><span class="picon">🖥️</span><span class="pname">PC base</span><span class="pver">v1</span><span class="pdot pdot-on"></span></a>
+          </details>
+          <div class="platform inactive"><span class="picon">📱</span><span class="pname">Mobile</span><span class="pver">—</span><span class="pdot pdot-off"></span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Phase 5: Conference -->
+  <div class="phase-block" data-phase-id="5">
+    <div class="phase-header">
+      <div class="phase-num">5</div>
+      <div class="phase-info">
+        <div class="phase-name">Conference</div>
+        <div class="phase-desc">日程管理 · 演讲嘉宾 · 参会者日程</div>
+      </div>
+      <div class="phase-status">✅ Prototyped</div>
+    </div>
+    <div class="phase-grid">
+      <!-- Conference Schedule Builder -->
+      <div class="card">
+        <div class="card-title"><span class="card-icon">📅</span>Conference Schedule Builder</div>
+        <div class="platforms">
+          <a class="platform active latest" href="https://qq847.github.io/gc-platform/ConferenceScheduleBuilder_v2_PC.html" target="_blank"><span class="picon">🖥️</span><span class="pname">PC 多类型活动 ★</span><span class="pver">v2</span><span class="pdot pdot-on"></span></a>
+          <details>
+            <summary>旧版本 ▼</summary>
+            <a class="platform active" href="https://qq847.github.io/gc-platform/ScheduleBuilder_v1_PC.html" target="_blank"><span class="picon">🖥️</span><span class="pname">PC</span><span class="pver">v1</span><span class="pdot pdot-on"></span></a>
+          </details>
+          <div class="platform inactive"><span class="picon">📱</span><span class="pname">Mobile</span><span class="pver">—</span><span class="pdot pdot-off"></span></div>
+        </div>
+      </div>
+      <!-- Session Management -->
+      <div class="card">
+        <div class="card-title"><span class="card-icon">🎤</span>Session Management</div>
+        <div class="platforms">
+          <a class="platform active latest" href="https://qq847.github.io/gc-platform/SessionManagement_v1_PC.html" target="_blank"><span class="picon">🖥️</span><span class="pname">PC</span><span class="pver">v1</span><span class="pdot pdot-on"></span></a>
+          <div class="platform inactive"><span class="picon">📱</span><span class="pname">Mobile</span><span class="pver">—</span><span class="pdot pdot-off"></span></div>
+        </div>
+      </div>
+      <!-- My Schedule -->
+      <div class="card">
+        <div class="card-title"><span class="card-icon">📅</span>My Schedule</div>
+        <div class="platforms">
+          <a class="platform active latest" href="https://qq847.github.io/gc-platform/MySchedule_v1_PC.html" target="_blank"><span class="picon">🖥️</span><span class="pname">PC ★</span><span class="pver">v1</span><span class="pdot pdot-on"></span></a>
+          <a class="platform active latest" href="https://qq847.github.io/gc-platform/MySchedule_v1_Mobile.html" target="_blank"><span class="picon">📱</span><span class="pname">Mobile ★</span><span class="pver">v11</span><span class="pdot pdot-on"></span></a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Phase 6: Sponsorship Basic -->
+  <div class="phase-block" data-phase-id="6">
+    <div class="phase-header">
+      <div class="phase-num">6</div>
+      <div class="phase-info">
+        <div class="phase-name">Sponsorship Basic</div>
+        <div class="phase-desc">赞助管理 · 赞助商采购流程</div>
+      </div>
+      <div class="phase-status">✅ Prototyped</div>
+    </div>
+    <div class="phase-grid">
+      <!-- Sponsorship Management -->
+      <div class="card">
+        <div class="card-title"><span class="card-icon">💰</span>Sponsorship Management</div>
+        <div class="platforms">
+          <a class="platform active latest" href="https://qq847.github.io/gc-platform/SponsorshipManagement_v1_PC.html" target="_blank"><span class="picon">🖥️</span><span class="pname">PC</span><span class="pver">v1</span><span class="pdot pdot-on"></span></a>
+          <a class="platform active latest" href="https://qq847.github.io/gc-platform/SponsorshipManagement_v1_Mobile.html" target="_blank"><span class="picon">📱</span><span class="pname">Mobile</span><span class="pver">v1</span><span class="pdot pdot-on"></span></a>
+        </div>
+      </div>
+      <!-- Sponsor Builder -->
+      <div class="card">
+        <div class="card-title"><span class="card-icon">⊞</span>Sponsor Builder</div>
+        <div class="platforms">
+          <a class="platform active latest" href="https://qq847.github.io/gc-platform/SponsorBuilder_v1_PC.html" target="_blank"><span class="picon">🖥️</span><span class="pname">PC</span><span class="pver">v1</span><span class="pdot pdot-on"></span></a>
+          <div class="platform inactive"><span class="picon">📱</span><span class="pname">Mobile</span><span class="pver">—</span><span class="pdot pdot-off"></span></div>
+        </div>
+      </div>
+      <!-- Sponsor Explore -->
+      <div class="card">
+        <div class="card-title"><span class="card-icon">🔍</span>Sponsor Explore</div>
+        <div class="platforms">
+          <a class="platform active latest" href="https://qq847.github.io/gc-platform/SponsorExplore_v1_PC.html" target="_blank"><span class="picon">🖥️</span><span class="pname">PC ★</span><span class="pver">v1</span><span class="pdot pdot-on"></span></a>
+          <a class="platform active latest" href="https://qq847.github.io/gc-platform/SponsorExplore_v1_Mobile.html" target="_blank"><span class="picon">📱</span><span class="pname">Mobile ★</span><span class="pver">v11</span><span class="pdot pdot-on"></span></a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Phase 7: Ticketing -->
+  <div class="phase-block" data-phase-id="7">
+    <div class="phase-header">
+      <div class="phase-num">7</div>
+      <div class="phase-info">
+        <div class="phase-name">Ticketing</div>
+        <div class="phase-desc">付费票务 · 购票流程 · 订单确认</div>
+      </div>
+      <div class="phase-status">✅ Prototyped</div>
+    </div>
+    <div class="phase-grid">
+      <!-- Paid Ticketing -->
+      <div class="card">
+        <div class="card-title"><span class="card-icon">💳</span>Paid Ticketing</div>
+        <div class="platforms">
+          <a class="platform active latest" href="https://qq847.github.io/gc-platform/PaidTicketing_v1_PC.html" target="_blank"><span class="picon">🖥️</span><span class="pname">PC</span><span class="pver">v1</span><span class="pdot pdot-on"></span></a>
+          <a class="platform active latest" href="https://qq847.github.io/gc-platform/PaidTicketing_v1_Mobile.html" target="_blank"><span class="picon">📱</span><span class="pname">Mobile</span><span class="pver">v1</span><span class="pdot pdot-on"></span></a>
+        </div>
+      </div>
+      <!-- Ticket Purchase -->
+      <div class="card">
+        <div class="card-title"><span class="card-icon">🎫</span>Ticket Purchase</div>
+        <div class="platforms">
+          <a class="platform active latest" href="https://qq847.github.io/gc-platform/TicketPurchase_v1_PC.html" target="_blank"><span class="picon">🖥️</span><span class="pname">PC</span><span class="pver">v1</span><span class="pdot pdot-on"></span></a>
+          <a class="platform active latest" href="https://qq847.github.io/gc-platform/TicketPurchase_v1_Mobile.html" target="_blank"><span class="picon">📱</span><span class="pname">Mobile</span><span class="pver">v1</span><span class="pdot pdot-on"></span></a>
+        </div>
+      </div>
+      <!-- Order Confirm -->
+      <div class="card">
+        <div class="card-title"><span class="card-icon">✅</span>Order Confirm</div>
+        <div class="platforms">
+          <a class="platform active latest" href="https://qq847.github.io/gc-platform/OrderConfirm_v1_PC.html" target="_blank"><span class="picon">🖥️</span><span class="pname">PC</span><span class="pver">v1</span><span class="pdot pdot-on"></span></a>
+          <div class="platform inactive"><span class="picon">📱</span><span class="pname">Mobile</span><span class="pver">—</span><span class="pdot pdot-off"></span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Phase 8: Buyer Program -->
+  <div class="phase-block" data-phase-id="8">
+    <div class="phase-header">
+      <div class="phase-num">8</div>
+      <div class="phase-info">
+        <div class="phase-name">Buyer Program</div>
+        <div class="phase-desc">买家邀请 · 专属区域</div>
+      </div>
+      <div class="phase-status">✅ Prototyped</div>
+    </div>
+    <div class="phase-grid">
+      <!-- Buyer Invitation -->
+      <div class="card">
+        <div class="card-title"><span class="card-icon">📧</span>Buyer Invitation</div>
+        <div class="platforms">
+          <a class="platform active latest" href="https://qq847.github.io/gc-platform/BuyerInvitation_v1_PC.html" target="_blank"><span class="picon">🖥️</span><span class="pname">PC (3000 buyers)</span><span class="pver">v1</span><span class="pdot pdot-on"></span></a>
+          <div class="platform inactive"><span class="picon">📱</span><span class="pname">Mobile</span><span class="pver">—</span><span class="pdot pdot-off"></span></div>
+        </div>
+      </div>
+      <!-- Buyer Zone -->
+      <div class="card">
+        <div class="card-title"><span class="card-icon">🛡️</span>Buyer Zone</div>
+        <div class="platforms">
+          <a class="platform active latest" href="https://qq847.github.io/gc-platform/BuyerZone_v1_PC.html" target="_blank"><span class="picon">🖥️</span><span class="pname">PC</span><span class="pver">v1</span><span class="pdot pdot-on"></span></a>
+          <a class="platform active latest" href="https://qq847.github.io/gc-platform/BuyerZone_v1_Mobile.html" target="_blank"><span class="picon">📱</span><span class="pname">Mobile</span><span class="pver">v1</span><span class="pdot pdot-on"></span></a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Phase 9: Exhibition -->
+  <div class="phase-block" data-phase-id="9">
+    <div class="phase-header">
+      <div class="phase-num">9</div>
+      <div class="phase-info">
+        <div class="phase-name">Exhibition</div>
+        <div class="phase-desc">展位管理 · 展商浏览</div>
+      </div>
+      <div class="phase-status">✅ Prototyped</div>
+    </div>
+    <div class="phase-grid">
+      <!-- Booth Management -->
+      <div class="card">
+        <div class="card-title"><span class="card-icon">🪑</span>Booth Management</div>
+        <div class="platforms">
+          <a class="platform active latest" href="https://qq847.github.io/gc-platform/BoothManagement_v1_PC.html" target="_blank"><span class="picon">🖥️</span><span class="pname">PC</span><span class="pver">v1</span><span class="pdot pdot-on"></span></a>
+          <a class="platform active latest" href="https://qq847.github.io/gc-platform/BoothManagement_v1_Mobile.html" target="_blank"><span class="picon">📱</span><span class="pname">Mobile</span><span class="pver">v1</span><span class="pdot pdot-on"></span></a>
+        </div>
+      </div>
+      <!-- Exhibitor Browse -->
+      <div class="card">
+        <div class="card-title"><span class="card-icon">🪑</span>Exhibitor Browse</div>
+        <div class="platforms">
+          <a class="platform active latest" href="https://qq847.github.io/gc-platform/ExhibitorBrowse_v1_PC.html" target="_blank"><span class="picon">🖥️</span><span class="pname">PC</span><span class="pver">v1</span><span class="pdot pdot-on"></span></a>
+          <a class="platform active latest" href="https://qq847.github.io/gc-platform/ExhibitorBrowse_v1_Mobile.html" target="_blank"><span class="picon">📱</span><span class="pname">Mobile</span><span class="pver">v1</span><span class="pdot pdot-on"></span></a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Phase 10: Meetings -->
+  <div class="phase-block" data-phase-id="10">
+    <div class="phase-header">
+      <div class="phase-num">10</div>
+      <div class="phase-info">
+        <div class="phase-name">Meetings</div>
+        <div class="phase-desc">1v1会议预约 · Let's Meet系统</div>
+      </div>
+      <div class="phase-status">✅ Prototyped</div>
+    </div>
+    <div class="phase-grid">
+      <!-- Let's Meet Setup -->
+      <div class="card">
+        <div class="card-title"><span class="card-icon">⚙️</span>Let's Meet Setup</div>
+        <div class="platforms">
+          <a class="platform active latest" href="https://qq847.github.io/gc-platform/LetsMeet_Setup_v1_PC.html" target="_blank"><span class="picon">🖥️</span><span class="pname">PC (organizer)</span><span class="pver">v1</span><span class="pdot pdot-on"></span></a>
+          <div class="platform inactive"><span class="picon">📱</span><span class="pname">Mobile</span><span class="pver">—</span><span class="pdot pdot-off"></span></div>
+        </div>
+      </div>
+      <!-- Let's Meet Organizer -->
+      <div class="card">
+        <div class="card-title"><span class="card-icon">📋</span>Let's Meet Organizer</div>
+        <div class="platforms">
+          <a class="platform active latest" href="https://qq847.github.io/gc-platform/LetsMeet_Organizer_v1_PC.html" target="_blank"><span class="picon">🖥️</span><span class="pname">PC</span><span class="pver">v1</span><span class="pdot pdot-on"></span></a>
+          <div class="platform inactive"><span class="picon">📱</span><span class="pname">Mobile</span><span class="pver">—</span><span class="pdot pdot-off"></span></div>
+        </div>
+      </div>
+      <!-- Let's Meet Browse -->
+      <div class="card">
+        <div class="card-title"><span class="card-icon">👥</span>Let's Meet Browse</div>
+        <div class="platforms">
+          <a class="platform active latest" href="https://qq847.github.io/gc-platform/LetsMeet_Browse_v1_PC.html" target="_blank"><span class="picon">🖥️</span><span class="pname">PC</span><span class="pver">v1</span><span class="pdot pdot-on"></span></a>
+          <a class="platform active latest" href="https://qq847.github.io/gc-platform/LetsMeet_Browse_v1_Mobile.html" target="_blank"><span class="picon">📱</span><span class="pname">Mobile</span><span class="pver">v1</span><span class="pdot pdot-on"></span></a>
+        </div>
+      </div>
+      <!-- Let's Meet Schedule -->
+      <div class="card">
+        <div class="card-title"><span class="card-icon">🗓️</span>Let's Meet Schedule</div>
+        <div class="platforms">
+          <a class="platform active latest" href="https://qq847.github.io/gc-platform/LetsMeet_Schedule_v1_PC.html" target="_blank"><span class="picon">🖥️</span><span class="pname">PC</span><span class="pver">v1</span><span class="pdot pdot-on"></span></a>
+          <a class="platform active latest" href="https://qq847.github.io/gc-platform/LetsMeet_Schedule_v1_Mobile.html" target="_blank"><span class="picon">📱</span><span class="pname">Mobile</span><span class="pver">v1</span><span class="pdot pdot-on"></span></a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Phase 11: Awards -->
+  <div class="phase-block" data-phase-id="11">
+    <div class="phase-header">
+      <div class="phase-num">11</div>
+      <div class="phase-info">
+        <div class="phase-name">Awards</div>
+        <div class="phase-desc">评奖管理 · 参会者投票</div>
+      </div>
+      <div class="phase-status">✅ Prototyped</div>
+    </div>
+    <div class="phase-grid">
+      <!-- Award Setup -->
+      <div class="card">
+        <div class="card-title"><span class="card-icon">🏆</span>Award Setup</div>
+        <div class="platforms">
+          <a class="platform active latest" href="https://qq847.github.io/gc-platform/Awards_v1_PC.html" target="_blank"><span class="picon">🖥️</span><span class="pname">PC</span><span class="pver">v1</span><span class="pdot pdot-on"></span></a>
+          <div class="platform inactive"><span class="picon">📱</span><span class="pname">Mobile</span><span class="pver">—</span><span class="pdot pdot-off"></span></div>
+        </div>
+      </div>
+      <!-- Awards Voting -->
+      <div class="card">
+        <div class="card-title"><span class="card-icon">🏆</span>Awards Voting</div>
+        <div class="platforms">
+          <a class="platform active latest" href="https://qq847.github.io/gc-platform/AwardsVoting_v1_PC.html" target="_blank"><span class="picon">🖥️</span><span class="pname">PC ★</span><span class="pver">v1</span><span class="pdot pdot-on"></span></a>
+          <a class="platform active latest" href="https://qq847.github.io/gc-platform/AwardsVoting_v1_Mobile.html" target="_blank"><span class="picon">📱</span><span class="pname">Mobile ★</span><span class="pver">v11</span><span class="pdot pdot-on"></span></a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Phase 12: Sponsorship Advanced -->
+  <div class="phase-block" data-phase-id="12">
+    <div class="phase-header">
+      <div class="phase-num">12</div>
+      <div class="phase-info">
+        <div class="phase-name">Sponsorship Advanced</div>
+        <div class="phase-desc">高级赞助套餐 · 冠名赞助 · 横幅广告</div>
+      </div>
+      <div class="phase-status">🔄 In Progress</div>
+    </div>
+    <div class="phase-grid">
+      <div class="card" style="opacity:0.6;">
+        <div class="card-title"><span class="card-icon">🏆</span>Award Title Sponsorship</div>
+        <div class="platforms">
+          <div class="platform inactive"><span class="picon">🖥️</span><span class="pname">Coming Soon</span><span class="pver">—</span><span class="pdot pdot-off"></span></div>
+        </div>
+      </div>
+      <div class="card" style="opacity:0.6;">
+        <div class="card-title"><span class="card-icon">🎤</span>Conference Sponsorship</div>
+        <div class="platforms">
+          <div class="platform inactive"><span class="picon">🖥️</span><span class="pname">Coming Soon</span><span class="pver">—</span><span class="pdot pdot-off"></span></div>
+        </div>
+      </div>
+      <div class="card" style="opacity:0.6;">
+        <div class="card-title"><span class="card-icon">📣</span>Banner Sponsorship</div>
+        <div class="platforms">
+          <div class="platform inactive"><span class="picon">🖥️</span><span class="pname">Coming Soon</span><span class="pver">—</span><span class="pdot pdot-off"></span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Backlog -->
+  <div style="margin-top:40px;padding:24px;border:2px dashed var(--border);border-radius:12px;background:rgba(0,0,0,0.02);">
+    <h3 style="font-size:16px;font-weight:800;color:var(--text2);margin-bottom:20px;">🗂️ Backlog</h3>
+
+    <!-- Commerce -->
+    <div style="margin-bottom:20px;">
+      <div style="font-size:11px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:8px;">🛒 Commerce</div>
+      <div class="phase-grid">
+        <div class="card">
+          <div class="card-title"><span class="card-icon">🎮</span>Project Biz Detail</div>
+          <div class="platforms">
+            <a class="platform active latest" href="https://qq847.github.io/gc-platform/ProjectBiz_v1_PC.html" target="_blank"><span class="picon">🖥️</span><span class="pname">PC ★</span><span class="pver">v1</span><span class="pdot pdot-on"></span></a>
+            <a class="platform active latest" href="https://qq847.github.io/gc-platform/ProjectBiz_v1_Mobile.html" target="_blank"><span class="picon">📱</span><span class="pname">Mobile ★</span><span class="pver">v11</span><span class="pdot pdot-on"></span></a>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-title"><span class="card-icon">💰</span>Commerce B3 ✦</div>
+          <div class="card-note" style="font-size:10px;color:var(--orange);margin-bottom:6px;">Premium · 电商交易路径</div>
+          <div class="platforms">
+            <a class="platform active latest" href="https://qq847.github.io/gc-platform/Commerce_v1_PC.html" target="_blank"><span class="picon">🖥️</span><span class="pname">PC ★</span><span class="pver">v1</span><span class="pdot pdot-on"></span></a>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-title"><span class="card-icon">🤝</span>Deal Negotiation</div>
+          <div class="platforms">
+            <a class="platform active latest" href="https://qq847.github.io/gc-platform/DealNegotiation_v1_PC.html" target="_blank"><span class="picon">🖥️</span><span class="pname">PC ★</span><span class="pver">v1</span><span class="pdot pdot-on"></span></a>
+            <a class="platform active latest" href="https://qq847.github.io/gc-platform/DealNegotiation_v1_Mobile.html" target="_blank"><span class="picon">📱</span><span class="pname">Mobile ★</span><span class="pver">v11</span><span class="pdot pdot-on"></span></a>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-title"><span class="card-icon">📝</span>Contract Sign</div>
+          <div class="platforms">
+            <a class="platform active latest" href="https://qq847.github.io/gc-platform/ContractSign_v1_PC.html" target="_blank"><span class="picon">🖥️</span><span class="pname">PC ★</span><span class="pver">v1</span><span class="pdot pdot-on"></span></a>
+            <a class="platform active latest" href="https://qq847.github.io/gc-platform/ContractSign_v1_Mobile.html" target="_blank"><span class="picon">📱</span><span class="pname">Mobile ★</span><span class="pver">v11</span><span class="pdot pdot-on"></span></a>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-title"><span class="card-icon">💬</span>Deal Room</div>
+          <div class="platforms">
+            <a class="platform active latest" href="https://qq847.github.io/gc-platform/DealRoom_v1_PC.html" target="_blank"><span class="picon">🖥️</span><span class="pname">PC</span><span class="pver">v1</span><span class="pdot pdot-on"></span></a>
+            <a class="platform active latest" href="https://qq847.github.io/gc-platform/DealRoom_v1_Mobile.html" target="_blank"><span class="picon">📱</span><span class="pname">Mobile</span><span class="pver">v1</span><span class="pdot pdot-on"></span></a>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Organizer Tools -->
+    <div style="margin-bottom:20px;">
+      <div style="font-size:11px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:8px;">⚙️ Organizer Tools</div>
+      <div class="phase-grid">
+        <div class="card">
+          <div class="card-title"><span class="card-icon">🗺️</span>Venue Map</div>
+          <div class="platforms">
+            <a class="platform active latest" href="https://qq847.github.io/gc-platform/VenueMap_v1_PC.html" target="_blank"><span class="picon">🖥️</span><span class="pname">PC</span><span class="pver">v1</span><span class="pdot pdot-on"></span></a>
+            <a class="platform active latest" href="https://qq847.github.io/gc-platform/VenueMap_v1_Mobile.html" target="_blank"><span class="picon">📱</span><span class="pname">Mobile ★</span><span class="pver">v11</span><span class="pdot pdot-on"></span></a>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-title"><span class="card-icon">📊</span>Event HQ Dashboard</div>
+          <div class="platforms">
+            <a class="platform active latest" href="https://qq847.github.io/gc-platform/EventHQ_Dashboard_v1_PC.html" target="_blank"><span class="picon">🖥️</span><span class="pname">PC</span><span class="pver">v1</span><span class="pdot pdot-on"></span></a>
+            <div class="platform inactive"><span class="picon">📱</span><span class="pname">Mobile</span><span class="pver">—</span><span class="pdot pdot-off"></span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Buyer -->
+    <div style="margin-bottom:20px;">
+      <div style="font-size:11px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:8px;">🛡️ Buyer</div>
+      <div class="phase-grid">
+        <div class="card">
+          <div class="card-title"><span class="card-icon">📈</span>Buyer Dashboard</div>
+          <div class="platforms">
+            <a class="platform active latest" href="https://qq847.github.io/gc-platform/BuyerDashboard_v1_PC.html" target="_blank"><span class="picon">🖥️</span><span class="pname">PC</span><span class="pver">v1</span><span class="pdot pdot-on"></span></a>
+            <div class="platform inactive"><span class="picon">📱</span><span class="pname">Mobile</span><span class="pver">—</span><span class="pdot pdot-off"></span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Other -->
+    <div>
+      <div style="font-size:11px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:8px;">📦 Other</div>
+      <div class="phase-grid">
+        <div class="card">
+          <div class="card-title"><span class="card-icon">🎫</span>Free Registration</div>
+          <div class="platforms">
+            <a class="platform active latest" href="https://qq847.github.io/gc-platform/FreeRegistration_v1_PC.html" target="_blank"><span class="picon">🖥️</span><span class="pname">PC</span><span class="pver">v1</span><span class="pdot pdot-on"></span></a>
+            <a class="platform active latest" href="https://qq847.github.io/gc-platform/FreeRegistration_v1_Mobile.html" target="_blank"><span class="picon">📱</span><span class="pname">Mobile</span><span class="pver">v1</span><span class="pdot pdot-on"></span></a>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-title"><span class="card-icon">🛒</span>Checkout Cart</div>
+          <div class="platforms">
+            <a class="platform active latest" href="https://qq847.github.io/gc-platform/CheckoutCart_v1_PC.html" target="_blank"><span class="picon">🖥️</span><span class="pname">PC</span><span class="pver">v1</span><span class="pdot pdot-on"></span></a>
+            <div class="platform inactive"><span class="picon">📱</span><span class="pname">Mobile</span><span class="pver">—</span><span class="pdot pdot-off"></span></div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-title"><span class="card-icon">🤝</span>Market Browse</div>
+          <div class="platforms">
+            <a class="platform active latest" href="https://qq847.github.io/gc-platform/Market_v1_PC.html" target="_blank"><span class="picon">🖥️</span><span class="pname">PC</span><span class="pver">v1</span><span class="pdot pdot-on"></span></a>
+            <a class="platform active latest" href="https://qq847.github.io/gc-platform/Market_v1_Mobile.html" target="_blank"><span class="picon">📱</span><span class="pname">Mobile</span><span class="pver">v1</span><span class="pdot pdot-on"></span></a>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-title"><span class="card-icon">📄</span>Market Listing Detail</div>
+          <div class="platforms">
+            <a class="platform active latest" href="https://qq847.github.io/gc-platform/MarketListing_v1_PC.html" target="_blank"><span class="picon">🖥️</span><span class="pname">PC</span><span class="pver">v1</span><span class="pdot pdot-on"></span></a>
+            <a class="platform active latest" href="https://qq847.github.io/gc-platform/MarketListing_v1_Mobile.html" target="_blank"><span class="picon">📱</span><span class="pname">Mobile</span><span class="pver">v1</span><span class="pdot pdot-on"></span></a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+<!-- END ROADMAP VIEW -->
+
+<!-- ===== MODULE VIEW ===== -->
+<div id="journey-view" style="display:none;">
+<style>
+.journey-ctrl {
+  background:#fff; border:1px solid var(--border); border-radius:12px;
+  padding:16px 20px; margin-bottom:16px;
+  display:flex; align-items:center; gap:16px; flex-wrap:wrap;
+}
+.journey-select {
+  font-family:'DM Sans',sans-serif; font-size:13px; font-weight:600;
+  padding:7px 12px; border:1px solid #ddd; border-radius:8px;
+  background:#fafaf8; cursor:pointer; color:var(--text1);
+}
+.journey-nav-btn {
+  font-family:'DM Sans',sans-serif; font-size:13px; font-weight:700;
+  padding:7px 16px; border-radius:8px; border:1px solid var(--border);
+  background:#fff; cursor:pointer; color:var(--text1);
+  transition:background .15s;
+}
+.journey-nav-btn:hover:not(:disabled) { background:var(--orange); color:#fff; border-color:var(--orange); }
+.journey-nav-btn:disabled { opacity:.4; cursor:not-allowed; }
+.journey-step-info { flex:1; min-width:180px; }
+.journey-step-name { font-size:14px; font-weight:700; color:var(--text1); }
+.journey-step-desc { font-size:11px; color:var(--text3); margin-top:2px; white-space:pre-line; }
+.journey-progress-wrap { display:flex; align-items:center; gap:8px; min-width:160px; }
+.journey-progress-bar { flex:1; height:6px; background:#e8e4da; border-radius:3px; overflow:hidden; }
+.journey-progress-fill { height:100%; background:var(--orange); border-radius:3px; transition:width .3s; }
+.journey-progress-label { font-size:11px; color:var(--text3); font-weight:700; white-space:nowrap; }
+.journey-missing-overlay {
+  position:absolute; inset:0; background:rgba(28,26,23,0.75);
+  display:flex; flex-direction:column; align-items:center; justify-content:center;
+  border-radius:12px; z-index:10;
+}
+.journey-missing-text { color:#fff; font-size:18px; font-weight:800; margin-bottom:8px; }
+.journey-missing-sub { color:rgba(255,255,255,0.6); font-size:13px; }
+.journey-body { display:flex; gap:0; height:calc(100vh - 200px); }
+/* Sidebar */
+.journey-sidebar {
+  width:240px; flex-shrink:0; background:#fff; border:1px solid var(--border);
+  border-radius:12px; overflow:hidden; display:flex; flex-direction:column;
+  transition:width .2s ease; margin-right:12px;
+}
+.journey-sidebar.collapsed { width:40px; }
+.journey-sidebar-header {
+  display:flex; align-items:center; justify-content:space-between;
+  padding:12px 14px; border-bottom:1px solid #f0ede8; flex-shrink:0;
+}
+.journey-sidebar.collapsed .journey-sidebar-header { padding:12px 10px; justify-content:center; }
+.journey-sidebar-title { font-size:11px; font-weight:800; color:var(--text2); text-transform:uppercase; letter-spacing:.5px; }
+.journey-sidebar.collapsed .journey-sidebar-title { display:none; }
+.journey-collapse-btn {
+  width:22px; height:22px; border-radius:6px; border:1px solid var(--border);
+  background:#fafaf8; cursor:pointer; display:flex; align-items:center; justify-content:center;
+  font-size:11px; color:var(--text2); flex-shrink:0; transition:background .15s;
+}
+.journey-collapse-btn:hover { background:var(--orange); color:#fff; border-color:var(--orange); }
+.journey-sidebar-list { overflow-y:auto; flex:1; padding:8px 0; }
+.journey-sidebar.collapsed .journey-sidebar-list { display:none; }
+.journey-sidebar-item {
+  display:flex; align-items:flex-start; gap:10px; padding:8px 14px;
+  cursor:pointer; border-left:3px solid transparent; transition:all .15s;
+}
+.journey-sidebar-item:hover { background:#fdf9f7; border-left-color:#e8c8b8; }
+.journey-sidebar-item.active { background:#fdf5f1; border-left-color:var(--orange); }
+.journey-sidebar-num {
+  width:20px; height:20px; border-radius:5px; background:#f0ede8;
+  font-size:10px; font-weight:800; display:flex; align-items:center; justify-content:center;
+  flex-shrink:0; color:var(--text2); margin-top:1px;
+}
+.journey-sidebar-item.active .journey-sidebar-num { background:var(--orange); color:#fff; }
+.journey-sidebar-item.has-fork .journey-sidebar-num { background:#f5c842; color:#5a3e00; }
+.journey-sidebar-item.active.has-fork .journey-sidebar-num { background:var(--orange); color:#fff; }
+.journey-sidebar-text { flex:1; min-width:0; }
+.journey-sidebar-name { font-size:12px; font-weight:600; color:var(--text1); line-height:1.3; }
+.journey-sidebar-item.active .journey-sidebar-name { color:var(--orange); font-weight:800; }
+.journey-sidebar-phase { font-size:10px; color:var(--text3); margin-top:1px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+/* Main area */
+.journey-main { flex:1; min-width:0; display:flex; flex-direction:column; gap:12px; }
+.journey-iframe-wrap { position:relative; background:#f0ede8; border-radius:12px; overflow:hidden; border:1px solid var(--border); flex:1; }
+.journey-iframe { width:100%; height:100%; border:none; display:block; }
+.journey-fork-bar {
+  display:none; background:#fff8e1; border:2px solid #f5c842; border-radius:12px;
+  padding:14px 18px; margin-bottom:14px; font-size:12px; color:#7a5c00;
+  align-items:flex-start; gap:12px;
+}
+.journey-fork-bar.visible { display:flex; }
+.journey-fork-icon { font-size:20px; flex-shrink:0; margin-top:2px; }
+.journey-fork-content { flex:1; }
+.journey-fork-title { font-weight:800; font-size:13px; margin-bottom:6px; color:#5a3e00; }
+.journey-fork-desc { font-size:12px; color:#7a5c00; margin-bottom:8px; line-height:1.5; white-space:pre-line; }
+.journey-fork-roles { display:flex; gap:8px; flex-wrap:wrap; }
+.journey-fork-role { padding:5px 14px; background:#fff; border:1.5px solid #e5b800; border-radius:20px; font-size:12px; font-weight:700; cursor:pointer; color:#5a3e00; transition:background .15s; }
+.journey-fork-role:hover { background:#ffd740; border-color:#f5c842; }
+</style>
+
+<div class="journey-ctrl">
+  <select class="journey-select" id="journey-flow-select" onchange="journeyLoadFlow(this.value)">
+    <optgroup label="── 参会方 ──">
+      <option value="attendee">👤 Attendee — 参会者（21步）</option>
+      <option value="mobile_attendee">📱 Mobile 参会者（21步）</option>
+    </optgroup>
+    <optgroup label="── 行业参与方 ──">
+      <option value="developer">🎮 Developer — 游戏开发者（19步）</option>
+      <option value="buyer">📢 Buyer — 采购方 Publisher/Investor/Platform（18步）</option>
+      <option value="buyer_commerce">📢 Buyer — 电商路径 Commerce B3（12步）✦</option>
+      <option value="service_provider">🔧 Service Provider — 服务商（13步）</option>
+      <option value="sponsor">💰 Sponsor — 赞助商（10步）</option>
+    </optgroup>
+    <optgroup label="── 活动方 ──">
+      <option value="organizer">🎯 Organizer — 主办方（13步）</option>
+      <option value="jury">⚖️ Jury — 专业评审（6步）</option>
+      <option value="speaker">🎤 Speaker — 演讲者（8步）</option>
+      <option value="press">📰 Press / Media — 媒体（8步）</option>
+    </optgroup>
+  </select>
+  <button class="journey-nav-btn" id="journey-prev" onclick="journeyGo(-1)">← 上一步</button>
+  <div class="journey-step-info">
+    <div class="journey-step-name" id="journey-step-name">—</div>
+    <div class="journey-step-desc" id="journey-step-desc">选择流程开始</div>
+  </div>
+  <button class="journey-nav-btn" id="journey-next" onclick="journeyGo(1)">下一步 →</button>
+  <div class="journey-progress-wrap">
+    <div class="journey-progress-bar"><div class="journey-progress-fill" id="journey-prog-fill" style="width:0%"></div></div>
+    <span class="journey-progress-label" id="journey-prog-label">0/0</span>
+  </div>
+</div>
+
+<div class="journey-body">
+  <!-- 左侧边栏 -->
+  <div class="journey-sidebar" id="journey-sidebar">
+    <div class="journey-sidebar-header">
+      <span class="journey-sidebar-title">流程节点</span>
+      <button class="journey-collapse-btn" id="journey-collapse-btn" onclick="journeyToggleSidebar()" title="收起/展开">◀</button>
+    </div>
+    <div class="journey-sidebar-list" id="journey-sidebar-list"></div>
+  </div>
+
+  <!-- 右侧主区域 -->
+  <div class="journey-main">
+    <div class="journey-fork-bar" id="journey-fork-bar">
+      <div class="journey-fork-icon">⚠️</div>
+      <div class="journey-fork-content">
+        <div class="journey-fork-title" id="journey-fork-title">分叉点 — 根据角色选择，后续流程不同</div>
+        <div id="journey-fork-desc" class="journey-fork-desc"></div>
+        <div class="journey-fork-roles" id="journey-fork-roles"></div>
+      </div>
+    </div>
+    <div class="journey-iframe-wrap" id="journey-frame-wrap">
+      <div class="journey-missing-overlay" id="journey-missing" style="display:none;">
+        <div class="journey-missing-text">🚧 页面尚未完成</div>
+        <div class="journey-missing-sub" id="journey-missing-name">—</div>
+      </div>
+      <iframe class="journey-iframe" id="journey-iframe" src="about:blank"></iframe>
+    </div>
+  </div>
+</div>
+
+</div>
+
+<div id="module-view" style="display:none;">
+
+<!-- 01 Auth -->
+<div class="section">
+  <div class="sec-hdr"><div class="sec-num" style="background:var(--purple)">01</div><div class="sec-title">Auth</div></div>
+  <div class="grid">
+    <div class="card">
+      <div class="card-title"><span class="card-icon">🔐</span>Login</div>
+      <div class="platforms">
+        <a class="platform active latest" href="https://qq847.github.io/gc-platform/Login_v1.html" target="_blank"><span class="picon">🖥️</span><span class="pname">PC</span><span class="pver">v1</span><span class="pdot pdot-on"></span></a>
+        <a class="platform active latest" href="https://qq847.github.io/gc-platform/Login_v1_Mobile.html" target="_blank"><span class="picon">📱</span><span class="pname">Mobile</span><span class="pver">v1</span><span class="pdot pdot-on"></span></a>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-title"><span class="card-icon">👤</span>Onboarding</div>
+      <div class="platforms">
+        <a class="platform active latest" href="https://qq847.github.io/gc-platform/Onboarding_v1.html" target="_blank"><span class="picon">🖥️</span><span class="pname">PC</span><span class="pver">v1</span><span class="pdot pdot-on"></span></a>
+        <a class="platform active latest" href="https://qq847.github.io/gc-platform/Onboarding_v1_Mobile.html" target="_blank"><span class="picon">📱</span><span class="pname">Mobile</span><span class="pver">v1</span><span class="pdot pdot-on"></span></a>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- 02 Feed -->
+<div class="section">
+  <div class="sec-hdr"><div class="sec-num" style="background:var(--orange)">02</div><div class="sec-title">Feed / Homepage</div></div>
+  <div class="grid">
+    <div class="card">
+      <div class="card-title"><span class="card-icon">🏠</span>Homepage Feed</div>
+      <div class="platforms">
+        <a class="platform active latest" href="https://qq847.github.io/gc-platform/Homepage_Feed_v2_PC.html" target="_blank"><span class="picon">🖥️</span><span class="pname">PC Feed ★</span><span class="pver">v1</span><span class="pdot pdot-on"></span></a>
+        <a class="platform active latest" href="https://qq847.github.io/gc-platform/Homepage_Feed_v1_Mobile.html" target="_blank"><span class="picon">📱</span><span class="pname">Mobile Feed ★</span><span class="pver">v1</span><span class="pdot pdot-on"></span></a>
+        <details>
+          <summary>旧版本 ▼</summary>
+          <a class="platform active" href="https://qq847.github.io/gc-platform/Homepage_v1_PC.html" target="_blank"><span class="picon">🖥️</span><span class="pname">PC</span><span class="pver">v1 original</span><span class="pdot pdot-on"></span></a>
+          <a class="platform active" href="https://qq847.github.io/gc-platform/Homepage_V7_Mobile.html" target="_blank"><span class="picon">📱</span><span class="pname">Mobile</span><span class="pver">V7 original</span><span class="pdot pdot-on"></span></a>
+        </details>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- 03 Profile -->
+<div class="section">
+  <div class="sec-hdr"><div class="sec-num" style="background:var(--teal)">03</div><div class="sec-title">Profile</div></div>
+  <div class="grid">
+    <div class="card">
+      <div class="card-title"><span class="card-icon">👤</span>User Profile</div>
+      <div class="platforms">
+        <a class="platform active latest" href="https://qq847.github.io/gc-platform/Profile_v2_PC.html" target="_blank"><span class="picon">🖥️</span><span class="pname">PC + Attending/Speaking/Availability ★</span><span class="pver">v2</span><span class="pdot pdot-on"></span></a>
+        <a class="platform active latest" href="https://qq847.github.io/gc-platform/Profile_v2_Mobile.html" target="_blank"><span class="picon">📱</span><span class="pname">Mobile ★</span><span class="pver">v11</span><span class="pdot pdot-on"></span></a>
+        <details><summary>旧版本 ▼</summary>
+        <a class="platform active" href="https://qq847.github.io/gc-platform/Profile_V1_PC.html" target="_blank"><span class="picon">🖥️</span><span class="pname">PC</span><span class="pver">v1</span><span class="pdot pdot-on"></span></a>
+        <a class="platform active" href="https://qq847.github.io/gc-platform/Profile_v1_Mobile.html" target="_blank"><span class="picon">📱</span><span class="pname">Mobile</span><span class="pver">v1</span><span class="pdot pdot-on"></span></a>
+        </details>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- 04 Live -->
+<div class="section">
+  <div class="sec-hdr"><div class="sec-num" style="background:#be123c">04</div><div class="sec-title">Live — Event Guide</div></div>
+  <div class="sec-desc">Real-time side events · Universal platform (any conference)</div>
+  <div class="grid">
+    <div class="card">
+      <div class="card-title"><span class="card-icon">🔴</span>Live GDC 2026 (225 events)</div>
+      <div class="platforms">
+        <a class="platform active latest" href="https://qq847.github.io/gc-platform/Live_v41_Mobile.html" target="_blank"><span class="picon">📱</span><span class="pname">Mobile reskinned</span><span class="pver">v41</span><span class="pdot pdot-on"></span></a>
+        <details>
+          <summary>旧版本 ▼</summary>
+          <a class="platform active" href="https://qq847.github.io/gc-platform/Live_v40_Mobile.html" target="_blank"><span class="picon">📱</span><span class="pname">Mobile</span><span class="pver">v40 original</span><span class="pdot pdot-on"></span></a>
+        </details>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-title"><span class="card-icon">🔴</span>Live (Universal Platform)</div>
+      <div class="platforms">
+        <a class="platform active latest" href="https://qq847.github.io/gc-platform/EventHub_v1_PC.html" target="_blank"><span class="picon">🖥️</span><span class="pname">PC</span><span class="pver">v43</span><span class="pdot pdot-on"></span></a>
+        <a class="platform active latest" href="https://qq847.github.io/gc-platform/Live_v43_Mobile.html" target="_blank"><span class="picon">📱</span><span class="pname">Mobile</span><span class="pver">v43</span><span class="pdot pdot-on"></span></a>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- 05 Conference Calendar -->
+<div class="section">
+  <div class="sec-hdr"><div class="sec-num" style="background:#0369a1">05</div><div class="sec-title">Conference Calendar & Live</div></div>
+  <div class="sec-desc">48 real conferences · Calendar + Live 统一视图 (EventHub)</div>
+  <div class="grid">
+    <div class="card">
+      <div class="card-title"><span class="card-icon">🗓️</span>Event Hub</div>
+      <div class="card-note" style="font-size:10px;color:var(--text3);margin-bottom:6px;">Calendar + Live 统一视图</div>
+      <div class="platforms">
+        <a class="platform active latest" href="https://qq847.github.io/gc-platform/EventHub_v1_PC.html" target="_blank"><span class="picon">🖥️</span><span class="pname">PC ★</span><span class="pver">v1</span><span class="pdot pdot-on"></span></a>
+        <a class="platform active latest" href="https://qq847.github.io/gc-platform/MobileHub_v11.html" target="_blank"><span class="picon">📱</span><span class="pname">Mobile ★</span><span class="pver">v11</span><span class="pdot pdot-on"></span></a>
+        <details>
+          <summary>旧版本 ▼</summary>
+          <a class="platform active" href="https://qq847.github.io/gc-platform/MobileHub_v3.html" target="_blank"><span class="picon">📱</span><span class="pname">Mobile</span><span class="pver">v3</span><span class="pdot pdot-on"></span></a>
+          <a class="platform active" href="https://qq847.github.io/gc-platform/MobileHub_v2.html" target="_blank"><span class="picon">📱</span><span class="pname">Mobile</span><span class="pver">v2</span><span class="pdot pdot-on"></span></a>
+          <a class="platform active" href="https://qq847.github.io/gc-platform/MobileHub_v1.html" target="_blank"><span class="picon">📱</span><span class="pname">Mobile</span><span class="pver">v1</span><span class="pdot pdot-on"></span></a>
+          <a class="platform active" href="https://qq847.github.io/gc-platform/Live_v43_Mobile.html" target="_blank"><span class="picon">📱</span><span class="pname">Live Mobile</span><span class="pver">v43</span><span class="pdot pdot-on"></span></a>
+          <a class="platform active" href="https://qq847.github.io/gc-platform/Live_v41_Mobile.html" target="_blank"><span class="picon">📱</span><span class="pname">Live Mobile reskinned</span><span class="pver">v41</span><span class="pdot pdot-on"></span></a>
+          <a class="platform active" href="https://qq847.github.io/gc-platform/Live_v40_Mobile.html" target="_blank"><span class="picon">📱</span><span class="pname">Live Mobile original</span><span class="pver">v40</span><span class="pdot pdot-on"></span></a>
+          <a class="platform active" href="https://qq847.github.io/gc-platform/Live_v44_PC.html" target="_blank"><span class="picon">🖥️</span><span class="pname">Live PC</span><span class="pver">v44</span><span class="pdot pdot-on"></span></a>
+          <a class="platform active" href="https://qq847.github.io/gc-platform/ConferenceCalendar_v3_PC.html" target="_blank"><span class="picon">🖥️</span><span class="pname">Calendar PC</span><span class="pver">v3</span><span class="pdot pdot-on"></span></a>
+          <a class="platform active" href="https://qq847.github.io/gc-platform/ConferenceCalendar_v2_Mobile.html" target="_blank"><span class="picon">📱</span><span class="pname">Calendar Mobile</span><span class="pver">v2</span><span class="pdot pdot-on"></span></a>
+        </details>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- 06 Projects -->
+<div class="section">
+  <div class="sec-hdr"><div class="sec-num" style="background:var(--green)">06</div><div class="sec-title">Projects</div></div>
+  <div class="grid">
+    <div class="card">
+      <div class="card-title"><span class="card-icon">🎮</span>Projects Browse</div>
+      <div class="platforms">
+        <a class="platform active latest" href="https://qq847.github.io/gc-platform/Projects_v1_PC.html" target="_blank"><span class="picon">🖥️</span><span class="pname">PC</span><span class="pver">v1</span><span class="pdot pdot-on"></span></a>
+        <a class="platform active latest" href="https://qq847.github.io/gc-platform/Projects_v1_Mobile.html" target="_blank"><span class="picon">📱</span><span class="pname">Mobile</span><span class="pver">v1</span><span class="pdot pdot-on"></span></a>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- 07 Organizations -->
+<div class="section">
+  <div class="sec-hdr"><div class="sec-num" style="background:#0891b2">07</div><div class="sec-title">Organizations</div></div>
+  <div class="grid">
+    <div class="card">
+      <div class="card-title"><span class="card-icon">🏢</span>Organizations Browse</div>
+      <div class="platforms">
+        <a class="platform active latest" href="https://qq847.github.io/gc-platform/Organizations_v1_PC.html" target="_blank"><span class="picon">🖥️</span><span class="pname">PC</span><span class="pver">v1</span><span class="pdot pdot-on"></span></a>
+        <a class="platform active latest" href="https://qq847.github.io/gc-platform/Organizations_v1_Mobile.html" target="_blank"><span class="picon">📱</span><span class="pname">Mobile</span><span class="pver">v1</span><span class="pdot pdot-on"></span></a>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- 08 Market -->
+<div class="section">
+  <div class="sec-hdr"><div class="sec-num" style="background:var(--orange)">08</div><div class="sec-title">Market — B2B Deal Platform</div></div>
+  <div class="sec-desc">Publishing / Distribution deals · Deal Room negotiations</div>
+  <div class="grid">
+    <div class="card">
+      <div class="card-title"><span class="card-icon">🤝</span>Market Browse</div>
+      <div class="platforms">
+        <a class="platform active latest" href="https://qq847.github.io/gc-platform/Market_v1_PC.html" target="_blank"><span class="picon">🖥️</span><span class="pname">PC</span><span class="pver">v1</span><span class="pdot pdot-on"></span></a>
+        <a class="platform active latest" href="https://qq847.github.io/gc-platform/Market_v1_Mobile.html" target="_blank"><span class="picon">📱</span><span class="pname">Mobile</span><span class="pver">v1</span><span class="pdot pdot-on"></span></a>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-title"><span class="card-icon">📄</span>Market Listing Detail</div>
+      <div class="platforms">
+        <a class="platform active latest" href="https://qq847.github.io/gc-platform/MarketListing_v1_PC.html" target="_blank"><span class="picon">🖥️</span><span class="pname">PC</span><span class="pver">v1</span><span class="pdot pdot-on"></span></a>
+        <a class="platform active latest" href="https://qq847.github.io/gc-platform/MarketListing_v1_Mobile.html" target="_blank"><span class="picon">📱</span><span class="pname">Mobile</span><span class="pver">v1</span><span class="pdot pdot-on"></span></a>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-title"><span class="card-icon">💬</span>Deal Room</div>
+      <div class="platforms">
+        <a class="platform active latest" href="https://qq847.github.io/gc-platform/DealRoom_v1_PC.html" target="_blank"><span class="picon">🖥️</span><span class="pname">PC</span><span class="pver">v1</span><span class="pdot pdot-on"></span></a>
+        <a class="platform active latest" href="https://qq847.github.io/gc-platform/DealRoom_v1_Mobile.html" target="_blank"><span class="picon">📱</span><span class="pname">Mobile</span><span class="pver">v1</span><span class="pdot pdot-on"></span></a>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- 09 Messages -->
+<div class="section">
+  <div class="sec-hdr"><div class="sec-num" style="background:#6366f1">09</div><div class="sec-title">Messages</div></div>
+  <div class="grid">
+    <div class="card">
+      <div class="card-title"><span class="card-icon">✉️</span>Messages</div>
+      <div class="platforms">
+        <a class="platform active latest" href="https://qq847.github.io/gc-platform/Messages_v1_PC.html" target="_blank"><span class="picon">🖥️</span><span class="pname">PC</span><span class="pver">v1</span><span class="pdot pdot-on"></span></a>
+        <a class="platform active latest" href="https://qq847.github.io/gc-platform/Messages_v1_Mobile.html" target="_blank"><span class="picon">📱</span><span class="pname">Mobile</span><span class="pver">v1</span><span class="pdot pdot-on"></span></a>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- 10 Settings -->
+<div class="section">
+  <div class="sec-hdr"><div class="sec-num" style="background:#64748b">10</div><div class="sec-title">Settings</div></div>
+  <div class="grid">
+    <div class="card">
+      <div class="card-title"><span class="card-icon">⚙️</span>Settings</div>
+      <div class="platforms">
+        <a class="platform active latest" href="https://qq847.github.io/gc-platform/Settings_v1_PC.html" target="_blank"><span class="picon">🖥️</span><span class="pname">PC</span><span class="pver">v1</span><span class="pdot pdot-on"></span></a>
+        <a class="platform active latest" href="https://qq847.github.io/gc-platform/Settings_v1_Mobile.html" target="_blank"><span class="picon">📱</span><span class="pname">Mobile</span><span class="pver">v1</span><span class="pdot pdot-on"></span></a>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- 11 B2B Events -->
+<div class="section">
+  <div class="sec-hdr"><div class="sec-num" style="background:var(--orange)">11</div><div class="sec-title">B2B · Event Organizer HQ</div></div>
+  <div class="sec-desc">Backend for event organizers · Module setup → auto-generates sponsorship catalog</div>
+  <div class="grid">
+    <div class="card">
+      <div class="card-title"><span class="card-icon">🧩</span>Module Setup</div>
+      <div class="platforms">
+        <a class="platform active latest" href="https://qq847.github.io/gc-platform/EventModuleSetup_v3_PC.html" target="_blank"><span class="picon">🖥️</span><span class="pname">PC 12模块+规模解锁 ★</span><span class="pver">v11</span><span class="pdot pdot-on"></span></a>
+        <details>
+          <summary>旧版本 ▼</summary>
+          <a class="platform active" href="https://qq847.github.io/gc-platform/EventModuleSetup_v2_PC.html" target="_blank"><span class="picon">🖥️</span><span class="pname">PC + Let's Meet ★</span><span class="pver">v2</span><span class="pdot pdot-on"></span></a>
+          <a class="platform active" href="https://qq847.github.io/gc-platform/EventModuleSetup_v1_PC.html" target="_blank"><span class="picon">🖥️</span><span class="pname">PC base</span><span class="pver">v1</span><span class="pdot pdot-on"></span></a>
+        </details>
+        <div class="platform inactive"><span class="picon">📱</span><span class="pname">Mobile</span><span class="pver">—</span><span class="pdot pdot-off"></span></div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-title"><span class="card-icon">🪄</span>Event Setup Wizard</div>
+      <div class="platforms">
+        <a class="platform active latest" href="https://qq847.github.io/gc-platform/EventSetupWizard_v2_PC.html" target="_blank"><span class="picon">🖥️</span><span class="pname">PC 4-step ★</span><span class="pver">v2</span><span class="pdot pdot-on"></span></a>
+        <details>
+          <summary>旧版本 ▼</summary>
+          <a class="platform active" href="https://qq847.github.io/gc-platform/EventSetupWizard_v1_PC.html" target="_blank"><span class="picon">🖥️</span><span class="pname">PC</span><span class="pver">v1</span><span class="pdot pdot-on"></span></a>
+        </details>
+        <div class="platform inactive"><span class="picon">📱</span><span class="pname">Mobile</span><span class="pver">—</span><span class="pdot pdot-off"></span></div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-title"><span class="card-icon">📊</span>Event HQ Dashboard</div>
+      <div class="platforms">
+        <a class="platform active latest" href="https://qq847.github.io/gc-platform/EventHQ_Dashboard_v1_PC.html" target="_blank"><span class="picon">🖥️</span><span class="pname">PC</span><span class="pver">v1</span><span class="pdot pdot-on"></span></a>
+        <div class="platform inactive"><span class="picon">📱</span><span class="pname">Mobile</span><span class="pver">—</span><span class="pdot pdot-off"></span></div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-title"><span class="card-icon">📧</span>Buyer Invitation Center</div>
+      <div class="platforms">
+        <a class="platform active latest" href="https://qq847.github.io/gc-platform/BuyerInvitation_v1_PC.html" target="_blank"><span class="picon">🖥️</span><span class="pname">PC (3000 buyers)</span><span class="pver">v1</span><span class="pdot pdot-on"></span></a>
+        <div class="platform inactive"><span class="picon">📱</span><span class="pname">Mobile</span><span class="pver">—</span><span class="pdot pdot-off"></span></div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-title"><span class="card-icon">🎮</span>Game Showcase Management</div>
+      <div class="platforms">
+        <a class="platform active latest" href="https://qq847.github.io/gc-platform/GameShowcase_v1_PC.html" target="_blank"><span class="picon">🖥️</span><span class="pname">PC</span><span class="pver">v1</span><span class="pdot pdot-on"></span></a>
+        <div class="platform inactive"><span class="picon">📱</span><span class="pname">Mobile</span><span class="pver">—</span><span class="pdot pdot-off"></span></div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-title"><span class="card-icon">🏆</span>Awards + Jury Management</div>
+      <div class="platforms">
+        <a class="platform active latest" href="https://qq847.github.io/gc-platform/Awards_v1_PC.html" target="_blank"><span class="picon">🖥️</span><span class="pname">PC</span><span class="pver">v1</span><span class="pdot pdot-on"></span></a>
+        <div class="platform inactive"><span class="picon">📱</span><span class="pname">Mobile</span><span class="pver">—</span><span class="pdot pdot-off"></span></div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-title"><span class="card-icon">📢</span>Event Publishing</div>
+      <div class="platforms">
+        <a class="platform active latest" href="https://qq847.github.io/gc-platform/EventPublishing_v1_PC.html" target="_blank"><span class="picon">🖥️</span><span class="pname">PC</span><span class="pver">v1</span><span class="pdot pdot-on"></span></a>
+        <a class="platform active latest" href="https://qq847.github.io/gc-platform/EventPublishing_v1_Mobile.html" target="_blank"><span class="picon">📱</span><span class="pname">Mobile</span><span class="pver">v1</span><span class="pdot pdot-on"></span></a>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-title"><span class="card-icon">🎫</span>Free Registration</div>
+      <div class="platforms">
+        <a class="platform active latest" href="https://qq847.github.io/gc-platform/FreeRegistration_v1_PC.html" target="_blank"><span class="picon">🖥️</span><span class="pname">PC</span><span class="pver">v1</span><span class="pdot pdot-on"></span></a>
+        <a class="platform active latest" href="https://qq847.github.io/gc-platform/FreeRegistration_v1_Mobile.html" target="_blank"><span class="picon">📱</span><span class="pname">Mobile</span><span class="pver">v1</span><span class="pdot pdot-on"></span></a>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-title"><span class="card-icon">💳</span>Paid Ticketing</div>
+      <div class="platforms">
+        <a class="platform active latest" href="https://qq847.github.io/gc-platform/PaidTicketing_v1_PC.html" target="_blank"><span class="picon">🖥️</span><span class="pname">PC</span><span class="pver">v1</span><span class="pdot pdot-on"></span></a>
+        <a class="platform active latest" href="https://qq847.github.io/gc-platform/PaidTicketing_v1_Mobile.html" target="_blank"><span class="picon">📱</span><span class="pname">Mobile</span><span class="pver">v1</span><span class="pdot pdot-on"></span></a>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-title"><span class="card-icon">🪑</span>Booth Management (Pod + Standard)</div>
+      <div class="platforms">
+        <a class="platform active latest" href="https://qq847.github.io/gc-platform/BoothManagement_v1_PC.html" target="_blank"><span class="picon">🖥️</span><span class="pname">PC</span><span class="pver">v1</span><span class="pdot pdot-on"></span></a>
+        <a class="platform active latest" href="https://qq847.github.io/gc-platform/BoothManagement_v1_Mobile.html" target="_blank"><span class="picon">📱</span><span class="pname">Mobile</span><span class="pver">v1</span><span class="pdot pdot-on"></span></a>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-title"><span class="card-icon">💰</span>Sponsorship Management</div>
+      <div class="platforms">
+        <a class="platform active latest" href="https://qq847.github.io/gc-platform/SponsorshipManagement_v1_PC.html" target="_blank"><span class="picon">🖥️</span><span class="pname">PC</span><span class="pver">v1</span><span class="pdot pdot-on"></span></a>
+        <a class="platform active latest" href="https://qq847.github.io/gc-platform/SponsorshipManagement_v1_Mobile.html" target="_blank"><span class="picon">📱</span><span class="pname">Mobile</span><span class="pver">v1</span><span class="pdot pdot-on"></span></a>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-title"><span class="card-icon">🎤</span>Session / Panel Management</div>
+      <div class="platforms">
+        <a class="platform active latest" href="https://qq847.github.io/gc-platform/SessionManagement_v1_PC.html" target="_blank"><span class="picon">🖥️</span><span class="pname">PC</span><span class="pver">v1</span><span class="pdot pdot-on"></span></a>
+        <div class="platform inactive"><span class="picon">📱</span><span class="pname">Mobile</span><span class="pver">—</span><span class="pdot pdot-off"></span></div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-title"><span class="card-icon">📅</span>Conference Schedule Builder</div>
+      <div class="platforms">
+        <a class="platform active latest" href="https://qq847.github.io/gc-platform/ConferenceScheduleBuilder_v2_PC.html" target="_blank"><span class="picon">🖥️</span><span class="pname">PC 多类型活动 ★</span><span class="pver">v2</span><span class="pdot pdot-on"></span></a>
+        <details>
+          <summary>旧版本 ▼</summary>
+          <a class="platform active" href="https://qq847.github.io/gc-platform/ScheduleBuilder_v1_PC.html" target="_blank"><span class="picon">🖥️</span><span class="pname">PC</span><span class="pver">v1</span><span class="pdot pdot-on"></span></a>
+        </details>
+        <div class="platform inactive"><span class="picon">📱</span><span class="pname">Mobile</span><span class="pver">—</span><span class="pdot pdot-off"></span></div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-title"><span class="card-icon">🗺️</span>Venue Map</div>
+      <div class="platforms">
+        <a class="platform active latest" href="https://qq847.github.io/gc-platform/VenueMap_v1_PC.html" target="_blank"><span class="picon">🖥️</span><span class="pname">PC</span><span class="pver">v1</span><span class="pdot pdot-on"></span></a>
+        <div class="platform inactive"><span class="picon">📱</span><span class="pname">Mobile</span><span class="pver">—</span><span class="pdot pdot-off"></span></div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-title"><span class="card-icon">🌐</span>Event Public Page</div>
+      <div class="platforms">
+        <a class="platform active latest" href="https://qq847.github.io/gc-platform/EventPublicPage_v2_PC.html" target="_blank"><span class="picon">🖥️</span><span class="pname">PC + Live entry ★</span><span class="pver">v2</span><span class="pdot pdot-on"></span></a>
+        <a class="platform active latest" href="https://qq847.github.io/gc-platform/EventPublicPage_v2_Mobile.html" target="_blank"><span class="picon">📱</span><span class="pname">Mobile + Live entry ★</span><span class="pver">v2</span><span class="pdot pdot-on"></span></a>
+        <details>
+          <summary>旧版本 ▼</summary>
+          <a class="platform active" href="https://qq847.github.io/gc-platform/EventPublicPage_v1_PC.html" target="_blank"><span class="picon">🖥️</span><span class="pname">PC</span><span class="pver">v1</span><span class="pdot pdot-on"></span></a>
+          <a class="platform active" href="https://qq847.github.io/gc-platform/EventPublicPage_v1_Mobile.html" target="_blank"><span class="picon">📱</span><span class="pname">Mobile</span><span class="pver">v1</span><span class="pdot pdot-on"></span></a>
+        </details>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- 12 Let's Meet -->
+<div class="section">
+  <div class="sec-hdr"><div class="sec-num" style="background:var(--green)">12</div><div class="sec-title">B2B · Let's Meet (Matchmaking)</div></div>
+  <div class="sec-desc">Game Connection's core feature · 1-on-1 meetings at conferences</div>
+  <div class="grid">
+    <div class="card">
+      <div class="card-title"><span class="card-icon">⚙️</span>Let's Meet Setup</div>
+      <div class="platforms">
+        <a class="platform active latest" href="https://qq847.github.io/gc-platform/LetsMeet_Setup_v1_PC.html" target="_blank"><span class="picon">🖥️</span><span class="pname">PC (organizer)</span><span class="pver">v1</span><span class="pdot pdot-on"></span></a>
+        <div class="platform inactive"><span class="picon">📱</span><span class="pname">Mobile</span><span class="pver">—</span><span class="pdot pdot-off"></span></div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-title"><span class="card-icon">👥</span>Browse Participants</div>
+      <div class="platforms">
+        <a class="platform active latest" href="https://qq847.github.io/gc-platform/LetsMeet_Browse_v1_PC.html" target="_blank"><span class="picon">🖥️</span><span class="pname">PC</span><span class="pver">v1</span><span class="pdot pdot-on"></span></a>
+        <a class="platform active latest" href="https://qq847.github.io/gc-platform/LetsMeet_Browse_v1_Mobile.html" target="_blank"><span class="picon">📱</span><span class="pname">Mobile</span><span class="pver">v1</span><span class="pdot pdot-on"></span></a>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-title"><span class="card-icon">🗓️</span>My Meeting Schedule</div>
+      <div class="platforms">
+        <a class="platform active latest" href="https://qq847.github.io/gc-platform/LetsMeet_Schedule_v1_PC.html" target="_blank"><span class="picon">🖥️</span><span class="pname">PC</span><span class="pver">v1</span><span class="pdot pdot-on"></span></a>
+        <a class="platform active latest" href="https://qq847.github.io/gc-platform/LetsMeet_Schedule_v1_Mobile.html" target="_blank"><span class="picon">📱</span><span class="pname">Mobile</span><span class="pver">v1</span><span class="pdot pdot-on"></span></a>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-title"><span class="card-icon">📋</span>Organizer View</div>
+      <div class="platforms">
+        <a class="platform active latest" href="https://qq847.github.io/gc-platform/LetsMeet_Organizer_v1_PC.html" target="_blank"><span class="picon">🖥️</span><span class="pname">PC</span><span class="pver">v1</span><span class="pdot pdot-on"></span></a>
+        <div class="platform inactive"><span class="picon">📱</span><span class="pname">Mobile</span><span class="pver">—</span><span class="pdot pdot-off"></span></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- 13 Commerce -->
+<div class="section">
+  <div class="sec-hdr"><div class="sec-num" style="background:var(--orange)">13</div><div class="sec-title">B2B · Commerce (Sponsorship)</div></div>
+  <div class="sec-desc">Core revenue model · Sponsors buy packages across multiple events</div>
+  <div class="grid">
+    <div class="card">
+      <div class="card-title"><span class="card-icon">🔍</span>Sponsor Explore</div>
+      <div class="platforms">
+        <a class="platform active latest" href="https://qq847.github.io/gc-platform/SponsorExplore_v1_PC.html" target="_blank"><span class="picon">🖥️</span><span class="pname">PC ★</span><span class="pver">v1</span><span class="pdot pdot-on"></span></a>
+        <a class="platform active latest" href="https://qq847.github.io/gc-platform/SponsorExplore_v1_Mobile.html" target="_blank"><span class="picon">📱</span><span class="pname">Mobile ★</span><span class="pver">v11</span><span class="pdot pdot-on"></span></a>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-title"><span class="card-icon">⊞</span>Sponsor Builder (matrix)</div>
+      <div class="platforms">
+        <a class="platform active latest" href="https://qq847.github.io/gc-platform/SponsorBuilder_v1_PC.html" target="_blank"><span class="picon">🖥️</span><span class="pname">PC</span><span class="pver">v1</span><span class="pdot pdot-on"></span></a>
+        <div class="platform inactive"><span class="picon">📱</span><span class="pname">Mobile</span><span class="pver">—</span><span class="pdot pdot-off"></span></div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-title"><span class="card-icon">🛒</span>Checkout Cart</div>
+      <div class="platforms">
+        <a class="platform active latest" href="https://qq847.github.io/gc-platform/CheckoutCart_v1_PC.html" target="_blank"><span class="picon">🖥️</span><span class="pname">PC</span><span class="pver">v1</span><span class="pdot pdot-on"></span></a>
+        <div class="platform inactive"><span class="picon">📱</span><span class="pname">Mobile</span><span class="pver">—</span><span class="pdot pdot-off"></span></div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-title"><span class="card-icon">✅</span>Order Confirm</div>
+      <div class="platforms">
+        <a class="platform active latest" href="https://qq847.github.io/gc-platform/OrderConfirm_v1_PC.html" target="_blank"><span class="picon">🖥️</span><span class="pname">PC</span><span class="pver">v1</span><span class="pdot pdot-on"></span></a>
+        <div class="platform inactive"><span class="picon">📱</span><span class="pname">Mobile</span><span class="pver">—</span><span class="pdot pdot-off"></span></div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-title"><span class="card-icon">📈</span>Buyer Dashboard</div>
+      <div class="platforms">
+        <a class="platform active latest" href="https://qq847.github.io/gc-platform/BuyerDashboard_v1_PC.html" target="_blank"><span class="picon">🖥️</span><span class="pname">PC</span><span class="pver">v1</span><span class="pdot pdot-on"></span></a>
+        <div class="platform inactive"><span class="picon">📱</span><span class="pname">Mobile</span><span class="pver">—</span><span class="pdot pdot-off"></span></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- 14 Commerce / Deals -->
+<div class="section">
+  <div class="sec-hdr"><div class="sec-num" style="background:var(--purple)">14</div><div class="sec-title">B2B · Commerce / Deals</div></div>
+  <div class="sec-desc">游戏项目商务 · 磋商谈判 · 电子合同 · Deal Room · Commerce B3电商路径</div>
+  <div class="grid">
+    <div class="card">
+      <div class="card-title"><span class="card-icon">🎮</span>Project Biz Detail</div>
+      <div class="platforms">
+        <a class="platform active latest" href="https://qq847.github.io/gc-platform/ProjectBiz_v1_PC.html" target="_blank"><span class="picon">🖥️</span><span class="pname">PC ★</span><span class="pver">v1</span><span class="pdot pdot-on"></span></a>
+        <a class="platform active latest" href="https://qq847.github.io/gc-platform/ProjectBiz_v1_Mobile.html" target="_blank"><span class="picon">📱</span><span class="pname">Mobile ★</span><span class="pver">v11</span><span class="pdot pdot-on"></span></a>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-title"><span class="card-icon">🤝</span>Deal Negotiation</div>
+      <div class="platforms">
+        <a class="platform active latest" href="https://qq847.github.io/gc-platform/DealNegotiation_v1_PC.html" target="_blank"><span class="picon">🖥️</span><span class="pname">PC ★</span><span class="pver">v1</span><span class="pdot pdot-on"></span></a>
+        <a class="platform active latest" href="https://qq847.github.io/gc-platform/DealNegotiation_v1_Mobile.html" target="_blank"><span class="picon">📱</span><span class="pname">Mobile ★</span><span class="pver">v11</span><span class="pdot pdot-on"></span></a>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-title"><span class="card-icon">📝</span>Contract Sign</div>
+      <div class="platforms">
+        <a class="platform active latest" href="https://qq847.github.io/gc-platform/ContractSign_v1_PC.html" target="_blank"><span class="picon">🖥️</span><span class="pname">PC ★</span><span class="pver">v1</span><span class="pdot pdot-on"></span></a>
+        <a class="platform active latest" href="https://qq847.github.io/gc-platform/ContractSign_v1_Mobile.html" target="_blank"><span class="picon">📱</span><span class="pname">Mobile ★</span><span class="pver">v11</span><span class="pdot pdot-on"></span></a>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-title"><span class="card-icon">💬</span>Deal Room</div>
+      <div class="platforms">
+        <a class="platform active latest" href="https://qq847.github.io/gc-platform/DealRoom_v1_PC.html" target="_blank"><span class="picon">🖥️</span><span class="pname">PC ★</span><span class="pver">v1</span><span class="pdot pdot-on"></span></a>
+        <a class="platform active latest" href="https://qq847.github.io/gc-platform/DealRoom_v1_Mobile.html" target="_blank"><span class="picon">📱</span><span class="pname">Mobile ★</span><span class="pver">v11</span><span class="pdot pdot-on"></span></a>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-title"><span class="card-icon">💰</span>Commerce B3 ✦</div>
+      <div class="card-note" style="font-size:10px;color:var(--orange);margin-bottom:6px;">Premium · 定价/版税/里程碑付款</div>
+      <div class="platforms">
+        <a class="platform active latest" href="https://qq847.github.io/gc-platform/Commerce_v1_PC.html" target="_blank"><span class="picon">🖥️</span><span class="pname">PC ★</span><span class="pver">v1</span><span class="pdot pdot-on"></span></a>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- 15 Attendee Experience -->
+<div class="section">
+  <div class="sec-hdr"><div class="sec-num" style="background:var(--teal)">15</div><div class="sec-title">Attendee Experience</div></div>
+  <div class="sec-desc">购票 · 展位浏览 · 投票 · 日程 · 地图导航</div>
+  <div class="grid">
+    <div class="card">
+      <div class="card-title"><span class="card-icon">🎫</span>Ticket Purchase</div>
+      <div class="platforms">
+        <a class="platform active latest" href="https://qq847.github.io/gc-platform/TicketPurchase_v1_Mobile.html" target="_blank"><span class="picon">📱</span><span class="pname">Mobile ★</span><span class="pver">v11</span><span class="pdot pdot-on"></span></a>
+        <div class="platform inactive"><span class="picon">🖥️</span><span class="pname">PC</span><span class="pver">—</span><span class="pdot pdot-off"></span></div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-title"><span class="card-icon">🪑</span>Exhibitor Browse</div>
+      <div class="platforms">
+        <a class="platform active latest" href="https://qq847.github.io/gc-platform/ExhibitorBrowse_v1_Mobile.html" target="_blank"><span class="picon">📱</span><span class="pname">Mobile ★</span><span class="pver">v11</span><span class="pdot pdot-on"></span></a>
+        <div class="platform inactive"><span class="picon">🖥️</span><span class="pname">PC</span><span class="pver">—</span><span class="pdot pdot-off"></span></div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-title"><span class="card-icon">🏆</span>Awards Voting</div>
+      <div class="platforms">
+        <a class="platform active latest" href="https://qq847.github.io/gc-platform/AwardsVoting_v1_PC.html" target="_blank"><span class="picon">🖥️</span><span class="pname">PC ★</span><span class="pver">v1</span><span class="pdot pdot-on"></span></a>
+        <div class="platform inactive"><span class="picon">📱</span><span class="pname">Mobile</span><span class="pver">—</span><span class="pdot pdot-off"></span></div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-title"><span class="card-icon">📅</span>My Schedule</div>
+      <div class="platforms">
+        <a class="platform active latest" href="https://qq847.github.io/gc-platform/MySchedule_v1_PC.html" target="_blank"><span class="picon">🖥️</span><span class="pname">PC ★</span><span class="pver">v1</span><span class="pdot pdot-on"></span></a>
+        <a class="platform active latest" href="https://qq847.github.io/gc-platform/MySchedule_v1_Mobile.html" target="_blank"><span class="picon">📱</span><span class="pname">Mobile ★</span><span class="pver">v11</span><span class="pdot pdot-on"></span></a>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-title"><span class="card-icon">🎮</span>Game Showcase Browse</div>
+      <div class="platforms">
+        <a class="platform active latest" href="https://qq847.github.io/gc-platform/GameShowcaseBrowse_v1_PC.html" target="_blank"><span class="picon">🖥️</span><span class="pname">PC ★</span><span class="pver">v1</span><span class="pdot pdot-on"></span></a>
+        <a class="platform active latest" href="https://qq847.github.io/gc-platform/GameShowcaseBrowse_v1_Mobile.html" target="_blank"><span class="picon">📱</span><span class="pname">Mobile ★</span><span class="pver">v11</span><span class="pdot pdot-on"></span></a>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-title"><span class="card-icon">🗺️</span>Venue Map (Attendee)</div>
+      <div class="platforms">
+        <a class="platform active latest" href="https://qq847.github.io/gc-platform/VenueMap_v1_Mobile.html" target="_blank"><span class="picon">📱</span><span class="pname">Mobile ★</span><span class="pver">v11</span><span class="pdot pdot-on"></span></a>
+        <div class="platform inactive"><span class="picon">🖥️</span><span class="pname">PC</span><span class="pver">—</span><span class="pdot pdot-off"></span></div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-title"><span class="card-icon">📝</span>Meetup Publish</div>
+      <div class="platforms">
+        <a class="platform active latest" href="https://qq847.github.io/gc-platform/MeetupPublish_v1_Mobile.html" target="_blank"><span class="picon">📱</span><span class="pname">Mobile ★</span><span class="pver">v11</span><span class="pdot pdot-on"></span></a>
+        <div class="platform inactive"><span class="picon">🖥️</span><span class="pname">PC</span><span class="pver">—</span><span class="pdot pdot-off"></span></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="archive">
+  📦 <strong>_Archive</strong> — Old iterations (Live v1/v2/v3/v42) stored separately, not shown above.
+</div>
+
+</div>
+<!-- END MODULE VIEW -->
+
+</div><!-- end left-content -->
+
+<!-- ===== RIGHT PANEL ===== -->
+<div class="right-panel">
+  <div class="right-panel-title">📝 备注</div>
+  <div class="right-panel-subtitle">随左侧Phase自动切换 · 可编辑</div>
+
+  <div class="right-panel-section active" id="panel-phase-1">
+    <div class="panel-phase-header"><div class="panel-phase-num">1</div><div class="panel-phase-name">Discovery</div></div>
+    <div class="panel-field" contenteditable="true" data-note-id="panel-1" data-placeholder="点击编辑说明...">无需注册即可浏览全球展会信息。外部爬虫数据 + 平台发布展会双轨数据源。先让用户感受到价值，再引导注册。</div>
+  </div>
+
+  <div class="right-panel-section" id="panel-phase-2">
+    <div class="panel-phase-header"><div class="panel-phase-num">2</div><div class="panel-phase-name">Identity</div></div>
+    <div class="panel-field" contenteditable="true" data-note-id="panel-2" data-placeholder="点击编辑说明...">有了内容后引导注册，建立用户身份。Profile 是 B2B 名片，Project 是游戏项目的线上主页，Organization 代表公司。</div>
+  </div>
+
+  <div class="right-panel-section" id="panel-phase-3">
+    <div class="panel-phase-header"><div class="panel-phase-num">3</div><div class="panel-phase-name">Messaging</div></div>
+    <div class="panel-field" contenteditable="true" data-note-id="panel-3" data-placeholder="点击编辑说明...">身份建立后，用户之间需要沟通通道。先做 1v1 私信，支持文件和名片发送。</div>
+  </div>
+
+  <div class="right-panel-section" id="panel-phase-4">
+    <div class="panel-phase-header"><div class="panel-phase-num">4</div><div class="panel-phase-name">Event Publishing + Project Showcase</div></div>
+    <div class="panel-field" contenteditable="true" data-note-id="panel-4" data-placeholder="点击编辑说明...">最轻量的 Organizer 功能入口。支持发布小型活动（Meetup 风格），同时将 Project 数据在展会中展示，形成游戏 + 展会的初步连接。</div>
+  </div>
+
+  <div class="right-panel-section" id="panel-phase-5">
+    <div class="panel-phase-header"><div class="panel-phase-num">5</div><div class="panel-phase-name">Conference</div></div>
+    <div class="panel-field" contenteditable="true" data-note-id="panel-5" data-placeholder="点击编辑说明...">展会的内容骨架。Organizer 可编排完整日程、管理 Session 和 Panel；参会者可规划自己的行程。免费功能，吸引专业 Organizer 入驻。</div>
+  </div>
+
+  <div class="right-panel-section" id="panel-phase-6">
+    <div class="panel-phase-header"><div class="panel-phase-num">6</div><div class="panel-phase-name">Sponsorship Basic</div></div>
+    <div class="panel-field" contenteditable="true" data-note-id="panel-6" data-placeholder="点击编辑说明...">最早的商业化节点。Organizer 配置赞助套餐，赞助商自助浏览购买。赞助对象覆盖活动本身和 Conference 内容。</div>
+  </div>
+
+  <div class="right-panel-section" id="panel-phase-7">
+    <div class="panel-phase-header"><div class="panel-phase-num">7</div><div class="panel-phase-name">Ticketing</div></div>
+    <div class="panel-field" contenteditable="true" data-note-id="panel-7" data-placeholder="点击编辑说明...">付费票务是展会最直接的收入来源。Organizer 配置多票种和价格；参会者完成在线购票和确认流程。</div>
+  </div>
+
+  <div class="right-panel-section" id="panel-phase-8">
+    <div class="panel-phase-header"><div class="panel-phase-num">8</div><div class="panel-phase-name">Buyer Program</div></div>
+    <div class="panel-field" contenteditable="true" data-note-id="panel-8" data-placeholder="点击编辑说明...">Organizer 向 Publisher 和 Investor 发出邀请，开启 Buyer 专属权限。为后续 Commerce 阶段铺垫受众基础。</div>
+  </div>
+
+  <div class="right-panel-section" id="panel-phase-9">
+    <div class="panel-phase-header"><div class="panel-phase-num">9</div><div class="panel-phase-name">Exhibition</div></div>
+    <div class="panel-field" contenteditable="true" data-note-id="panel-9" data-placeholder="点击编辑说明...">展位和 Pod 的线上管理。Organizer 配置楼层地图和展位类型；参会者浏览展商信息并预约拜访。</div>
+  </div>
+
+  <div class="right-panel-section" id="panel-phase-10">
+    <div class="panel-phase-header"><div class="panel-phase-num">10</div><div class="panel-phase-name">Meetings</div></div>
+    <div class="panel-field" contenteditable="true" data-note-id="panel-10" data-placeholder="点击编辑说明...">Let's Meet 配对会议系统。开发者和 Buyer 可在展会期间预约 1v1 会面。Organizer 配置时间槽和规则，平台自动匹配。</div>
+  </div>
+
+  <div class="right-panel-section" id="panel-phase-11">
+    <div class="panel-phase-header"><div class="panel-phase-num">11</div><div class="panel-phase-name">Awards</div></div>
+    <div class="panel-field" contenteditable="true" data-note-id="panel-11" data-placeholder="点击编辑说明...">评奖体系提升展会品牌影响力。Organizer 配置奖项和候选游戏；参会者在线投票。</div>
+  </div>
+
+  <div class="right-panel-section" id="panel-phase-12">
+    <div class="panel-phase-header"><div class="panel-phase-num">12</div><div class="panel-phase-name">Sponsorship Advanced</div></div>
+    <div class="panel-field" contenteditable="true" data-note-id="panel-12" data-placeholder="点击编辑说明...">在基础赞助之上，设计更丰富的赞助产品：Award 冠名、Conference 赞助、Banner 展示位。为赞助商提供更精准的曝光渠道。</div>
+  </div>
+
+</div><!-- end right-panel -->
+
+</div><!-- end main-layout -->
+
+<!-- ===== BP VIEW ===== -->
+<div id="bp-view" style="display:none;">
+  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;">
+    <div>
+      <div style="font-size:10px;font-weight:800;color:var(--orange);text-transform:uppercase;letter-spacing:2px;margin-bottom:4px;">Business Plan</div>
+      <div style="font-size:20px;font-weight:800;color:var(--text1);letter-spacing:-.4px;">GC_Final_Manus</div>
+    </div>
+    <a href="https://docs.google.com/presentation/d/1APgyXJUjGwz6k4wu2Smrw2g7p990ag0_/edit" target="_blank" style="font-size:12px;font-weight:700;color:var(--orange);text-decoration:none;background:rgba(217,95,43,0.08);border:1px solid rgba(217,95,43,0.2);padding:6px 14px;border-radius:8px;">↗ 在 Drive 中打开</a>
+  </div>
+  <iframe
+    src="https://docs.google.com/presentation/d/1APgyXJUjGwz6k4wu2Smrw2g7p990ag0_/embed?start=false&loop=false&delayms=3000"
+    style="width:100%;height:calc(100vh - 180px);border:none;border-radius:12px;background:#f5f3ee;"
+    allowfullscreen
+  ></iframe>
+</div>
+
+<!-- ===== VI VIEW ===== -->
+<div id="vi-view" style="display:none; padding:32px 40px; max-width:1200px; margin:0 auto;">
+
+  <h2 style="font-family:'DM Sans',sans-serif; font-size:22px; font-weight:700; color:#1c1a17; margin:0 0 4px;">🎨 Visual Identity — Design System Reference</h2>
+  <p style="font-family:'DM Sans',sans-serif; font-size:14px; color:#6b6660; margin:0 0 32px;">Game Connection Platform · 最终视觉规范</p>
+
+  <!-- ── SECTION 1: Top Navigation ── -->
+  <h3 style="font-family:'DM Sans',sans-serif; font-size:15px; font-weight:700; color:#1c1a17; text-transform:uppercase; letter-spacing:.06em; margin:0 0 16px;">1 · 顶部导航 Top Navigation</h3>
+  <div style="display:grid; gap:20px; margin-bottom:40px;">
+
+    <!-- Standard White Nav -->
+    <div>
+      <p style="font-family:'DM Sans',sans-serif; font-size:12px; font-weight:600; color:#6b6660; margin:0 0 8px;">标准版（白色）— 80% 页面使用</p>
+      <div style="height:60px; background:#fff; border:1px solid #e0dbd2; border-radius:10px; display:flex; align-items:center; padding:0 20px; gap:16px;">
+        <!-- Logo -->
+        <div style="display:flex; align-items:center; gap:8px; flex-shrink:0;">
+          <div style="width:32px; height:32px; background:#d95f2b; border-radius:7px; display:flex; align-items:center; justify-content:center; font-family:'DM Sans',sans-serif; font-size:13px; font-weight:800; color:#fff;">GC</div>
+          <span style="font-family:'DM Sans',sans-serif; font-size:13px; font-weight:700; color:#1c1a17;">Game Connection</span>
+        </div>
+        <!-- Search -->
+        <div style="flex:1; max-width:340px; height:34px; background:#f5f3ef; border-radius:20px; display:flex; align-items:center; padding:0 14px; gap:8px; border:1px solid #e0dbd2;">
+          <span style="font-size:13px;">🔍</span>
+          <span style="font-family:'DM Sans',sans-serif; font-size:13px; color:#a09890;">Search games, companies, events…</span>
+        </div>
+        <div style="margin-left:auto; display:flex; align-items:center; gap:14px;">
+          <span style="font-family:'DM Sans',sans-serif; font-size:12px; font-weight:600; color:#6b6660; cursor:pointer;">EN / 中文</span>
+          <span style="font-size:18px; cursor:pointer;">🔔</span>
+          <div style="width:32px; height:32px; background:#e0dbd2; border-radius:50%; display:flex; align-items:center; justify-content:center; font-family:'DM Sans',sans-serif; font-size:12px; font-weight:700; color:#6b6660;">QQ</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Premium Black Nav -->
+    <div>
+      <p style="font-family:'DM Sans',sans-serif; font-size:12px; font-weight:600; color:#6b6660; margin:0 0 8px;">Premium版（黑色）— Buyer / Sponsor 页面</p>
+      <div style="height:60px; background:#1c1a17; border:1px solid #2a2825; border-radius:10px; display:flex; align-items:center; padding:0 20px; gap:16px;">
+        <!-- Logo white -->
+        <div style="display:flex; align-items:center; gap:8px; flex-shrink:0;">
+          <div style="width:32px; height:32px; background:#d95f2b; border-radius:7px; display:flex; align-items:center; justify-content:center; font-family:'DM Sans',sans-serif; font-size:13px; font-weight:800; color:#fff;">GC</div>
+          <span style="font-family:'DM Sans',sans-serif; font-size:13px; font-weight:700; color:#fff;">Game Connection</span>
+        </div>
+        <!-- Search dark -->
+        <div style="flex:1; max-width:340px; height:34px; background:#2a2825; border-radius:20px; display:flex; align-items:center; padding:0 14px; gap:8px; border:1px solid #3a3733;">
+          <span style="font-size:13px;">🔍</span>
+          <span style="font-family:'DM Sans',sans-serif; font-size:13px; color:#6b6660;">Search…</span>
+        </div>
+        <div style="margin-left:auto; display:flex; align-items:center; gap:14px;">
+          <span style="font-family:'DM Sans',sans-serif; font-size:12px; font-weight:600; color:#6b6660; cursor:pointer;">EN / 中文</span>
+          <span style="font-size:18px; cursor:pointer; filter:invert(1);">🔔</span>
+          <div style="position:relative;">
+            <div style="width:32px; height:32px; background:#3a3733; border-radius:50%; display:flex; align-items:center; justify-content:center; font-family:'DM Sans',sans-serif; font-size:12px; font-weight:700; color:#fff;">QQ</div>
+            <div style="position:absolute; bottom:-3px; right:-3px; background:#f0a500; border-radius:4px; padding:1px 4px; font-family:'DM Sans',sans-serif; font-size:8px; font-weight:800; color:#1c1a17; line-height:1.4;">PRO</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── SECTION 2: Sidebars ── -->
+  <h3 style="font-family:'DM Sans',sans-serif; font-size:15px; font-weight:700; color:#1c1a17; text-transform:uppercase; letter-spacing:.06em; margin:0 0 16px;">2 · 侧边栏 Sidebar</h3>
+  <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(200px, 1fr)); gap:20px; margin-bottom:40px; align-items:start;">
+
+    <!-- A: Dashboard Sidebar -->
+    <div>
+      <p style="font-family:'DM Sans',sans-serif; font-size:12px; font-weight:600; color:#6b6660; margin:0 0 8px;">A · Dashboard型（220px）</p>
+      <div style="background:#fff; border:1px solid #e0dbd2; border-radius:10px; overflow:hidden;">
+        <!-- user card -->
+        <div style="padding:16px; border-bottom:1px solid #e0dbd2;">
+          <div style="display:flex; align-items:center; gap:10px; margin-bottom:10px;">
+            <div style="width:36px; height:36px; background:#d95f2b; border-radius:50%; display:flex; align-items:center; justify-content:center; font-family:'DM Sans',sans-serif; font-size:14px; font-weight:700; color:#fff; flex-shrink:0;">QQ</div>
+            <div>
+              <div style="font-family:'DM Sans',sans-serif; font-size:13px; font-weight:700; color:#1c1a17;">Qiang Qiang</div>
+              <div style="display:inline-block; background:#fff3ee; color:#d95f2b; border-radius:4px; padding:1px 6px; font-family:'DM Sans',sans-serif; font-size:10px; font-weight:700;">Developer</div>
+            </div>
+          </div>
+          <div style="display:grid; grid-template-columns:1fr 1fr; gap:6px; text-align:center;">
+            <div style="background:#f5f3ef; border-radius:6px; padding:6px 4px;">
+              <div style="font-family:'DM Sans',sans-serif; font-size:14px; font-weight:700; color:#d95f2b;">3</div>
+              <div style="font-family:'DM Sans',sans-serif; font-size:10px; color:#a09890;">Games</div>
+            </div>
+            <div style="background:#f5f3ef; border-radius:6px; padding:6px 4px;">
+              <div style="font-family:'DM Sans',sans-serif; font-size:14px; font-weight:700; color:#d95f2b;">12</div>
+              <div style="font-family:'DM Sans',sans-serif; font-size:10px; color:#a09890;">Meetings</div>
+            </div>
+          </div>
+        </div>
+        <!-- nav items -->
+        <div style="padding:8px 0;">
+          <div style="display:flex; align-items:center; gap:10px; padding:9px 16px; border-left:3px solid #d95f2b; background:#fff3ee;">
+            <span style="font-size:15px;">🏠</span>
+            <span style="font-family:'DM Sans',sans-serif; font-size:13px; font-weight:600; color:#d95f2b;">Dashboard</span>
+          </div>
+          <div style="display:flex; align-items:center; gap:10px; padding:9px 16px; border-left:3px solid transparent;">
+            <span style="font-size:15px;">🎮</span>
+            <span style="font-family:'DM Sans',sans-serif; font-size:13px; color:#6b6660;">My Games</span>
+          </div>
+          <div style="display:flex; align-items:center; gap:10px; padding:9px 16px; border-left:3px solid transparent;">
+            <span style="font-size:15px;">🤝</span>
+            <span style="font-family:'DM Sans',sans-serif; font-size:13px; color:#6b6660;">Let's Meet</span>
+          </div>
+          <div style="display:flex; align-items:center; gap:10px; padding:9px 16px; border-left:3px solid transparent;">
+            <span style="font-size:15px;">📅</span>
+            <span style="font-family:'DM Sans',sans-serif; font-size:13px; color:#6b6660;">Schedule</span>
+          </div>
+          <div style="display:flex; align-items:center; gap:10px; padding:9px 16px; border-left:3px solid transparent;">
+            <span style="font-size:15px;">⚙️</span>
+            <span style="font-family:'DM Sans',sans-serif; font-size:13px; color:#6b6660;">Settings</span>
+          </div>
+        </div>
+        <p style="font-family:'DM Sans',sans-serif; font-size:10px; color:#a09890; padding:8px 16px; margin:0; border-top:1px solid #e0dbd2;">用于：BuyerDashboard / LetsMeet / ConferenceScheduleBuilder</p>
+      </div>
+    </div>
+
+    <!-- B: Wizard Sidebar -->
+    <div>
+      <p style="font-family:'DM Sans',sans-serif; font-size:12px; font-weight:600; color:#6b6660; margin:0 0 8px;">B · Wizard型（260px）</p>
+      <div style="background:#fff; border:1px solid #e0dbd2; border-radius:10px; overflow:hidden;">
+        <div style="padding:14px 16px; border-bottom:1px solid #e0dbd2;">
+          <div style="font-family:'DM Sans',sans-serif; font-size:13px; font-weight:700; color:#1c1a17;">Event Setup</div>
+          <div style="font-family:'DM Sans',sans-serif; font-size:11px; color:#a09890; margin-top:2px;">Step 2 of 5</div>
+          <div style="background:#e0dbd2; border-radius:4px; height:4px; margin-top:8px;">
+            <div style="background:#d95f2b; width:40%; height:100%; border-radius:4px;"></div>
+          </div>
+        </div>
+        <div style="padding:8px 0;">
+          <!-- done -->
+          <div style="display:flex; align-items:center; gap:12px; padding:10px 16px;">
+            <div style="width:24px; height:24px; border-radius:50%; background:#0d9b72; display:flex; align-items:center; justify-content:center; flex-shrink:0;">
+              <span style="color:#fff; font-size:12px; font-weight:700;">✓</span>
+            </div>
+            <div>
+              <div style="font-family:'DM Sans',sans-serif; font-size:12px; font-weight:600; color:#0d9b72;">Basic Info</div>
+              <div style="font-family:'DM Sans',sans-serif; font-size:10px; color:#a09890;">Completed</div>
+            </div>
+          </div>
+          <!-- active -->
+          <div style="display:flex; align-items:center; gap:12px; padding:10px 16px; background:#fff3ee; border-left:3px solid #d95f2b;">
+            <div style="width:24px; height:24px; border-radius:50%; background:#d95f2b; display:flex; align-items:center; justify-content:center; flex-shrink:0;">
+              <span style="font-family:'DM Sans',sans-serif; color:#fff; font-size:11px; font-weight:700;">2</span>
+            </div>
+            <div>
+              <div style="font-family:'DM Sans',sans-serif; font-size:12px; font-weight:700; color:#d95f2b;">Venue & Dates</div>
+              <div style="font-family:'DM Sans',sans-serif; font-size:10px; color:#d95f2b; opacity:.8;">In progress</div>
+            </div>
+          </div>
+          <!-- pending -->
+          <div style="display:flex; align-items:center; gap:12px; padding:10px 16px; opacity:.5;">
+            <div style="width:24px; height:24px; border-radius:50%; background:#e0dbd2; display:flex; align-items:center; justify-content:center; flex-shrink:0;">
+              <span style="font-family:'DM Sans',sans-serif; font-size:11px; font-weight:700; color:#a09890;">3</span>
+            </div>
+            <div>
+              <div style="font-family:'DM Sans',sans-serif; font-size:12px; font-weight:600; color:#6b6660;">Tickets</div>
+              <div style="font-family:'DM Sans',sans-serif; font-size:10px; color:#a09890;">Pending</div>
+            </div>
+          </div>
+          <div style="display:flex; align-items:center; gap:12px; padding:10px 16px; opacity:.5;">
+            <div style="width:24px; height:24px; border-radius:50%; background:#e0dbd2; display:flex; align-items:center; justify-content:center; flex-shrink:0;">
+              <span style="font-family:'DM Sans',sans-serif; font-size:11px; font-weight:700; color:#a09890;">4</span>
+            </div>
+            <div>
+              <div style="font-family:'DM Sans',sans-serif; font-size:12px; font-weight:600; color:#6b6660;">Sponsors</div>
+              <div style="font-family:'DM Sans',sans-serif; font-size:10px; color:#a09890;">Pending</div>
+            </div>
+          </div>
+          <div style="display:flex; align-items:center; gap:12px; padding:10px 16px; opacity:.5;">
+            <div style="width:24px; height:24px; border-radius:50%; background:#e0dbd2; display:flex; align-items:center; justify-content:center; flex-shrink:0;">
+              <span style="font-family:'DM Sans',sans-serif; font-size:11px; font-weight:700; color:#a09890;">5</span>
+            </div>
+            <div>
+              <div style="font-family:'DM Sans',sans-serif; font-size:12px; font-weight:600; color:#6b6660;">Publish</div>
+              <div style="font-family:'DM Sans',sans-serif; font-size:10px; color:#a09890;">Pending</div>
+            </div>
+          </div>
+        </div>
+        <p style="font-family:'DM Sans',sans-serif; font-size:10px; color:#a09890; padding:8px 16px; margin:0; border-top:1px solid #e0dbd2;">用于：EventPublishing / EventSetupWizard</p>
+      </div>
+    </div>
+
+    <!-- C: Filter Sidebar -->
+    <div>
+      <p style="font-family:'DM Sans',sans-serif; font-size:12px; font-weight:600; color:#6b6660; margin:0 0 8px;">C · Filter型（260px）</p>
+      <div style="background:#fff; border:1px solid #e0dbd2; border-radius:10px; overflow:hidden;">
+        <div style="padding:14px 16px; border-bottom:1px solid #e0dbd2; display:flex; align-items:center; justify-content:space-between;">
+          <span style="font-family:'DM Sans',sans-serif; font-size:13px; font-weight:700; color:#1c1a17;">Filters</span>
+          <span style="font-family:'DM Sans',sans-serif; font-size:11px; color:#d95f2b; font-weight:600; cursor:pointer;">Clear all</span>
+        </div>
+        <div style="padding:12px 16px; border-bottom:1px solid #e0dbd2;">
+          <div style="font-family:'DM Sans',sans-serif; font-size:11px; font-weight:700; color:#a09890; text-transform:uppercase; letter-spacing:.06em; margin-bottom:8px;">Genre</div>
+          <div style="display:flex; flex-direction:column; gap:6px;">
+            <label style="display:flex; align-items:center; justify-content:space-between; cursor:pointer;">
+              <div style="display:flex; align-items:center; gap:8px;">
+                <input type="checkbox" checked style="accent-color:#d95f2b;">
+                <span style="font-family:'DM Sans',sans-serif; font-size:13px; color:#1c1a17;">Action / Adventure</span>
+              </div>
+              <span style="font-family:'DM Sans',sans-serif; font-size:11px; font-weight:600; background:#f5f3ef; color:#6b6660; padding:1px 6px; border-radius:10px;">142</span>
+            </label>
+            <label style="display:flex; align-items:center; justify-content:space-between; cursor:pointer;">
+              <div style="display:flex; align-items:center; gap:8px;">
+                <input type="checkbox" style="accent-color:#d95f2b;">
+                <span style="font-family:'DM Sans',sans-serif; font-size:13px; color:#1c1a17;">RPG</span>
+              </div>
+              <span style="font-family:'DM Sans',sans-serif; font-size:11px; font-weight:600; background:#f5f3ef; color:#6b6660; padding:1px 6px; border-radius:10px;">89</span>
+            </label>
+            <label style="display:flex; align-items:center; justify-content:space-between; cursor:pointer;">
+              <div style="display:flex; align-items:center; gap:8px;">
+                <input type="checkbox" style="accent-color:#d95f2b;">
+                <span style="font-family:'DM Sans',sans-serif; font-size:13px; color:#1c1a17;">Strategy</span>
+              </div>
+              <span style="font-family:'DM Sans',sans-serif; font-size:11px; font-weight:600; background:#f5f3ef; color:#6b6660; padding:1px 6px; border-radius:10px;">67</span>
+            </label>
+          </div>
+        </div>
+        <div style="padding:12px 16px;">
+          <div style="font-family:'DM Sans',sans-serif; font-size:11px; font-weight:700; color:#a09890; text-transform:uppercase; letter-spacing:.06em; margin-bottom:8px;">Region</div>
+          <div style="display:flex; flex-direction:column; gap:6px;">
+            <label style="display:flex; align-items:center; justify-content:space-between; cursor:pointer;">
+              <div style="display:flex; align-items:center; gap:8px;">
+                <input type="checkbox" checked style="accent-color:#d95f2b;">
+                <span style="font-family:'DM Sans',sans-serif; font-size:13px; color:#1c1a17;">Asia Pacific</span>
+              </div>
+              <span style="font-family:'DM Sans',sans-serif; font-size:11px; font-weight:600; background:#f5f3ef; color:#6b6660; padding:1px 6px; border-radius:10px;">203</span>
+            </label>
+            <label style="display:flex; align-items:center; justify-content:space-between; cursor:pointer;">
+              <div style="display:flex; align-items:center; gap:8px;">
+                <input type="checkbox" style="accent-color:#d95f2b;">
+                <span style="font-family:'DM Sans',sans-serif; font-size:13px; color:#1c1a17;">Europe</span>
+              </div>
+              <span style="font-family:'DM Sans',sans-serif; font-size:11px; font-weight:600; background:#f5f3ef; color:#6b6660; padding:1px 6px; border-radius:10px;">178</span>
+            </label>
+          </div>
+        </div>
+        <p style="font-family:'DM Sans',sans-serif; font-size:10px; color:#a09890; padding:8px 16px; margin:0; border-top:1px solid #e0dbd2;">用于：Organizations / ExhibitorBrowse</p>
+      </div>
+    </div>
+
+    <!-- D: Premium Black Sidebar -->
+    <div>
+      <p style="font-family:'DM Sans',sans-serif; font-size:12px; font-weight:600; color:#6b6660; margin:0 0 8px;">D · Premium黑色（200px）</p>
+      <div style="background:#1c1a17; border:1px solid #2a2825; border-radius:10px; overflow:hidden;">
+        <div style="padding:16px; border-bottom:1px solid #2a2825; display:flex; align-items:center; gap:10px;">
+          <div style="width:36px; height:36px; background:#d95f2b; border-radius:50%; display:flex; align-items:center; justify-content:center; font-family:'DM Sans',sans-serif; font-size:13px; font-weight:700; color:#fff; flex-shrink:0;">QQ</div>
+          <div>
+            <div style="font-family:'DM Sans',sans-serif; font-size:13px; font-weight:700; color:#fff;">Qiang Qiang</div>
+            <div style="display:inline-block; background:#f0a500; color:#1c1a17; border-radius:4px; padding:1px 6px; font-family:'DM Sans',sans-serif; font-size:10px; font-weight:800;">BUYER</div>
+          </div>
+        </div>
+        <div style="padding:8px 0;">
+          <div style="display:flex; align-items:center; gap:10px; padding:10px 16px; border-left:3px solid #d95f2b; background:rgba(217,95,43,.1);">
+            <span style="font-size:15px;">🏆</span>
+            <span style="font-family:'DM Sans',sans-serif; font-size:13px; font-weight:600; color:#d95f2b;">Buyer Program</span>
+          </div>
+          <div style="display:flex; align-items:center; gap:10px; padding:10px 16px; border-left:3px solid transparent;">
+            <span style="font-size:15px; filter:invert(1) brightness(.7);">🤝</span>
+            <span style="font-family:'DM Sans',sans-serif; font-size:13px; color:#6b6660;">Meetings</span>
+          </div>
+          <div style="display:flex; align-items:center; gap:10px; padding:10px 16px; border-left:3px solid transparent;">
+            <span style="font-size:15px;">🏅</span>
+            <span style="font-family:'DM Sans',sans-serif; font-size:13px; color:#6b6660;">Awards</span>
+          </div>
+          <div style="display:flex; align-items:center; gap:10px; padding:10px 16px; border-left:3px solid transparent;">
+            <span style="font-size:15px;">📊</span>
+            <span style="font-family:'DM Sans',sans-serif; font-size:13px; color:#6b6660;">B2B Dashboard</span>
+          </div>
+        </div>
+        <p style="font-family:'DM Sans',sans-serif; font-size:10px; color:#3a3733; padding:8px 16px; margin:0; border-top:1px solid #2a2825;">用于：Buyer Program / Sponsor / Awards / B2B Dashboard</p>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- ── SECTION 3: Color System ── -->
+  <h3 style="font-family:'DM Sans',sans-serif; font-size:15px; font-weight:700; color:#1c1a17; text-transform:uppercase; letter-spacing:.06em; margin:0 0 16px;">3 · 颜色系统 Color System</h3>
+  <div style="display:grid; grid-template-columns:repeat(auto-fill, minmax(130px, 1fr)); gap:12px; margin-bottom:40px;">
+
+    <div style="background:#fff; border:1px solid #e0dbd2; border-radius:10px; overflow:hidden;">
+      <div style="height:56px; background:#d95f2b;"></div>
+      <div style="padding:10px 12px;">
+        <div style="font-family:'DM Sans',sans-serif; font-size:12px; font-weight:700; color:#1c1a17;">Primary</div>
+        <div style="font-family:'DM Sans',monospace; font-size:11px; color:#6b6660;">#d95f2b</div>
+      </div>
+    </div>
+
+    <div style="background:#fff; border:1px solid #e0dbd2; border-radius:10px; overflow:hidden;">
+      <div style="height:56px; background:#1c1a17;"></div>
+      <div style="padding:10px 12px;">
+        <div style="font-family:'DM Sans',sans-serif; font-size:12px; font-weight:700; color:#1c1a17;">Dark</div>
+        <div style="font-family:'DM Sans',monospace; font-size:11px; color:#6b6660;">#1c1a17</div>
+      </div>
+    </div>
+
+    <div style="background:#fff; border:1px solid #e0dbd2; border-radius:10px; overflow:hidden;">
+      <div style="height:56px; background:#e8e4da; border-bottom:1px solid #e0dbd2;"></div>
+      <div style="padding:10px 12px;">
+        <div style="font-family:'DM Sans',sans-serif; font-size:12px; font-weight:700; color:#1c1a17;">Background</div>
+        <div style="font-family:'DM Sans',monospace; font-size:11px; color:#6b6660;">#e8e4da</div>
+      </div>
+    </div>
+
+    <div style="background:#fff; border:1px solid #e0dbd2; border-radius:10px; overflow:hidden;">
+      <div style="height:56px; background:#fff; border-bottom:1px solid #e0dbd2;"></div>
+      <div style="padding:10px 12px;">
+        <div style="font-family:'DM Sans',sans-serif; font-size:12px; font-weight:700; color:#1c1a17;">Card</div>
+        <div style="font-family:'DM Sans',monospace; font-size:11px; color:#6b6660;">#ffffff</div>
+      </div>
+    </div>
+
+    <div style="background:#fff; border:1px solid #e0dbd2; border-radius:10px; overflow:hidden;">
+      <div style="height:56px; background:#e0dbd2;"></div>
+      <div style="padding:10px 12px;">
+        <div style="font-family:'DM Sans',sans-serif; font-size:12px; font-weight:700; color:#1c1a17;">Border</div>
+        <div style="font-family:'DM Sans',monospace; font-size:11px; color:#6b6660;">#e0dbd2</div>
+      </div>
+    </div>
+
+    <div style="background:#fff; border:1px solid #e0dbd2; border-radius:10px; overflow:hidden;">
+      <div style="height:56px; background:#1c1a17;"></div>
+      <div style="padding:10px 12px;">
+        <div style="font-family:'DM Sans',sans-serif; font-size:12px; font-weight:700; color:#1c1a17;">Text 1</div>
+        <div style="font-family:'DM Sans',monospace; font-size:11px; color:#6b6660;">#1c1a17</div>
+      </div>
+    </div>
+
+    <div style="background:#fff; border:1px solid #e0dbd2; border-radius:10px; overflow:hidden;">
+      <div style="height:56px; background:#6b6660;"></div>
+      <div style="padding:10px 12px;">
+        <div style="font-family:'DM Sans',sans-serif; font-size:12px; font-weight:700; color:#1c1a17;">Text 2</div>
+        <div style="font-family:'DM Sans',monospace; font-size:11px; color:#6b6660;">#6b6660</div>
+      </div>
+    </div>
+
+    <div style="background:#fff; border:1px solid #e0dbd2; border-radius:10px; overflow:hidden;">
+      <div style="height:56px; background:#a09890;"></div>
+      <div style="padding:10px 12px;">
+        <div style="font-family:'DM Sans',sans-serif; font-size:12px; font-weight:700; color:#1c1a17;">Text 3</div>
+        <div style="font-family:'DM Sans',monospace; font-size:11px; color:#6b6660;">#a09890</div>
+      </div>
+    </div>
+
+    <div style="background:#fff; border:1px solid #e0dbd2; border-radius:10px; overflow:hidden;">
+      <div style="height:56px; background:#0d9b72;"></div>
+      <div style="padding:10px 12px;">
+        <div style="font-family:'DM Sans',sans-serif; font-size:12px; font-weight:700; color:#1c1a17;">Success</div>
+        <div style="font-family:'DM Sans',monospace; font-size:11px; color:#6b6660;">#0d9b72</div>
+      </div>
+    </div>
+
+    <div style="background:#fff; border:1px solid #e0dbd2; border-radius:10px; overflow:hidden;">
+      <div style="height:56px; background:#f0a500;"></div>
+      <div style="padding:10px 12px;">
+        <div style="font-family:'DM Sans',sans-serif; font-size:12px; font-weight:700; color:#1c1a17;">Warning</div>
+        <div style="font-family:'DM Sans',monospace; font-size:11px; color:#6b6660;">#f0a500</div>
+      </div>
+    </div>
+
+    <div style="background:#fff; border:1px solid #e0dbd2; border-radius:10px; overflow:hidden;">
+      <div style="height:56px; background:#e5534b;"></div>
+      <div style="padding:10px 12px;">
+        <div style="font-family:'DM Sans',sans-serif; font-size:12px; font-weight:700; color:#1c1a17;">Error</div>
+        <div style="font-family:'DM Sans',monospace; font-size:11px; color:#6b6660;">#e5534b</div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- ── SECTION 4: Usage Rules ── -->
+  <h3 style="font-family:'DM Sans',sans-serif; font-size:15px; font-weight:700; color:#1c1a17; text-transform:uppercase; letter-spacing:.06em; margin:0 0 16px;">4 · 使用规则 Usage Rules</h3>
+  <div style="display:grid; grid-template-columns:1fr 1fr; gap:20px; margin-bottom:40px;">
+
+    <!-- White UI -->
+    <div style="background:#fff; border:1px solid #e0dbd2; border-radius:12px; overflow:hidden;">
+      <div style="padding:16px 20px; border-bottom:1px solid #e0dbd2; display:flex; align-items:center; gap:10px;">
+        <div style="width:10px; height:10px; border-radius:50%; background:#e0dbd2; border:2px solid #a09890;"></div>
+        <span style="font-family:'DM Sans',sans-serif; font-size:14px; font-weight:700; color:#1c1a17;">🌐 Standard White UI</span>
+      </div>
+      <div style="padding:16px 20px;">
+        <p style="font-family:'DM Sans',sans-serif; font-size:12px; color:#6b6660; margin:0 0 14px;">背景 #fff · 导航 #1c1a17 · 强调 #d95f2b</p>
+        <div style="display:flex; flex-wrap:wrap; gap:8px;">
+          <span style="background:#f5f3ef; border:1px solid #e0dbd2; border-radius:6px; padding:4px 10px; font-family:'DM Sans',sans-serif; font-size:12px; font-weight:600; color:#1c1a17;">👨‍💻 Developer</span>
+          <span style="background:#f5f3ef; border:1px solid #e0dbd2; border-radius:6px; padding:4px 10px; font-family:'DM Sans',sans-serif; font-size:12px; font-weight:600; color:#1c1a17;">🎟 Attendee</span>
+          <span style="background:#f5f3ef; border:1px solid #e0dbd2; border-radius:6px; padding:4px 10px; font-family:'DM Sans',sans-serif; font-size:12px; font-weight:600; color:#1c1a17;">🏢 Organizer</span>
+          <span style="background:#f5f3ef; border:1px solid #e0dbd2; border-radius:6px; padding:4px 10px; font-family:'DM Sans',sans-serif; font-size:12px; font-weight:600; color:#1c1a17;">🎤 Speaker</span>
+          <span style="background:#f5f3ef; border:1px solid #e0dbd2; border-radius:6px; padding:4px 10px; font-family:'DM Sans',sans-serif; font-size:12px; font-weight:600; color:#1c1a17;">📰 Press</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Premium Black UI -->
+    <div style="background:#1c1a17; border:1px solid #2a2825; border-radius:12px; overflow:hidden;">
+      <div style="padding:16px 20px; border-bottom:1px solid #2a2825; display:flex; align-items:center; gap:10px;">
+        <div style="width:10px; height:10px; border-radius:50%; background:#f0a500;"></div>
+        <span style="font-family:'DM Sans',sans-serif; font-size:14px; font-weight:700; color:#fff;">⭐ Premium Black UI</span>
+      </div>
+      <div style="padding:16px 20px;">
+        <p style="font-family:'DM Sans',sans-serif; font-size:12px; color:#6b6660; margin:0 0 14px;">背景 #1c1a17 · 导航 #fff · 强调 #d95f2b · 徽章 #f0a500</p>
+        <div style="display:flex; flex-wrap:wrap; gap:8px;">
+          <span style="background:#2a2825; border:1px solid #3a3733; border-radius:6px; padding:4px 10px; font-family:'DM Sans',sans-serif; font-size:12px; font-weight:600; color:#fff;">💼 Buyer</span>
+          <span style="background:#2a2825; border:1px solid #3a3733; border-radius:6px; padding:4px 10px; font-family:'DM Sans',sans-serif; font-size:12px; font-weight:600; color:#fff;">🏅 Sponsor</span>
+        </div>
+        <p style="font-family:'DM Sans',sans-serif; font-size:11px; color:#3a3733; margin:14px 0 0;">专为高净值采购方和赞助商设计，彰显Premium差异化</p>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- ── SECTION: Colors ── -->
+  <h3 style="font-family:'DM Sans',sans-serif;font-size:15px;font-weight:700;color:#1c1a17;text-transform:uppercase;letter-spacing:.06em;margin:40px 0 16px;">🎨 Color System — 点色块可复制色值</h3>
+  <div style="display:flex;flex-wrap:wrap;gap:12px;margin-bottom:40px;">
+
+    <div onclick="navigator.clipboard.writeText('#e8e4da')" style="cursor:pointer;border-radius:12px;overflow:hidden;border:1px solid #e0dbd2;width:130px;" title="点击复制">
+      <div style="height:72px;background:#e8e4da;"></div>
+      <div style="padding:10px 12px;background:#fff;">
+        <div style="font-family:'DM Sans',sans-serif;font-size:12px;font-weight:700;color:#1c1a17;">Background</div>
+        <div style="font-family:monospace;font-size:11px;color:#a09890;margin-top:2px;">#e8e4da</div>
+        <div style="font-family:'DM Sans',sans-serif;font-size:10px;color:#6b6660;margin-top:4px;">页面底色</div>
+      </div>
+    </div>
+
+    <div onclick="navigator.clipboard.writeText('#ffffff')" style="cursor:pointer;border-radius:12px;overflow:hidden;border:1px solid #e0dbd2;width:130px;" title="点击复制">
+      <div style="height:72px;background:#ffffff;"></div>
+      <div style="padding:10px 12px;background:#fff;">
+        <div style="font-family:'DM Sans',sans-serif;font-size:12px;font-weight:700;color:#1c1a17;">Surface</div>
+        <div style="font-family:monospace;font-size:11px;color:#a09890;margin-top:2px;">#ffffff</div>
+        <div style="font-family:'DM Sans',sans-serif;font-size:10px;color:#6b6660;margin-top:4px;">卡片 / 导航背景</div>
+      </div>
+    </div>
+
+    <div onclick="navigator.clipboard.writeText('#d95f2b')" style="cursor:pointer;border-radius:12px;overflow:hidden;border:1px solid #e0dbd2;width:130px;" title="点击复制">
+      <div style="height:72px;background:#d95f2b;"></div>
+      <div style="padding:10px 12px;background:#fff;">
+        <div style="font-family:'DM Sans',sans-serif;font-size:12px;font-weight:700;color:#1c1a17;">Primary</div>
+        <div style="font-family:monospace;font-size:11px;color:#a09890;margin-top:2px;">#d95f2b</div>
+        <div style="font-family:'DM Sans',sans-serif;font-size:10px;color:#6b6660;margin-top:4px;">按钮 / Active / CTA</div>
+      </div>
+    </div>
+
+    <div onclick="navigator.clipboard.writeText('#1c1a17')" style="cursor:pointer;border-radius:12px;overflow:hidden;border:1px solid #e0dbd2;width:130px;" title="点击复制">
+      <div style="height:72px;background:#1c1a17;"></div>
+      <div style="padding:10px 12px;background:#fff;">
+        <div style="font-family:'DM Sans',sans-serif;font-size:12px;font-weight:700;color:#1c1a17;">Dark / Premium</div>
+        <div style="font-family:monospace;font-size:11px;color:#a09890;margin-top:2px;">#1c1a17</div>
+        <div style="font-family:'DM Sans',sans-serif;font-size:10px;color:#6b6660;margin-top:4px;">主文字 / Premium背景</div>
+      </div>
+    </div>
+
+    <div onclick="navigator.clipboard.writeText('#6b6660')" style="cursor:pointer;border-radius:12px;overflow:hidden;border:1px solid #e0dbd2;width:130px;" title="点击复制">
+      <div style="height:72px;background:#6b6660;"></div>
+      <div style="padding:10px 12px;background:#fff;">
+        <div style="font-family:'DM Sans',sans-serif;font-size:12px;font-weight:700;color:#1c1a17;">Text Secondary</div>
+        <div style="font-family:monospace;font-size:11px;color:#a09890;margin-top:2px;">#6b6660</div>
+        <div style="font-family:'DM Sans',sans-serif;font-size:10px;color:#6b6660;margin-top:4px;">次要文字 / 描述</div>
+      </div>
+    </div>
+
+    <div onclick="navigator.clipboard.writeText('#a09890')" style="cursor:pointer;border-radius:12px;overflow:hidden;border:1px solid #e0dbd2;width:130px;" title="点击复制">
+      <div style="height:72px;background:#a09890;"></div>
+      <div style="padding:10px 12px;background:#fff;">
+        <div style="font-family:'DM Sans',sans-serif;font-size:12px;font-weight:700;color:#1c1a17;">Text Muted</div>
+        <div style="font-family:monospace;font-size:11px;color:#a09890;margin-top:2px;">#a09890</div>
+        <div style="font-family:'DM Sans',sans-serif;font-size:10px;color:#6b6660;margin-top:4px;">弱化文字 / Placeholder</div>
+      </div>
+    </div>
+
+    <div onclick="navigator.clipboard.writeText('#e0dbd2')" style="cursor:pointer;border-radius:12px;overflow:hidden;border:1px solid #e0dbd2;width:130px;" title="点击复制">
+      <div style="height:72px;background:#e0dbd2;"></div>
+      <div style="padding:10px 12px;background:#fff;">
+        <div style="font-family:'DM Sans',sans-serif;font-size:12px;font-weight:700;color:#1c1a17;">Border</div>
+        <div style="font-family:monospace;font-size:11px;color:#a09890;margin-top:2px;">#e0dbd2</div>
+        <div style="font-family:'DM Sans',sans-serif;font-size:10px;color:#6b6660;margin-top:4px;">边框 / 分割线</div>
+      </div>
+    </div>
+
+    <div onclick="navigator.clipboard.writeText('#0d9b72')" style="cursor:pointer;border-radius:12px;overflow:hidden;border:1px solid #e0dbd2;width:130px;" title="点击复制">
+      <div style="height:72px;background:#0d9b72;"></div>
+      <div style="padding:10px 12px;background:#fff;">
+        <div style="font-family:'DM Sans',sans-serif;font-size:12px;font-weight:700;color:#1c1a17;">Success</div>
+        <div style="font-family:monospace;font-size:11px;color:#a09890;margin-top:2px;">#0d9b72</div>
+        <div style="font-family:'DM Sans',sans-serif;font-size:10px;color:#6b6660;margin-top:4px;">成功 / 已完成</div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- ── SECTION: Typography ── -->
+  <h3 style="font-family:'DM Sans',sans-serif;font-size:15px;font-weight:700;color:#1c1a17;text-transform:uppercase;letter-spacing:.06em;margin:0 0 16px;">🔤 Typography Scale — DM Sans</h3>
+  <div style="background:#fff;border:1px solid #e0dbd2;border-radius:12px;overflow:hidden;margin-bottom:40px;">
+
+    <div style="display:flex;align-items:baseline;gap:0;padding:20px 28px;border-bottom:1px solid #f0ede8;">
+      <div style="width:180px;flex-shrink:0;">
+        <div style="font-family:'DM Sans',sans-serif;font-size:10px;font-weight:700;color:#a09890;text-transform:uppercase;letter-spacing:.5px;">Page Title</div>
+        <div style="font-family:monospace;font-size:10px;color:#e0dbd2;margin-top:3px;">32px · 800 · -0.8px</div>
+      </div>
+      <div style="font-family:'DM Sans',sans-serif;font-size:32px;font-weight:800;letter-spacing:-.8px;color:#1c1a17;">Game Connection</div>
+    </div>
+
+    <div style="display:flex;align-items:baseline;gap:0;padding:20px 28px;border-bottom:1px solid #f0ede8;">
+      <div style="width:180px;flex-shrink:0;">
+        <div style="font-family:'DM Sans',sans-serif;font-size:10px;font-weight:700;color:#a09890;text-transform:uppercase;letter-spacing:.5px;">Section Title</div>
+        <div style="font-family:monospace;font-size:10px;color:#e0dbd2;margin-top:3px;">20px · 800 · -0.4px</div>
+      </div>
+      <div style="font-family:'DM Sans',sans-serif;font-size:20px;font-weight:800;letter-spacing:-.4px;color:#1c1a17;">Discover Events</div>
+    </div>
+
+    <div style="display:flex;align-items:baseline;gap:0;padding:20px 28px;border-bottom:1px solid #f0ede8;">
+      <div style="width:180px;flex-shrink:0;">
+        <div style="font-family:'DM Sans',sans-serif;font-size:10px;font-weight:700;color:#a09890;text-transform:uppercase;letter-spacing:.5px;">Card Title</div>
+        <div style="font-family:monospace;font-size:10px;color:#e0dbd2;margin-top:3px;">14px · 700</div>
+      </div>
+      <div style="font-family:'DM Sans',sans-serif;font-size:14px;font-weight:700;color:#1c1a17;">Deal Room — Project Biz</div>
+    </div>
+
+    <div style="display:flex;align-items:baseline;gap:0;padding:20px 28px;border-bottom:1px solid #f0ede8;">
+      <div style="width:180px;flex-shrink:0;">
+        <div style="font-family:'DM Sans',sans-serif;font-size:10px;font-weight:700;color:#a09890;text-transform:uppercase;letter-spacing:.5px;">Body</div>
+        <div style="font-family:monospace;font-size:10px;color:#e0dbd2;margin-top:3px;">13px · 400 · lh 1.6</div>
+      </div>
+      <div style="font-family:'DM Sans',sans-serif;font-size:13px;color:#6b6660;line-height:1.6;max-width:480px;">Game Connection is a professional B2B platform connecting developers, publishers, investors and service providers across the global games industry.</div>
+    </div>
+
+    <div style="display:flex;align-items:baseline;gap:0;padding:20px 28px;border-bottom:1px solid #f0ede8;">
+      <div style="width:180px;flex-shrink:0;">
+        <div style="font-family:'DM Sans',sans-serif;font-size:10px;font-weight:700;color:#a09890;text-transform:uppercase;letter-spacing:.5px;">Label / Tag</div>
+        <div style="font-family:monospace;font-size:10px;color:#e0dbd2;margin-top:3px;">11px · 700 · CAPS · +1.5px</div>
+      </div>
+      <div style="font-family:'DM Sans',sans-serif;font-size:11px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:#d95f2b;">Phase 10 — Meetings</div>
+    </div>
+
+    <div style="display:flex;align-items:baseline;gap:0;padding:20px 28px;">
+      <div style="width:180px;flex-shrink:0;">
+        <div style="font-family:'DM Sans',sans-serif;font-size:10px;font-weight:700;color:#a09890;text-transform:uppercase;letter-spacing:.5px;">Micro</div>
+        <div style="font-family:monospace;font-size:10px;color:#e0dbd2;margin-top:3px;">10px · 700 · CAPS</div>
+      </div>
+      <div style="font-family:'DM Sans',sans-serif;font-size:10px;font-weight:700;letter-spacing:.5px;text-transform:uppercase;color:#a09890;">Last updated 2 hours ago</div>
+    </div>
+
+  </div>
+
+</div><!-- end vi-view -->
+
+<script>
+function switchView(view) {
+  document.getElementById('roadmap-view').style.display = view === 'roadmap' ? 'block' : 'none';
+  document.getElementById('module-view').style.display = view === 'module' ? 'block' : 'none';
+  document.getElementById('journey-view').style.display = view === 'journey' ? 'block' : 'none';
+  document.getElementById('vi-view').style.display = view === 'vi' ? 'block' : 'none';
+  document.getElementById('bp-view').style.display = view === 'bp' ? 'block' : 'none';
+  // 右侧备注栏只在 Roadmap 时显示
+  const rightPanel = document.querySelector('.right-panel');
+  if (rightPanel) rightPanel.style.display = view === 'roadmap' ? '' : 'none';
+  const tabs = document.querySelectorAll('.view-tab');
+  tabs[0].classList.toggle('active', view === 'roadmap');
+  tabs[1].classList.toggle('active', view === 'module');
+  tabs[2].classList.toggle('active', view === 'journey');
+  tabs[3].classList.toggle('active', view === 'vi');
+  tabs[4].classList.toggle('active', view === 'bp');
+}
+
+function exportNotes() {
+  const result = {};
+  document.querySelectorAll('[contenteditable][data-note-id]').forEach(el => {
+    const text = el.innerText.trim();
+    if (text && text !== el.dataset.placeholder) {
+      result[el.dataset.noteId] = text;
+    }
+  });
+  document.getElementById('export-output').value = JSON.stringify(result, null, 2);
+  document.getElementById('export-modal').style.display = 'flex';
+}
+
+// localStorage save/restore for all contenteditable elements
+document.querySelectorAll('[contenteditable][data-note-id]').forEach(el => {
+  const key = 'gc_note_' + el.dataset.noteId;
+  const saved = localStorage.getItem(key);
+  if (saved) el.innerHTML = saved;
+  el.addEventListener('input', () => localStorage.setItem(key, el.innerHTML));
+});
+
+// IntersectionObserver: switch right panel based on visible phase
+const phaseBlocks = document.querySelectorAll('[data-phase-id]');
+const observer = new IntersectionObserver(entries => {
+  entries.forEach(entry => {
+    if (entry.isIntersecting) {
+      const phaseId = entry.target.dataset.phaseId;
+      document.querySelectorAll('.right-panel-section').forEach(s => s.classList.remove('active'));
+      const panel = document.getElementById('panel-phase-' + phaseId);
+      if (panel) panel.classList.add('active');
+    }
+  });
+}, { rootMargin: '-10% 0px -80% 0px', threshold: 0 });
+phaseBlocks.forEach(b => observer.observe(b));
+
+// ===== JOURNEY MODE =====
+// fork字段说明：{ label, roles:[{name,flow}] } — 显示分叉提示，roles是可跳转的其他角色流程
+const JOURNEY_FLOWS = {
+  attendee: {
+    name: '👤 Attendee — 参会者',
+    steps: [
+      { name: '首页浏览', desc: 'Phase 1 — 发现平台', file: 'Homepage_Feed_v2_PC.html' },
+      { name: '展会日历', desc: 'Phase 1 — 找感兴趣的展会', file: 'EventHub_v1_PC.html' },
+      { name: '展会详情页', desc: 'Phase 1 — 了解活动详情', file: 'EventPublicPage_v2_PC.html' },
+      { name: '登录', desc: 'Phase 2 — 统一登录入口（所有角色共用）', file: 'Login_v1.html' },
+      { name: 'Onboarding — 选角色', desc: 'Phase 2 — 选择你的身份，后续流程由此分叉', file: 'Onboarding_v1.html',
+        fork: { title: '⚠️ 分叉点 — Onboarding 角色选择', desc: '选择 Attendee 继续参会者流程。其他角色请切换流程：', roles: [
+          { name: '🎮 Developer', flow: 'developer' },
+          { name: '📢 Buyer（Publisher/Investor）', flow: 'buyer' },
+          { name: '🔧 Service Provider', flow: 'service_provider' },
+          { name: '💰 Sponsor', flow: 'sponsor' },
+          { name: '🎯 Organizer', flow: 'organizer' },
+          { name: '🎤 Speaker', flow: 'speaker' },
+          { name: '📰 Press', flow: 'press' },
+        ]}
+      },
+      { name: '个人主页', desc: 'Phase 2 — 完善个人资料', file: 'Profile_v2_PC.html' },
+      { name: '设置', desc: 'Phase 2 — 账号偏好设置', file: 'Settings_v1_PC.html' },
+      { name: '免费注册', desc: 'Phase 3 — 免费票注册流程', file: 'FreeRegistration_v1_PC.html',
+        fork: { title: '⚠️ 分叉点 — 票务类型', desc: '免费票走此页面。若购买付费票请切换：', roles: [
+          { name: '付费票务流程 →', flow: 'attendee' },
+        ]}
+      },
+      { name: '付费票务', desc: 'Phase 3 — 浏览购票选项', file: 'PaidTicketing_v1_PC.html' },
+      { name: '购物车', desc: 'Phase 3 — 确认票务信息', file: 'CheckoutCart_v1_PC.html' },
+      { name: '购票结算', desc: 'Phase 3 — 支付', file: 'TicketPurchase_v1_PC.html' },
+      { name: '订单确认', desc: 'Phase 3 — 完成，获得入场凭证', file: 'OrderConfirm_v1_PC.html' },
+      { name: '我的日程', desc: 'Phase 4 — 活动期间管理日程', file: 'MySchedule_v1_PC.html' },
+      { name: 'Live 现场', desc: 'Phase 4 — 到场实时信息', file: 'EventHub_v1_PC.html' },
+      { name: '场地地图', desc: 'Phase 4 — 现场导航', file: 'VenueMap_v1_PC.html' },
+      { name: '消息', desc: 'Phase 5 — 与其他参与者沟通', file: 'Messages_v1_PC.html' },
+      { name: '约见浏览', desc: 'Phase 6 — Let\'s Meet：找人约见', file: 'LetsMeet_Browse_v1_PC.html' },
+      { name: '约见排期', desc: 'Phase 6 — 确认见面时间', file: 'LetsMeet_Schedule_v1_PC.html' },
+      { name: '集市浏览', desc: 'Phase 6 — 逛周边/商品', file: 'Market_v1_PC.html' },
+      { name: '商品详情', desc: 'Phase 6 — 查看商品详情', file: 'MarketListing_v1_PC.html' },
+      { name: '奖项 & 大众投票', desc: 'Phase 6 — 参与大众评选', file: 'Awards_v1_PC.html' },
+    ]
+  },
+  developer: {
+    name: '🎮 Developer — 游戏开发者',
+    steps: [
+      { name: '首页浏览', desc: 'Phase 1 — 发现平台', file: 'Homepage_Feed_v2_PC.html' },
+      { name: '展会日历', desc: 'Phase 1 — 找目标展会', file: 'EventHub_v1_PC.html' },
+      { name: '展会详情页', desc: 'Phase 1 — 确认参展价值', file: 'EventPublicPage_v2_PC.html' },
+      { name: '登录', desc: 'Phase 2 — 统一登录入口', file: 'Login_v1.html' },
+      { name: 'Onboarding — 选角色', desc: 'Phase 2 — 选择 Developer', file: 'Onboarding_v1.html',
+        fork: { title: '⚠️ 分叉点 — 选择角色', desc: '选择 Developer 继续。其他 B2B 角色：', roles: [
+          { name: '📢 Buyer', flow: 'buyer' },
+          { name: '🔧 Service Provider', flow: 'service_provider' },
+          { name: '💰 Sponsor', flow: 'sponsor' },
+        ]}
+      },
+      { name: '个人主页', desc: 'Phase 2 — 展示个人/团队信息', file: 'Profile_v2_PC.html' },
+      { name: '组织管理', desc: 'Phase 2 — 公司/工作室信息', file: 'Organizations_v1_PC.html' },
+      { name: '项目管理', desc: 'Phase 2 — 创建并管理游戏项目', file: 'Projects_v1_PC.html' },
+      { name: '游戏展示页', desc: 'Phase 3 — 对外展示游戏，等 Buyer 来找', file: 'GameShowcase_v1_PC.html' },
+      { name: '展位管理', desc: 'Phase 4 — 管理线下展台', file: 'BoothManagement_v1_PC.html' },
+      { name: '展商浏览', desc: 'Phase 5 — 主动浏览其他展商', file: 'ExhibitorBrowse_v1_PC.html' },
+      { name: '约见浏览', desc: 'Phase 5 — Let\'s Meet：主动找 Buyer 约见', file: 'LetsMeet_Browse_v1_PC.html' },
+      { name: '约见排期', desc: 'Phase 5 — 确认见面时间', file: 'LetsMeet_Schedule_v1_PC.html' },
+      { name: '商务谈判', desc: 'Phase 5 — 收到 Buyer 邀约后进入谈判', file: 'DealNegotiation_v1_PC.html' },
+      { name: 'Deal Room', desc: 'Phase 5 — 项目详情共享空间', file: 'DealRoom_v1_PC.html' },
+      { name: '项目商务详情', desc: 'Phase 5 — 商务条款细化', file: 'ProjectBiz_v1_PC.html' },
+      { name: '合同签署', desc: 'Phase 5 — 签约', file: 'ContractSign_v1_PC.html' },
+      { name: '消息', desc: 'Phase 5 — 持续沟通', file: 'Messages_v1_PC.html' },
+      { name: '发起 Meetup', desc: 'Phase 6 — 自行组织小型线下活动（Mobile）', file: 'MeetupPublish_v1_Mobile.html' },
+    ]
+  },
+  buyer: {
+    name: '📢 Buyer — 采购方（Publisher / Investor / Platform）',
+    steps: [
+      { name: '首页浏览', desc: 'Phase 1 — 发现平台', file: 'Homepage_Feed_v2_PC.html' },
+      { name: '展会日历', desc: 'Phase 1 — 找目标展会', file: 'EventHub_v1_PC.html' },
+      { name: '展会详情页', desc: 'Phase 1 — 确认参与价值', file: 'EventPublicPage_v2_PC.html' },
+      { name: '登录', desc: 'Phase 2 — 统一登录入口', file: 'Login_v1.html' },
+      { name: 'Onboarding — 选角色', desc: 'Phase 2 — 选择 Publisher / Investor / Platform\n💡 Buyer（采购方）= 在展会上寻找游戏项目进行发行、投资或平台合作的公司或个人。与 Developer（开发者/供给方）相对。', file: 'Onboarding_v1.html',
+        fork: { title: '⚠️ 分叉点 — 采购方身份说明', desc: 'Buyer 泛指所有采购方（Publisher/Investor/Platform均属于此类）。选择后即可申请 Buyer Program 认证。其他角色：', roles: [
+          { name: '🎮 Developer（供给方）', flow: 'developer' },
+          { name: '🔧 Service Provider', flow: 'service_provider' },
+          { name: '💰 Sponsor', flow: 'sponsor' },
+        ]}
+      },
+      { name: '个人主页', desc: 'Phase 2 — 展示公司背景和采购方向', file: 'Profile_v2_PC.html' },
+      { name: '组织管理', desc: 'Phase 2 — 公司信息，建立可信度', file: 'Organizations_v1_PC.html' },
+      { name: 'Buyer 邀请函', desc: 'Phase 3 — 接受主办方邀请，激活 Buyer Program 资质', file: 'BuyerInvitation_v1_PC.html' },
+      { name: 'Buyer 仪表盘', desc: 'Phase 3 — Buyer Program 专属看板（洽谈进度/推荐项目）\n💡 Buyer Program = 主办方认证的采购方资质，享有优先排期等特权', file: 'BuyerDashboard_v1_PC.html' },
+      { name: '游戏展示浏览', desc: 'Phase 3 — 浏览所有参展游戏项目（Buyer 核心页面）', file: 'GameShowcaseBrowse_v1_PC.html' },
+      { name: '展商浏览', desc: 'Phase 3 — 浏览所有参展方', file: 'ExhibitorBrowse_v1_PC.html' },
+      { name: '约见浏览', desc: 'Phase 5 — Let\'s Meet：主动发起约见', file: 'LetsMeet_Browse_v1_PC.html' },
+      { name: '约见排期', desc: 'Phase 5 — 安排见面时间', file: 'LetsMeet_Schedule_v1_PC.html' },
+      { name: '商务谈判', desc: 'Phase 5 — 主动发起合作谈判', file: 'DealNegotiation_v1_PC.html' },
+      { name: 'Deal Room', desc: 'Phase 5 — 项目详情共享空间', file: 'DealRoom_v1_PC.html' },
+      { name: '项目商务详情', desc: 'Phase 5 — 商务条款细化', file: 'ProjectBiz_v1_PC.html',
+        fork: { title: '⚠️ 分叉点 — 合作模式选择', desc: '路径A（线下合作）→ 直接进入 ContractSign 签约\n路径B（平台电商）→ 进入 Commerce，解锁定价/版税/里程碑付款字段（Premium区）', roles: [
+          { name: '路径A：ContractSign 线下签约 →', flow: 'buyer' },
+          { name: '路径B：Commerce 平台电商 ✦', flow: 'buyer_commerce' },
+        ]}
+      },
+      { name: 'Commerce — 电商交易 ✦', desc: 'Phase 5 — Premium：定价/版税/里程碑付款（平台撮合）\n💡 路径B专属，进入此页面代表在平台上完成所有商务交割', file: 'Commerce_v1_PC.html' },
+      { name: '合同签署', desc: 'Phase 5 — 签约（线下合作路径A终点）', file: 'ContractSign_v1_PC.html' },
+      { name: '消息', desc: 'Phase 5 — 持续沟通', file: 'Messages_v1_PC.html' },
+    ]
+  },
+  buyer_commerce: {
+    name: '📢 Buyer — 电商路径（Commerce B3）',
+    steps: [
+      { name: '首页浏览', desc: 'Phase 1 — 发现平台', file: 'Homepage_Feed_v2_PC.html' },
+      { name: '登录', desc: 'Phase 2 — 统一登录入口', file: 'Login_v1.html' },
+      { name: 'Onboarding — 选角色', desc: 'Phase 2 — 选择 Publisher / Investor / Platform', file: 'Onboarding_v1.html' },
+      { name: 'Buyer 仪表盘', desc: 'Phase 8 — Buyer Program 专属看板', file: 'BuyerDashboard_v1_PC.html' },
+      { name: '游戏展示浏览', desc: 'Phase 4 — 找目标游戏项目', file: 'GameShowcaseBrowse_v1_PC.html' },
+      { name: '约见排期', desc: 'Phase 10 — 安排见面', file: 'LetsMeet_Schedule_v1_PC.html' },
+      { name: '商务谈判', desc: 'Phase 10 — 发起谈判', file: 'DealNegotiation_v1_PC.html' },
+      { name: 'Deal Room', desc: 'Phase 10 — 项目详情共享', file: 'DealRoom_v1_PC.html' },
+      { name: '项目商务详情', desc: 'Phase 10 — 条款细化，触发分叉', file: 'ProjectBiz_v1_PC.html',
+        fork: { title: '⚠️ 你选择了路径B — Commerce 平台电商', desc: '进入 Commerce 后，所有商务条款在平台上完成，包括：定价、版税比例、里程碑付款节点、平台托管资金。', roles: [
+          { name: '← 返回路径A（线下合作）', flow: 'buyer' },
+        ]}
+      },
+      { name: 'Commerce — 电商交易 ✦', desc: 'Phase 10 — Premium黑色UI：定价/版税/里程碑付款\n平台作为第三方撮合并监管交割', file: 'Commerce_v1_PC.html' },
+      { name: '合同签署', desc: 'Phase 10 — 平台电商合同（含托管条款）', file: 'ContractSign_v1_PC.html' },
+      { name: '消息', desc: 'Phase 10 — 交割过程持续沟通', file: 'Messages_v1_PC.html' },
+    ]
+  },
+  service_provider: {
+    name: '🔧 Service Provider — 服务商',
+    steps: [
+      { name: '首页浏览', desc: 'Phase 1 — 发现平台', file: 'Homepage_Feed_v2_PC.html' },
+      { name: '展会详情页', desc: 'Phase 1 — 确认参展价值', file: 'EventPublicPage_v2_PC.html' },
+      { name: '登录', desc: 'Phase 2 — 统一登录入口', file: 'Login_v1.html' },
+      { name: 'Onboarding — 选角色', desc: 'Phase 2 — 选择 Service Provider（本地化/QA/中间件/发行服务等）', file: 'Onboarding_v1.html',
+        fork: { title: '⚠️ 分叉点', desc: '选择 Service Provider。其他展商类角色：', roles: [
+          { name: '🎮 Developer', flow: 'developer' },
+          { name: '📢 Buyer', flow: 'buyer' },
+        ]}
+      },
+      { name: '个人主页', desc: 'Phase 2 — 展示服务能力和成功案例', file: 'Profile_v2_PC.html' },
+      { name: '组织管理', desc: 'Phase 2 — 公司信息', file: 'Organizations_v1_PC.html' },
+      { name: '项目管理', desc: 'Phase 2 — 展示服务项目/案例', file: 'Projects_v1_PC.html' },
+      { name: '展位管理', desc: 'Phase 4 — 管理线下展台', file: 'BoothManagement_v1_PC.html' },
+      { name: '展商浏览', desc: 'Phase 5 — 找潜在客户（开发者/发行商）', file: 'ExhibitorBrowse_v1_PC.html' },
+      { name: '约见浏览', desc: 'Phase 5 — 发起服务洽谈约见', file: 'LetsMeet_Browse_v1_PC.html' },
+      { name: '约见排期', desc: 'Phase 5 — 确认时间', file: 'LetsMeet_Schedule_v1_PC.html' },
+      { name: '商务谈判', desc: 'Phase 5 — 谈服务合作', file: 'DealNegotiation_v1_PC.html' },
+      { name: '合同签署', desc: 'Phase 5 — 签约', file: 'ContractSign_v1_PC.html' },
+      { name: '消息', desc: 'Phase 5 — 持续沟通', file: 'Messages_v1_PC.html' },
+    ]
+  },
+  sponsor: {
+    name: '💰 Sponsor — 赞助商',
+    steps: [
+      { name: '首页浏览', desc: 'Phase 1 — 发现平台', file: 'Homepage_Feed_v2_PC.html' },
+      { name: '展会详情页', desc: 'Phase 1 — 了解赞助机会', file: 'EventPublicPage_v2_PC.html' },
+      { name: '登录', desc: 'Phase 2 — 统一登录入口', file: 'Login_v1.html' },
+      { name: 'Onboarding — 选角色', desc: 'Phase 2 — 选择 Sponsor', file: 'Onboarding_v1.html',
+        fork: { title: '⚠️ 分叉点', desc: '选择 Sponsor 继续赞助流程。', roles: [
+          { name: '🎮 Developer', flow: 'developer' },
+          { name: '📢 Buyer', flow: 'buyer' },
+          { name: '🎯 Organizer', flow: 'organizer' },
+        ]}
+      },
+      { name: '个人主页', desc: 'Phase 2 — 展示品牌信息', file: 'Profile_v2_PC.html' },
+      { name: '组织管理', desc: 'Phase 2 — 公司/品牌信息', file: 'Organizations_v1_PC.html' },
+      { name: '浏览赞助机会', desc: 'Phase 6 — 查看各档位赞助权益', file: 'SponsorExplore_v1_PC.html' },
+      { name: '赞助权益管理', desc: 'Phase 6 — 管理已购赞助内容', file: 'SponsorshipManagement_v1_PC.html' },
+      { name: '合同签署', desc: 'Phase 6 — 签赞助合同', file: 'ContractSign_v1_PC.html' },
+      { name: '消息', desc: 'Phase 6 — 与主办方对接', file: 'Messages_v1_PC.html' },
+    ]
+  },
+  organizer: {
+    name: '🎯 Organizer — 主办方',
+    steps: [
+      { name: '登录', desc: 'Phase 2 — 统一登录入口', file: 'Login_v1.html' },
+      { name: 'Onboarding — 选角色', desc: 'Phase 2 — 选择 Event Organizer', file: 'Onboarding_v1.html',
+        fork: { title: '⚠️ 分叉点', desc: '选择 Event Organizer 进入主办方后台。', roles: [
+          { name: '👤 Attendee', flow: 'attendee' },
+          { name: '🎮 Developer', flow: 'developer' },
+        ]}
+      },
+      { name: '活动创建向导', desc: 'Phase 7 — 新建活动（Step by Step）', file: 'EventSetupWizard_v3_PC.html' },
+      { name: '模块配置', desc: 'Phase 7 — 开启/关闭功能模块', file: 'EventModuleSetup_v4_PC.html' },
+      { name: '赞助方案搭建', desc: 'Phase 7 — 设计赞助档位目录', file: 'SponsorBuilder_v1_PC.html' },
+      { name: '会议日程搭建', desc: 'Phase 7 — 编排演讲/论坛/Workshop', file: 'ConferenceScheduleBuilder_v2_PC.html' },
+      { name: '场次管理', desc: 'Phase 7 — 细化场次时间与地点', file: 'ScheduleBuilder_v1_PC.html' },
+      { name: 'Session 管理', desc: 'Phase 7 — 审核演讲申请，排期演讲者', file: 'SessionManagement_v1_PC.html' },
+      { name: '活动发布', desc: 'Phase 7 — 正式对外上线活动', file: 'EventPublishing_v1_PC.html' },
+      { name: 'EventHQ 后台', desc: 'Phase 7 — 实时运营仪表盘', file: 'EventHQ_Dashboard_v1_PC.html' },
+      { name: 'Buyer 邀请', desc: 'Phase 7 — 向采购方发送邀请函', file: 'BuyerInvitation_v1_PC.html' },
+      { name: 'Buyer 仪表盘', desc: 'Phase 7 — 查看采购方洽谈数据', file: 'BuyerDashboard_v1_PC.html' },
+      { name: 'Let\'s Meet 配置', desc: 'Phase 7 — 设置B2B约见规则与时间表', file: 'LetsMeet_Setup_v1_PC.html' },
+      { name: 'Let\'s Meet 运营', desc: 'Phase 7 — 实时管理约见进展', file: 'LetsMeet_Organizer_v1_PC.html' },
+    ]
+  },
+  jury: {
+    name: '⚖️ Jury — 专业评审',
+    steps: [
+      { name: '首页浏览', desc: 'Phase 1 — 发现平台', file: 'Homepage_Feed_v2_PC.html' },
+      { name: '登录', desc: 'Phase 2 — 主办方邀请链接登录', file: 'Login_v1.html' },
+      { name: '个人主页', desc: 'Phase 2 — 评委资历展示', file: 'Profile_v2_PC.html' },
+      { name: '奖项总览', desc: 'Phase 6 — 查看评审类别、提名作品和评审规则', file: 'Awards_v1_PC.html' },
+      { name: '评审投票', desc: 'Phase 6 — 对提名作品逐项评分', file: 'AwardsVoting_v1_PC.html' },
+      { name: '消息', desc: 'Phase 6 — 与主办方沟通', file: 'Messages_v1_PC.html' },
+    ]
+  },
+  speaker: {
+    name: '🎤 Speaker — 演讲者',
+    steps: [
+      { name: '首页浏览', desc: 'Phase 1 — 发现平台', file: 'Homepage_Feed_v2_PC.html' },
+      { name: '展会日历', desc: 'Phase 1 — 找目标展会征稿', file: 'EventHub_v1_PC.html' },
+      { name: '登录', desc: 'Phase 2 — 统一登录入口', file: 'Login_v1.html' },
+      { name: 'Onboarding — 选角色', desc: 'Phase 2 — 选择任意角色后申请 Speaker 资质', file: 'Onboarding_v1.html',
+        fork: { title: '⚠️ 分叉点', desc: 'Speaker 不是独立角色，而是附加资质。你先选主角色（如 Developer），再申请演讲。', roles: [
+          { name: '🎮 Developer + Speaker', flow: 'developer' },
+          { name: '📢 Buyer + Speaker', flow: 'buyer' },
+        ]}
+      },
+      { name: '个人主页', desc: 'Phase 2 — 完善演讲者简介和主题', file: 'Profile_v2_PC.html' },
+      { name: 'Speaker 申请/管理', desc: 'Phase 7 — 🚧 占位页：提交演讲提案、查看审核状态、管理 Session 资料', file: 'Speaker_v1_PC.html' },
+      { name: '我的日程', desc: 'Phase 4 — 查看确认后的演讲时间', file: 'MySchedule_v1_PC.html' },
+      { name: '消息', desc: 'Phase 7 — 与主办方沟通演讲细节', file: 'Messages_v1_PC.html' },
+    ]
+  },
+  press: {
+    name: '📰 Press / Media — 媒体记者',
+    steps: [
+      { name: '首页浏览', desc: 'Phase 1 — 发现平台', file: 'Homepage_Feed_v2_PC.html' },
+      { name: '展会详情页', desc: 'Phase 1 — 确认报道价值', file: 'EventPublicPage_v2_PC.html' },
+      { name: '登录', desc: 'Phase 2 — 统一登录入口', file: 'Login_v1.html' },
+      { name: 'Onboarding — 选角色', desc: 'Phase 2 — 选择任意角色后申请媒体资质', file: 'Onboarding_v1.html',
+        fork: { title: '⚠️ 分叉点', desc: 'Press 是附加资质，需主办方审核通过后解锁 Press Center。', roles: [
+          { name: '👤 Attendee 流程', flow: 'attendee' },
+        ]}
+      },
+      { name: '个人主页', desc: 'Phase 2 — 填写媒体机构信息', file: 'Profile_v2_PC.html' },
+      { name: 'Press Center', desc: 'Phase 1 — 🚧 占位页：申请媒体证、下载媒体包、预约采访', file: 'Press_v1_PC.html' },
+      { name: '约见浏览', desc: 'Phase 5 — 预约采访开发者/发行商', file: 'LetsMeet_Browse_v1_PC.html' },
+      { name: '约见排期', desc: 'Phase 5 — 确认采访时间', file: 'LetsMeet_Schedule_v1_PC.html' },
+      { name: '消息', desc: 'Phase 5 — 与受访方沟通', file: 'Messages_v1_PC.html' },
+    ]
+  },
+  mobile_attendee: {
+    name: '📱 Mobile — 参会者（移动端）',
+    steps: [
+      { name: '首页', desc: 'Phase 1 — Mobile首页', file: 'Homepage_Feed_v1_Mobile.html' },
+      { name: '展会日历', desc: 'Phase 1 — 发现展会', file: 'MobileHub_v11.html' },
+      { name: '展会详情', desc: 'Phase 1 — 公开页', file: 'EventPublicPage_v2_Mobile.html' },
+      { name: '登录', desc: 'Phase 2 — 统一登录入口', file: 'Login_v1_Mobile.html' },
+      { name: 'Onboarding — 选角色', desc: 'Phase 2 — 选择你的身份', file: 'Onboarding_v1_Mobile.html',
+        fork: { title: '⚠️ 分叉点 — Mobile 角色选择', desc: '参会者继续本流程。行业人士请使用 PC 端完整流程。', roles: [
+          { name: '🖥️ PC Attendee 完整版', flow: 'attendee' },
+          { name: '🎮 PC Developer', flow: 'developer' },
+        ]}
+      },
+      { name: '设置', desc: 'Phase 2 — 账号设置', file: 'Settings_v1_Mobile.html' },
+      { name: '免费注册', desc: 'Phase 3 — 注册流程', file: 'FreeRegistration_v1_Mobile.html' },
+      { name: '付费票务', desc: 'Phase 3 — 买票', file: 'PaidTicketing_v1_Mobile.html' },
+      { name: '购票结算', desc: 'Phase 3 — 结账', file: 'TicketPurchase_v1_Mobile.html' },
+      { name: '我的日程', desc: 'Phase 4 — 活动中', file: 'MySchedule_v1_Mobile.html' },
+      { name: 'Live 现场', desc: 'Phase 4 — 到场体验', file: 'Live_v43_Mobile.html' },
+      { name: '场地地图', desc: 'Phase 4 — 现场导航', file: 'VenueMap_v1_Mobile.html' },
+      { name: '个人主页', desc: 'Phase 5 — Profile', file: 'Profile_v2_Mobile.html' },
+      { name: '消息', desc: 'Phase 5 — 私信', file: 'Messages_v1_Mobile.html' },
+      { name: '约见浏览', desc: 'Phase 6 — Let\'s Meet', file: 'LetsMeet_Browse_v1_Mobile.html' },
+      { name: '约见排期', desc: 'Phase 6 — 确认时间', file: 'LetsMeet_Schedule_v1_Mobile.html' },
+      { name: '集市', desc: 'Phase 6 — Market', file: 'Market_v1_Mobile.html' },
+      { name: '商品详情', desc: 'Phase 6 — 商品列表', file: 'MarketListing_v1_Mobile.html' },
+      { name: '赞助浏览', desc: 'Phase 6 — 赞助探索', file: 'SponsorExplore_v1_Mobile.html' },
+      { name: '赞助管理', desc: 'Phase 6 — 已购赞助权益', file: 'SponsorshipManagement_v1_Mobile.html' },
+      { name: '投票', desc: 'Phase 6 — 评奖大众投票', file: 'AwardsVoting_v1_Mobile.html' },
+    ]
+  }
+};
+
+let journeyCurrentFlow = 'attendee';
+let journeyCurrentStep = 0;
+
+let journeySidebarCollapsed = false;
+
+function journeyToggleSidebar() {
+  journeySidebarCollapsed = !journeySidebarCollapsed;
+  const sidebar = document.getElementById('journey-sidebar');
+  const btn = document.getElementById('journey-collapse-btn');
+  sidebar.classList.toggle('collapsed', journeySidebarCollapsed);
+  btn.textContent = journeySidebarCollapsed ? '▶' : '◀';
+}
+
+function journeyRenderSidebar() {
+  const flow = JOURNEY_FLOWS[journeyCurrentFlow];
+  const list = document.getElementById('journey-sidebar-list');
+  list.innerHTML = '';
+  flow.steps.forEach(function(step, i) {
+    const item = document.createElement('div');
+    item.className = 'journey-sidebar-item' +
+      (i === journeyCurrentStep ? ' active' : '') +
+      (step.fork ? ' has-fork' : '');
+    item.onclick = function() { journeyCurrentStep = i; journeyRender(); };
+
+    const num = document.createElement('div');
+    num.className = 'journey-sidebar-num';
+    num.textContent = step.fork ? '⚠' : (i + 1);
+
+    const text = document.createElement('div');
+    text.className = 'journey-sidebar-text';
+
+    const name = document.createElement('div');
+    name.className = 'journey-sidebar-name';
+    name.textContent = step.name;
+
+    const phase = document.createElement('div');
+    phase.className = 'journey-sidebar-phase';
+    phase.textContent = step.desc.split('\n')[0];
+
+    text.appendChild(name);
+    text.appendChild(phase);
+    item.appendChild(num);
+    item.appendChild(text);
+    list.appendChild(item);
+  });
+
+  // 滚动到当前步骤
+  const activeItem = list.querySelector('.active');
+  if (activeItem) activeItem.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+}
+
+function journeyLoadFlow(flowKey) {
+  journeyCurrentFlow = flowKey;
+  journeyCurrentStep = 0;
+  journeyRender();
+}
+
+function journeyGo(delta) {
+  const flow = JOURNEY_FLOWS[journeyCurrentFlow];
+  journeyCurrentStep = Math.max(0, Math.min(flow.steps.length - 1, journeyCurrentStep + delta));
+  journeyRender();
+}
+
+function journeyRender() {
+  const flow = JOURNEY_FLOWS[journeyCurrentFlow];
+  const step = flow.steps[journeyCurrentStep];
+  const total = flow.steps.length;
+  const idx = journeyCurrentStep;
+
+  // 顶部控制栏
+  document.getElementById('journey-step-name').textContent = (idx + 1) + '. ' + step.name;
+  document.getElementById('journey-step-desc').textContent = step.desc;
+  document.getElementById('journey-prog-fill').style.width = ((idx + 1) / total * 100) + '%';
+  document.getElementById('journey-prog-label').textContent = (idx + 1) + '/' + total;
+  document.getElementById('journey-prev').disabled = idx === 0;
+  document.getElementById('journey-next').disabled = idx === total - 1;
+
+  // 侧边栏同步
+  journeyRenderSidebar();
+
+  // 分叉提示
+  const forkBar = document.getElementById('journey-fork-bar');
+  if (step.fork) {
+    document.getElementById('journey-fork-title').textContent = step.fork.title;
+    const descEl = document.getElementById('journey-fork-desc');
+    descEl.textContent = step.fork.desc || '';
+    const rolesEl = document.getElementById('journey-fork-roles');
+    rolesEl.innerHTML = '';
+    (step.fork.roles || []).forEach(function(r) {
+      const btn = document.createElement('button');
+      btn.className = 'journey-fork-role';
+      btn.textContent = r.name;
+      btn.onclick = function() {
+        journeyLoadFlow(r.flow);
+        document.getElementById('journey-flow-select').value = r.flow;
+      };
+      rolesEl.appendChild(btn);
+    });
+    forkBar.classList.add('visible');
+  } else {
+    forkBar.classList.remove('visible');
+  }
+
+  // iframe
+  const iframe = document.getElementById('journey-iframe');
+  const missing = document.getElementById('journey-missing');
+  if (step.file) {
+    iframe.src = step.file;
+    missing.style.display = 'none';
+  } else {
+    iframe.src = 'about:blank';
+    missing.style.display = 'flex';
+    document.getElementById('journey-missing-name').textContent = step.name + ' — 页面未创建';
+  }
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+  if (document.getElementById('journey-flow-select')) {
+    journeyLoadFlow('attendee');
+  }
+});
+</script>
+
+</body>
+</html>

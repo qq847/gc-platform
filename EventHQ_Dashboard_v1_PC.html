@@ -1,0 +1,818 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Event HQ – Dashboard · Indie Game Fest 2026</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg: #e8e4da;
+    --orange: #d95f2b;
+    --teal: #0a7fa8;
+    --green: #0d9b72;
+    --white: #fff;
+    --text: #1c1a17;
+    --muted: #6b6660;
+    --faint: #a09890;
+    --border: #ddd8cf;
+    --radius: 10px;
+    --sidebar-w: 200px;
+    --topbar-h: 58px;
+  }
+
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+  }
+
+  /* ── TOP NAV ── */
+  .topbar {
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    height: var(--topbar-h);
+    background: var(--white);
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 24px;
+    gap: 16px;
+  }
+  .topbar-logo {
+    font-weight: 700;
+    font-size: 15px;
+    letter-spacing: 0.04em;
+    color: var(--text);
+    white-space: nowrap;
+  }
+  .topbar-logo span { color: var(--orange); }
+  .topbar-right {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+  }
+  .org-name {
+    font-size: 13px;
+    color: var(--muted);
+    font-weight: 500;
+  }
+  .bell-btn {
+    background: none;
+    border: none;
+    cursor: pointer;
+    color: var(--muted);
+    font-size: 20px;
+    position: relative;
+    line-height: 1;
+  }
+  .bell-btn::after {
+    content: '';
+    position: absolute;
+    top: 1px; right: 1px;
+    width: 7px; height: 7px;
+    background: var(--orange);
+    border-radius: 50%;
+    border: 1.5px solid var(--white);
+  }
+  .avatar {
+    width: 32px; height: 32px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, var(--orange), #f07040);
+    color: #fff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 13px;
+    font-weight: 700;
+    cursor: pointer;
+  }
+
+  /* ── LAYOUT SHELL ── */
+  .app-body {
+    display: flex;
+    min-height: calc(100vh - var(--topbar-h));
+  }
+
+  /* ── SIDEBAR ── */
+  .sidebar {
+    width: var(--sidebar-w);
+    flex-shrink: 0;
+    background: var(--white);
+    border-right: 1px solid var(--border);
+    padding: 16px 0;
+    position: sticky;
+    top: var(--topbar-h);
+    height: calc(100vh - var(--topbar-h));
+    overflow-y: auto;
+  }
+  .sidebar-section {
+    padding: 4px 8px;
+    margin-bottom: 4px;
+  }
+  .nav-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 9px 12px;
+    border-radius: 8px;
+    font-size: 13.5px;
+    font-weight: 500;
+    color: var(--muted);
+    cursor: pointer;
+    transition: background 0.15s, color 0.15s;
+    text-decoration: none;
+  }
+  .nav-item:hover { background: var(--bg); color: var(--text); }
+  .nav-item.active {
+    background: #fdf0e9;
+    color: var(--orange);
+    font-weight: 600;
+  }
+  .nav-item .icon { font-size: 16px; width: 20px; text-align: center; }
+
+  /* ── MAIN CONTENT ── */
+  .main {
+    flex: 1;
+    padding: 28px 32px;
+    overflow-x: hidden;
+  }
+
+  /* Welcome */
+  .welcome-row {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    margin-bottom: 28px;
+    flex-wrap: wrap;
+    gap: 16px;
+  }
+  .welcome-title {
+    font-size: 24px;
+    font-weight: 700;
+    line-height: 1.2;
+  }
+  .welcome-sub {
+    margin-top: 4px;
+    font-size: 14px;
+    color: var(--muted);
+  }
+  .live-dot {
+    display: inline-block;
+    width: 8px; height: 8px;
+    border-radius: 50%;
+    background: var(--green);
+    margin-right: 6px;
+    vertical-align: middle;
+    animation: pulse 2s infinite;
+  }
+  @keyframes pulse {
+    0%,100% { opacity: 1; }
+    50% { opacity: 0.4; }
+  }
+  .cta-group { display: flex; gap: 10px; flex-wrap: wrap; }
+  .btn {
+    padding: 9px 18px;
+    border-radius: 8px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    border: none;
+    transition: opacity 0.15s, transform 0.1s;
+  }
+  .btn:hover { opacity: 0.88; transform: translateY(-1px); }
+  .btn-outline {
+    background: var(--white);
+    color: var(--text);
+    border: 1.5px solid var(--border);
+  }
+  .btn-primary {
+    background: var(--orange);
+    color: #fff;
+  }
+
+  /* Stats cards */
+  .stats-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 16px;
+    margin-bottom: 28px;
+  }
+  .stat-card {
+    background: var(--white);
+    border-radius: var(--radius);
+    padding: 18px 20px;
+    border: 1px solid var(--border);
+  }
+  .stat-icon { font-size: 22px; margin-bottom: 8px; }
+  .stat-label {
+    font-size: 12px;
+    color: var(--faint);
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin-bottom: 4px;
+  }
+  .stat-value {
+    font-size: 28px;
+    font-weight: 700;
+    line-height: 1;
+    margin-bottom: 8px;
+  }
+  .stat-sub {
+    font-size: 12px;
+    color: var(--muted);
+    margin-bottom: 8px;
+  }
+  .progress-bar {
+    height: 5px;
+    background: #ede9e0;
+    border-radius: 99px;
+    overflow: hidden;
+  }
+  .progress-fill {
+    height: 100%;
+    border-radius: 99px;
+    background: var(--orange);
+    transition: width 0.6s ease;
+  }
+  .progress-fill.teal { background: var(--teal); }
+  .progress-fill.green { background: var(--green); }
+  .stat-pct {
+    font-size: 11px;
+    color: var(--faint);
+    margin-top: 4px;
+  }
+
+  /* Mid layout */
+  .mid-row {
+    display: flex;
+    gap: 20px;
+    margin-bottom: 28px;
+    align-items: flex-start;
+  }
+  .mid-left { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 20px; }
+  .mid-right { width: 300px; flex-shrink: 0; display: flex; flex-direction: column; gap: 20px; }
+
+  .card {
+    background: var(--white);
+    border-radius: var(--radius);
+    border: 1px solid var(--border);
+    overflow: hidden;
+  }
+  .card-header {
+    padding: 14px 20px 12px;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+  .card-title { font-size: 14px; font-weight: 700; }
+  .card-link { font-size: 12px; color: var(--teal); cursor: pointer; font-weight: 500; }
+  .card-body { padding: 0; }
+
+  /* Table */
+  table { width: 100%; border-collapse: collapse; }
+  th {
+    font-size: 11px;
+    color: var(--faint);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    padding: 8px 16px;
+    text-align: left;
+    background: #faf9f6;
+    font-weight: 600;
+  }
+  td {
+    padding: 11px 16px;
+    font-size: 13px;
+    border-top: 1px solid #f2ede4;
+  }
+  tr:hover td { background: #faf9f6; }
+  .avatar-sm {
+    width: 28px; height: 28px;
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 11px;
+    font-weight: 700;
+    color: #fff;
+    flex-shrink: 0;
+  }
+  .cell-name { display: flex; align-items: center; gap: 8px; }
+  .name-text { font-weight: 600; font-size: 13px; }
+  .company-text { font-size: 11px; color: var(--muted); }
+
+  .badge {
+    display: inline-flex;
+    align-items: center;
+    padding: 2px 8px;
+    border-radius: 99px;
+    font-size: 11px;
+    font-weight: 600;
+  }
+  .badge-orange { background: #fdf0e9; color: var(--orange); }
+  .badge-teal { background: #e6f4f9; color: var(--teal); }
+  .badge-green { background: #e5f6f1; color: var(--green); }
+  .badge-gray { background: #f0ece5; color: var(--muted); }
+  .badge-purple { background: #f3eeff; color: #7c4dff; }
+
+  .action-btn {
+    padding: 4px 10px;
+    border-radius: 6px;
+    font-size: 11px;
+    font-weight: 600;
+    cursor: pointer;
+    border: none;
+    font-family: 'DM Sans', sans-serif;
+    transition: opacity 0.15s;
+  }
+  .action-btn:hover { opacity: 0.8; }
+  .action-approve { background: #e5f6f1; color: var(--green); }
+  .action-reject { background: #feeae7; color: #c0392b; margin-left: 4px; }
+
+  /* Health score */
+  .health-circle-wrap {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 24px 20px 16px;
+  }
+  .health-circle {
+    position: relative;
+    width: 120px; height: 120px;
+    margin-bottom: 16px;
+  }
+  .health-circle svg { transform: rotate(-90deg); }
+  .health-label {
+    position: absolute;
+    top: 50%; left: 50%;
+    transform: translate(-50%, -50%);
+    text-align: center;
+  }
+  .health-score { font-size: 28px; font-weight: 700; line-height: 1; }
+  .health-of { font-size: 11px; color: var(--faint); }
+  .health-dims { width: 100%; display: flex; flex-direction: column; gap: 8px; }
+  .health-dim {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 13px;
+  }
+  .health-dim-name { color: var(--muted); }
+  .health-dim-status { font-weight: 600; font-size: 12px; }
+  .good { color: var(--green); }
+  .great { color: var(--teal); }
+  .attention { color: var(--orange); }
+
+  /* Tasks */
+  .tasks-list { padding: 12px 16px; display: flex; flex-direction: column; gap: 8px; }
+  .task-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    font-size: 13px;
+    color: var(--text);
+  }
+  .task-cb { width: 16px; height: 16px; border-radius: 4px; border: 1.5px solid var(--border); flex-shrink: 0; margin-top: 2px; display: flex; align-items: center; justify-content: center; }
+  .task-cb.done { background: var(--green); border-color: var(--green); color: #fff; font-size: 10px; }
+  .task-done { text-decoration: line-through; color: var(--faint); }
+
+  /* Quick Actions */
+  .quick-actions { padding: 12px 16px; display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+  .qa-btn {
+    padding: 9px 10px;
+    border-radius: 8px;
+    background: var(--bg);
+    border: 1px solid var(--border);
+    cursor: pointer;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--text);
+    text-align: left;
+    transition: background 0.15s, border-color 0.15s;
+  }
+  .qa-btn:hover { background: #ddd9cf; border-color: #cac5bb; }
+  .qa-icon { font-size: 16px; display: block; margin-bottom: 3px; }
+
+  /* Activity timeline */
+  .timeline { padding: 4px 20px 20px; }
+  .tl-item {
+    display: flex;
+    gap: 14px;
+    padding: 10px 0;
+    border-bottom: 1px solid #f2ede4;
+    position: relative;
+  }
+  .tl-item:last-child { border-bottom: none; }
+  .tl-dot-wrap { display: flex; flex-direction: column; align-items: center; padding-top: 3px; }
+  .tl-dot {
+    width: 10px; height: 10px;
+    border-radius: 50%;
+    flex-shrink: 0;
+  }
+  .tl-line { flex: 1; width: 1px; background: var(--border); }
+  .tl-time { font-size: 11px; color: var(--faint); white-space: nowrap; padding-top: 2px; width: 110px; flex-shrink: 0; }
+  .tl-text { font-size: 13px; color: var(--text); flex: 1; }
+  .tl-text strong { font-weight: 600; }
+</style>
+</head>
+<body>
+
+<!-- TOP NAV -->
+<header class="topbar">
+  <div class="topbar-logo">GAME <span>CONNECTION</span> · Event HQ</div>
+  <div class="topbar-right">
+    <span class="org-name">Indie Game Fest 2026</span>
+    <button class="bell-btn" title="Notifications">🔔</button>
+    <div class="avatar" title="Account">I</div>
+  </div>
+</header>
+
+<div class="app-body">
+
+  <!-- SIDEBAR -->
+  <nav class="sidebar">
+    <div class="sidebar-section">
+      <a class="nav-item active" href="#"><span class="icon">📊</span> Dashboard</a>
+      <a class="nav-item" href="#"><span class="icon">🎪</span> My Events</a>
+      <a class="nav-item" href="BuyerInvitation_v1_openclaw.html"><span class="icon">👥</span> Buyer Invitations</a>
+      <a class="nav-item" href="#"><span class="icon">🎮</span> Game Showcase</a>
+      <a class="nav-item" href="#"><span class="icon">🏆</span> Awards</a>
+      <a class="nav-item" href="#"><span class="icon">📅</span> Schedule</a>
+      <a class="nav-item" href="#"><span class="icon">📧</span> Communications</a>
+      <a class="nav-item" href="#"><span class="icon">📈</span> Analytics</a>
+      <a class="nav-item" href="#"><span class="icon">⚙️</span> Settings</a>
+    </div>
+  </nav>
+
+  <!-- MAIN -->
+  <main class="main">
+
+    <!-- Welcome Row -->
+    <div class="welcome-row">
+      <div>
+        <div class="welcome-title">Welcome back, Indie Game Fest 👋</div>
+        <div class="welcome-sub">
+          <span class="live-dot"></span>Your event is live · 47 days to go
+        </div>
+      </div>
+      <div class="cta-group">
+        <button class="btn btn-outline">View Public Page →</button>
+        <button class="btn btn-primary">+ Add Session</button>
+      </div>
+    </div>
+
+    <!-- Stats Grid -->
+    <div class="stats-grid">
+      <div class="stat-card">
+        <div class="stat-icon">🎟️</div>
+        <div class="stat-label">Registrations</div>
+        <div class="stat-value">284</div>
+        <div class="stat-sub">Cap: 500 seats</div>
+        <div class="progress-bar"><div class="progress-fill" style="width:56%"></div></div>
+        <div class="stat-pct">56% filled</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon">📧</div>
+        <div class="stat-label">Buyer Invites Sent</div>
+        <div class="stat-value">156</div>
+        <div class="stat-sub">Opened: <strong>89</strong> · Responded: <strong>34</strong></div>
+        <div class="progress-bar"><div class="progress-fill teal" style="width:57%"></div></div>
+        <div class="stat-pct">57% open rate</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon">🎮</div>
+        <div class="stat-label">Games Submitted</div>
+        <div class="stat-value">23</div>
+        <div class="stat-sub">Approved: <strong>18</strong> · Pending: <strong>5</strong></div>
+        <div class="progress-bar"><div class="progress-fill green" style="width:78%"></div></div>
+        <div class="stat-pct">78% reviewed</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon">🏆</div>
+        <div class="stat-label">Award Nominations</div>
+        <div class="stat-value">67</div>
+        <div class="stat-sub">Across 6 categories</div>
+        <div class="progress-bar"><div class="progress-fill" style="width:40%; background:#a09890"></div></div>
+        <div class="stat-pct">Voting opens in 12 days</div>
+      </div>
+    </div>
+
+    <!-- Mid Row -->
+    <div class="mid-row">
+
+      <!-- Left column -->
+      <div class="mid-left">
+
+        <!-- Recent Registrations -->
+        <div class="card">
+          <div class="card-header">
+            <span class="card-title">Recent Registrations</span>
+            <span class="card-link">View all 284 →</span>
+          </div>
+          <div class="card-body">
+            <table>
+              <thead>
+                <tr>
+                  <th>Name</th>
+                  <th>Role</th>
+                  <th>Registered</th>
+                  <th>Source</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>
+                    <div class="cell-name">
+                      <div class="avatar-sm" style="background:#d95f2b">JP</div>
+                      <div><div class="name-text">Jin Park</div><div class="company-text">Riot Games</div></div>
+                    </div>
+                  </td>
+                  <td><span style="color:var(--muted);font-size:13px">Producer</span></td>
+                  <td><span style="color:var(--faint);font-size:12px">2h ago</span></td>
+                  <td><span class="badge badge-orange">Buyer Invite</span></td>
+                </tr>
+                <tr>
+                  <td>
+                    <div class="cell-name">
+                      <div class="avatar-sm" style="background:#0a7fa8">SC</div>
+                      <div><div class="name-text">Sarah Chen</div><div class="company-text">Devolver Digital</div></div>
+                    </div>
+                  </td>
+                  <td><span style="color:var(--muted);font-size:13px">Director</span></td>
+                  <td><span style="color:var(--faint);font-size:12px">5h ago</span></td>
+                  <td><span class="badge badge-teal">Direct</span></td>
+                </tr>
+                <tr>
+                  <td>
+                    <div class="cell-name">
+                      <div class="avatar-sm" style="background:#0d9b72">MD</div>
+                      <div><div class="name-text">Marc Dubois</div><div class="company-text">Ubisoft</div></div>
+                    </div>
+                  </td>
+                  <td><span style="color:var(--muted);font-size:13px">VP</span></td>
+                  <td><span style="color:var(--faint);font-size:12px">1d ago</span></td>
+                  <td><span class="badge badge-orange">Buyer Invite</span></td>
+                </tr>
+                <tr>
+                  <td>
+                    <div class="cell-name">
+                      <div class="avatar-sm" style="background:#7c4dff">EK</div>
+                      <div><div class="name-text">Emma Kim</div><div class="company-text">Indie Dev</div></div>
+                    </div>
+                  </td>
+                  <td><span style="color:var(--muted);font-size:13px">Solo Dev</span></td>
+                  <td><span style="color:var(--faint);font-size:12px">1d ago</span></td>
+                  <td><span class="badge badge-purple">Social</span></td>
+                </tr>
+                <tr>
+                  <td>
+                    <div class="cell-name">
+                      <div class="avatar-sm" style="background:#c0392b">AZ</div>
+                      <div><div class="name-text">Alex Zhang</div><div class="company-text">NetEase</div></div>
+                    </div>
+                  </td>
+                  <td><span style="color:var(--muted);font-size:13px">BD</span></td>
+                  <td><span style="color:var(--faint);font-size:12px">2d ago</span></td>
+                  <td><span class="badge badge-orange">Buyer Invite</span></td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- Pending Submissions -->
+        <div class="card">
+          <div class="card-header">
+            <span class="card-title">Pending Game Submissions <span style="color:var(--orange);margin-left:6px;font-size:12px;font-weight:700">5</span></span>
+            <span class="card-link">Review all →</span>
+          </div>
+          <div class="card-body">
+            <table>
+              <thead>
+                <tr>
+                  <th>Game Title</th>
+                  <th>Studio</th>
+                  <th>Genre</th>
+                  <th>Submitted</th>
+                  <th>Action</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td><strong style="font-size:13px">Phantom Circuit</strong></td>
+                  <td style="color:var(--muted);font-size:13px">Akihabara Studio</td>
+                  <td><span class="badge badge-teal">Puzzle</span></td>
+                  <td style="color:var(--faint);font-size:12px">Mar 21</td>
+                  <td>
+                    <button class="action-btn action-approve">✓ Approve</button>
+                    <button class="action-btn action-reject">✗ Reject</button>
+                  </td>
+                </tr>
+                <tr>
+                  <td><strong style="font-size:13px">Neon Drift</strong></td>
+                  <td style="color:var(--muted);font-size:13px">PixelForge Games</td>
+                  <td><span class="badge badge-orange">Racing</span></td>
+                  <td style="color:var(--faint);font-size:12px">Mar 20</td>
+                  <td>
+                    <button class="action-btn action-approve">✓ Approve</button>
+                    <button class="action-btn action-reject">✗ Reject</button>
+                  </td>
+                </tr>
+                <tr>
+                  <td><strong style="font-size:13px">Echo Frontier</strong></td>
+                  <td style="color:var(--muted);font-size:13px">Moonrise Labs</td>
+                  <td><span class="badge badge-green">RPG</span></td>
+                  <td style="color:var(--faint);font-size:12px">Mar 20</td>
+                  <td>
+                    <button class="action-btn action-approve">✓ Approve</button>
+                    <button class="action-btn action-reject">✗ Reject</button>
+                  </td>
+                </tr>
+                <tr>
+                  <td><strong style="font-size:13px">Verdant Siege</strong></td>
+                  <td style="color:var(--muted);font-size:13px">Ironwood Interactive</td>
+                  <td><span class="badge badge-purple">Strategy</span></td>
+                  <td style="color:var(--faint);font-size:12px">Mar 19</td>
+                  <td>
+                    <button class="action-btn action-approve">✓ Approve</button>
+                    <button class="action-btn action-reject">✗ Reject</button>
+                  </td>
+                </tr>
+                <tr>
+                  <td><strong style="font-size:13px">Deep Signal</strong></td>
+                  <td style="color:var(--muted);font-size:13px">Subwave Studio</td>
+                  <td><span class="badge badge-gray">Simulation</span></td>
+                  <td style="color:var(--faint);font-size:12px">Mar 18</td>
+                  <td>
+                    <button class="action-btn action-approve">✓ Approve</button>
+                    <button class="action-btn action-reject">✗ Reject</button>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Right column -->
+      <div class="mid-right">
+
+        <!-- Health Score -->
+        <div class="card">
+          <div class="card-header">
+            <span class="card-title">Event Health Score</span>
+          </div>
+          <div class="health-circle-wrap">
+            <div class="health-circle">
+              <svg width="120" height="120" viewBox="0 0 120 120">
+                <circle cx="60" cy="60" r="50" fill="none" stroke="#ede9e0" stroke-width="10"/>
+                <circle cx="60" cy="60" r="50" fill="none" stroke="url(#healthGrad)" stroke-width="10"
+                  stroke-dasharray="314" stroke-dashoffset="47" stroke-linecap="round"/>
+                <defs>
+                  <linearGradient id="healthGrad" x1="0" y1="0" x2="1" y2="0">
+                    <stop offset="0%" stop-color="#0d9b72"/>
+                    <stop offset="100%" stop-color="#0a7fa8"/>
+                  </linearGradient>
+                </defs>
+              </svg>
+              <div class="health-label">
+                <div class="health-score">85</div>
+                <div class="health-of">/ 100</div>
+              </div>
+            </div>
+            <div class="health-dims">
+              <div class="health-dim">
+                <span class="health-dim-name">🎟️ Registrations</span>
+                <span class="health-dim-status good">Good</span>
+              </div>
+              <div class="health-dim">
+                <span class="health-dim-name">📧 Engagement</span>
+                <span class="health-dim-status great">Great</span>
+              </div>
+              <div class="health-dim">
+                <span class="health-dim-name">🎮 Submissions</span>
+                <span class="health-dim-status attention">Needs attention</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Upcoming Tasks -->
+        <div class="card">
+          <div class="card-header">
+            <span class="card-title">Upcoming Tasks</span>
+            <span class="card-link">+ Add task</span>
+          </div>
+          <div class="tasks-list">
+            <div class="task-item">
+              <div class="task-cb"></div>
+              <span>Review 5 pending game submissions</span>
+            </div>
+            <div class="task-item">
+              <div class="task-cb"></div>
+              <span>Send reminder to 67 non-responding buyers</span>
+            </div>
+            <div class="task-item">
+              <div class="task-cb done">✓</div>
+              <span class="task-done">NDA sent to all jury members</span>
+            </div>
+            <div class="task-item">
+              <div class="task-cb"></div>
+              <span>Confirm panel speakers (2 pending)</span>
+            </div>
+            <div class="task-item">
+              <div class="task-cb"></div>
+              <span>Set up voting system for awards</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Quick Actions -->
+        <div class="card">
+          <div class="card-header">
+            <span class="card-title">Quick Actions</span>
+          </div>
+          <div class="quick-actions">
+            <button class="qa-btn"><span class="qa-icon">📧</span>Send Bulk Email</button>
+            <button class="qa-btn"><span class="qa-icon">🎮</span>Review Submissions</button>
+            <button class="qa-btn"><span class="qa-icon">🏆</span>Configure Awards</button>
+            <button class="qa-btn"><span class="qa-icon">📅</span>Add to Calendar</button>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- Activity Timeline -->
+    <div class="card">
+      <div class="card-header">
+        <span class="card-title">Recent Activity</span>
+        <span class="card-link">View full log →</span>
+      </div>
+      <div class="timeline">
+        <div class="tl-item">
+          <div class="tl-dot-wrap"><div class="tl-dot" style="background:#d95f2b"></div><div class="tl-line"></div></div>
+          <div class="tl-time">Mar 21 · 14:32</div>
+          <div class="tl-text"><strong>Jin Park</strong> registered via buyer invite · Riot Games, Producer</div>
+        </div>
+        <div class="tl-item">
+          <div class="tl-dot-wrap"><div class="tl-dot" style="background:#0a7fa8"></div><div class="tl-line"></div></div>
+          <div class="tl-time">Mar 21 · 12:15</div>
+          <div class="tl-text">Game <strong>"Phantom Circuit"</strong> submitted by Akihabara Studio</div>
+        </div>
+        <div class="tl-item">
+          <div class="tl-dot-wrap"><div class="tl-dot" style="background:#d95f2b"></div><div class="tl-line"></div></div>
+          <div class="tl-time">Mar 21 · 10:00</div>
+          <div class="tl-text">Bulk invitation email sent to <strong>50 buyers</strong> · 89% delivery rate</div>
+        </div>
+        <div class="tl-item">
+          <div class="tl-dot-wrap"><div class="tl-dot" style="background:#0d9b72"></div><div class="tl-line"></div></div>
+          <div class="tl-time">Mar 20 · 16:45</div>
+          <div class="tl-text"><strong>Sarah Chen</strong> confirmed as jury member · Devolver Digital</div>
+        </div>
+        <div class="tl-item">
+          <div class="tl-dot-wrap"><div class="tl-dot" style="background:#a09890"></div><div class="tl-line"></div></div>
+          <div class="tl-time">Mar 20 · 14:20</div>
+          <div class="tl-text">Award categories updated — <strong>6 categories</strong> finalized</div>
+        </div>
+        <div class="tl-item">
+          <div class="tl-dot-wrap"><div class="tl-dot" style="background:#0a7fa8"></div><div class="tl-line"></div></div>
+          <div class="tl-time">Mar 20 · 11:05</div>
+          <div class="tl-text">Game <strong>"Neon Drift"</strong> approved by reviewer · Status: Live in showcase</div>
+        </div>
+        <div class="tl-item">
+          <div class="tl-dot-wrap"><div class="tl-dot" style="background:#d95f2b"></div><div class="tl-line"></div></div>
+          <div class="tl-time">Mar 19 · 15:30</div>
+          <div class="tl-text"><strong>Marc Dubois</strong> registered via buyer invite · Ubisoft, VP</div>
+        </div>
+        <div class="tl-item">
+          <div class="tl-dot-wrap"><div class="tl-dot" style="background:#0d9b72"></div><div class="tl-line"></div></div>
+          <div class="tl-time">Mar 19 · 13:00</div>
+          <div class="tl-text">Schedule updated — <strong>3 new sessions</strong> added to Day 2</div>
+        </div>
+        <div class="tl-item">
+          <div class="tl-dot-wrap"><div class="tl-dot" style="background:#a09890"></div><div class="tl-line"></div></div>
+          <div class="tl-time">Mar 18 · 09:45</div>
+          <div class="tl-text">NDA documents sent to all <strong>12 jury members</strong> — awaiting 3 signatures</div>
+        </div>
+        <div class="tl-item">
+          <div class="tl-dot-wrap"><div class="tl-dot" style="background:#d95f2b"></div></div>
+          <div class="tl-time">Mar 17 · 17:00</div>
+          <div class="tl-text">Event page published — <strong>Indie Game Fest 2026</strong> is now live</div>
+        </div>
+      </div>
+    </div>
+
+  </main>
+</div>
+</body>
+</html>

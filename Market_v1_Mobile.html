@@ -1,0 +1,1120 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>Game Market – Game Connection</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg: #e8e4da;
+    --orange: #d95f2b;
+    --teal: #0a7fa8;
+    --green: #0d9b72;
+    --purple: #7c3aed;
+    --card: #ffffff;
+    --text: #1a1a1a;
+    --sub: #666;
+    --border: #e0dbd0;
+  }
+
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    padding-bottom: 70px;
+  }
+
+  .app-wrap {
+    max-width: 480px;
+    margin: 0 auto;
+    position: relative;
+    min-height: 100vh;
+  }
+
+  /* ── TOP BAR ── */
+  .top-bar {
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    background: #1a1a2e;
+    padding: 10px 16px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .logo {
+    font-size: 13px;
+    font-weight: 700;
+    color: #fff;
+    letter-spacing: 0.5px;
+    flex: 1;
+  }
+  .top-icons { display: flex; gap: 12px; align-items: center; }
+  .top-icon {
+    color: rgba(255,255,255,0.7);
+    font-size: 18px;
+    cursor: pointer;
+    position: relative;
+  }
+  .notif-dot {
+    position: absolute;
+    top: -2px; right: -2px;
+    width: 7px; height: 7px;
+    background: var(--orange);
+    border-radius: 50%;
+  }
+  .avatar {
+    width: 28px; height: 28px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, var(--orange), #e8856b);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 12px; font-weight: 700; color: #fff;
+    cursor: pointer;
+  }
+
+  /* ── HEADER SECTION ── */
+  .market-header {
+    background: #fff;
+    padding: 14px 16px 12px;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+  .market-title-block {}
+  .market-title {
+    font-size: 18px;
+    font-weight: 800;
+    color: var(--text);
+    line-height: 1.2;
+  }
+  .market-subtitle {
+    font-size: 11px;
+    color: var(--sub);
+    font-weight: 500;
+    margin-top: 2px;
+  }
+  .post-btn {
+    background: var(--orange);
+    color: #fff;
+    border: none;
+    border-radius: 8px;
+    padding: 8px 12px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 12px;
+    font-weight: 700;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: background 0.2s;
+  }
+  .post-btn:hover { background: #c2531f; }
+
+  /* ── FILTER PILLS ── */
+  .filter-section {
+    background: #fff;
+    border-bottom: 1px solid var(--border);
+    padding: 8px 0;
+  }
+  .filter-scroll {
+    display: flex;
+    gap: 6px;
+    padding: 0 12px;
+    overflow-x: auto;
+    scrollbar-width: none;
+  }
+  .filter-scroll::-webkit-scrollbar { display: none; }
+  .filter-pill {
+    flex: 0 0 auto;
+    padding: 5px 12px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 600;
+    background: var(--bg);
+    color: var(--sub);
+    cursor: pointer;
+    border: 1.5px solid transparent;
+    transition: all 0.2s;
+    white-space: nowrap;
+  }
+  .filter-pill.active {
+    background: var(--orange);
+    color: #fff;
+    border-color: var(--orange);
+  }
+  .filter-pill.pill-pub.active { background: var(--orange); border-color: var(--orange); }
+  .filter-pill.pill-dist.active { background: var(--teal); border-color: var(--teal); }
+  .filter-pill.pill-cdev.active { background: var(--green); border-color: var(--green); }
+  .filter-pill.pill-inv.active { background: var(--purple); border-color: var(--purple); }
+
+  /* ── REGION FILTER ── */
+  .region-section {
+    background: #fff;
+    border-bottom: 1px solid var(--border);
+    padding: 6px 0 8px;
+  }
+  .region-label {
+    font-size: 10px;
+    font-weight: 700;
+    color: var(--sub);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    padding: 0 12px 4px;
+  }
+  .region-scroll {
+    display: flex;
+    gap: 6px;
+    padding: 0 12px;
+    overflow-x: auto;
+    scrollbar-width: none;
+  }
+  .region-scroll::-webkit-scrollbar { display: none; }
+  .region-chip {
+    flex: 0 0 auto;
+    padding: 4px 11px;
+    border-radius: 20px;
+    font-size: 11px;
+    font-weight: 600;
+    background: var(--bg);
+    color: var(--sub);
+    cursor: pointer;
+    border: 1.5px solid transparent;
+    transition: all 0.2s;
+  }
+  .region-chip.active {
+    border-color: var(--teal);
+    color: var(--teal);
+    background: rgba(10,127,168,0.07);
+  }
+
+  /* ── RESULTS ROW ── */
+  .results-row {
+    padding: 8px 12px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+  .results-count {
+    font-size: 12px;
+    font-weight: 700;
+    color: var(--text);
+  }
+  .results-sort {
+    font-size: 11px;
+    color: var(--teal);
+    font-weight: 600;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+  }
+
+  /* ── LISTING CARDS ── */
+  .listings-list {
+    padding: 0 12px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    padding-bottom: 12px;
+  }
+
+  .listing-card {
+    background: var(--card);
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.07);
+    cursor: pointer;
+    transition: box-shadow 0.2s;
+  }
+  .listing-card:hover { box-shadow: 0 4px 14px rgba(0,0,0,0.12); }
+
+  /* Cover */
+  .listing-cover {
+    position: relative;
+    height: 90px;
+    overflow: hidden;
+  }
+  .cover-svg {
+    width: 100%; height: 100%;
+    display: block;
+  }
+  .cover-overlay {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(to bottom, rgba(0,0,0,0.1) 0%, rgba(0,0,0,0.55) 100%);
+    display: flex;
+    align-items: flex-end;
+    padding: 8px 10px;
+  }
+  .cover-game-name {
+    font-size: 14px;
+    font-weight: 800;
+    color: #fff;
+    text-shadow: 0 1px 4px rgba(0,0,0,0.5);
+  }
+  .deal-badge {
+    position: absolute;
+    top: 8px; left: 8px;
+    font-size: 9px;
+    font-weight: 700;
+    padding: 3px 7px;
+    border-radius: 10px;
+    letter-spacing: 0.3px;
+    text-transform: uppercase;
+  }
+  .db-orange { background: var(--orange); color: #fff; }
+  .db-teal { background: var(--teal); color: #fff; }
+  .db-green { background: var(--green); color: #fff; }
+  .db-purple { background: var(--purple); color: #fff; }
+
+  /* Card body */
+  .listing-body {
+    padding: 10px 12px 12px;
+  }
+  .listing-title-row {
+    display: flex;
+    align-items: baseline;
+    gap: 6px;
+    margin-bottom: 3px;
+  }
+  .listing-game-name {
+    font-size: 15px;
+    font-weight: 700;
+    color: var(--text);
+  }
+  .listing-genre {
+    font-size: 11px;
+    color: var(--sub);
+    font-weight: 500;
+  }
+  .listing-studio-row {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    font-size: 12px;
+    color: var(--sub);
+    margin-bottom: 6px;
+  }
+  .studio-flag { font-size: 14px; }
+  .studio-name { font-weight: 600; color: var(--text); }
+  .studio-city { color: var(--sub); }
+  .listing-desc {
+    font-size: 12px;
+    color: var(--sub);
+    line-height: 1.5;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    margin-bottom: 8px;
+  }
+  .listing-info-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 11px;
+    color: var(--sub);
+    margin-bottom: 10px;
+    flex-wrap: wrap;
+  }
+  .info-tag {
+    display: flex;
+    align-items: center;
+    gap: 3px;
+    background: var(--bg);
+    padding: 3px 7px;
+    border-radius: 8px;
+    font-weight: 600;
+  }
+  .proposals-tag {
+    margin-left: auto;
+    color: var(--teal);
+    font-weight: 700;
+  }
+  .listing-actions {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .fav-btn-listing {
+    width: 34px; height: 34px;
+    border: 1.5px solid var(--border);
+    border-radius: 8px;
+    background: #fff;
+    color: var(--sub);
+    font-size: 16px;
+    cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    transition: all 0.2s;
+    flex-shrink: 0;
+  }
+  .fav-btn-listing.active { color: #f59e0b; border-color: #f59e0b; background: rgba(245,158,11,0.08); }
+  .view-deal-btn {
+    flex: 1;
+    background: rgba(10,127,168,0.08);
+    border: 1.5px solid var(--teal);
+    border-radius: 8px;
+    padding: 8px 12px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 12px;
+    font-weight: 700;
+    color: var(--teal);
+    cursor: pointer;
+    text-align: center;
+    transition: all 0.2s;
+  }
+  .view-deal-btn:hover { background: var(--teal); color: #fff; }
+
+  /* ── DETAIL OVERLAY ── */
+  .overlay-backdrop {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.5);
+    z-index: 300;
+    backdrop-filter: blur(2px);
+  }
+  .overlay-backdrop.open { display: block; }
+
+  .detail-sheet {
+    position: fixed;
+    bottom: 0; left: 50%;
+    transform: translateX(-50%) translateY(100%);
+    width: 100%;
+    max-width: 480px;
+    background: #fff;
+    border-radius: 20px 20px 0 0;
+    z-index: 400;
+    transition: transform 0.35s cubic-bezier(0.32, 0.72, 0, 1);
+    max-height: 90vh;
+    overflow-y: auto;
+  }
+  .detail-sheet.open {
+    transform: translateX(-50%) translateY(0);
+  }
+
+  .sheet-handle {
+    width: 40px; height: 4px;
+    background: #ddd;
+    border-radius: 2px;
+    margin: 10px auto 0;
+  }
+  .sheet-cover {
+    height: 150px;
+    margin: 12px 12px 0;
+    border-radius: 12px;
+    overflow: hidden;
+    position: relative;
+  }
+  .sheet-cover svg { width: 100%; height: 100%; display: block; }
+  .sheet-cover-overlay {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(to bottom, rgba(0,0,0,0.05) 0%, rgba(0,0,0,0.6) 100%);
+    display: flex;
+    align-items: flex-end;
+    padding: 12px;
+  }
+  .sheet-cover-name {
+    font-size: 18px;
+    font-weight: 800;
+    color: #fff;
+  }
+
+  .sheet-body { padding: 14px 16px 100px; }
+
+  .sheet-meta-top {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 12px;
+  }
+  .sheet-genre-tag {
+    font-size: 11px;
+    background: var(--bg);
+    color: var(--sub);
+    padding: 3px 8px;
+    border-radius: 8px;
+    font-weight: 600;
+  }
+  .sheet-studio {
+    font-size: 12px;
+    color: var(--sub);
+    display: flex;
+    align-items: center;
+    gap: 4px;
+  }
+
+  .deal-terms {
+    background: var(--bg);
+    border-radius: 10px;
+    padding: 12px;
+    margin-bottom: 12px;
+  }
+  .deal-terms-title {
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: var(--sub);
+    margin-bottom: 8px;
+  }
+  .deal-terms-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+  }
+  .deal-term-item {}
+  .deal-term-label {
+    font-size: 10px;
+    color: var(--sub);
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.3px;
+  }
+  .deal-term-value {
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--text);
+    margin-top: 2px;
+  }
+
+  .sheet-desc {
+    font-size: 13px;
+    color: var(--sub);
+    line-height: 1.6;
+    margin-bottom: 16px;
+  }
+  .sheet-desc-title {
+    font-size: 12px;
+    font-weight: 700;
+    color: var(--text);
+    margin-bottom: 4px;
+  }
+
+  .sheet-cta {
+    display: flex;
+    gap: 8px;
+  }
+  .cta-primary {
+    flex: 2;
+    background: var(--orange);
+    color: #fff;
+    border: none;
+    border-radius: 10px;
+    padding: 12px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 14px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: background 0.2s;
+  }
+  .cta-primary:hover { background: #c2531f; }
+  .cta-outline {
+    flex: 1;
+    background: transparent;
+    color: var(--teal);
+    border: 2px solid var(--teal);
+    border-radius: 10px;
+    padding: 12px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 13px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .cta-ghost {
+    flex: 1;
+    background: transparent;
+    color: var(--sub);
+    border: 2px solid var(--border);
+    border-radius: 10px;
+    padding: 12px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 13px;
+    font-weight: 700;
+    cursor: pointer;
+  }
+
+  .sheet-close {
+    position: sticky;
+    top: 8px;
+    float: right;
+    margin: -2px 8px 0 0;
+    width: 30px; height: 30px;
+    background: var(--bg);
+    border: none;
+    border-radius: 50%;
+    font-size: 16px;
+    cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    color: var(--sub);
+    font-weight: 700;
+    z-index: 10;
+  }
+
+  /* ── BOTTOM TAB ── */
+  .bottom-tab {
+    position: fixed;
+    bottom: 0; left: 50%;
+    transform: translateX(-50%);
+    width: 100%;
+    max-width: 480px;
+    background: #fff;
+    border-top: 1px solid var(--border);
+    display: flex;
+    z-index: 200;
+    box-shadow: 0 -2px 10px rgba(0,0,0,0.07);
+  }
+  .tab-item {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 8px 0 6px;
+    cursor: pointer;
+    gap: 3px;
+    color: var(--sub);
+    font-size: 10px;
+    font-weight: 600;
+    transition: color 0.2s;
+  }
+  .tab-item .tab-icon { font-size: 20px; line-height: 1; }
+  .tab-item.active { color: var(--orange); }
+</style>
+</head>
+<body>
+<div class="app-wrap">
+
+  <!-- TOP BAR -->
+  <div class="top-bar">
+    <div class="logo">🎮 GAME CONNECTION</div>
+    <div class="top-icons">
+      <span class="top-icon">🔍</span>
+      <span class="top-icon">🔔<span class="notif-dot"></span></span>
+      <div class="avatar">Q</div>
+    </div>
+  </div>
+
+  <!-- MARKET HEADER -->
+  <div class="market-header">
+    <div class="market-title-block">
+      <div class="market-title">🏪 Game Market</div>
+      <div class="market-subtitle">B2B Publishing &amp; Distribution Deals</div>
+    </div>
+    <button class="post-btn">+ Post Listing</button>
+  </div>
+
+  <!-- DEAL TYPE FILTER -->
+  <div class="filter-section">
+    <div class="filter-scroll">
+      <div class="filter-pill active">All</div>
+      <div class="filter-pill pill-pub">Publishing Deal</div>
+      <div class="filter-pill pill-dist">Distribution</div>
+      <div class="filter-pill pill-cdev">Co-development</div>
+      <div class="filter-pill pill-inv">Investment</div>
+      <div class="filter-pill">Licensing</div>
+    </div>
+  </div>
+
+  <!-- REGION FILTER -->
+  <div class="region-section">
+    <div class="region-label">Region</div>
+    <div class="region-scroll">
+      <div class="region-chip active">All</div>
+      <div class="region-chip">Asia</div>
+      <div class="region-chip">Europe</div>
+      <div class="region-chip">Americas</div>
+      <div class="region-chip">Online</div>
+    </div>
+  </div>
+
+  <!-- RESULTS ROW -->
+  <div class="results-row">
+    <span class="results-count">12 active listings</span>
+    <span class="results-sort">↕ sorted by Latest</span>
+  </div>
+
+  <!-- LISTINGS -->
+  <div class="listings-list">
+
+    <!-- 1. Echoes of Jade Dynasty -->
+    <div class="listing-card" onclick="openDetail(0)">
+      <div class="listing-cover">
+        <svg class="cover-svg" viewBox="0 0 456 90" xmlns="http://www.w3.org/2000/svg">
+          <defs>
+            <linearGradient id="g1" x1="0%" y1="0%" x2="100%" y2="100%">
+              <stop offset="0%" style="stop-color:#c0392b"/>
+              <stop offset="50%" style="stop-color:#8e44ad"/>
+              <stop offset="100%" style="stop-color:#2c3e50"/>
+            </linearGradient>
+          </defs>
+          <rect width="456" height="90" fill="url(#g1)"/>
+          <circle cx="380" cy="20" r="40" fill="rgba(255,255,255,0.05)"/>
+          <circle cx="80" cy="70" r="50" fill="rgba(255,255,255,0.04)"/>
+          <text x="228" y="50" text-anchor="middle" font-size="11" fill="rgba(255,255,255,0.15)" font-family="sans-serif" font-weight="bold">RPG · FANTASY · OPEN WORLD</text>
+        </svg>
+        <div class="cover-overlay">
+          <div class="cover-game-name">Echoes of Jade Dynasty</div>
+        </div>
+        <div class="deal-badge db-orange">Publishing Deal</div>
+      </div>
+      <div class="listing-body">
+        <div class="listing-title-row">
+          <span class="listing-game-name">Echoes of Jade Dynasty</span>
+          <span class="listing-genre">RPG</span>
+        </div>
+        <div class="listing-studio-row">
+          <span class="studio-name">CloudPeak Games</span>
+          <span class="studio-flag">🇨🇳</span>
+          <span class="studio-city">· Shanghai</span>
+        </div>
+        <div class="listing-desc">An epic open-world RPG set in ancient mythological China. Stunning visuals, deep narrative and 60+ hours of content. Seeking global publishing partner.</div>
+        <div class="listing-info-row">
+          <span class="info-tag">🖥️ PC</span>
+          <span class="info-tag">🎮 Console</span>
+          <span class="info-tag">🚀 Beta</span>
+          <span class="info-tag proposals-tag">💼 3 proposals</span>
+        </div>
+        <div class="listing-actions">
+          <button class="fav-btn-listing" onclick="event.stopPropagation(); this.classList.toggle('active')">☆</button>
+          <button class="view-deal-btn" onclick="event.stopPropagation(); openDetail(0)">View Deal →</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- 2. Phantom Circuit -->
+    <div class="listing-card" onclick="openDetail(1)">
+      <div class="listing-cover">
+        <svg class="cover-svg" viewBox="0 0 456 90" xmlns="http://www.w3.org/2000/svg">
+          <defs>
+            <linearGradient id="g2" x1="0%" y1="0%" x2="100%" y2="100%">
+              <stop offset="0%" style="stop-color:#0f0c29"/>
+              <stop offset="50%" style="stop-color:#302b63"/>
+              <stop offset="100%" style="stop-color:#24243e"/>
+            </linearGradient>
+          </defs>
+          <rect width="456" height="90" fill="url(#g2)"/>
+          <rect x="100" y="15" width="1" height="60" fill="rgba(100,200,255,0.2)"/>
+          <rect x="200" y="5" width="1" height="80" fill="rgba(100,200,255,0.15)"/>
+          <rect x="320" y="20" width="1" height="50" fill="rgba(100,200,255,0.2)"/>
+          <circle cx="228" cy="45" r="25" fill="rgba(100,200,255,0.08)"/>
+          <text x="228" y="50" text-anchor="middle" font-size="11" fill="rgba(100,200,255,0.2)" font-family="sans-serif" font-weight="bold">PUZZLE · HORROR · ATMOSPHERIC</text>
+        </svg>
+        <div class="cover-overlay">
+          <div class="cover-game-name">Phantom Circuit</div>
+        </div>
+        <div class="deal-badge db-orange">Publishing Deal</div>
+      </div>
+      <div class="listing-body">
+        <div class="listing-title-row">
+          <span class="listing-game-name">Phantom Circuit</span>
+          <span class="listing-genre">Puzzle / Horror</span>
+        </div>
+        <div class="listing-studio-row">
+          <span class="studio-name">Akihabara Studio</span>
+          <span class="studio-flag">🇯🇵</span>
+          <span class="studio-city">· Tokyo</span>
+        </div>
+        <div class="listing-desc">A psychological horror puzzle game where you repair corrupted circuits in haunted machinery. Unique mechanic, award-winning demo. Steam Wishlist: 85K.</div>
+        <div class="listing-info-row">
+          <span class="info-tag">🖥️ PC</span>
+          <span class="info-tag">🚀 Beta</span>
+          <span class="info-tag proposals-tag">💼 5 proposals</span>
+        </div>
+        <div class="listing-actions">
+          <button class="fav-btn-listing" onclick="event.stopPropagation(); this.classList.toggle('active')">☆</button>
+          <button class="view-deal-btn" onclick="event.stopPropagation(); openDetail(1)">View Deal →</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- 3. Jungle Protocol -->
+    <div class="listing-card" onclick="openDetail(2)">
+      <div class="listing-cover">
+        <svg class="cover-svg" viewBox="0 0 456 90" xmlns="http://www.w3.org/2000/svg">
+          <defs>
+            <linearGradient id="g3" x1="0%" y1="0%" x2="100%" y2="100%">
+              <stop offset="0%" style="stop-color:#134e5e"/>
+              <stop offset="100%" style="stop-color:#71b280"/>
+            </linearGradient>
+          </defs>
+          <rect width="456" height="90" fill="url(#g3)"/>
+          <ellipse cx="100" cy="90" rx="80" ry="50" fill="rgba(0,80,0,0.3)"/>
+          <ellipse cx="380" cy="90" rx="100" ry="60" fill="rgba(0,80,0,0.25)"/>
+          <text x="228" y="50" text-anchor="middle" font-size="11" fill="rgba(255,255,255,0.15)" font-family="sans-serif" font-weight="bold">SURVIVAL · CRAFTING · MULTIPLAYER</text>
+        </svg>
+        <div class="cover-overlay">
+          <div class="cover-game-name">Jungle Protocol</div>
+        </div>
+        <div class="deal-badge db-purple">Investment</div>
+      </div>
+      <div class="listing-body">
+        <div class="listing-title-row">
+          <span class="listing-game-name">Jungle Protocol</span>
+          <span class="listing-genre">Survival</span>
+        </div>
+        <div class="listing-studio-row">
+          <span class="studio-name">Mekong Dev</span>
+          <span class="studio-flag">🇻🇳</span>
+          <span class="studio-city">· Ho Chi Minh City</span>
+        </div>
+        <div class="listing-desc">Multiplayer survival game set in Southeast Asian jungle. 4-player co-op, crafting, base-building and local mythological creatures. Seeking seed investment.</div>
+        <div class="listing-info-row">
+          <span class="info-tag">🖥️ PC</span>
+          <span class="info-tag">📱 Mobile</span>
+          <span class="info-tag">🔬 Alpha</span>
+          <span class="info-tag proposals-tag">💼 2 proposals</span>
+        </div>
+        <div class="listing-actions">
+          <button class="fav-btn-listing" onclick="event.stopPropagation(); this.classList.toggle('active')">☆</button>
+          <button class="view-deal-btn" onclick="event.stopPropagation(); openDetail(2)">View Deal →</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- 4. Neon Requiem -->
+    <div class="listing-card" onclick="openDetail(3)">
+      <div class="listing-cover">
+        <svg class="cover-svg" viewBox="0 0 456 90" xmlns="http://www.w3.org/2000/svg">
+          <defs>
+            <linearGradient id="g4" x1="0%" y1="0%" x2="100%" y2="100%">
+              <stop offset="0%" style="stop-color:#1a0533"/>
+              <stop offset="50%" style="stop-color:#4a0080"/>
+              <stop offset="100%" style="stop-color:#ff0099"/>
+            </linearGradient>
+          </defs>
+          <rect width="456" height="90" fill="url(#g4)"/>
+          <rect x="0" y="40" width="456" height="1" fill="rgba(255,0,153,0.3)"/>
+          <circle cx="228" cy="45" r="35" fill="rgba(255,0,153,0.08)"/>
+          <text x="228" y="50" text-anchor="middle" font-size="11" fill="rgba(255,100,200,0.2)" font-family="sans-serif" font-weight="bold">ACTION RPG · CYBERPUNK · DARK</text>
+        </svg>
+        <div class="cover-overlay">
+          <div class="cover-game-name">Neon Requiem</div>
+        </div>
+        <div class="deal-badge db-orange">Publishing Deal</div>
+      </div>
+      <div class="listing-body">
+        <div class="listing-title-row">
+          <span class="listing-game-name">Neon Requiem</span>
+          <span class="listing-genre">Action RPG</span>
+        </div>
+        <div class="listing-studio-row">
+          <span class="studio-name">Lumière Studio</span>
+          <span class="studio-flag">🇫🇷</span>
+          <span class="studio-city">· Paris</span>
+        </div>
+        <div class="listing-desc">Dark cyberpunk action-RPG with fluid combat and a haunting synthwave soundtrack. PC beta reviewed by IGN with 8.2/10. Targeting Q4 2026 release.</div>
+        <div class="listing-info-row">
+          <span class="info-tag">🖥️ PC</span>
+          <span class="info-tag">🚀 Beta</span>
+          <span class="info-tag proposals-tag">💼 3 proposals</span>
+        </div>
+        <div class="listing-actions">
+          <button class="fav-btn-listing" onclick="event.stopPropagation(); this.classList.toggle('active')">☆</button>
+          <button class="view-deal-btn" onclick="event.stopPropagation(); openDetail(3)">View Deal →</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- 5. Island Keeper -->
+    <div class="listing-card" onclick="openDetail(4)">
+      <div class="listing-cover">
+        <svg class="cover-svg" viewBox="0 0 456 90" xmlns="http://www.w3.org/2000/svg">
+          <defs>
+            <linearGradient id="g5" x1="0%" y1="0%" x2="100%" y2="100%">
+              <stop offset="0%" style="stop-color:#43c6ac"/>
+              <stop offset="100%" style="stop-color:#f8ffae"/>
+            </linearGradient>
+          </defs>
+          <rect width="456" height="90" fill="url(#g5)"/>
+          <ellipse cx="228" cy="90" rx="120" ry="40" fill="rgba(255,255,255,0.15)"/>
+          <text x="228" y="50" text-anchor="middle" font-size="11" fill="rgba(0,80,60,0.25)" font-family="sans-serif" font-weight="bold">CASUAL · MOBILE · SIMULATION</text>
+        </svg>
+        <div class="cover-overlay">
+          <div class="cover-game-name">Island Keeper</div>
+        </div>
+        <div class="deal-badge db-teal">Distribution</div>
+      </div>
+      <div class="listing-body">
+        <div class="listing-title-row">
+          <span class="listing-game-name">Island Keeper</span>
+          <span class="listing-genre">Casual</span>
+        </div>
+        <div class="listing-studio-row">
+          <span class="studio-name">Batik Games</span>
+          <span class="studio-flag">🇮🇩</span>
+          <span class="studio-city">· Jakarta</span>
+        </div>
+        <div class="listing-desc">Charming mobile idle game about building and managing a tropical island paradise. 500K organic downloads in Southeast Asia. Seeking global distribution partner.</div>
+        <div class="listing-info-row">
+          <span class="info-tag">📱 Mobile</span>
+          <span class="info-tag">✅ Released</span>
+          <span class="info-tag proposals-tag">💼 7 proposals</span>
+        </div>
+        <div class="listing-actions">
+          <button class="fav-btn-listing" onclick="event.stopPropagation(); this.classList.toggle('active')">☆</button>
+          <button class="view-deal-btn" onclick="event.stopPropagation(); openDetail(4)">View Deal →</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- 6. Steel Horizon -->
+    <div class="listing-card" onclick="openDetail(5)">
+      <div class="listing-cover">
+        <svg class="cover-svg" viewBox="0 0 456 90" xmlns="http://www.w3.org/2000/svg">
+          <defs>
+            <linearGradient id="g6" x1="0%" y1="0%" x2="100%" y2="100%">
+              <stop offset="0%" style="stop-color:#2c3e50"/>
+              <stop offset="50%" style="stop-color:#4a4a4a"/>
+              <stop offset="100%" style="stop-color:#7f8c8d"/>
+            </linearGradient>
+          </defs>
+          <rect width="456" height="90" fill="url(#g6)"/>
+          <rect x="50" y="30" width="80" height="30" rx="2" fill="rgba(255,255,255,0.06)"/>
+          <rect x="170" y="20" width="120" height="50" rx="2" fill="rgba(255,255,255,0.05)"/>
+          <rect x="330" y="35" width="90" height="20" rx="2" fill="rgba(255,255,255,0.06)"/>
+          <text x="228" y="50" text-anchor="middle" font-size="11" fill="rgba(255,255,255,0.12)" font-family="sans-serif" font-weight="bold">STRATEGY · RTS · MILITARY</text>
+        </svg>
+        <div class="cover-overlay">
+          <div class="cover-game-name">Steel Horizon</div>
+        </div>
+        <div class="deal-badge db-orange">Publishing Deal</div>
+      </div>
+      <div class="listing-body">
+        <div class="listing-title-row">
+          <span class="listing-game-name">Steel Horizon</span>
+          <span class="listing-genre">Strategy</span>
+        </div>
+        <div class="listing-studio-row">
+          <span class="studio-name">IronForge</span>
+          <span class="studio-flag">🇨🇳</span>
+          <span class="studio-city">· Beijing</span>
+        </div>
+        <div class="listing-desc">Deep real-time strategy with epic land and naval warfare. Highly modifiable engine, strong competitive scene. PC and mobile cross-platform. Seeking Western publisher.</div>
+        <div class="listing-info-row">
+          <span class="info-tag">🖥️ PC</span>
+          <span class="info-tag">📱 Mobile</span>
+          <span class="info-tag">🔬 Alpha</span>
+          <span class="info-tag proposals-tag">💼 1 proposal</span>
+        </div>
+        <div class="listing-actions">
+          <button class="fav-btn-listing" onclick="event.stopPropagation(); this.classList.toggle('active')">☆</button>
+          <button class="view-deal-btn" onclick="event.stopPropagation(); openDetail(5)">View Deal →</button>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- /listings-list -->
+
+  <!-- BOTTOM TAB -->
+  <nav class="bottom-tab">
+    <div class="tab-item">
+      <span class="tab-icon">🏠</span>
+      <span>Home</span>
+    </div>
+    <div class="tab-item">
+      <span class="tab-icon">👥</span>
+      <span>People</span>
+    </div>
+    <div class="tab-item">
+      <span class="tab-icon">🗂️</span>
+      <span>Projects</span>
+    </div>
+    <div class="tab-item active">
+      <span class="tab-icon">🏪</span>
+      <span>Market</span>
+    </div>
+    <div class="tab-item">
+      <span class="tab-icon">💬</span>
+      <span>Messages</span>
+    </div>
+  </nav>
+
+</div><!-- /app-wrap -->
+
+<!-- OVERLAY BACKDROP -->
+<div class="overlay-backdrop" id="overlayBackdrop" onclick="closeDetail()"></div>
+
+<!-- DETAIL SHEET -->
+<div class="detail-sheet" id="detailSheet">
+  <div class="sheet-handle"></div>
+  <button class="sheet-close" onclick="closeDetail()">×</button>
+  <div class="sheet-cover" id="sheetCover">
+    <svg id="sheetCoverSvg" width="100%" height="150" viewBox="0 0 456 150" xmlns="http://www.w3.org/2000/svg">
+      <rect width="456" height="150" fill="#888"/>
+    </svg>
+    <div class="sheet-cover-overlay">
+      <div class="sheet-cover-name" id="sheetCoverName">Game Title</div>
+    </div>
+  </div>
+  <div class="sheet-body">
+    <div class="sheet-meta-top">
+      <span class="sheet-genre-tag" id="sheetGenre">RPG</span>
+      <span class="sheet-studio" id="sheetStudio"><span id="sheetFlag">🇨🇳</span> Studio Name</span>
+    </div>
+    <div class="deal-terms">
+      <div class="deal-terms-title">Deal Terms</div>
+      <div class="deal-terms-grid">
+        <div class="deal-term-item">
+          <div class="deal-term-label">Deal Type</div>
+          <div class="deal-term-value" id="sheetDealType">Publishing Deal</div>
+        </div>
+        <div class="deal-term-item">
+          <div class="deal-term-label">Territory</div>
+          <div class="deal-term-value" id="sheetTerritory">Global</div>
+        </div>
+        <div class="deal-term-item">
+          <div class="deal-term-label">Revenue Share</div>
+          <div class="deal-term-value" id="sheetRevShare">70/30</div>
+        </div>
+        <div class="deal-term-item">
+          <div class="deal-term-label">Expected MG</div>
+          <div class="deal-term-value" id="sheetMG">$200K+</div>
+        </div>
+      </div>
+    </div>
+    <div class="sheet-desc-title">About</div>
+    <div class="sheet-desc" id="sheetDesc">Loading...</div>
+    <div class="sheet-cta">
+      <button class="cta-primary">Submit Proposal</button>
+      <button class="cta-outline">Save</button>
+      <button class="cta-ghost">Share</button>
+    </div>
+  </div>
+</div>
+
+<script>
+  const deals = [
+    {
+      name: "Echoes of Jade Dynasty",
+      genre: "RPG",
+      studio: "CloudPeak Games",
+      flag: "🇨🇳",
+      dealType: "Publishing Deal",
+      territory: "Global",
+      revShare: "70/30",
+      mg: "$500K+",
+      desc: "An epic open-world RPG set in ancient mythological China. Stunning visuals, deep narrative and 60+ hours of content. Currently in closed beta with 10,000 testers. Seeking a global publishing partner with strong presence in EU and NA markets.",
+      gradient: "linear-gradient(135deg, #c0392b, #8e44ad, #2c3e50)"
+    },
+    {
+      name: "Phantom Circuit",
+      genre: "Puzzle / Horror",
+      studio: "Akihabara Studio",
+      flag: "🇯🇵",
+      dealType: "Publishing Deal",
+      territory: "EU + NA",
+      revShare: "75/25",
+      mg: "$150K+",
+      desc: "A psychological horror puzzle game where you repair corrupted circuits in haunted machinery. Award-winning demo at Tokyo Game Show 2025. Steam Wishlist: 85K. Release target: Q3 2026.",
+      gradient: "linear-gradient(135deg, #0f0c29, #302b63, #24243e)"
+    },
+    {
+      name: "Jungle Protocol",
+      genre: "Survival",
+      studio: "Mekong Dev",
+      flag: "🇻🇳",
+      dealType: "Investment",
+      territory: "Global",
+      revShare: "Equity-based",
+      mg: "$300K seed",
+      desc: "Multiplayer survival game set in Southeast Asian jungle environments. 4-player co-op, crafting, base-building and local mythological creatures. Robust core loop proven in 2,000-player alpha test.",
+      gradient: "linear-gradient(135deg, #134e5e, #71b280)"
+    },
+    {
+      name: "Neon Requiem",
+      genre: "Action RPG",
+      studio: "Lumière Studio",
+      flag: "🇫🇷",
+      dealType: "Publishing Deal",
+      territory: "Global excl. FR",
+      revShare: "72/28",
+      mg: "$250K+",
+      desc: "Dark cyberpunk action-RPG with fluid hack-and-slash combat and a haunting synthwave soundtrack composed by Grammy nominees. PC beta reviewed by IGN with 8.2/10. Targeting Q4 2026 global release.",
+      gradient: "linear-gradient(135deg, #1a0533, #4a0080, #ff0099)"
+    },
+    {
+      name: "Island Keeper",
+      genre: "Casual Simulation",
+      studio: "Batik Games",
+      flag: "🇮🇩",
+      dealType: "Distribution",
+      territory: "Global",
+      revShare: "80/20",
+      mg: "N/A (royalty)",
+      desc: "Charming mobile idle game about building and managing a tropical island paradise. Already released with 500K organic downloads in Southeast Asia. 4.6★ on Play Store. Seeking global marketing & distribution to scale to 10M users.",
+      gradient: "linear-gradient(135deg, #43c6ac, #f8ffae)"
+    },
+    {
+      name: "Steel Horizon",
+      genre: "Strategy / RTS",
+      studio: "IronForge",
+      flag: "🇨🇳",
+      dealType: "Publishing Deal",
+      territory: "NA + EU",
+      revShare: "68/32",
+      mg: "$180K+",
+      desc: "Deep real-time strategy with epic land and naval warfare, inspired by classic Starcraft-era RTS. Highly modifiable engine with active modding community. PC and mobile cross-platform. Seeking experienced Western publisher for NA/EU market entry.",
+      gradient: "linear-gradient(135deg, #2c3e50, #4a4a4a, #7f8c8d)"
+    }
+  ];
+
+  function openDetail(index) {
+    const d = deals[index];
+    document.getElementById('sheetCoverName').textContent = d.name;
+    document.getElementById('sheetGenre').textContent = d.genre;
+    document.getElementById('sheetStudio').innerHTML = `<span>${d.flag}</span> ${d.studio}`;
+    document.getElementById('sheetDealType').textContent = d.dealType;
+    document.getElementById('sheetTerritory').textContent = d.territory;
+    document.getElementById('sheetRevShare').textContent = d.revShare;
+    document.getElementById('sheetMG').textContent = d.mg;
+    document.getElementById('sheetDesc').textContent = d.desc;
+    // Update cover gradient
+    const svg = document.getElementById('sheetCoverSvg');
+    svg.innerHTML = `
+      <defs>
+        <linearGradient id="sg" x1="0%" y1="0%" x2="100%" y2="100%">
+          <stop offset="0%" style="stop-color:${d.gradient.match(/#[0-9a-f]{3,8}/gi)?.[0] || '#333'}"/>
+          <stop offset="100%" style="stop-color:${d.gradient.match(/#[0-9a-f]{3,8}/gi)?.slice(-1)[0] || '#888'}"/>
+        </linearGradient>
+      </defs>
+      <rect width="456" height="150" fill="url(#sg)"/>
+      <circle cx="400" cy="20" r="60" fill="rgba(255,255,255,0.05)"/>
+      <circle cx="50" cy="130" r="70" fill="rgba(255,255,255,0.04)"/>
+    `;
+    document.getElementById('overlayBackdrop').classList.add('open');
+    setTimeout(() => document.getElementById('detailSheet').classList.add('open'), 10);
+  }
+
+  function closeDetail() {
+    document.getElementById('detailSheet').classList.remove('open');
+    document.getElementById('overlayBackdrop').classList.remove('open');
+  }
+
+  // Pill interaction
+  document.querySelectorAll('.filter-pill').forEach(pill => {
+    pill.addEventListener('click', function() {
+      document.querySelectorAll('.filter-pill').forEach(p => p.classList.remove('active'));
+      this.classList.add('active');
+    });
+  });
+  document.querySelectorAll('.region-chip').forEach(chip => {
+    chip.addEventListener('click', function() {
+      document.querySelectorAll('.region-chip').forEach(c => c.classList.remove('active'));
+      this.classList.add('active');
+    });
+  });
+  document.querySelectorAll('.tab-item').forEach(item => {
+    item.addEventListener('click', function() {
+      document.querySelectorAll('.tab-item').forEach(t => t.classList.remove('active'));
+      this.classList.add('active');
+    });
+  });
+</script>
+</body>
+</html>

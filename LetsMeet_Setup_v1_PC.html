@@ -1,0 +1,787 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Let's Meet Setup — GAME CONNECTION Event HQ</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: #e8e4da;
+    color: #1a1a1a;
+    min-height: 100vh;
+  }
+
+  /* NAV */
+  .nav {
+    background: #1a1a1a;
+    padding: 0 32px;
+    height: 56px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    position: sticky; top: 0; z-index: 100;
+  }
+  .nav-brand { font-size: 15px; font-weight: 700; color: #fff; letter-spacing: 0.5px; }
+  .nav-brand span { color: #d95f2b; }
+  .nav-right { display: flex; align-items: center; gap: 16px; }
+  .nav-avatar {
+    width: 32px; height: 32px; border-radius: 50%;
+    background: #d95f2b;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 13px; font-weight: 700; color: #fff;
+  }
+  .nav-event-label { font-size: 13px; color: #aaa; }
+
+  /* LAYOUT */
+  .layout {
+    display: flex;
+    min-height: calc(100vh - 56px);
+  }
+
+  /* SIDEBAR */
+  .sidebar {
+    width: 220px;
+    flex-shrink: 0;
+    background: #fff;
+    padding: 24px 0;
+    border-right: 1px solid #e5e2da;
+  }
+  .sidebar-event {
+    padding: 0 20px 20px;
+    border-bottom: 1px solid #f0ede6;
+    margin-bottom: 8px;
+  }
+  .sidebar-event-name { font-size: 13px; font-weight: 700; color: #1a1a1a; }
+  .sidebar-event-sub { font-size: 11px; color: #aaa; margin-top: 2px; }
+  .sidebar-nav-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 20px;
+    font-size: 14px;
+    color: #555;
+    cursor: pointer;
+    border-left: 3px solid transparent;
+    transition: background 0.15s, color 0.15s;
+    text-decoration: none;
+  }
+  .sidebar-nav-item:hover { background: #f5f3ef; color: #1a1a1a; }
+  .sidebar-nav-item.active {
+    background: #fff5f0;
+    color: #d95f2b;
+    font-weight: 700;
+    border-left-color: #d95f2b;
+  }
+  .sidebar-nav-item .icon { font-size: 16px; width: 20px; text-align: center; }
+
+  /* CONTENT */
+  .content {
+    flex: 1;
+    padding: 32px 36px 80px;
+    max-width: 780px;
+  }
+
+  /* PAGE HEADER */
+  .page-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    margin-bottom: 28px;
+  }
+  .page-header-left h1 {
+    font-size: 24px; font-weight: 700; color: #1a1a1a; margin-bottom: 4px;
+  }
+  .page-header-left p { font-size: 14px; color: #888; }
+  .status-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 14px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 700;
+    background: #fff8e1;
+    color: #b8860b;
+    border: 1px solid #ffd54f;
+    margin-top: 6px;
+  }
+
+  /* TABS */
+  .tabs {
+    display: flex;
+    gap: 0;
+    background: #fff;
+    border-radius: 10px;
+    padding: 5px;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+    margin-bottom: 28px;
+    width: fit-content;
+  }
+  .tab-btn {
+    padding: 8px 20px;
+    border-radius: 7px;
+    border: none;
+    background: transparent;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 14px;
+    font-weight: 500;
+    color: #888;
+    cursor: pointer;
+    transition: background 0.15s, color 0.15s;
+  }
+  .tab-btn.active { background: #d95f2b; color: #fff; font-weight: 700; }
+  .tab-btn:hover:not(.active) { background: #f5f3ef; color: #1a1a1a; }
+
+  /* CARD / SECTION */
+  .card {
+    background: #fff;
+    border-radius: 12px;
+    padding: 24px;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+    margin-bottom: 20px;
+  }
+  .card-title {
+    font-size: 16px;
+    font-weight: 700;
+    color: #1a1a1a;
+    margin-bottom: 4px;
+  }
+  .card-sub {
+    font-size: 13px;
+    color: #999;
+    margin-bottom: 20px;
+  }
+
+  /* FORM FIELD */
+  .field { margin-bottom: 20px; }
+  .field:last-child { margin-bottom: 0; }
+  .field-label {
+    font-size: 13px;
+    font-weight: 600;
+    color: #444;
+    margin-bottom: 8px;
+    display: block;
+  }
+
+  /* PILLS */
+  .pills { display: flex; flex-wrap: wrap; gap: 8px; }
+  .pill {
+    padding: 7px 16px;
+    border-radius: 20px;
+    border: 1.5px solid #ddd;
+    background: #fff;
+    font-size: 13px;
+    font-weight: 500;
+    color: #555;
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+  .pill:hover { border-color: #d95f2b; color: #d95f2b; }
+  .pill.selected { background: #d95f2b; color: #fff; border-color: #d95f2b; }
+
+  /* CHIPS (multi-select) */
+  .chips { display: flex; flex-wrap: wrap; gap: 8px; }
+  .chip {
+    padding: 6px 14px;
+    border-radius: 20px;
+    border: 1.5px solid #ddd;
+    background: #fff;
+    font-size: 13px;
+    color: #555;
+    cursor: pointer;
+    transition: all 0.15s;
+    display: flex; align-items: center; gap: 6px;
+  }
+  .chip:hover { border-color: #0a7fa8; color: #0a7fa8; }
+  .chip.selected { background: #e8f4f8; color: #0a7fa8; border-color: #0a7fa8; font-weight: 600; }
+
+  /* NUMBER INPUT */
+  .num-input-wrap { display: flex; align-items: center; gap: 10px; }
+  .num-input {
+    width: 80px;
+    padding: 8px 12px;
+    border-radius: 8px;
+    border: 1.5px solid #ddd;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 14px;
+    font-weight: 600;
+    color: #1a1a1a;
+    text-align: center;
+  }
+  .num-input:focus { border-color: #d95f2b; outline: none; }
+  .num-btn {
+    width: 32px; height: 32px;
+    border-radius: 8px;
+    border: 1.5px solid #ddd;
+    background: #fff;
+    font-size: 18px;
+    cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    color: #555;
+    transition: all 0.15s;
+  }
+  .num-btn:hover { border-color: #d95f2b; color: #d95f2b; }
+
+  /* TIME SLOTS */
+  .day-row {
+    padding: 14px 0;
+    border-bottom: 1px solid #f0ede6;
+  }
+  .day-row:last-of-type { border-bottom: none; }
+  .day-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 10px;
+  }
+  .day-checkbox { cursor: pointer; width: 16px; height: 16px; accent-color: #d95f2b; }
+  .day-label { font-size: 14px; font-weight: 700; color: #1a1a1a; }
+  .day-count { font-size: 12px; color: #aaa; margin-left: auto; }
+  .slot-chips { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
+  .slot-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 4px 10px 4px 12px;
+    background: #f0f7fa;
+    border: 1px solid #c8e4ee;
+    border-radius: 16px;
+    font-size: 12px;
+    color: #0a7fa8;
+    font-weight: 500;
+  }
+  .slot-remove {
+    background: none; border: none; cursor: pointer;
+    color: #aaa; font-size: 14px; line-height: 1;
+    padding: 0 2px;
+    transition: color 0.15s;
+  }
+  .slot-remove:hover { color: #d95f2b; }
+  .add-slot-btn {
+    padding: 4px 12px;
+    border-radius: 16px;
+    border: 1.5px dashed #ccc;
+    background: transparent;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 12px;
+    color: #aaa;
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+  .add-slot-btn:hover { border-color: #0a7fa8; color: #0a7fa8; }
+
+  /* ROOMS */
+  .room-list { display: flex; flex-direction: column; gap: 10px; }
+  .room-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 16px;
+    background: #f9f8f5;
+    border-radius: 8px;
+    border: 1px solid #ede9e0;
+  }
+  .room-check { accent-color: #0d9b72; width: 16px; height: 16px; cursor: pointer; }
+  .room-info { flex: 1; }
+  .room-name { font-size: 14px; font-weight: 600; color: #1a1a1a; }
+  .room-detail { font-size: 12px; color: #aaa; margin-top: 2px; }
+  .room-capacity {
+    font-size: 12px; color: #888;
+    background: #ece8de;
+    padding: 3px 10px;
+    border-radius: 12px;
+  }
+  .room-remove {
+    background: none; border: none; cursor: pointer;
+    color: #ccc; font-size: 18px;
+    transition: color 0.15s;
+    padding: 0 4px;
+  }
+  .room-remove:hover { color: #d95f2b; }
+  .add-room-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    margin-top: 12px;
+    padding: 8px 16px;
+    border-radius: 8px;
+    border: 1.5px dashed #ccc;
+    background: transparent;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 13px;
+    color: #aaa;
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+  .add-room-btn:hover { border-color: #0d9b72; color: #0d9b72; }
+
+  /* TOGGLE */
+  .toggle-row { display: flex; align-items: center; gap: 12px; margin-bottom: 16px; }
+  .toggle { position: relative; width: 44px; height: 24px; cursor: pointer; }
+  .toggle input { opacity: 0; width: 0; height: 0; }
+  .slider {
+    position: absolute; top: 0; left: 0; right: 0; bottom: 0;
+    background: #ccc; border-radius: 24px; transition: background 0.2s;
+  }
+  .slider::before {
+    content: '';
+    position: absolute;
+    width: 18px; height: 18px;
+    left: 3px; top: 3px;
+    background: #fff; border-radius: 50%;
+    transition: transform 0.2s;
+  }
+  .toggle input:checked + .slider { background: #0d9b72; }
+  .toggle input:checked + .slider::before { transform: translateX(20px); }
+  .toggle-label { font-size: 14px; font-weight: 600; color: #1a1a1a; }
+  .toggle-sub { font-size: 12px; color: #aaa; margin-left: auto; }
+
+  /* FOOTER ACTIONS */
+  .footer-actions {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    margin-top: 8px;
+  }
+  .btn {
+    padding: 12px 28px;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 700;
+    cursor: pointer;
+    border: none;
+    font-family: 'DM Sans', sans-serif;
+    transition: opacity 0.15s;
+  }
+  .btn:hover { opacity: 0.88; }
+  .btn-primary { background: #d95f2b; color: #fff; }
+  .preview-link {
+    font-size: 14px;
+    color: #0a7fa8;
+    text-decoration: none;
+    font-weight: 500;
+  }
+  .preview-link:hover { text-decoration: underline; }
+
+  /* HIDDEN TAB CONTENT */
+  .tab-panel { display: none; }
+  .tab-panel.active { display: block; }
+
+  /* MATCHING SECTION AI */
+  .ai-hint {
+    font-size: 13px;
+    color: #888;
+    background: #f5f3ef;
+    padding: 10px 14px;
+    border-radius: 8px;
+    margin-bottom: 16px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav class="nav">
+  <div class="nav-brand"><span>GAME CONNECTION</span> · Event HQ</div>
+  <div class="nav-right">
+    <span class="nav-event-label">Indie Game Fest 2026</span>
+    <div class="nav-avatar">QQ</div>
+  </div>
+</nav>
+
+<div class="layout">
+
+  <!-- SIDEBAR -->
+  <aside class="sidebar">
+    <div class="sidebar-event">
+      <div class="sidebar-event-name">Indie Game Fest 2026</div>
+      <div class="sidebar-event-sub">Apr 15–17, 2026 · Lyon</div>
+    </div>
+    <a class="sidebar-nav-item" href="#"><span class="icon">📊</span> Dashboard</a>
+    <a class="sidebar-nav-item" href="#"><span class="icon">🎪</span> My Events</a>
+    <a class="sidebar-nav-item" href="#"><span class="icon">👥</span> Buyer Invitations</a>
+    <a class="sidebar-nav-item" href="#"><span class="icon">🎮</span> Game Showcase</a>
+    <a class="sidebar-nav-item" href="#"><span class="icon">🏆</span> Awards</a>
+    <a class="sidebar-nav-item" href="#"><span class="icon">📅</span> Schedule</a>
+    <a class="sidebar-nav-item active" href="#"><span class="icon">🤝</span> Let's Meet</a>
+    <a class="sidebar-nav-item" href="#"><span class="icon">📧</span> Communications</a>
+    <a class="sidebar-nav-item" href="#"><span class="icon">📈</span> Analytics</a>
+    <a class="sidebar-nav-item" href="#"><span class="icon">⚙️</span> Settings</a>
+  </aside>
+
+  <!-- CONTENT -->
+  <main class="content">
+
+    <!-- PAGE HEADER -->
+    <div class="page-header">
+      <div class="page-header-left">
+        <h1>Let's Meet — Meeting Setup</h1>
+        <p>Configure 1-on-1 meetings for Indie Game Fest 2026</p>
+        <div class="status-badge">🟡 Setup Required</div>
+      </div>
+    </div>
+
+    <!-- TABS -->
+    <div class="tabs">
+      <button class="tab-btn active" onclick="switchTab('config')">Configuration</button>
+      <button class="tab-btn" onclick="switchTab('participants')">Participants</button>
+      <button class="tab-btn" onclick="switchTab('schedule')">Meeting Schedule</button>
+      <button class="tab-btn" onclick="switchTab('analytics')">Analytics</button>
+    </div>
+
+    <!-- CONFIG TAB -->
+    <div class="tab-panel active" id="tab-config">
+
+      <!-- SECTION 1: Meeting Format -->
+      <div class="card">
+        <div class="card-title">Section 1: Meeting Format</div>
+        <div class="card-sub">Define the structure and rules for 1-on-1 meetings.</div>
+
+        <div class="field">
+          <label class="field-label">Meeting Duration</label>
+          <div class="pills" id="duration-pills">
+            <button class="pill" onclick="selectPill(this, 'duration-pills')">15 min</button>
+            <button class="pill" onclick="selectPill(this, 'duration-pills')">20 min</button>
+            <button class="pill selected" onclick="selectPill(this, 'duration-pills')">30 min</button>
+            <button class="pill" onclick="selectPill(this, 'duration-pills')">45 min</button>
+            <button class="pill" onclick="selectPill(this, 'duration-pills')">60 min</button>
+          </div>
+        </div>
+
+        <div class="field">
+          <label class="field-label">Meeting Style</label>
+          <div class="pills" id="style-pills">
+            <button class="pill selected" onclick="selectPill(this, 'style-pills')">Pre-scheduled only</button>
+            <button class="pill" onclick="selectPill(this, 'style-pills')">Walk-in only</button>
+            <button class="pill" onclick="selectPill(this, 'style-pills')">Both</button>
+          </div>
+        </div>
+
+        <div class="field">
+          <label class="field-label">Max meetings per participant</label>
+          <div class="num-input-wrap">
+            <button class="num-btn" onclick="adjustNum('maxMeetings', -1)">−</button>
+            <input type="number" class="num-input" id="maxMeetings" value="8" min="1" max="50">
+            <button class="num-btn" onclick="adjustNum('maxMeetings', 1)">+</button>
+          </div>
+        </div>
+
+        <div class="field">
+          <label class="field-label">Meeting language <span style="font-weight:400;color:#bbb;">(multi-select)</span></label>
+          <div class="chips" id="lang-chips">
+            <button class="chip selected" onclick="toggleChip(this)">🇬🇧 English</button>
+            <button class="chip selected" onclick="toggleChip(this)">🇨🇳 Chinese</button>
+            <button class="chip" onclick="toggleChip(this)">🇯🇵 Japanese</button>
+            <button class="chip" onclick="toggleChip(this)">🇰🇷 Korean</button>
+            <button class="chip" onclick="toggleChip(this)">🇫🇷 French</button>
+            <button class="chip" onclick="toggleChip(this)">🇩🇪 German</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- SECTION 2: Time Slots -->
+      <div class="card">
+        <div class="card-title">Section 2: Time Slots</div>
+        <div class="card-sub">Each day can have different slots. Click × to remove, + Add Slot to add.</div>
+
+        <!-- Day 1 -->
+        <div class="day-row">
+          <div class="day-header">
+            <input type="checkbox" class="day-checkbox" checked id="day1-check" onchange="toggleDay(1)">
+            <label class="day-label" for="day1-check">📅 Apr 15 (Day 1)</label>
+            <span class="day-count" id="day1-count">8 slots</span>
+          </div>
+          <div class="slot-chips" id="day1-slots">
+            <!-- filled by JS -->
+          </div>
+        </div>
+
+        <!-- Day 2 -->
+        <div class="day-row">
+          <div class="day-header">
+            <input type="checkbox" class="day-checkbox" checked id="day2-check" onchange="toggleDay(2)">
+            <label class="day-label" for="day2-check">📅 Apr 16 (Day 2)</label>
+            <span class="day-count" id="day2-count">8 slots</span>
+          </div>
+          <div class="slot-chips" id="day2-slots">
+          </div>
+        </div>
+
+        <!-- Day 3 -->
+        <div class="day-row">
+          <div class="day-header">
+            <input type="checkbox" class="day-checkbox" checked id="day3-check" onchange="toggleDay(3)">
+            <label class="day-label" for="day3-check">📅 Apr 17 (Day 3)</label>
+            <span class="day-count" id="day3-count">8 slots</span>
+          </div>
+          <div class="slot-chips" id="day3-slots">
+          </div>
+        </div>
+      </div>
+
+      <!-- SECTION 3: Meeting Rooms -->
+      <div class="card">
+        <div class="card-title">Section 3: Meeting Rooms</div>
+        <div class="card-sub">Physical rooms or virtual meeting links.</div>
+
+        <div class="room-list" id="room-list">
+          <div class="room-item">
+            <input type="checkbox" class="room-check" checked>
+            <div class="room-info">
+              <div class="room-name">Meeting Room A</div>
+              <div class="room-detail">📍 Hall A · B02</div>
+            </div>
+            <span class="room-capacity">👥 2 people</span>
+            <button class="room-remove" onclick="removeRoom(this)">×</button>
+          </div>
+          <div class="room-item">
+            <input type="checkbox" class="room-check" checked>
+            <div class="room-info">
+              <div class="room-name">Meeting Room B</div>
+              <div class="room-detail">📍 Hall A · B04</div>
+            </div>
+            <span class="room-capacity">👥 2 people</span>
+            <button class="room-remove" onclick="removeRoom(this)">×</button>
+          </div>
+          <div class="room-item">
+            <input type="checkbox" class="room-check" checked>
+            <div class="room-info">
+              <div class="room-name">Meeting Room C</div>
+              <div class="room-detail">📍 Hall B · C01</div>
+            </div>
+            <span class="room-capacity">👥 2 people</span>
+            <button class="room-remove" onclick="removeRoom(this)">×</button>
+          </div>
+          <div class="room-item">
+            <input type="checkbox" class="room-check" checked>
+            <div class="room-info">
+              <div class="room-name">Virtual Room</div>
+              <div class="room-detail">🌐 Online · Zoom link</div>
+            </div>
+            <span class="room-capacity">👥 2 people</span>
+            <button class="room-remove" onclick="removeRoom(this)">×</button>
+          </div>
+        </div>
+        <button class="add-room-btn" onclick="addRoom()">+ Add Room</button>
+      </div>
+
+      <!-- SECTION 4: Matching Algorithm -->
+      <div class="card">
+        <div class="card-title">Section 4: Matching Algorithm</div>
+        <div class="card-sub">Let our AI pre-suggest meeting partners based on profiles.</div>
+
+        <div class="toggle-row">
+          <label class="toggle">
+            <input type="checkbox" checked id="ai-toggle" onchange="toggleAISection()">
+            <span class="slider"></span>
+          </label>
+          <span class="toggle-label">Enable AI matching</span>
+          <span class="toggle-sub" id="ai-toggle-sub" style="color:#0d9b72;">✅ Active</span>
+        </div>
+
+        <div id="ai-section">
+          <div class="ai-hint">🤖 AI will analyze attendee profiles and suggest optimal meeting pairs before the event.</div>
+
+          <div class="field">
+            <label class="field-label">Matching based on <span style="font-weight:400;color:#bbb;">(multi-select)</span></label>
+            <div class="chips" id="match-chips">
+              <button class="chip selected" onclick="toggleChip(this)">💼 Role</button>
+              <button class="chip selected" onclick="toggleChip(this)">🎯 Goals</button>
+              <button class="chip selected" onclick="toggleChip(this)">🌍 Market Interest</button>
+              <button class="chip selected" onclick="toggleChip(this)">🎮 Game Genre</button>
+              <button class="chip" onclick="toggleChip(this)">🏢 Company Size</button>
+            </div>
+          </div>
+
+          <div class="field">
+            <label class="field-label">Days before event to open requests</label>
+            <div class="num-input-wrap">
+              <button class="num-btn" onclick="adjustNum('daysBefore', -1)">−</button>
+              <input type="number" class="num-input" id="daysBefore" value="14" min="1" max="60">
+              <button class="num-btn" onclick="adjustNum('daysBefore', 1)">+</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- FOOTER -->
+      <div class="footer-actions">
+        <button class="btn btn-primary" onclick="saveConfig()">💾 Save Configuration</button>
+        <a href="#" class="preview-link">👁 Preview Meeting Page →</a>
+      </div>
+
+    </div><!-- /tab-config -->
+
+    <!-- PLACEHOLDER TABS -->
+    <div class="tab-panel" id="tab-participants">
+      <div class="card" style="text-align:center;padding:60px 24px;">
+        <div style="font-size:48px;margin-bottom:16px;">👥</div>
+        <div style="font-size:18px;font-weight:700;color:#1a1a1a;margin-bottom:8px;">Participants</div>
+        <div style="font-size:14px;color:#aaa;">Manage who can request meetings and their profile visibility settings.</div>
+      </div>
+    </div>
+    <div class="tab-panel" id="tab-schedule">
+      <div class="card" style="text-align:center;padding:60px 24px;">
+        <div style="font-size:48px;margin-bottom:16px;">📆</div>
+        <div style="font-size:18px;font-weight:700;color:#1a1a1a;margin-bottom:8px;">Meeting Schedule</div>
+        <div style="font-size:14px;color:#aaa;">View and manage all confirmed meetings across the event days.</div>
+      </div>
+    </div>
+    <div class="tab-panel" id="tab-analytics">
+      <div class="card" style="text-align:center;padding:60px 24px;">
+        <div style="font-size:48px;margin-bottom:16px;">📈</div>
+        <div style="font-size:18px;font-weight:700;color:#1a1a1a;margin-bottom:8px;">Analytics</div>
+        <div style="font-size:14px;color:#aaa;">Meeting completion rates, popular time slots, and attendee satisfaction.</div>
+      </div>
+    </div>
+
+  </main>
+</div>
+
+<script>
+  // ---- TABS ----
+  function switchTab(id) {
+    document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+    document.getElementById('tab-' + id).classList.add('active');
+    event.target.classList.add('active');
+  }
+
+  // ---- PILLS (single-select) ----
+  function selectPill(el, groupId) {
+    const group = document.getElementById(groupId);
+    group.querySelectorAll('.pill').forEach(p => p.classList.remove('selected'));
+    el.classList.add('selected');
+  }
+
+  // ---- CHIPS (multi-select) ----
+  function toggleChip(el) {
+    el.classList.toggle('selected');
+  }
+
+  // ---- NUMBER INPUT ----
+  function adjustNum(id, delta) {
+    const input = document.getElementById(id);
+    let val = parseInt(input.value) + delta;
+    if (val < parseInt(input.min || 1)) val = parseInt(input.min || 1);
+    if (input.max && val > parseInt(input.max)) val = parseInt(input.max);
+    input.value = val;
+  }
+
+  // ---- TIME SLOTS ----
+  const defaultSlots = [
+    '09:00–09:30','09:30–10:00','10:00–10:30','10:30–11:00',
+    '11:00–11:30','11:30–12:00','12:00–12:30','12:30–13:00'
+  ];
+  // afternoon slots pool for "Add Slot"
+  const afternoonSlots = [
+    '14:00–14:30','14:30–15:00','15:00–15:30','15:30–16:00',
+    '16:00–16:30','16:30–17:00','17:00–17:30','17:30–18:00'
+  ];
+
+  const daySlots = { 1: [...defaultSlots], 2: [...defaultSlots], 3: [...defaultSlots] };
+  const dayAfternoonIdx = { 1: 0, 2: 0, 3: 0 };
+
+  function renderDay(day) {
+    const container = document.getElementById('day' + day + '-slots');
+    const slots = daySlots[day];
+    container.innerHTML = '';
+    slots.forEach((slot, idx) => {
+      const chip = document.createElement('span');
+      chip.className = 'slot-chip';
+      chip.innerHTML = slot + ' <button class="slot-remove" onclick="removeSlot(' + day + ',' + idx + ')">×</button>';
+      container.appendChild(chip);
+    });
+    // Add slot button
+    const addBtn = document.createElement('button');
+    addBtn.className = 'add-slot-btn';
+    addBtn.textContent = '+ Add Slot';
+    addBtn.onclick = () => addSlot(day);
+    container.appendChild(addBtn);
+    document.getElementById('day' + day + '-count').textContent = slots.length + ' slot' + (slots.length !== 1 ? 's' : '');
+  }
+
+  function removeSlot(day, idx) {
+    daySlots[day].splice(idx, 1);
+    renderDay(day);
+  }
+
+  function addSlot(day) {
+    const pool = afternoonSlots;
+    const nextIdx = dayAfternoonIdx[day];
+    if (nextIdx < pool.length) {
+      daySlots[day].push(pool[nextIdx]);
+      dayAfternoonIdx[day]++;
+    } else {
+      alert('No more pre-defined slots. You can customize further in the full editor.');
+    }
+    renderDay(day);
+  }
+
+  function toggleDay(day) {
+    const cb = document.getElementById('day' + day + '-check');
+    const container = document.getElementById('day' + day + '-slots');
+    container.style.opacity = cb.checked ? '1' : '0.4';
+    container.style.pointerEvents = cb.checked ? 'auto' : 'none';
+  }
+
+  // ---- ROOMS ----
+  function removeRoom(btn) {
+    btn.closest('.room-item').remove();
+  }
+
+  let roomCounter = 5;
+  function addRoom() {
+    const list = document.getElementById('room-list');
+    const div = document.createElement('div');
+    div.className = 'room-item';
+    div.innerHTML = `
+      <input type="checkbox" class="room-check" checked>
+      <div class="room-info">
+        <div class="room-name">New Room ${roomCounter++}</div>
+        <div class="room-detail">📍 Location TBD</div>
+      </div>
+      <span class="room-capacity">👥 2 people</span>
+      <button class="room-remove" onclick="removeRoom(this)">×</button>
+    `;
+    list.appendChild(div);
+  }
+
+  // ---- AI TOGGLE ----
+  function toggleAISection() {
+    const on = document.getElementById('ai-toggle').checked;
+    document.getElementById('ai-section').style.opacity = on ? '1' : '0.4';
+    document.getElementById('ai-section').style.pointerEvents = on ? 'auto' : 'none';
+    document.getElementById('ai-toggle-sub').textContent = on ? '✅ Active' : '⏸ Disabled';
+    document.getElementById('ai-toggle-sub').style.color = on ? '#0d9b72' : '#aaa';
+  }
+
+  // ---- SAVE ----
+  function saveConfig() {
+    const btn = document.querySelector('.btn-primary');
+    btn.textContent = '✅ Saved!';
+    btn.style.background = '#0d9b72';
+    setTimeout(() => {
+      btn.textContent = '💾 Save Configuration';
+      btn.style.background = '#d95f2b';
+    }, 2000);
+    // Update status badge
+    document.querySelector('.status-badge').innerHTML = '🟢 Configured';
+    document.querySelector('.status-badge').style.background = '#e8f5e9';
+    document.querySelector('.status-badge').style.color = '#0d9b72';
+    document.querySelector('.status-badge').style.borderColor = '#a5d6a7';
+  }
+
+  // INIT
+  renderDay(1);
+  renderDay(2);
+  renderDay(3);
+</script>
+</body>
+</html>

@@ -1,0 +1,506 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Messages – Game Connection</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'DM Sans',sans-serif;background:#e8e4da;color:#1c1a17;height:100vh;overflow:hidden}
+
+/* ── NAV ── */
+.nav{position:fixed;top:0;left:0;right:0;height:60px;background:#fff;border-bottom:1px solid #e0dbd2;display:flex;align-items:center;padding:0 24px;gap:16px;z-index:100}
+.nav-logo{font-size:17px;font-weight:700;color:#d95f2b;letter-spacing:.5px;white-space:nowrap}
+.nav-search{flex:1;max-width:320px;position:relative}
+.nav-search input{width:100%;padding:8px 14px 8px 36px;border:1px solid #e0dbd2;border-radius:20px;font-family:'DM Sans',sans-serif;font-size:14px;background:#f5f3ee;outline:none}
+.nav-search input:focus{border-color:#0a7fa8;background:#fff}
+.nav-search svg{position:absolute;left:10px;top:50%;transform:translateY(-50%);color:#a09890}
+.nav-links{display:flex;gap:4px;margin-left:8px}
+.nav-links a{padding:6px 14px;border-radius:20px;font-size:14px;font-weight:500;color:#6b6660;text-decoration:none;transition:.15s}
+.nav-links a:hover{background:#f5f3ee;color:#1c1a17}
+.nav-links a.active{background:#d95f2b;color:#fff}
+.nav-right{margin-left:auto;display:flex;align-items:center;gap:12px}
+.nav-bell{width:36px;height:36px;border-radius:50%;background:#f5f3ee;border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;position:relative;transition:.15s}
+.nav-bell:hover{background:#e0dbd2}
+.nav-bell .dot{position:absolute;top:6px;right:6px;width:8px;height:8px;background:#d95f2b;border-radius:50%;border:2px solid #fff}
+.nav-avatar{width:36px;height:36px;border-radius:50%;background:#0a7fa8;color:#fff;font-weight:600;font-size:14px;display:flex;align-items:center;justify-content:center;cursor:pointer}
+
+/* ── MAIN BODY ── */
+.body{display:flex;height:calc(100vh - 60px);margin-top:60px}
+
+/* ── LEFT PANEL ── */
+.left-panel{width:320px;flex-shrink:0;background:#fff;border-right:1px solid #e0dbd2;display:flex;flex-direction:column;overflow:hidden}
+.left-header{padding:16px 14px 12px;border-bottom:1px solid #f0ede7}
+.left-header h2{font-size:18px;font-weight:700;margin-bottom:10px}
+.left-search-row{display:flex;gap:8px;align-items:center}
+.left-search{flex:1;position:relative}
+.left-search input{width:100%;padding:8px 12px 8px 32px;border:1.5px solid #e0dbd2;border-radius:20px;font-family:'DM Sans',sans-serif;font-size:13px;background:#f5f3ee;outline:none}
+.left-search input:focus{border-color:#0a7fa8}
+.left-search svg{position:absolute;left:9px;top:50%;transform:translateY(-50%);color:#a09890}
+.compose-btn{width:34px;height:34px;border-radius:50%;background:#d95f2b;border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;color:#fff;flex-shrink:0;transition:.15s}
+.compose-btn:hover{background:#c04e20}
+
+.conv-list{flex:1;overflow-y:auto}
+.section-label{font-size:10px;font-weight:600;color:#a09890;text-transform:uppercase;letter-spacing:.8px;padding:10px 14px 4px}
+.conv-item{display:flex;align-items:center;gap:10px;padding:10px 14px;cursor:pointer;transition:.15s;position:relative}
+.conv-item:hover{background:#f5f3ee}
+.conv-item.active{background:#fff3ee;border-right:3px solid #d95f2b}
+.avatar{width:42px;height:42px;border-radius:50%;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:700;color:#fff;position:relative}
+.avatar-status{position:absolute;bottom:1px;right:1px;width:11px;height:11px;border-radius:50%;border:2px solid #fff}
+.avatar-status.online{background:#0d9b72}
+.avatar-status.busy{background:#d95f2b}
+.conv-body{flex:1;min-width:0}
+.conv-top{display:flex;justify-content:space-between;align-items:baseline}
+.conv-name{font-size:14px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:160px}
+.conv-time{font-size:11px;color:#a09890;flex-shrink:0}
+.conv-company{font-size:11px;color:#0a7fa8;font-weight:500;margin-top:1px}
+.conv-preview{font-size:12px;color:#6b6660;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-top:1px}
+.conv-preview.unread{color:#1c1a17;font-weight:500}
+.badge{background:#d95f2b;color:#fff;font-size:10px;font-weight:700;padding:2px 6px;border-radius:10px;min-width:18px;text-align:center;position:absolute;right:10px;top:50%;transform:translateY(-50%)}
+
+/* ── RIGHT CHAT ── */
+.chat-area{flex:1;display:flex;flex-direction:column;overflow:hidden}
+
+.chat-topbar{background:#fff;padding:14px 20px;border-bottom:1px solid #e0dbd2;display:flex;align-items:center;gap:12px}
+.chat-peer-avatar{width:40px;height:40px;border-radius:50%;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:700;color:#fff;position:relative}
+.chat-peer-info{flex:1;min-width:0}
+.chat-peer-name{font-size:16px;font-weight:600}
+.chat-peer-sub{font-size:12px;color:#6b6660;display:flex;align-items:center;gap:6px}
+.online-dot{width:8px;height:8px;border-radius:50%;background:#0d9b72;display:inline-block}
+.chat-actions{display:flex;gap:6px}
+.chat-action-btn{width:36px;height:36px;border-radius:50%;background:#f5f3ee;border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;color:#6b6660;transition:.15s}
+.chat-action-btn:hover{background:#e0dbd2;color:#1c1a17}
+
+.chat-messages{flex:1;overflow-y:auto;padding:20px 24px;display:flex;flex-direction:column;gap:14px;background:#f5f3ee}
+.date-sep{align-self:center;font-size:11px;color:#a09890;background:#e0dbd2;padding:3px 12px;border-radius:10px}
+.msg{display:flex;gap:10px;max-width:65%}
+.msg.me{align-self:flex-end;flex-direction:row-reverse}
+.msg-avatar-sm{width:34px;height:34px;border-radius:50%;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:#fff;align-self:flex-end}
+.msg-content{display:flex;flex-direction:column;gap:4px}
+.msg.me .msg-content{align-items:flex-end}
+.msg-bubble{padding:11px 15px;border-radius:18px;font-size:14px;line-height:1.55;max-width:100%;word-wrap:break-word}
+.msg:not(.me) .msg-bubble{background:#fff;color:#1c1a17;border-bottom-left-radius:4px;box-shadow:0 1px 3px rgba(0,0,0,.06)}
+.msg.me .msg-bubble{background:#d95f2b;color:#fff;border-bottom-right-radius:4px}
+.msg-meta{display:flex;align-items:center;gap:6px;padding:0 4px}
+.msg-time{font-size:11px;color:#a09890}
+.msg-read{font-size:11px;color:#0d9b72}
+
+.chat-input-area{background:#fff;padding:14px 20px;border-top:1px solid #e0dbd2;display:flex;align-items:flex-end;gap:10px}
+.input-tools{display:flex;gap:4px}
+.tool-btn{width:34px;height:34px;border-radius:8px;background:#f5f3ee;border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;color:#6b6660;transition:.15s}
+.tool-btn:hover{background:#e0dbd2}
+.input-wrap{flex:1;border:1.5px solid #e0dbd2;border-radius:12px;background:#f5f3ee;padding:10px 14px;transition:.15s}
+.input-wrap:focus-within{border-color:#0a7fa8;background:#fff}
+.input-wrap textarea{width:100%;border:none;background:transparent;font-family:'DM Sans',sans-serif;font-size:14px;resize:none;outline:none;color:#1c1a17;line-height:1.5;min-height:24px;max-height:100px}
+.send-btn{width:40px;height:40px;border-radius:10px;background:#d95f2b;border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;color:#fff;flex-shrink:0;transition:.15s}
+.send-btn:hover{background:#c04e20}
+.send-btn:active{transform:scale(.95)}
+
+/* Empty state */
+.empty-chat{flex:1;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:12px;color:#a09890;background:#f5f3ee}
+.empty-chat svg{opacity:.3}
+.empty-chat p{font-size:15px}
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav class="nav">
+  <div class="nav-logo">GAME CONNECTION</div>
+  <div class="nav-search">
+    <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+    <input placeholder="Search people, organizations…">
+  </div>
+  <nav class="nav-links">
+    <a href="#">Home</a>
+    <a href="#">People</a>
+    <a href="#">Organizations</a>
+    <a href="#">Events</a>
+    <a href="#" class="active">Messages</a>
+    <a href="#">Jobs</a>
+  </nav>
+  <div class="nav-right">
+    <button class="nav-bell">
+      <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+      <span class="dot"></span>
+    </button>
+    <div class="nav-avatar">QQ</div>
+  </div>
+</nav>
+
+<div class="body">
+
+  <!-- LEFT: CONVERSATION LIST -->
+  <div class="left-panel">
+    <div class="left-header">
+      <h2>Messages</h2>
+      <div class="left-search-row">
+        <div class="left-search">
+          <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+          <input placeholder="Search conversations…">
+        </div>
+        <button class="compose-btn" title="New message">
+          <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+        </button>
+      </div>
+    </div>
+
+    <div class="conv-list">
+      <div class="section-label">📌 Pinned</div>
+
+      <div class="conv-item active" id="conv-0" onclick="selectConv(0)">
+        <div class="avatar" style="background:linear-gradient(135deg,#2d2d2d,#d95f2b)">SC
+          <div class="avatar-status online"></div>
+        </div>
+        <div class="conv-body">
+          <div class="conv-top"><span class="conv-name">Sarah Chen</span><span class="conv-time">2m</span></div>
+          <div class="conv-company">Devolver Digital · Publisher</div>
+          <div class="conv-preview unread">Looking forward to reviewing your demo!</div>
+        </div>
+        <span class="badge">3</span>
+      </div>
+
+      <div class="conv-item" id="conv-1" onclick="selectConv(1)">
+        <div class="avatar" style="background:linear-gradient(135deg,#2c3e7a,#4a6cf7)">MD
+          <div class="avatar-status busy"></div>
+        </div>
+        <div class="conv-body">
+          <div class="conv-top"><span class="conv-name">Marc Dubois</span><span class="conv-time">1h</span></div>
+          <div class="conv-company">Ubisoft · Director</div>
+          <div class="conv-preview unread">See you at the GDC booth on Wed!</div>
+        </div>
+        <span class="badge">1</span>
+      </div>
+
+      <div class="section-label">Today</div>
+
+      <div class="conv-item" id="conv-2" onclick="selectConv(2)">
+        <div class="avatar" style="background:linear-gradient(135deg,#c0392b,#e74c3c)">JP
+          <div class="avatar-status online"></div>
+        </div>
+        <div class="conv-body">
+          <div class="conv-top"><span class="conv-name">Jin Park</span><span class="conv-time">3h</span></div>
+          <div class="conv-company">Riot Games · Producer</div>
+          <div class="conv-preview">I'll share the co-dev proposal doc by EOD</div>
+        </div>
+      </div>
+
+      <div class="conv-item" id="conv-3" onclick="selectConv(3)">
+        <div class="avatar" style="background:linear-gradient(135deg,#0d9b72,#27ae60)">ET</div>
+        <div class="conv-body">
+          <div class="conv-top"><span class="conv-name">Emma Thompson</span><span class="conv-time">5h</span></div>
+          <div class="conv-company">Indie Fund · Investor</div>
+          <div class="conv-preview unread">Could you send over your pitch deck?</div>
+        </div>
+        <span class="badge">2</span>
+      </div>
+
+      <div class="conv-item" id="conv-4" onclick="selectConv(4)">
+        <div class="avatar" style="background:linear-gradient(135deg,#7b5ea7,#9b59b6)">YT</div>
+        <div class="conv-body">
+          <div class="conv-top"><span class="conv-name">Yuki Tanaka</span><span class="conv-time">7h</span></div>
+          <div class="conv-company">Square Enix · Licensing</div>
+          <div class="conv-preview">The licensing terms look reasonable</div>
+        </div>
+      </div>
+
+      <div class="section-label">This Week</div>
+
+      <div class="conv-item" id="conv-5" onclick="selectConv(5)">
+        <div class="avatar" style="background:linear-gradient(135deg,#e67e22,#f39c12)">AR</div>
+        <div class="conv-body">
+          <div class="conv-top"><span class="conv-name">Alex Rodriguez</span><span class="conv-time">Mon</span></div>
+          <div class="conv-company">Kongregate · Publishing</div>
+          <div class="conv-preview">Following up from our meeting last week</div>
+        </div>
+      </div>
+
+      <div class="conv-item" id="conv-6" onclick="selectConv(6)">
+        <div class="avatar" style="background:linear-gradient(135deg,#c0392b,#1a6b8a)">LW</div>
+        <div class="conv-body">
+          <div class="conv-top"><span class="conv-name">Li Wei</span><span class="conv-time">Mon</span></div>
+          <div class="conv-company">NetEase · BD Director</div>
+          <div class="conv-preview unread">中国市场机会不容错过，我们可以聊聊</div>
+        </div>
+        <span class="badge">1</span>
+      </div>
+
+      <div class="conv-item" id="conv-7" onclick="selectConv(7)">
+        <div class="avatar" style="background:linear-gradient(135deg,#8b1a1a,#c0392b)">AK</div>
+        <div class="conv-body">
+          <div class="conv-top"><span class="conv-name">Anna Kowalski</span><span class="conv-time">Sun</span></div>
+          <div class="conv-company">CD Projekt · Producer</div>
+          <div class="conv-preview">Joint dev agreement draft is ready</div>
+        </div>
+      </div>
+
+      <div class="section-label">Earlier</div>
+
+      <div class="conv-item" id="conv-8" onclick="selectConv(8)">
+        <div class="avatar" style="background:linear-gradient(135deg,#1a3a6b,#2e6bc4)">DK</div>
+        <div class="conv-body">
+          <div class="conv-top"><span class="conv-name">David Kim</span><span class="conv-time">Mar 15</span></div>
+          <div class="conv-company">Krafton · VP</div>
+          <div class="conv-preview">We'd like to schedule a formal discussion</div>
+        </div>
+      </div>
+
+      <div class="conv-item" id="conv-9" onclick="selectConv(9)">
+        <div class="avatar" style="background:linear-gradient(135deg,#2d6a4f,#52b788)">TR</div>
+        <div class="conv-body">
+          <div class="conv-top"><span class="conv-name">Tom Richards</span><span class="conv-time">Mar 12</span></div>
+          <div class="conv-company">Team17 · Publishing</div>
+          <div class="conv-preview">We love the concept — very on-brand</div>
+        </div>
+      </div>
+    </div>
+  </div><!-- /left-panel -->
+
+  <!-- RIGHT: CHAT AREA -->
+  <div class="chat-area" id="chatArea">
+
+    <!-- Chat topbar -->
+    <div class="chat-topbar" id="chatTopbar">
+      <div class="chat-peer-avatar" id="chatPeerAvatar"></div>
+      <div class="chat-peer-info">
+        <div class="chat-peer-name" id="chatPeerName"></div>
+        <div class="chat-peer-sub" id="chatPeerSub"></div>
+      </div>
+      <div class="chat-actions">
+        <button class="chat-action-btn" title="Video call">
+          <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2" ry="2"/></svg>
+        </button>
+        <button class="chat-action-btn" title="Phone call">
+          <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 12 19.79 19.79 0 0 1 1.61 3.5 2 2 0 0 1 3.6 1.32h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L7.91 9a16 16 0 0 0 6.06 6.06l1.91-1.91a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
+        </button>
+        <button class="chat-action-btn" title="Search in chat">
+          <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+        </button>
+        <button class="chat-action-btn" title="More options">
+          <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="5" r="1"/><circle cx="12" cy="12" r="1"/><circle cx="12" cy="19" r="1"/></svg>
+        </button>
+      </div>
+    </div>
+
+    <!-- Messages -->
+    <div class="chat-messages" id="chatMessages"></div>
+
+    <!-- Input -->
+    <div class="chat-input-area">
+      <div class="input-tools">
+        <button class="tool-btn" title="Attach file">
+          <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"/></svg>
+        </button>
+        <button class="tool-btn" title="Emoji">
+          <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M8 14s1.5 2 4 2 4-2 4-2"/><line x1="9" y1="9" x2="9.01" y2="9"/><line x1="15" y1="9" x2="15.01" y2="9"/></svg>
+        </button>
+      </div>
+      <div class="input-wrap">
+        <textarea placeholder="Type a message…" rows="1" id="msgInput" oninput="autoResize(this)" onkeydown="sendMsg(event)"></textarea>
+      </div>
+      <button class="send-btn" onclick="sendMsgBtn()" title="Send">
+        <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+      </button>
+    </div>
+  </div>
+
+</div>
+
+<script>
+const convData = [
+  {
+    name: 'Sarah Chen', company: 'Devolver Digital', role: 'Publisher', initials: 'SC',
+    color: 'linear-gradient(135deg,#2d2d2d,#d95f2b)', online: true,
+    messages: [
+      {me:false, text:"Hi! I came across your studio's profile on Game Connection — we've been searching for a standout narrative RPG to round out our 2025 publishing slate. 'Echoes of Yun' immediately caught my attention.", time:"10:14 AM", read:true},
+      {me:true, text:"Hi Sarah! That means a lot coming from Devolver — we're huge fans of your catalogue. We're in the final stretch of our demo build right now and would love to share it with you.", time:"10:32 AM", read:true},
+      {me:false, text:"The blend of Chinese mythology with roguelite progression is really fresh — it's exactly the kind of distinct voice we look for. Can you share a gameplay trailer or press kit?", time:"10:45 AM", read:true},
+      {me:true, text:"Of course! Here's the link to our full press kit: [presskit.echoesofyun.com]. The vertical slice demo trailer is in there too. We're targeting a Q3 2025 window.", time:"11:02 AM", read:true},
+      {me:false, text:"Just finished watching the trailer with our acquisitions team — the art direction is stunning and the combat loop looks really satisfying. We want to do a full internal review this week.", time:"2:18 PM", read:true},
+      {me:false, text:"Looking forward to reviewing your demo build! Are you attending GDC? We could do an in-person session there.", time:"2:20 PM", read:false}
+    ]
+  },
+  {
+    name: 'Marc Dubois', company: 'Ubisoft', role: 'Director', initials: 'MD',
+    color: 'linear-gradient(135deg,#2c3e7a,#4a6cf7)', online: false,
+    messages: [
+      {me:false, text:"Bonjour! I noticed you're attending GDC this year. Would you be open to grabbing a coffee? I have some thoughts on potential collaboration opportunities.", time:"9:00 AM", read:true},
+      {me:true, text:"Hi Marc, absolutely! GDC is always a fantastic chance to connect. What day works best for you?", time:"9:45 AM", read:true},
+      {me:false, text:"Wednesday afternoon — say 3pm at the Yerba Buena lounge? We're exploring partnerships through our new indie publishing label.", time:"10:15 AM", read:true},
+      {me:true, text:"Wednesday 3pm is perfect. I'll put it in the calendar now. Looking forward to it!", time:"10:30 AM", read:true},
+      {me:false, text:"See you at the GDC booth on Wednesday then! I'll bring the full deck on what we're looking for.", time:"11:00 AM", read:false}
+    ]
+  },
+  {
+    name: 'Jin Park', company: 'Riot Games', role: 'Producer', initials: 'JP',
+    color: 'linear-gradient(135deg,#c0392b,#e74c3c)', online: true,
+    messages: [
+      {me:false, text:"Hey! Riot's new experimental division is exploring co-development partnerships with indie studios. Your procedural generation system caught our attention.", time:"Yesterday 4:20 PM", read:true},
+      {me:true, text:"Wow, that's great to hear! We'd be very open to exploring that — what's the scope you have in mind?", time:"Yesterday 5:10 PM", read:true},
+      {me:false, text:"Thinking a 12-18 month co-dev for a competitive indie title. Solid budget, and we'd retain minimal creative control on your end.", time:"Yesterday 5:45 PM", read:true},
+      {me:true, text:"That sounds ideal. Could you send over an NDA first so we can get into specifics?", time:"Yesterday 6:00 PM", read:true},
+      {me:false, text:"I'll share the co-dev proposal doc by EOD today", time:"Today 9:30 AM", read:false}
+    ]
+  },
+  {
+    name: 'Emma Thompson', company: 'Indie Fund', role: 'Investor', initials: 'ET',
+    color: 'linear-gradient(135deg,#0d9b72,#27ae60)', online: false,
+    messages: [
+      {me:false, text:"Hi! Indie Fund focuses on backing extraordinary narrative games. We've been following your studio for a while — are you currently fundraising?", time:"Yesterday 2:00 PM", read:true},
+      {me:true, text:"Hi Emma! Yes, we're closing a seed round right now — raising $400K to complete development and build our launch marketing plan.", time:"Yesterday 3:30 PM", read:true},
+      {me:false, text:"Reasonable ask for the scope. What's your Steam wishlist count currently?", time:"Yesterday 4:00 PM", read:true},
+      {me:true, text:"We're at 12K wishlists and won Best Narrative at ChinaJoy 2023. Happy to share full financials under NDA.", time:"Yesterday 4:20 PM", read:true},
+      {me:false, text:"Could you send over your pitch deck?", time:"Today 11:00 AM", read:false}
+    ]
+  },
+  {
+    name: 'Yuki Tanaka', company: 'Square Enix', role: 'Licensing', initials: 'YT',
+    color: 'linear-gradient(135deg,#7b5ea7,#9b59b6)', online: false,
+    messages: [
+      {me:false, text:"Hello. Square Enix Licensing is exploring third-party collaborations for certain dormant IP. Your studio's aesthetic is a strong match for one title in particular.", time:"2 days ago", read:true},
+      {me:true, text:"This is fascinating! We'd be honored to discuss further — which IP, if you can share at this stage?", time:"2 days ago", read:true},
+      {me:false, text:"A beloved JRPG franchise from the late 90s. We need a team with strong narrative and pixel art capabilities.", time:"2 days ago", read:true},
+      {me:true, text:"That aligns perfectly with our core strengths. Let's proceed with an NDA and exploratory discussions.", time:"2 days ago", read:true},
+      {me:false, text:"The licensing terms look reasonable on our end — we'll loop in legal next week.", time:"Today 7:00 AM", read:true}
+    ]
+  },
+  {
+    name: 'Alex Rodriguez', company: 'Kongregate', role: 'Publishing', initials: 'AR',
+    color: 'linear-gradient(135deg,#e67e22,#f39c12)', online: false,
+    messages: [
+      {me:false, text:"Hey, just following up from last week's indie showcase. You mentioned evaluating publishing options — where are you at in that process?", time:"Mon 3:00 PM", read:true},
+      {me:true, text:"Hi Alex! Still evaluating — we're being careful about revenue share terms and marketing commitment.", time:"Mon 4:30 PM", read:true},
+      {me:false, text:"Our standard deal is 70/30 dev-friendly with full creative control retained by you, plus a $50K advance.", time:"Mon 5:00 PM", read:true},
+      {me:false, text:"Following up from our meeting last week — any movement on your end?", time:"Mon 5:35 PM", read:true}
+    ]
+  },
+  {
+    name: 'Li Wei', company: 'NetEase', role: 'BD Director', initials: 'LW',
+    color: 'linear-gradient(135deg,#c0392b,#1a6b8a)', online: true,
+    messages: [
+      {me:false, text:"你好！我是NetEase游戏发行BD总监李伟。你们的游戏在国内市场有很大的潜力，我们希望探讨合作可能性。", time:"Mon 9:00 AM", read:true},
+      {me:true, text:"你好李总！非常荣幸收到NetEase的关注。我们一直在考虑中国市场的发行策略，非常愿意进一步交流。", time:"Mon 10:30 AM", read:true},
+      {me:false, text:"太好了！NetEase在中国有3亿活跃用户，可以提供本地化、渠道分发和用户运营的全套服务。", time:"Mon 11:00 AM", read:true},
+      {me:false, text:"中国市场机会不容错过，我们可以聊聊，方便本周安排一个视频电话吗？", time:"Mon 11:05 AM", read:false}
+    ]
+  },
+  {
+    name: 'Anna Kowalski', company: 'CD Projekt', role: 'Producer', initials: 'AK',
+    color: 'linear-gradient(135deg,#8b1a1a,#c0392b)', online: false,
+    messages: [
+      {me:false, text:"Hi! CD Projekt RED is exploring joint development opportunities with smaller studios for a spinoff project. Your narrative design work is exactly what we need.", time:"Sun 11:00 AM", read:true},
+      {me:true, text:"Working alongside CD Projekt RED would be incredible. What's the general scope?", time:"Sun 12:30 PM", read:true},
+      {me:false, text:"It's a narrative-driven expansion to an existing franchise. We fund 80% of dev, you contribute creative direction. 18-month timeline.", time:"Sun 2:00 PM", read:true},
+      {me:true, text:"That's compelling. Let's set up a deeper call — I can bring our lead narrative designer too.", time:"Sun 3:00 PM", read:true},
+      {me:false, text:"Joint dev agreement draft is ready for review — I'll send it over tonight.", time:"Sun 4:00 PM", read:true}
+    ]
+  },
+  {
+    name: 'David Kim', company: 'Krafton', role: 'VP', initials: 'DK',
+    color: 'linear-gradient(135deg,#1a3a6b,#2e6bc4)', online: false,
+    messages: [
+      {me:false, text:"Hello. Krafton has been actively acquiring studios with strong creative IP. We believe there could be strategic alignment with your team.", time:"Mar 15 10:00 AM", read:true},
+      {me:true, text:"Thank you for reaching out, David. Could you tell me more about what kind of structure you're considering?", time:"Mar 15 11:30 AM", read:true},
+      {me:false, text:"We're exploring both full acquisition and strategic investment, depending on your goals. We'd like to understand your long-term vision first.", time:"Mar 15 12:00 PM", read:true},
+      {me:false, text:"We'd like to schedule a formal discussion — are you available for a call next week?", time:"Mar 15 12:05 PM", read:true}
+    ]
+  },
+  {
+    name: 'Tom Richards', company: 'Team17', role: 'Publishing', initials: 'TR',
+    color: 'linear-gradient(135deg,#2d6a4f,#52b788)', online: false,
+    messages: [
+      {me:false, text:"Hey! Team17 is always looking for original indie titles. Your concept reminds me of something that would sit perfectly alongside Overcooked and Worms.", time:"Mar 12 2:00 PM", read:true},
+      {me:true, text:"That's amazing to hear from Team17! We'd love to explore what a partnership could look like.", time:"Mar 12 3:30 PM", read:true},
+      {me:false, text:"We love the concept — very on-brand for us. Let's get on a call this week to discuss terms.", time:"Mar 12 4:00 PM", read:true}
+    ]
+  }
+];
+
+let currentConv = 0;
+
+function selectConv(idx) {
+  document.querySelectorAll('.conv-item').forEach((el,i) => {
+    el.classList.toggle('active', i === idx);
+  });
+  currentConv = idx;
+  renderChat(idx);
+}
+
+function renderChat(idx) {
+  const d = convData[idx];
+
+  // Topbar
+  const av = document.getElementById('chatPeerAvatar');
+  av.textContent = d.initials;
+  av.style.background = d.color;
+  document.getElementById('chatPeerName').textContent = d.name;
+  const statusDot = d.online ? `<span class="online-dot"></span> Online` : 'Offline';
+  document.getElementById('chatPeerSub').innerHTML = `${d.role} · ${d.company} &nbsp;${statusDot}`;
+
+  // Messages
+  const msgs = document.getElementById('chatMessages');
+  msgs.innerHTML = '<div class="date-sep">Today</div>';
+
+  d.messages.forEach(m => {
+    const div = document.createElement('div');
+    div.className = 'msg' + (m.me ? ' me' : '');
+
+    const readMark = m.me ? `<span class="msg-read">${m.read ? '✓✓ Read' : '✓ Sent'}</span>` : '';
+
+    if (!m.me) {
+      div.innerHTML = `
+        <div class="msg-avatar-sm" style="background:${d.color}">${d.initials}</div>
+        <div class="msg-content">
+          <div class="msg-bubble">${m.text}</div>
+          <div class="msg-meta"><span class="msg-time">${m.time}</span></div>
+        </div>`;
+    } else {
+      div.innerHTML = `
+        <div class="msg-content">
+          <div class="msg-bubble">${m.text}</div>
+          <div class="msg-meta"><span class="msg-time">${m.time}</span>${readMark}</div>
+        </div>`;
+    }
+    msgs.appendChild(div);
+  });
+  msgs.scrollTop = msgs.scrollHeight;
+}
+
+function sendMsg(e) {
+  if (e.key === 'Enter' && !e.shiftKey) {
+    e.preventDefault();
+    sendMsgBtn();
+  }
+}
+
+function sendMsgBtn() {
+  const ta = document.getElementById('msgInput');
+  const text = ta.value.trim();
+  if (!text) return;
+  const msgs = document.getElementById('chatMessages');
+  const div = document.createElement('div');
+  div.className = 'msg me';
+  const now = new Date();
+  const time = now.getHours().toString().padStart(2,'0') + ':' + now.getMinutes().toString().padStart(2,'0');
+  div.innerHTML = `
+    <div class="msg-content">
+      <div class="msg-bubble">${text}</div>
+      <div class="msg-meta"><span class="msg-time">${time}</span><span class="msg-read">✓ Sent</span></div>
+    </div>`;
+  msgs.appendChild(div);
+  msgs.scrollTop = msgs.scrollHeight;
+  ta.value = '';
+  ta.style.height = 'auto';
+}
+
+function autoResize(el) {
+  el.style.height = 'auto';
+  el.style.height = el.scrollHeight + 'px';
+}
+
+// Load first conversation on init
+selectConv(0);
+</script>
+</body>
+</html>

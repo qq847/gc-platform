@@ -1,0 +1,798 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Game Connection LIVE</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%;font-family:"DM Sans","PingFang SC",sans-serif;color:#1c1a17;overflow:hidden}
+body{background:#e8e4da}
+
+:root{
+  --orange:#d95f2b;--orange-dim:rgba(217,95,43,0.1);--orange-border:rgba(217,95,43,0.25);
+  --teal:#0a7fa8;--teal-dim:rgba(10,127,168,0.1);--teal-border:rgba(10,127,168,0.22);
+  --green:#0d9b72;--green-dim:rgba(13,155,114,0.1);--green-border:rgba(13,155,114,0.25);
+  --purple:#7c3aed;--purple-dim:rgba(124,58,237,0.1);--purple-border:rgba(124,58,237,0.25);
+  --card:#fff;--border:rgba(0,0,0,0.09);--border2:rgba(0,0,0,0.05);
+  --text1:#1c1a17;--text2:#6b6660;--text3:#a09890;
+  --nav-h:54px;--conf-h:88px;
+  --s1:0 1px 3px rgba(0,0,0,0.07);--s2:0 2px 8px rgba(0,0,0,0.1);
+}
+
+/* ── TOP NAV ── */
+.topnav{
+  position:fixed;top:0;left:0;right:0;z-index:300;
+  height:var(--nav-h);background:#e8e4da;
+  border-bottom:1px solid var(--border);
+  display:flex;align-items:center;padding:0 24px;gap:12px;
+}
+.nav-logo{font-size:15px;font-weight:900;color:var(--text1);letter-spacing:-.3px;flex-shrink:0}
+.nav-logo span{color:var(--orange)}
+.nav-live-badge{
+  display:flex;align-items:center;gap:5px;
+  background:rgba(217,95,43,0.1);border:1px solid rgba(217,95,43,0.25);
+  border-radius:6px;padding:3px 10px;flex-shrink:0;
+}
+.live-dot{
+  width:6px;height:6px;border-radius:50%;background:var(--orange);
+  animation:pulse 1.8s ease-in-out infinite;
+}
+@keyframes pulse{0%,100%{box-shadow:0 0 0 0 rgba(217,95,43,0.6)}60%{box-shadow:0 0 0 5px rgba(217,95,43,0)}}
+.nav-live-badge span{font-size:10px;font-weight:800;color:var(--orange);letter-spacing:.5px}
+.nav-search{
+  flex:1;max-width:340px;height:34px;
+  background:var(--card);border:1px solid var(--border);border-radius:7px;
+  display:flex;align-items:center;gap:8px;padding:0 12px;box-shadow:var(--s1);
+}
+.nav-search svg{opacity:.4;flex-shrink:0}
+.nav-search span{font-size:13px;color:var(--text3)}
+.nav-gap{flex:1}
+.nav-tabs{display:flex;align-items:stretch;height:var(--nav-h);gap:2px}
+.nav-tab{
+  display:flex;align-items:center;gap:5px;padding:0 13px;
+  cursor:pointer;font-size:12px;font-weight:600;color:var(--text3);
+  border-bottom:2px solid transparent;white-space:nowrap;transition:all .15s;
+}
+.nav-tab:hover{color:var(--text2);border-bottom-color:rgba(0,0,0,0.1)}
+.nav-tab.active{color:var(--orange);border-bottom-color:var(--orange)}
+.nav-tab-count{
+  font-size:10px;font-weight:800;background:rgba(217,95,43,0.1);
+  border:1px solid rgba(217,95,43,0.2);color:var(--orange);
+  padding:1px 7px;border-radius:20px;
+}
+.nav-tab-icon{
+  display:flex;align-items:center;gap:4px;padding:0 9px;cursor:pointer;
+  font-size:13px;color:var(--text3);transition:color .15s;
+}
+.nav-tab-icon:hover{color:var(--text2)}
+.nav-ai-btn{
+  display:flex;align-items:center;gap:5px;height:32px;padding:0 13px;
+  border-radius:7px;background:linear-gradient(135deg,rgba(217,95,43,0.18),rgba(217,95,43,0.08));
+  border:1px solid rgba(217,95,43,0.3);color:var(--orange);font-size:11px;font-weight:800;
+  cursor:pointer;font-family:inherit;letter-spacing:.3px;
+  animation:aipulse 2.5s ease-in-out infinite;
+}
+@keyframes aipulse{0%,100%{box-shadow:0 0 0 0 rgba(217,95,43,0.35)}60%{box-shadow:0 0 0 5px rgba(217,95,43,0)}}
+.nav-sep{width:1px;height:20px;background:var(--border);margin:0 4px}
+.nav-share{
+  height:32px;padding:0 12px;border-radius:7px;background:transparent;
+  border:1px solid var(--border);color:var(--text2);font-size:12px;font-weight:600;
+  cursor:pointer;font-family:inherit;white-space:nowrap;
+}
+.nav-share:hover{border-color:var(--text3);color:var(--text1)}
+
+/* ── CONFERENCE SELECTOR ── */
+.conf-bar{
+  position:fixed;top:var(--nav-h);left:0;right:0;z-index:200;
+  height:var(--conf-h);background:#e8e4da;
+  border-bottom:2px solid var(--border);
+  display:flex;align-items:center;gap:0;
+  padding:0 24px;overflow-x:auto;scrollbar-width:none;
+}
+.conf-bar::-webkit-scrollbar{display:none}
+
+.conf-label{
+  font-size:9px;font-weight:800;letter-spacing:1.5px;text-transform:uppercase;
+  color:var(--text3);white-space:nowrap;margin-right:16px;flex-shrink:0;
+}
+
+.conf-card{
+  flex-shrink:0;
+  display:flex;align-items:center;gap:10px;
+  padding:10px 16px;margin-right:8px;
+  border-radius:10px;border:1.5px solid var(--border);
+  background:var(--card);cursor:pointer;transition:all .2s;
+  min-width:200px;max-width:240px;
+  box-shadow:var(--s1);
+}
+.conf-card:hover{border-color:rgba(217,95,43,0.3);box-shadow:var(--s2);transform:translateY(-1px)}
+.conf-card.active{
+  border-color:var(--orange);
+  background:rgba(217,95,43,0.04);
+  box-shadow:0 2px 12px rgba(217,95,43,0.12);
+}
+.conf-icon{
+  width:36px;height:36px;border-radius:8px;flex-shrink:0;
+  display:flex;align-items:center;justify-content:center;
+  font-size:11px;font-weight:900;color:#fff;letter-spacing:-.3px;
+}
+.conf-info{flex:1;min-width:0}
+.conf-name{font-size:13px;font-weight:700;color:var(--text1);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.conf-meta{font-size:10px;color:var(--text3);margin-top:1px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.conf-status{
+  flex-shrink:0;display:flex;align-items:center;gap:3px;
+  font-size:8px;font-weight:800;letter-spacing:.5px;padding:2px 7px;
+  border-radius:20px;
+}
+.cs-live{background:rgba(217,95,43,0.12);border:1px solid rgba(217,95,43,0.25);color:var(--orange)}
+.cs-soon{background:rgba(10,127,168,0.1);border:1px solid rgba(10,127,168,0.22);color:var(--teal)}
+.cs-past{background:rgba(0,0,0,0.05);border:1px solid var(--border);color:var(--text3)}
+
+.conf-add{
+  flex-shrink:0;display:flex;flex-direction:column;align-items:center;justify-content:center;
+  width:60px;height:64px;border-radius:10px;border:1.5px dashed var(--border);
+  cursor:pointer;color:var(--text3);font-size:10px;font-weight:600;gap:4px;
+  transition:all .2s;margin-left:4px;
+}
+.conf-add:hover{border-color:var(--orange);color:var(--orange);background:var(--orange-dim)}
+
+/* ── LAYOUT (below nav+conf bar) ── */
+.layout{
+  position:fixed;
+  top:calc(var(--nav-h) + var(--conf-h));
+  left:0;right:0;bottom:0;
+  display:grid;
+  grid-template-columns:240px 1fr 420px;
+}
+
+/* ── LEFT SIDEBAR ── */
+.left{
+  border-right:1px solid var(--border);
+  background:#e8e4da;overflow-y:auto;
+  display:flex;flex-direction:column;
+  scrollbar-width:thin;scrollbar-color:rgba(0,0,0,0.08) transparent;
+}
+.left-section{padding:14px 16px 0}
+.left-title{
+  font-size:9px;font-weight:800;letter-spacing:1.5px;text-transform:uppercase;
+  color:var(--text3);margin-bottom:10px;
+}
+.date-list{display:flex;flex-direction:column;gap:2px;margin-bottom:14px}
+.date-btn{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:7px 10px;border-radius:8px;border:none;cursor:pointer;
+  background:transparent;font-family:inherit;font-size:13px;color:var(--text2);
+  font-weight:500;transition:all .15s;text-align:left;width:100%;
+}
+.date-btn:hover{background:rgba(0,0,0,0.04);color:var(--text1)}
+.date-btn.active{background:rgba(217,95,43,0.09);color:var(--orange);font-weight:700}
+.date-cnt{
+  font-size:10px;font-weight:700;padding:1px 7px;border-radius:10px;
+  background:rgba(0,0,0,0.06);color:var(--text3);
+}
+.date-btn.active .date-cnt{background:rgba(217,95,43,0.14);color:var(--orange)}
+
+.tag-grid{display:flex;flex-wrap:wrap;gap:5px;margin-bottom:14px}
+.tag{
+  padding:4px 10px;border-radius:20px;border:1px solid var(--border);
+  background:transparent;font-size:11px;font-weight:600;color:var(--text2);
+  cursor:pointer;transition:all .2s;font-family:inherit;
+}
+.tag:hover{border-color:var(--text3);color:var(--text1)}
+.tag.t-free{background:var(--green-dim);border-color:var(--green-border);color:var(--green)}
+.tag.t-net{background:var(--teal-dim);border-color:var(--teal-border);color:var(--teal)}
+.tag.t-show{background:rgba(236,72,153,0.08);border-color:rgba(236,72,153,0.25);color:#ec4899}
+
+.gps-row{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:10px 16px;border-top:1px solid var(--border2);font-size:10px;color:var(--text3);
+}
+.gps-btn{
+  padding:4px 11px;border-radius:20px;border:1px solid var(--border);
+  background:var(--card);font-size:10px;font-weight:600;color:var(--text2);
+  cursor:pointer;font-family:inherit;transition:all .2s;
+}
+.gps-btn:hover{border-color:var(--teal);color:var(--teal)}
+
+.stat-list{display:flex;flex-direction:column;gap:0;padding-bottom:16px}
+.stat-row{
+  display:flex;justify-content:space-between;align-items:center;
+  font-size:12px;padding:7px 0;border-bottom:1px solid var(--border2);
+}
+.stat-row:last-child{border-bottom:none}
+.stat-key{color:var(--text2)}
+.stat-val{font-weight:700;color:var(--text1)}
+
+/* ── CENTER ── */
+.center{overflow-y:auto;display:flex;flex-direction:column}
+.center-top{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:12px 20px 10px;border-bottom:1px solid var(--border2);
+  position:sticky;top:0;background:#e8e4da;z-index:10;
+}
+.center-label{font-size:10px;font-weight:800;letter-spacing:1px;text-transform:uppercase;color:var(--text3)}
+.center-cnt{
+  font-size:11px;color:var(--text2);font-weight:600;
+  background:var(--card);border:1px solid var(--border);
+  padding:2px 10px;border-radius:20px;box-shadow:var(--s1);
+}
+.csearch{
+  margin:8px 20px 8px;display:flex;align-items:center;gap:8px;
+  background:var(--card);border:1px solid var(--border);
+  border-radius:9px;padding:8px 12px;box-shadow:var(--s1);
+}
+.csearch svg{opacity:.4;flex-shrink:0}
+.csearch input{
+  flex:1;background:none;border:none;outline:none;
+  font-size:13px;font-family:inherit;color:var(--text1);
+}
+.csearch input::placeholder{color:var(--text3)}
+
+.elist{padding:4px 20px 24px;display:flex;flex-direction:column;gap:7px}
+
+/* Event card */
+.ec{
+  background:var(--card);border:1px solid var(--border);border-radius:12px;
+  overflow:hidden;cursor:pointer;transition:all .15s;box-shadow:var(--s1);
+}
+.ec:hover{border-color:rgba(217,95,43,0.28);box-shadow:var(--s2);transform:translateY(-1px)}
+.ec.open{border-color:rgba(217,95,43,0.32);background:#fefcfb}
+.ec-head{display:flex;align-items:flex-start;gap:11px;padding:12px 15px}
+.ec-date{
+  width:42px;flex-shrink:0;border-radius:8px;
+  background:var(--orange-dim);border:1px solid var(--orange-border);
+  display:flex;flex-direction:column;align-items:center;justify-content:center;padding:5px 3px;
+}
+.ec-day{font-size:15px;font-weight:800;color:var(--orange);line-height:1}
+.ec-mon{font-size:8px;font-weight:700;color:rgba(217,95,43,0.65);text-transform:uppercase;letter-spacing:.4px;margin-top:1px}
+.ec-main{flex:1;min-width:0}
+.ec-badges{display:flex;gap:4px;flex-wrap:wrap;margin-bottom:5px}
+.eb{font-size:8px;font-weight:800;padding:2px 6px;border-radius:20px;letter-spacing:.4px}
+.eb-f{background:var(--green-dim);border:1px solid var(--green-border);color:var(--green)}
+.eb-p{background:rgba(249,115,22,0.1);border:1px solid rgba(249,115,22,0.25);color:#f97316}
+.eb-n{background:var(--teal-dim);border:1px solid var(--teal-border);color:var(--teal)}
+.eb-s{background:rgba(236,72,153,0.08);border:1px solid rgba(236,72,153,0.22);color:#ec4899}
+.eb-np{background:rgba(6,182,212,0.08);border:1px solid rgba(6,182,212,0.22);color:#06b6d4}
+.eb-pt{background:var(--purple-dim);border:1px solid var(--purple-border);color:var(--purple)}
+.ec-name{font-size:14px;font-weight:700;color:var(--text1);line-height:1.35;margin-bottom:4px}
+.ec-meta{display:flex;gap:10px;font-size:11px;color:var(--text2);flex-wrap:wrap;align-items:center}
+.ec-dist{
+  font-size:10px;background:var(--orange-dim);color:var(--orange);
+  padding:2px 8px;border-radius:10px;font-weight:600;border:1px solid var(--orange-border);
+}
+.ec-acts{display:flex;align-items:center;gap:5px;flex-shrink:0}
+.ec-going{
+  width:30px;height:30px;border-radius:7px;border:1px solid var(--border);
+  background:transparent;display:flex;align-items:center;justify-content:center;
+  font-size:15px;cursor:pointer;color:var(--text3);transition:all .2s;
+}
+.ec-going:hover{border-color:var(--teal);color:var(--teal);background:var(--teal-dim)}
+.ec-going.on{background:var(--green-dim);border-color:var(--green-border);color:var(--green)}
+.ec-save{
+  width:30px;height:30px;border-radius:7px;border:1px solid var(--border);
+  background:transparent;display:flex;align-items:center;justify-content:center;
+  font-size:14px;cursor:pointer;color:var(--text3);transition:all .2s;
+}
+.ec-save:hover{border-color:#f59e0b;color:#f59e0b}
+.ec-save.on{background:rgba(245,158,11,0.1);border-color:rgba(245,158,11,0.3);color:#f59e0b}
+.ec-chev{font-size:11px;color:var(--text3);transition:transform .2s;line-height:1}
+.ec.open .ec-chev{transform:rotate(180deg)}
+
+/* Expanded */
+.ec-detail{
+  display:none;padding:0 15px 13px;border-top:1px solid var(--border2);
+  animation:ef .18s ease;
+}
+@keyframes ef{from{opacity:0;transform:translateY(-3px)}to{opacity:1;transform:translateY(0)}}
+.ec.open .ec-detail{display:block}
+.ec-addr{font-size:11px;color:var(--text2);margin:9px 0 5px;display:flex;align-items:center;gap:5px}
+.ec-spon{font-size:11px;color:var(--text3);margin-bottom:5px}
+.ec-desc{font-size:12px;color:var(--text2);line-height:1.7;margin-bottom:9px}
+.ec-note{
+  font-size:11px;color:#d97706;
+  background:rgba(245,158,11,0.06);border:1px solid rgba(245,158,11,0.18);
+  border-radius:8px;padding:5px 10px;margin-bottom:9px;
+}
+.ec-btns{display:flex;gap:6px;flex-wrap:wrap}
+.eb-reg{
+  display:inline-flex;align-items:center;gap:4px;background:var(--orange);color:#fff;
+  font-size:12px;font-weight:700;padding:7px 14px;border-radius:8px;
+  text-decoration:none;cursor:pointer;border:none;font-family:inherit;transition:all .15s;
+}
+.eb-reg:hover{opacity:.88}
+.eb-cal{
+  display:inline-flex;align-items:center;gap:4px;
+  background:rgba(99,102,241,0.08);border:1px solid rgba(99,102,241,0.22);
+  color:#818cf8;font-size:12px;font-weight:600;padding:7px 12px;border-radius:8px;
+  cursor:pointer;border:none;font-family:inherit;transition:all .15s;
+}
+.eb-cal:hover{background:rgba(99,102,241,0.15)}
+.eb-ics{
+  display:inline-flex;align-items:center;gap:4px;
+  background:var(--green-dim);border:1px solid var(--green-border);
+  color:var(--green);font-size:12px;font-weight:600;padding:7px 12px;border-radius:8px;
+  cursor:pointer;border:none;font-family:inherit;transition:all .15s;
+}
+.eb-sh{
+  display:inline-flex;align-items:center;gap:4px;
+  background:rgba(0,0,0,0.04);border:1px solid var(--border);
+  color:var(--text2);font-size:12px;font-weight:600;padding:7px 12px;border-radius:8px;
+  cursor:pointer;border:none;font-family:inherit;
+}
+
+/* ── RIGHT: MAP ── */
+.right{
+  border-left:1px solid var(--border);
+  display:flex;flex-direction:column;background:#e8e4da;overflow:hidden;
+}
+.map-hdr{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:10px 16px;border-bottom:1px solid var(--border);flex-shrink:0;
+}
+.map-ttl{font-size:10px;font-weight:800;letter-spacing:1px;text-transform:uppercase;color:var(--text3)}
+.map-btns{display:flex;gap:5px}
+.mbtn{
+  padding:4px 10px;border-radius:6px;border:1px solid var(--border);
+  background:var(--card);font-size:10px;font-weight:600;color:var(--text2);
+  cursor:pointer;font-family:inherit;transition:all .15s;
+}
+.mbtn:hover{border-color:var(--text3);color:var(--text1)}
+.map-wrap{flex:1;position:relative;overflow:hidden;background:#f0ece4}
+.map-leg{
+  display:flex;gap:14px;padding:8px 16px;border-top:1px solid var(--border);
+  flex-shrink:0;background:rgba(240,236,228,0.95);
+}
+.leg-i{display:flex;align-items:center;gap:5px;font-size:10px;color:var(--text2);font-weight:500}
+.leg-d{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+</style>
+</head>
+<body>
+
+<!-- TOP NAV -->
+<div class="topnav">
+  <div class="nav-logo">GAME<span>CONNECTION</span></div>
+  <div class="nav-live-badge"><div class="live-dot"></div><span>LIVE</span></div>
+  <div class="nav-search" style="margin-left:8px">
+    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#999" stroke-width="2.2"><circle cx="11" cy="11" r="7"/><line x1="16.5" y1="16.5" x2="22" y2="22"/></svg>
+    <span>Search events, venues, sponsors…</span>
+  </div>
+  <div class="nav-gap"></div>
+  <div class="nav-tabs">
+    <div class="nav-tab active">All Events <span class="nav-tab-count">225</span></div>
+    <div class="nav-tab">My Calendar <span style="font-size:10px;font-weight:800;background:rgba(0,0,0,0.05);border:1px solid var(--border);color:var(--text3);padding:1px 7px;border-radius:20px">0</span></div>
+    <div class="nav-tab-icon">👋 <span style="font-size:10px;font-weight:700">0</span></div>
+    <div class="nav-tab-icon">⭐ <span style="font-size:10px;font-weight:700">0</span></div>
+  </div>
+  <div class="nav-sep"></div>
+  <div class="nav-ai-btn">✦ AI Pick</div>
+  <div class="nav-sep"></div>
+  <button class="nav-share">+ Share an Event</button>
+</div>
+
+<!-- CONFERENCE SELECTOR BAR -->
+<div class="conf-bar">
+  <span class="conf-label">Select Conference</span>
+
+  <!-- Active: GDC 2026 -->
+  <div class="conf-card active" onclick="selectConf(this)">
+    <div class="conf-icon" style="background:linear-gradient(135deg,#d95f2b,#aa3a10)">GDC</div>
+    <div class="conf-info">
+      <div class="conf-name">GDC 2026</div>
+      <div class="conf-meta">🇺🇸 San Francisco · Mar 7–14</div>
+    </div>
+    <div class="conf-status cs-live"><div class="live-dot" style="width:5px;height:5px"></div>LIVE</div>
+  </div>
+
+  <!-- Game Connection America -->
+  <div class="conf-card" onclick="selectConf(this)">
+    <div class="conf-icon" style="background:linear-gradient(135deg,#0a7fa8,#055a7a)">GCA</div>
+    <div class="conf-info">
+      <div class="conf-name">Game Connection America</div>
+      <div class="conf-meta">🇺🇸 San Francisco · Mar 17–18</div>
+    </div>
+    <div class="conf-status cs-soon">SOON</div>
+  </div>
+
+  <!-- Nordic Game -->
+  <div class="conf-card" onclick="selectConf(this)">
+    <div class="conf-icon" style="background:linear-gradient(135deg,#0d9b72,#076644)">NG</div>
+    <div class="conf-info">
+      <div class="conf-name">Nordic Game 2026</div>
+      <div class="conf-meta">🇸🇪 Malmö · May 20–22</div>
+    </div>
+    <div class="conf-status cs-soon">SOON</div>
+  </div>
+
+  <!-- Gamescom Asia -->
+  <div class="conf-card" onclick="selectConf(this)">
+    <div class="conf-icon" style="background:linear-gradient(135deg,#7c3aed,#5b21b6)">GCA</div>
+    <div class="conf-info">
+      <div class="conf-name">Gamescom Asia 2026</div>
+      <div class="conf-meta">🇸🇬 Singapore · Oct 16–19</div>
+    </div>
+    <div class="conf-status cs-soon">SOON</div>
+  </div>
+
+  <!-- Game Connection Europe -->
+  <div class="conf-card" onclick="selectConf(this)">
+    <div class="conf-icon" style="background:linear-gradient(135deg,#1d4ed8,#1e40af)">GCE</div>
+    <div class="conf-info">
+      <div class="conf-name">Game Connection Europe</div>
+      <div class="conf-meta">🇫🇷 Paris · Dec 3–4</div>
+    </div>
+    <div class="conf-status cs-soon">SOON</div>
+  </div>
+
+  <!-- TGS -->
+  <div class="conf-card" onclick="selectConf(this)">
+    <div class="conf-icon" style="background:linear-gradient(135deg,#be123c,#9f1239)">TGS</div>
+    <div class="conf-info">
+      <div class="conf-name">Tokyo Game Show 2026</div>
+      <div class="conf-meta">🇯🇵 Chiba · Sep 24–27</div>
+    </div>
+    <div class="conf-status cs-soon">SOON</div>
+  </div>
+
+  <!-- Gamescom 2025 (past) -->
+  <div class="conf-card" onclick="selectConf(this)" style="opacity:.65">
+    <div class="conf-icon" style="background:linear-gradient(135deg,#6b7280,#4b5563)">GC</div>
+    <div class="conf-info">
+      <div class="conf-name">Gamescom 2025</div>
+      <div class="conf-meta">🇩🇪 Cologne · Aug 2025</div>
+    </div>
+    <div class="conf-status cs-past">ENDED</div>
+  </div>
+
+  <!-- Add more -->
+  <div class="conf-add" onclick="alert('B2B: Event organizers can add their conference here')">
+    <span style="font-size:18px">+</span>
+    <span>Add Event</span>
+  </div>
+</div>
+
+<!-- LAYOUT -->
+<div class="layout">
+
+  <!-- LEFT -->
+  <div class="left">
+    <div class="left-section" style="padding-top:14px">
+      <div class="left-title">Filter by Day</div>
+      <div class="date-list">
+        <div class="date-btn active" onclick="selDate(this)">
+          <span>All Days</span><span class="date-cnt">225</span>
+        </div>
+        <div class="date-btn" onclick="selDate(this)"><span>Sat Mar 7</span><span class="date-cnt">15</span></div>
+        <div class="date-btn" onclick="selDate(this)"><span>Sun Mar 8</span><span class="date-cnt">18</span></div>
+        <div class="date-btn" onclick="selDate(this)"><span>Mon Mar 9</span><span class="date-cnt">42</span></div>
+        <div class="date-btn" onclick="selDate(this)"><span>Tue Mar 10</span><span class="date-cnt">38</span></div>
+        <div class="date-btn" onclick="selDate(this)"><span>Wed Mar 11</span><span class="date-cnt">35</span></div>
+        <div class="date-btn" onclick="selDate(this)"><span>Thu Mar 12</span><span class="date-cnt">44</span></div>
+        <div class="date-btn" onclick="selDate(this)"><span>Fri Mar 13</span><span class="date-cnt">22</span></div>
+        <div class="date-btn" onclick="selDate(this)"><span>Sat Mar 14</span><span class="date-cnt">11</span></div>
+      </div>
+    </div>
+
+    <div class="left-section">
+      <div class="left-title">Event Type</div>
+      <div class="tag-grid">
+        <button class="tag t-free" onclick="togTag(this)">Free</button>
+        <button class="tag" onclick="togTag(this)">Paid</button>
+        <button class="tag t-net" onclick="togTag(this)">Networking</button>
+        <button class="tag" onclick="togTag(this)">Party</button>
+        <button class="tag t-show" onclick="togTag(this)">Showcase</button>
+        <button class="tag" onclick="togTag(this)">Panel / Talk</button>
+        <button class="tag" onclick="togTag(this)">No Pass Needed</button>
+        <button class="tag" onclick="togTag(this)">Sports</button>
+        <button class="tag" onclick="togTag(this)">Hackathon</button>
+        <button class="tag" onclick="togTag(this)">Indie</button>
+      </div>
+    </div>
+
+    <div class="gps-row">
+      <span>📍 From Moscone Center</span>
+      <button class="gps-btn">📌 My Location</button>
+    </div>
+
+    <div class="left-section">
+      <div class="left-title">Quick Stats</div>
+      <div class="stat-list">
+        <div class="stat-row"><span class="stat-key">Total events</span><span class="stat-val" style="color:var(--orange)">225</span></div>
+        <div class="stat-row"><span class="stat-key">Free events</span><span class="stat-val" style="color:var(--green)">142</span></div>
+        <div class="stat-row"><span class="stat-key">Days covered</span><span class="stat-val">8</span></div>
+        <div class="stat-row"><span class="stat-key">Showing</span><span class="stat-val">225</span></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- CENTER -->
+  <div class="center">
+    <div class="center-top">
+      <span class="center-label">GDC 2026 · Side Events</span>
+      <span class="center-cnt">225 results</span>
+    </div>
+    <div class="csearch" style="margin-top:8px">
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#a09890" stroke-width="2.2"><circle cx="11" cy="11" r="7"/><line x1="16.5" y1="16.5" x2="22" y2="22"/></svg>
+      <input type="text" placeholder="Search events, venues, sponsors…">
+    </div>
+
+    <div class="elist">
+
+      <!-- Card 1 open -->
+      <div class="ec open" onclick="togCard(this)">
+        <div class="ec-head">
+          <div class="ec-date"><div class="ec-day">9</div><div class="ec-mon">Mar</div></div>
+          <div class="ec-main">
+            <div class="ec-badges">
+              <span class="eb eb-f">FREE</span>
+              <span class="eb eb-n">NETWORKING</span>
+            </div>
+            <div class="ec-name">Indie Mixer @ GDC 2026</div>
+            <div class="ec-meta">
+              <span>🕖 7:00pm–10:00pm</span>
+              <span style="color:var(--text3)">📍 Monarch, 101 6th St</span>
+              <span class="ec-dist">0.6 mi · 13 min walk</span>
+            </div>
+          </div>
+          <div class="ec-acts">
+            <div class="ec-going on">✓</div>
+            <div class="ec-save on">★</div>
+            <span class="ec-chev">▼</span>
+          </div>
+        </div>
+        <div class="ec-detail">
+          <div class="ec-addr">📍 Monarch · 101 6th St, San Francisco, CA</div>
+          <div class="ec-spon">By: <strong>Game Connection × Devolver Digital</strong></div>
+          <div class="ec-desc">The biggest indie mixer of GDC week. 400+ developers, publishers, and investors in one venue. Free drinks for the first 100 guests. Doors open at 7pm sharp.</div>
+          <div class="ec-note">✦ No GDC pass required · Free entry · Inside venue</div>
+          <div class="ec-btns">
+            <a class="eb-reg" href="#" onclick="return false">🔗 Register</a>
+            <button class="eb-cal">📅 Google Cal</button>
+            <button class="eb-ics">📥 .ics</button>
+            <button class="eb-sh">↗ Share</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Cards 2-6 -->
+      <div class="ec" onclick="togCard(this)">
+        <div class="ec-head">
+          <div class="ec-date"><div class="ec-day">9</div><div class="ec-mon">Mar</div></div>
+          <div class="ec-main">
+            <div class="ec-badges"><span class="eb eb-p">$40</span><span class="eb eb-n">NETWORKING</span></div>
+            <div class="ec-name">PG Connects Summit San Francisco 2026</div>
+            <div class="ec-meta"><span>🕘 9:00am–5:30pm</span><span style="color:var(--text3)">📍 715 Harrison Event Space</span><span class="ec-dist">0.3 mi · 8 min walk</span></div>
+          </div>
+          <div class="ec-acts"><div class="ec-going">👋</div><div class="ec-save">☆</div><span class="ec-chev">▼</span></div>
+        </div>
+        <div class="ec-detail" style="display:none"></div>
+      </div>
+
+      <div class="ec" onclick="togCard(this)">
+        <div class="ec-head">
+          <div class="ec-date"><div class="ec-day">9</div><div class="ec-mon">Mar</div></div>
+          <div class="ec-main">
+            <div class="ec-badges"><span class="eb eb-f">FREE</span><span class="eb eb-np">NO PASS</span><span class="eb eb-s">SHOWCASE</span></div>
+            <div class="ec-name">Opening Night at the Ballpark</div>
+            <div class="ec-meta"><span>🕕 6:00pm–10:00pm</span><span style="color:var(--text3)">📍 Oracle Park</span><span class="ec-dist">0.8 mi · 18 min walk</span></div>
+          </div>
+          <div class="ec-acts"><div class="ec-going">👋</div><div class="ec-save">☆</div><span class="ec-chev">▼</span></div>
+        </div>
+        <div class="ec-detail" style="display:none"></div>
+      </div>
+
+      <div class="ec" onclick="togCard(this)">
+        <div class="ec-head">
+          <div class="ec-date"><div class="ec-day">10</div><div class="ec-mon">Mar</div></div>
+          <div class="ec-main">
+            <div class="ec-badges"><span class="eb eb-f">FREE</span><span class="eb eb-n">NETWORKING</span></div>
+            <div class="ec-name">Nordic Breakfast @ GDC 2026</div>
+            <div class="ec-meta"><span>🕗 8:00am–12:00pm</span><span style="color:var(--text3)">📍 Reed Smith LLP</span><span class="ec-dist">0.3 mi · 8 min walk</span></div>
+          </div>
+          <div class="ec-acts"><div class="ec-going">👋</div><div class="ec-save">☆</div><span class="ec-chev">▼</span></div>
+        </div>
+        <div class="ec-detail" style="display:none"></div>
+      </div>
+
+      <div class="ec" onclick="togCard(this)">
+        <div class="ec-head">
+          <div class="ec-date"><div class="ec-day">10</div><div class="ec-mon">Mar</div></div>
+          <div class="ec-main">
+            <div class="ec-badges"><span class="eb eb-f">FREE</span><span class="eb eb-pt">PARTY</span></div>
+            <div class="ec-name">VFX Mixer @ GDC</div>
+            <div class="ec-meta"><span>🕕 7:00pm–10:00pm</span><span style="color:var(--text3)">📍 Monarch, 101 6th St</span><span class="ec-dist">0.6 mi · 13 min walk</span></div>
+          </div>
+          <div class="ec-acts"><div class="ec-going">👋</div><div class="ec-save">☆</div><span class="ec-chev">▼</span></div>
+        </div>
+        <div class="ec-detail" style="display:none"></div>
+      </div>
+
+      <div class="ec" onclick="togCard(this)">
+        <div class="ec-head">
+          <div class="ec-date"><div class="ec-day">11</div><div class="ec-mon">Mar</div></div>
+          <div class="ec-main">
+            <div class="ec-badges"><span class="eb eb-f">FREE</span><span class="eb eb-n">NETWORKING</span></div>
+            <div class="ec-name">Developers in China & IGDA SZ Meet Up</div>
+            <div class="ec-meta"><span>🕒 3:10pm–4:10pm</span><span style="color:var(--text3)">📍 Moscone Center South</span><span class="ec-dist">0.0 mi · on-site</span></div>
+          </div>
+          <div class="ec-acts"><div class="ec-going">👋</div><div class="ec-save">☆</div><span class="ec-chev">▼</span></div>
+        </div>
+        <div class="ec-detail" style="display:none"></div>
+      </div>
+
+      <div style="text-align:center;padding:16px 0;font-size:12px;color:var(--text3)">
+        Showing 6 of 225 events
+      </div>
+    </div>
+  </div>
+
+  <!-- RIGHT: MAP (light theme) -->
+  <div class="right">
+    <div class="map-hdr">
+      <span class="map-ttl">📍 Map · San Francisco</span>
+      <div class="map-btns">
+        <button class="mbtn">🏠 Moscone</button>
+        <button class="mbtn">📌 My Location</button>
+      </div>
+    </div>
+
+    <div class="map-wrap">
+      <svg width="100%" height="100%" viewBox="0 0 420 520" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid slice">
+        <!-- Light base -->
+        <rect width="420" height="520" fill="#f0ece4"/>
+
+        <!-- Water areas -->
+        <path d="M0,0 L420,0 L420,55 Q360,72 280,65 Q200,58 120,75 Q60,85 0,78 Z" fill="#dde8f0" opacity=".9"/>
+        <path d="M380,520 L420,520 L420,340 Q408,355 390,345 Z" fill="#dde8f0" opacity=".9"/>
+
+        <!-- City blocks (warm beige) -->
+        <rect x="0" y="85" width="420" height="435" fill="#ede8df"/>
+
+        <!-- Major block groups -->
+        <rect x="10" y="90" width="55" height="45" rx="2" fill="#e5dfd5"/>
+        <rect x="75" y="90" width="55" height="45" rx="2" fill="#e5dfd5"/>
+        <rect x="140" y="90" width="55" height="45" rx="2" fill="#e5dfd5"/>
+        <rect x="205" y="90" width="55" height="45" rx="2" fill="#e5dfd5"/>
+        <rect x="270" y="90" width="55" height="45" rx="2" fill="#e5dfd5"/>
+        <rect x="335" y="90" width="75" height="45" rx="2" fill="#e5dfd5"/>
+
+        <rect x="10" y="145" width="55" height="40" rx="2" fill="#e5dfd5"/>
+        <rect x="75" y="145" width="55" height="40" rx="2" fill="#e5dfd5"/>
+        <rect x="270" y="145" width="55" height="40" rx="2" fill="#e5dfd5"/>
+        <rect x="335" y="145" width="75" height="40" rx="2" fill="#e5dfd5"/>
+
+        <rect x="10" y="215" width="55" height="50" rx="2" fill="#e5dfd5"/>
+        <rect x="270" y="215" width="55" height="50" rx="2" fill="#e5dfd5"/>
+        <rect x="335" y="215" width="75" height="50" rx="2" fill="#e5dfd5"/>
+
+        <rect x="10" y="285" width="55" height="50" rx="2" fill="#e5dfd5"/>
+        <rect x="75" y="285" width="55" height="50" rx="2" fill="#e5dfd5"/>
+        <rect x="270" y="285" width="55" height="50" rx="2" fill="#e5dfd5"/>
+        <rect x="335" y="285" width="75" height="50" rx="2" fill="#e5dfd5"/>
+
+        <rect x="10" y="355" width="55" height="50" rx="2" fill="#e5dfd5"/>
+        <rect x="75" y="355" width="55" height="50" rx="2" fill="#e5dfd5"/>
+        <rect x="140" y="355" width="55" height="50" rx="2" fill="#e5dfd5"/>
+        <rect x="270" y="355" width="55" height="50" rx="2" fill="#e5dfd5"/>
+        <rect x="335" y="355" width="75" height="50" rx="2" fill="#e5dfd5"/>
+
+        <!-- Streets (light warm gray) -->
+        <g stroke="#d8d0c4" stroke-width="1" fill="none">
+          <line x1="0" y1="135" x2="420" y2="135"/>
+          <line x1="0" y1="195" x2="420" y2="195"/>
+          <line x1="0" y1="275" x2="420" y2="275"/>
+          <line x1="0" y1="345" x2="420" y2="345"/>
+          <line x1="0" y1="415" x2="420" y2="415"/>
+          <line x1="0" y1="475" x2="420" y2="475"/>
+          <line x1="70" y1="80" x2="70" y2="520"/>
+          <line x1="135" y1="80" x2="135" y2="520"/>
+          <line x1="200" y1="80" x2="200" y2="520"/>
+          <line x1="265" y1="80" x2="265" y2="520"/>
+          <line x1="330" y1="80" x2="330" y2="520"/>
+        </g>
+
+        <!-- Major roads (slightly wider, slightly darker) -->
+        <g stroke="#c8bfb0" stroke-width="3" fill="none">
+          <line x1="0" y1="195" x2="420" y2="195"/> <!-- Market St -->
+          <line x1="135" y1="80" x2="135" y2="520"/> <!-- 4th St -->
+          <line x1="200" y1="80" x2="200" y2="520"/> <!-- 6th St -->
+        </g>
+
+        <!-- Park/Open space -->
+        <rect x="75" y="215" width="120" height="50" rx="4" fill="#d4e8d0" opacity=".8"/>
+        <rect x="140" y="285" width="55" height="50" rx="4" fill="#d4e8d0" opacity=".7"/>
+
+        <!-- Moscone Center (landmark) -->
+        <rect x="140" y="195" width="90" height="48" rx="5" fill="#fff" stroke="rgba(217,95,43,0.5)" stroke-width="1.5"/>
+        <text x="185" y="219" text-anchor="middle" font-size="8" fill="#d95f2b" font-family="DM Sans,sans-serif" font-weight="800">MOSCONE</text>
+        <text x="185" y="231" text-anchor="middle" font-size="7" fill="#a09890" font-family="DM Sans,sans-serif">Convention Center</text>
+
+        <!-- Street labels -->
+        <text x="185" y="190" text-anchor="middle" font-size="7.5" fill="#9a8f80" font-family="DM Sans,sans-serif" font-weight="600">Market St</text>
+        <text x="127" y="380" text-anchor="middle" font-size="7.5" fill="#9a8f80" font-family="DM Sans,sans-serif" font-weight="600" transform="rotate(-90 127 380)">4th St</text>
+        <text x="192" y="420" text-anchor="middle" font-size="7.5" fill="#9a8f80" font-family="DM Sans,sans-serif" font-weight="600" transform="rotate(-90 192 420)">6th St</text>
+
+        <!-- Event pins — green (free) -->
+        <circle cx="185" cy="193" r="10" fill="#0d9b72" opacity=".9"/>
+        <text x="185" y="197" text-anchor="middle" font-size="9" fill="white" font-weight="800">7</text>
+        <circle cx="215" cy="245" r="7" fill="#0d9b72" opacity=".85"/>
+        <circle cx="260" cy="210" r="7" fill="#0d9b72" opacity=".85"/>
+        <circle cx="155" cy="265" r="6" fill="#0d9b72" opacity=".8"/>
+        <circle cx="310" cy="228" r="6" fill="#0d9b72" opacity=".8"/>
+        <circle cx="100" cy="255" r="6" fill="#0d9b72" opacity=".8"/>
+        <circle cx="240" cy="295" r="5" fill="#0d9b72" opacity=".75"/>
+        <circle cx="170" cy="320" r="5" fill="#0d9b72" opacity=".75"/>
+        <circle cx="295" cy="278" r="5" fill="#0d9b72" opacity=".75"/>
+        <circle cx="130" cy="305" r="5" fill="#0d9b72" opacity=".7"/>
+        <circle cx="355" cy="245" r="5" fill="#0d9b72" opacity=".7"/>
+
+        <!-- Paid pins — orange -->
+        <circle cx="197" cy="232" r="7" fill="#d95f2b" opacity=".9"/>
+        <circle cx="268" cy="248" r="6" fill="#d95f2b" opacity=".85"/>
+        <circle cx="142" cy="222" r="6" fill="#d95f2b" opacity=".8"/>
+        <circle cx="340" cy="238" r="5" fill="#d95f2b" opacity=".75"/>
+
+        <!-- Invite only — amber -->
+        <circle cx="222" cy="205" r="6" fill="#f59e0b" opacity=".9"/>
+        <circle cx="178" cy="275" r="5" fill="#f59e0b" opacity=".8"/>
+
+        <!-- Pulse ring on selected pin -->
+        <circle cx="185" cy="193" r="14" fill="none" stroke="#d95f2b" stroke-width="2" opacity=".5">
+          <animate attributeName="r" values="12;18;12" dur="2s" repeatCount="indefinite"/>
+          <animate attributeName="opacity" values=".5;0;.5" dur="2s" repeatCount="indefinite"/>
+        </circle>
+
+        <!-- Popup (light theme) -->
+        <g transform="translate(95,108)">
+          <rect width="175" height="76" rx="10" fill="#fff" stroke="rgba(217,95,43,0.3)" stroke-width="1.2"
+            filter="url(#popup-shadow)"/>
+          <defs>
+            <filter id="popup-shadow" x="-10%" y="-10%" width="120%" height="140%">
+              <feDropShadow dx="0" dy="3" stdDeviation="6" flood-color="rgba(0,0,0,0.12)"/>
+            </filter>
+          </defs>
+          <polygon points="84,76 94,90 74,90" fill="#fff"/>
+          <text x="12" y="22" font-size="11" fill="#1c1a17" font-family="DM Sans,sans-serif" font-weight="700">Indie Mixer @ GDC</text>
+          <text x="12" y="36" font-size="9" fill="#6b6660" font-family="DM Sans,sans-serif">7:00pm – 10:00pm</text>
+          <text x="12" y="49" font-size="9" fill="#0d9b72" font-family="DM Sans,sans-serif" font-weight="800">FREE · No pass needed</text>
+          <rect x="10" y="56" width="80" height="16" rx="5" fill="rgba(13,155,114,0.1)" stroke="rgba(13,155,114,0.3)" stroke-width="1"/>
+          <text x="50" y="67" text-anchor="middle" font-size="9" fill="#0d9b72" font-family="DM Sans,sans-serif" font-weight="700">Navigate →</text>
+          <rect x="96" y="56" width="68" height="16" rx="5" fill="rgba(217,95,43,0.1)" stroke="rgba(217,95,43,0.3)" stroke-width="1"/>
+          <text x="130" y="67" text-anchor="middle" font-size="9" fill="#d95f2b" font-family="DM Sans,sans-serif" font-weight="700">Register →</text>
+        </g>
+      </svg>
+    </div>
+
+    <div class="map-leg">
+      <div class="leg-i"><div class="leg-d" style="background:#0d9b72"></div>Free</div>
+      <div class="leg-i"><div class="leg-d" style="background:#d95f2b"></div>Paid</div>
+      <div class="leg-i"><div class="leg-d" style="background:#f59e0b"></div>Invite Only</div>
+      <div style="margin-left:auto;font-size:10px;color:var(--text3)">34 on map</div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+function selectConf(el) {
+  document.querySelectorAll('.conf-card').forEach(function(c){ c.classList.remove('active'); });
+  el.classList.add('active');
+}
+function selDate(el) {
+  document.querySelectorAll('.date-btn').forEach(function(b){ b.classList.remove('active'); });
+  el.classList.add('active');
+}
+function togTag(el) {
+  var on = el.classList.contains('t-free')||el.classList.contains('t-net')||el.classList.contains('t-show');
+  ['t-free','t-net','t-show'].forEach(function(c){ el.classList.remove(c); });
+  if (!on) el.classList.add('t-net');
+}
+function togCard(el) {
+  var was = el.classList.contains('open');
+  document.querySelectorAll('.ec.open').forEach(function(c){ c.classList.remove('open'); });
+  if (!was) el.classList.add('open');
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,605 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Echoes of Jade Dynasty — Game Connection Market</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'DM Sans', sans-serif; background: #e8e4da; color: #1c1a17; min-height: 100vh; }
+
+  /* TOPNAV */
+  .topnav {
+    position: sticky; top: 0; z-index: 100;
+    background: #fff; border-bottom: 1px solid #e0dbd2;
+    height: 60px; display: flex; align-items: center;
+    padding: 0 24px; gap: 20px; box-shadow: 0 1px 4px rgba(0,0,0,.06);
+  }
+  .nav-logo { font-size: 16px; font-weight: 700; color: #1c1a17; white-space: nowrap; letter-spacing: .5px; }
+  .nav-logo span { color: #d95f2b; }
+  .nav-search { display: flex; align-items: center; gap: 8px; background: #f5f3ef; border: 1px solid #e0dbd2; border-radius: 8px; padding: 6px 12px; min-width: 220px; }
+  .nav-search input { border: none; background: transparent; outline: none; font-family: inherit; font-size: 14px; color: #1c1a17; width: 100%; }
+  .nav-search input::placeholder { color: #a09890; }
+  .nav-links { display: flex; align-items: center; gap: 4px; flex: 1; justify-content: center; }
+  .nav-links a { text-decoration: none; color: #6b6660; font-size: 14px; font-weight: 500; padding: 6px 14px; border-radius: 6px; cursor: pointer; transition: all .15s; }
+  .nav-links a:hover { color: #1c1a17; background: #f5f3ef; }
+  .nav-links a.active { color: #d95f2b; font-weight: 600; background: #fef0e9; }
+  .nav-right { display: flex; align-items: center; gap: 12px; }
+  .nav-bell { font-size: 18px; cursor: pointer; color: #6b6660; }
+  .nav-avatar { width: 34px; height: 34px; border-radius: 50%; background: linear-gradient(135deg, #d95f2b, #e8834f); display: flex; align-items: center; justify-content: center; color: #fff; font-size: 13px; font-weight: 700; cursor: pointer; }
+
+  /* BREADCRUMB */
+  .breadcrumb { padding: 14px 32px; font-size: 13px; color: #6b6660; display: flex; align-items: center; gap: 6px; }
+  .breadcrumb a { color: #0a7fa8; text-decoration: none; cursor: pointer; }
+  .breadcrumb a:hover { text-decoration: underline; }
+  .breadcrumb .sep { color: #a09890; }
+  .breadcrumb .current { color: #1c1a17; font-weight: 500; }
+
+  /* LAYOUT */
+  .page-wrap { display: flex; max-width: 1200px; margin: 0 auto; padding: 0 24px 40px; gap: 24px; align-items: flex-start; }
+  .main-content { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 20px; }
+  .sidebar-right { width: 340px; flex-shrink: 0; position: sticky; top: 84px; display: flex; flex-direction: column; gap: 16px; max-height: calc(100vh - 100px); overflow-y: auto; }
+  .sidebar-right::-webkit-scrollbar { width: 4px; }
+  .sidebar-right::-webkit-scrollbar-thumb { background: #d0ccc4; border-radius: 4px; }
+
+  /* HERO */
+  .hero-area { border-radius: 12px; overflow: hidden; position: relative; }
+  .hero-image { width: 100%; height: 200px; display: block; }
+  .hero-overlay { position: absolute; inset: 0; background: linear-gradient(to top, rgba(0,0,0,.7) 0%, transparent 50%); }
+  .hero-title { position: absolute; bottom: 50px; left: 24px; right: 24px; }
+  .hero-title h1 { font-size: 28px; font-weight: 700; color: #fff; text-shadow: 0 2px 8px rgba(0,0,0,.4); }
+  .hero-bottom-left { position: absolute; bottom: 16px; left: 24px; display: flex; align-items: center; gap: 8px; }
+  .hero-bottom-right { position: absolute; bottom: 16px; right: 24px; }
+  .hero-badge { background: #d95f2b; color: #fff; padding: 6px 14px; border-radius: 20px; font-size: 13px; font-weight: 700; }
+  .platform-chip { background: rgba(255,255,255,.2); color: #fff; padding: 4px 10px; border-radius: 12px; font-size: 12px; backdrop-filter: blur(4px); }
+  .genre-chip { background: rgba(255,255,255,.15); color: #fff; padding: 4px 10px; border-radius: 12px; font-size: 12px; backdrop-filter: blur(4px); }
+
+  /* CARDS */
+  .info-card { background: #fff; border-radius: 12px; padding: 22px; border: 1px solid #e0dbd2; }
+  .card-title { font-size: 16px; font-weight: 700; margin-bottom: 16px; padding-bottom: 10px; border-bottom: 1px solid #f0ede7; display: flex; align-items: center; gap: 8px; }
+  .info-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+  .info-row { display: flex; flex-direction: column; gap: 2px; }
+  .info-label { font-size: 11px; color: #a09890; text-transform: uppercase; letter-spacing: .5px; font-weight: 600; }
+  .info-val { font-size: 14px; color: #1c1a17; font-weight: 500; }
+  .stage-wrap { grid-column: 1 / -1; }
+  .progress-bar { height: 6px; background: #e8e4da; border-radius: 3px; margin-top: 8px; overflow: hidden; }
+  .progress-fill { height: 100%; width: 75%; background: linear-gradient(to right, #0a7fa8, #0d9b72); border-radius: 3px; }
+  .progress-label { font-size: 11px; color: #6b6660; margin-top: 4px; }
+  .description-text { font-size: 14px; color: #6b6660; line-height: 1.65; margin-top: 14px; grid-column: 1 / -1; }
+
+  /* DEAL TERMS */
+  .terms-grid { display: flex; flex-direction: column; gap: 12px; }
+  .term-row { display: flex; align-items: flex-start; gap: 12px; padding: 10px 0; border-bottom: 1px solid #f5f3ef; }
+  .term-row:last-child { border-bottom: none; }
+  .term-key { width: 180px; flex-shrink: 0; font-size: 13px; color: #6b6660; font-weight: 500; }
+  .term-val { font-size: 14px; color: #1c1a17; font-weight: 500; flex: 1; }
+  .term-val.highlight { color: #d95f2b; }
+
+  /* LOOKING FOR */
+  .req-list { display: flex; flex-direction: column; gap: 10px; }
+  .req-item { display: flex; align-items: flex-start; gap: 10px; font-size: 14px; color: #1c1a17; }
+  .req-check { width: 20px; height: 20px; background: #fef0e9; border-radius: 50%; display: flex; align-items: center; justify-content: center; flex-shrink: 0; font-size: 11px; color: #d95f2b; margin-top: 1px; }
+
+  /* HIGHLIGHTS */
+  .highlights-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-bottom: 20px; }
+  .highlight-card { background: #f9f8f5; border-radius: 10px; padding: 14px 12px; text-align: center; }
+  .highlight-val { font-size: 20px; font-weight: 700; color: #d95f2b; }
+  .highlight-key { font-size: 11px; color: #6b6660; margin-top: 4px; }
+  .screenshots { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
+  .screenshot { border-radius: 8px; overflow: hidden; height: 100px; }
+  .screenshot svg { width: 100%; height: 100%; }
+
+  /* TIMELINE */
+  .timeline { display: flex; flex-direction: column; gap: 0; }
+  .tl-item { display: flex; align-items: flex-start; gap: 14px; padding: 12px 0; position: relative; }
+  .tl-item:not(:last-child)::after { content: ''; position: absolute; left: 9px; top: 30px; bottom: -10px; width: 2px; background: #e0dbd2; }
+  .tl-icon { width: 20px; height: 20px; border-radius: 50%; flex-shrink: 0; display: flex; align-items: center; justify-content: center; font-size: 11px; z-index: 1; }
+  .tl-done { background: #e6f7f2; border: 2px solid #0d9b72; }
+  .tl-current { background: #e6f4fa; border: 2px solid #0a7fa8; animation: pulse 2s infinite; }
+  .tl-pending { background: #f5f3ef; border: 2px solid #d0ccc4; }
+  @keyframes pulse { 0%, 100% { box-shadow: 0 0 0 0 rgba(10,127,168,.3); } 50% { box-shadow: 0 0 0 5px rgba(10,127,168,.0); } }
+  .tl-body { flex: 1; padding-top: 1px; }
+  .tl-phase { font-size: 14px; font-weight: 600; }
+  .tl-phase.done { color: #0d9b72; }
+  .tl-phase.current { color: #0a7fa8; }
+  .tl-phase.pending { color: #a09890; }
+  .tl-date { font-size: 12px; color: #a09890; margin-top: 2px; }
+
+  /* ABOUT DEV */
+  .dev-row { display: flex; gap: 16px; align-items: flex-start; }
+  .dev-photo { width: 80px; height: 80px; border-radius: 8px; overflow: hidden; flex-shrink: 0; }
+  .dev-info h3 { font-size: 16px; font-weight: 700; margin-bottom: 4px; }
+  .dev-info p { font-size: 13.5px; color: #6b6660; line-height: 1.6; }
+  .shipped-list { margin-top: 14px; display: flex; flex-direction: column; gap: 8px; }
+  .shipped-item { display: flex; align-items: center; gap: 10px; background: #f9f8f5; border-radius: 8px; padding: 10px 12px; }
+  .shipped-icon { font-size: 20px; }
+  .shipped-name { font-size: 13.5px; font-weight: 600; }
+  .shipped-meta { font-size: 12px; color: #a09890; }
+
+  /* PROPOSALS RECEIVED */
+  .proposals-banner { background: #fef0e9; border: 1.5px solid #d95f2b; border-radius: 10px; padding: 14px 18px; display: flex; align-items: center; justify-content: space-between; }
+  .proposals-banner-text { font-size: 14px; color: #1c1a17; font-weight: 500; }
+  .proposals-banner-text span { color: #d95f2b; font-weight: 700; }
+  .btn-view-proposals { background: #d95f2b; color: #fff; border: none; border-radius: 8px; padding: 8px 16px; font-family: inherit; font-size: 13px; font-weight: 600; cursor: pointer; }
+
+  /* SIDEBAR CARD */
+  .sidebar-card { background: #fff; border-radius: 12px; padding: 18px; border: 1px solid #e0dbd2; }
+  .dev-mini { display: flex; align-items: center; gap: 12px; margin-bottom: 16px; padding-bottom: 14px; border-bottom: 1px solid #f0ede7; }
+  .dev-avatar { width: 44px; height: 44px; border-radius: 50%; background: linear-gradient(135deg, #1a3a6e, #7b2d8b); display: flex; align-items: center; justify-content: center; color: #fff; font-size: 15px; font-weight: 700; flex-shrink: 0; }
+  .dev-mini-info { flex: 1; }
+  .dev-mini-name { font-size: 14px; font-weight: 700; }
+  .dev-mini-co { font-size: 12px; color: #6b6660; }
+  .verified-badge { background: #e6f7f2; color: #0d9b72; font-size: 11px; font-weight: 600; padding: 2px 8px; border-radius: 20px; display: inline-flex; align-items: center; gap: 4px; margin-top: 3px; }
+  .cta-btns { display: flex; flex-direction: column; gap: 8px; margin-bottom: 16px; }
+  .btn-submit { background: #d95f2b; color: #fff; border: none; border-radius: 10px; padding: 13px; font-family: inherit; font-size: 15px; font-weight: 700; cursor: pointer; width: 100%; transition: background .15s; }
+  .btn-submit:hover { background: #c05426; }
+  .btn-watchlist { background: #fff; color: #1c1a17; border: 1.5px solid #e0dbd2; border-radius: 10px; padding: 11px; font-family: inherit; font-size: 14px; font-weight: 600; cursor: pointer; width: 100%; transition: all .15s; }
+  .btn-watchlist:hover { border-color: #d95f2b; color: #d95f2b; }
+  .btn-share { background: none; border: none; color: #0a7fa8; font-family: inherit; font-size: 13px; cursor: pointer; text-align: center; width: 100%; text-decoration: underline; }
+  .quick-info { display: flex; flex-direction: column; gap: 8px; margin-bottom: 16px; padding-bottom: 14px; border-bottom: 1px solid #f0ede7; }
+  .qi-row { display: flex; align-items: center; gap: 8px; font-size: 13px; color: #6b6660; }
+  .qi-icon { font-size: 14px; width: 20px; text-align: center; }
+  .similar-title { font-size: 13px; font-weight: 700; margin-bottom: 10px; }
+  .similar-item { display: flex; align-items: flex-start; gap: 10px; padding: 8px 0; border-bottom: 1px solid #f5f3ef; cursor: pointer; }
+  .similar-item:last-child { border-bottom: none; }
+  .similar-cover { width: 40px; height: 32px; border-radius: 5px; overflow: hidden; flex-shrink: 0; }
+  .similar-info { flex: 1; }
+  .similar-name { font-size: 13px; font-weight: 600; }
+  .similar-dev { font-size: 11.5px; color: #a09890; }
+  .disclaimer { font-size: 11px; color: #a09890; line-height: 1.5; margin-top: 12px; padding-top: 12px; border-top: 1px solid #f0ede7; }
+
+  /* MODAL */
+  .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,.45); z-index: 1000; display: flex; align-items: center; justify-content: center; opacity: 0; pointer-events: none; transition: opacity .2s; }
+  .modal-overlay.active { opacity: 1; pointer-events: all; }
+  .modal { background: #fff; border-radius: 14px; width: 540px; max-width: calc(100vw - 40px); max-height: 90vh; overflow-y: auto; padding: 28px; box-shadow: 0 20px 60px rgba(0,0,0,.2); transform: translateY(16px); transition: transform .2s; }
+  .modal-overlay.active .modal { transform: translateY(0); }
+  .modal-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 22px; }
+  .modal-header h2 { font-size: 20px; font-weight: 700; }
+  .modal-close { background: none; border: none; font-size: 20px; cursor: pointer; color: #a09890; line-height: 1; }
+  .modal-close:hover { color: #1c1a17; }
+  .form-group { margin-bottom: 18px; }
+  .form-label { display: block; font-size: 13px; font-weight: 600; color: #6b6660; margin-bottom: 6px; }
+  .form-control { width: 100%; padding: 10px 12px; border: 1.5px solid #e0dbd2; border-radius: 8px; font-family: inherit; font-size: 14px; color: #1c1a17; outline: none; transition: border-color .15s; }
+  .form-control:focus { border-color: #d95f2b; }
+  textarea.form-control { resize: vertical; min-height: 100px; }
+  .rev-split { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  .upload-btn { display: flex; align-items: center; gap: 8px; border: 1.5px dashed #d0ccc4; border-radius: 8px; padding: 12px 16px; cursor: pointer; color: #6b6660; font-size: 13.5px; transition: all .15s; }
+  .upload-btn:hover { border-color: #d95f2b; color: #d95f2b; background: #fef0e9; }
+  .modal-footer { display: flex; gap: 12px; margin-top: 24px; }
+  .btn-cancel { flex: 1; background: #fff; color: #1c1a17; border: 1.5px solid #e0dbd2; border-radius: 8px; padding: 11px; font-family: inherit; font-size: 14px; font-weight: 600; cursor: pointer; }
+  .btn-cancel:hover { border-color: #a09890; }
+  .btn-submit-modal { flex: 2; background: #d95f2b; color: #fff; border: none; border-radius: 8px; padding: 11px; font-family: inherit; font-size: 14px; font-weight: 700; cursor: pointer; transition: background .15s; }
+  .btn-submit-modal:hover { background: #c05426; }
+</style>
+</head>
+<body>
+
+<!-- TOPNAV -->
+<nav class="topnav">
+  <div class="nav-logo">GAME <span>CONNECTION</span></div>
+  <div class="nav-search">
+    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#a09890" stroke-width="2.5"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+    <input type="text" placeholder="Search games, studios, deals...">
+  </div>
+  <div class="nav-links">
+    <a href="#">Home</a>
+    <a href="#">People</a>
+    <a href="#">Projects</a>
+    <a href="#" class="active">Market</a>
+    <a href="#">Events</a>
+  </div>
+  <div class="nav-right">
+    <div class="nav-bell">🔔</div>
+    <div class="nav-avatar">QQ</div>
+  </div>
+</nav>
+
+<!-- BREADCRUMB -->
+<div class="breadcrumb">
+  <a href="#">Market</a>
+  <span class="sep">›</span>
+  <a href="#">Publishing Deals</a>
+  <span class="sep">›</span>
+  <span class="current">Echoes of Jade Dynasty</span>
+</div>
+
+<!-- PAGE WRAP -->
+<div class="page-wrap">
+
+  <!-- MAIN CONTENT -->
+  <div class="main-content">
+
+    <!-- HERO -->
+    <div class="hero-area">
+      <svg class="hero-image" viewBox="0 0 800 200" xmlns="http://www.w3.org/2000/svg">
+        <defs>
+          <linearGradient id="hero-g" x1="0" y1="0" x2="1" y2="1">
+            <stop offset="0%" stop-color="#0d1b3e"/>
+            <stop offset="40%" stop-color="#2a1450"/>
+            <stop offset="100%" stop-color="#4a0e6b"/>
+          </linearGradient>
+        </defs>
+        <rect width="800" height="200" fill="url(#hero-g)"/>
+        <!-- decorative circles -->
+        <circle cx="700" cy="40" r="80" fill="rgba(121,47,160,.2)"/>
+        <circle cx="100" cy="160" r="60" fill="rgba(10,127,168,.15)"/>
+        <circle cx="400" cy="-20" r="120" fill="rgba(217,95,43,.1)"/>
+      </svg>
+      <div class="hero-overlay"></div>
+      <div class="hero-title"><h1>Echoes of Jade Dynasty</h1></div>
+      <div class="hero-bottom-left">
+        <span class="platform-chip">🖥 PC</span>
+        <span class="platform-chip">🎮 Console</span>
+        <span class="genre-chip">Open World RPG</span>
+      </div>
+      <div class="hero-bottom-right">
+        <span class="hero-badge">Publishing Deal</span>
+      </div>
+    </div>
+
+    <!-- BASIC INFO CARD -->
+    <div class="info-card">
+      <div class="card-title">📋 Game Information</div>
+      <div class="info-grid">
+        <div class="info-row">
+          <span class="info-label">Game Title</span>
+          <span class="info-val">Echoes of Jade Dynasty</span>
+        </div>
+        <div class="info-row">
+          <span class="info-label">Developer</span>
+          <span class="info-val">CloudPeak Games · Shanghai, China 🇨🇳</span>
+        </div>
+        <div class="info-row">
+          <span class="info-label">Genre</span>
+          <span class="info-val">Open World RPG</span>
+        </div>
+        <div class="info-row">
+          <span class="info-label">Engine</span>
+          <span class="info-val">Unreal Engine 5</span>
+        </div>
+        <div class="info-row">
+          <span class="info-label">Team Size</span>
+          <span class="info-val">12 people</span>
+        </div>
+        <div class="info-row">
+          <span class="info-label">Development Duration</span>
+          <span class="info-val">3 years (ongoing)</span>
+        </div>
+        <div class="stage-wrap">
+          <div class="info-label">Current Stage — Beta</div>
+          <div class="progress-bar"><div class="progress-fill"></div></div>
+          <div class="progress-label">75% complete · Est. Gold Master Q3 2026</div>
+        </div>
+        <div class="description-text">
+          Echoes of Jade Dynasty is a breathtaking open-world action RPG drawing from the rich tapestry of Chinese mythology and ancient imperial history. Set across an 8km² seamless world, players unravel a conspiracy spanning three dynasties while mastering a fluid combat system inspired by classical martial arts. The game features 30+ fully voiced characters, branching narrative paths with meaningful consequences, and a proprietary weather-and-time system that dynamically reshapes enemy behavior and world events. With UE5-powered visuals and a fully orchestrated score, Echoes of Jade Dynasty sets a new benchmark for Eastern-inspired storytelling in the global RPG market.
+        </div>
+      </div>
+    </div>
+
+    <!-- DEAL TERMS -->
+    <div class="info-card">
+      <div class="card-title">🤝 Deal Terms</div>
+      <div class="terms-grid">
+        <div class="term-row">
+          <span class="term-key">Deal Type</span>
+          <span class="term-val">Publishing Deal</span>
+        </div>
+        <div class="term-row">
+          <span class="term-key">Rights Sought</span>
+          <span class="term-val">Global (excluding China mainland)</span>
+        </div>
+        <div class="term-row">
+          <span class="term-key">Revenue Share</span>
+          <span class="term-val highlight">Developer 70% / Publisher 30% <span style="color:#6b6660;font-weight:400;font-size:13px;">(negotiable)</span></span>
+        </div>
+        <div class="term-row">
+          <span class="term-key">Minimum Guarantee</span>
+          <span class="term-val highlight">$200,000 – $500,000</span>
+        </div>
+        <div class="term-row">
+          <span class="term-key">Contract Duration</span>
+          <span class="term-val">5 years</span>
+        </div>
+        <div class="term-row">
+          <span class="term-key">Marketing Budget</span>
+          <span class="term-val">Publisher-funded</span>
+        </div>
+        <div class="term-row">
+          <span class="term-key">Platform Targets</span>
+          <span class="term-val">PC (Steam), Console (PS5, Xbox Series X)</span>
+        </div>
+        <div class="term-row">
+          <span class="term-key">Release Window</span>
+          <span class="term-val">Q4 2026 – Q2 2027</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- WHAT WE'RE LOOKING FOR -->
+    <div class="info-card">
+      <div class="card-title">🎯 What We're Looking For</div>
+      <div class="req-list">
+        <div class="req-item"><div class="req-check">✓</div><span>Strong marketing capabilities in Western markets (US, EU, AU)</span></div>
+        <div class="req-item"><div class="req-check">✓</div><span>Proven experience publishing or co-publishing action/RPG titles</span></div>
+        <div class="req-item"><div class="req-check">✓</div><span>Minimum 3 shipped titles with verifiable commercial performance</span></div>
+        <div class="req-item"><div class="req-check">✓</div><span>Can provide or fund localization support: EN / FR / DE / JP</span></div>
+      </div>
+    </div>
+
+    <!-- GAME HIGHLIGHTS -->
+    <div class="info-card">
+      <div class="card-title">✨ Game Highlights</div>
+      <div class="highlights-grid">
+        <div class="highlight-card">
+          <div class="highlight-val">40+</div>
+          <div class="highlight-key">Hours of gameplay</div>
+        </div>
+        <div class="highlight-card">
+          <div class="highlight-val">30+</div>
+          <div class="highlight-key">Voiced characters</div>
+        </div>
+        <div class="highlight-card">
+          <div class="highlight-val">8km²</div>
+          <div class="highlight-key">Open world size</div>
+        </div>
+        <div class="highlight-card">
+          <div class="highlight-val">4K</div>
+          <div class="highlight-key">Ultra HD support</div>
+        </div>
+      </div>
+      <div class="screenshots">
+        <div class="screenshot">
+          <svg viewBox="0 0 200 100" xmlns="http://www.w3.org/2000/svg">
+            <defs><linearGradient id="sc1" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="#1a3060"/><stop offset="100%" stop-color="#4a1860"/></linearGradient></defs>
+            <rect width="200" height="100" fill="url(#sc1)"/>
+            <text x="100" y="54" text-anchor="middle" fill="rgba(255,255,255,.3)" font-size="11" font-family="sans-serif">Screenshot 1</text>
+          </svg>
+        </div>
+        <div class="screenshot">
+          <svg viewBox="0 0 200 100" xmlns="http://www.w3.org/2000/svg">
+            <defs><linearGradient id="sc2" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="#0a2a4a"/><stop offset="100%" stop-color="#1a5a3a"/></linearGradient></defs>
+            <rect width="200" height="100" fill="url(#sc2)"/>
+            <text x="100" y="54" text-anchor="middle" fill="rgba(255,255,255,.3)" font-size="11" font-family="sans-serif">Screenshot 2</text>
+          </svg>
+        </div>
+        <div class="screenshot">
+          <svg viewBox="0 0 200 100" xmlns="http://www.w3.org/2000/svg">
+            <defs><linearGradient id="sc3" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="#3a1a0a"/><stop offset="100%" stop-color="#7a3a1a"/></linearGradient></defs>
+            <rect width="200" height="100" fill="url(#sc3)"/>
+            <text x="100" y="54" text-anchor="middle" fill="rgba(255,255,255,.3)" font-size="11" font-family="sans-serif">Screenshot 3</text>
+          </svg>
+        </div>
+      </div>
+    </div>
+
+    <!-- DEVELOPMENT TIMELINE -->
+    <div class="info-card">
+      <div class="card-title">📅 Development Timeline</div>
+      <div class="timeline">
+        <div class="tl-item">
+          <div class="tl-icon tl-done">✓</div>
+          <div class="tl-body">
+            <div class="tl-phase done">Concept &amp; Pre-production</div>
+            <div class="tl-date">2023 Q1 — Completed</div>
+          </div>
+        </div>
+        <div class="tl-item">
+          <div class="tl-icon tl-done">✓</div>
+          <div class="tl-body">
+            <div class="tl-phase done">Prototype</div>
+            <div class="tl-date">2023 Q3 — Completed</div>
+          </div>
+        </div>
+        <div class="tl-item">
+          <div class="tl-icon tl-done">✓</div>
+          <div class="tl-body">
+            <div class="tl-phase done">Alpha</div>
+            <div class="tl-date">2024 Q2 — Completed</div>
+          </div>
+        </div>
+        <div class="tl-item">
+          <div class="tl-icon tl-current" style="font-size:8px;color:#0a7fa8;">●</div>
+          <div class="tl-body">
+            <div class="tl-phase current">Beta — Current</div>
+            <div class="tl-date">2025 Q1 – 2026 Q2 (in progress)</div>
+          </div>
+        </div>
+        <div class="tl-item">
+          <div class="tl-icon tl-pending"></div>
+          <div class="tl-body">
+            <div class="tl-phase pending">Gold Master</div>
+            <div class="tl-date">2026 Q3 — Planned</div>
+          </div>
+        </div>
+        <div class="tl-item">
+          <div class="tl-icon tl-pending"></div>
+          <div class="tl-body">
+            <div class="tl-phase pending">Release</div>
+            <div class="tl-date">2026 Q4 — Planned</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ABOUT DEVELOPER -->
+    <div class="info-card">
+      <div class="card-title">🏢 About the Developer</div>
+      <div class="dev-row">
+        <div class="dev-photo">
+          <svg viewBox="0 0 80 80" xmlns="http://www.w3.org/2000/svg">
+            <defs><linearGradient id="dev-g" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="#1a3a6e"/><stop offset="100%" stop-color="#7b2d8b"/></linearGradient></defs>
+            <rect width="80" height="80" fill="url(#dev-g)"/>
+            <text x="40" y="45" text-anchor="middle" fill="rgba(255,255,255,.5)" font-size="9" font-family="sans-serif">Team Photo</text>
+          </svg>
+        </div>
+        <div class="dev-info">
+          <h3>CloudPeak Games</h3>
+          <p>Founded in 2019 in Shanghai, CloudPeak Games is an independent studio of 12 passionate developers specializing in narrative-driven RPGs inspired by East Asian history and mythology. With a strong focus on artistic direction and player experience, the studio has shipped two critically acclaimed titles and built a loyal global fanbase. Echoes of Jade Dynasty is their most ambitious project to date, representing three years of dedicated development.</p>
+        </div>
+      </div>
+      <div class="shipped-list">
+        <div style="font-size:13px;font-weight:600;color:#6b6660;margin-bottom:4px;">Previously Shipped Titles</div>
+        <div class="shipped-item">
+          <div class="shipped-icon">🎮</div>
+          <div>
+            <div class="shipped-name">Lantern of the East</div>
+            <div class="shipped-meta">2021 · PC (Steam) · 4.2/5 on Steam · 120K copies sold</div>
+          </div>
+        </div>
+        <div class="shipped-item">
+          <div class="shipped-icon">🎮</div>
+          <div>
+            <div class="shipped-name">Warlords of Qin</div>
+            <div class="shipped-meta">2023 · PC + Mobile · 4.1/5 on Steam · 85K copies sold</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- PROPOSALS RECEIVED -->
+    <div class="proposals-banner">
+      <div class="proposals-banner-text">🔒 Developer View: You have received <span>3 proposals</span> for this listing.</div>
+      <button class="btn-view-proposals">View Proposals →</button>
+    </div>
+
+  </div>
+
+  <!-- RIGHT SIDEBAR -->
+  <aside class="sidebar-right">
+    <div class="sidebar-card">
+      <!-- DEV INFO -->
+      <div class="dev-mini">
+        <div class="dev-avatar">CG</div>
+        <div class="dev-mini-info">
+          <div class="dev-mini-name">Wei Zhang</div>
+          <div class="dev-mini-co">CloudPeak Games · CEO</div>
+          <div class="verified-badge">✓ Verified Developer</div>
+        </div>
+      </div>
+
+      <!-- CTA BUTTONS -->
+      <div class="cta-btns">
+        <button class="btn-submit" onclick="document.getElementById('proposalModal').classList.add('active')">Submit Proposal</button>
+        <button class="btn-watchlist">☆ Save to Watchlist</button>
+        <button class="btn-share">🔗 Share this listing</button>
+      </div>
+
+      <!-- QUICK INFO -->
+      <div class="quick-info">
+        <div class="qi-row"><span class="qi-icon">📅</span> Posted: March 15, 2026</div>
+        <div class="qi-row"><span class="qi-icon">👁</span> Views: 247</div>
+        <div class="qi-row"><span class="qi-icon">💬</span> Proposals: 3</div>
+        <div class="qi-row"><span class="qi-icon">⏰</span> Response Time: ~1–2 days</div>
+        <div class="qi-row"><span class="qi-icon">✅</span> Verified Developer</div>
+      </div>
+
+      <!-- SIMILAR LISTINGS -->
+      <div class="similar-title">Similar Listings</div>
+      <div class="similar-item">
+        <div class="similar-cover">
+          <svg viewBox="0 0 40 32" xmlns="http://www.w3.org/2000/svg"><defs><linearGradient id="sl1" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="#2d0a4e"/><stop offset="100%" stop-color="#0a3d6b"/></linearGradient></defs><rect width="40" height="32" fill="url(#sl1)"/></svg>
+        </div>
+        <div class="similar-info">
+          <div class="similar-name">Phantom Circuit</div>
+          <div class="similar-dev">Akihabara Studio · Publishing Deal</div>
+        </div>
+      </div>
+      <div class="similar-item">
+        <div class="similar-cover">
+          <svg viewBox="0 0 40 32" xmlns="http://www.w3.org/2000/svg"><defs><linearGradient id="sl2" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="#3a0a2a"/><stop offset="100%" stop-color="#c0206a"/></linearGradient></defs><rect width="40" height="32" fill="url(#sl2)"/></svg>
+        </div>
+        <div class="similar-info">
+          <div class="similar-name">Neon Requiem</div>
+          <div class="similar-dev">Lumière Studio · Publishing Deal</div>
+        </div>
+      </div>
+      <div class="similar-item">
+        <div class="similar-cover">
+          <svg viewBox="0 0 40 32" xmlns="http://www.w3.org/2000/svg"><defs><linearGradient id="sl3" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="#0a1a4a"/><stop offset="100%" stop-color="#3a5a9a"/></linearGradient></defs><rect width="40" height="32" fill="url(#sl3)"/></svg>
+        </div>
+        <div class="similar-info">
+          <div class="similar-name">Chronicle of Stars</div>
+          <div class="similar-dev">Northern Lights Dev · Publishing Deal</div>
+        </div>
+      </div>
+
+      <div class="disclaimer">Game Connection facilitates introductions between studios and publishers. All terms are negotiated directly between parties. Game Connection is not responsible for the outcome of any deal. Verify all claims independently before committing.</div>
+    </div>
+  </aside>
+
+</div>
+
+<!-- SUBMIT PROPOSAL MODAL -->
+<div class="modal-overlay" id="proposalModal">
+  <div class="modal">
+    <div class="modal-header">
+      <h2>Submit a Proposal</h2>
+      <button class="modal-close" onclick="document.getElementById('proposalModal').classList.remove('active')">✕</button>
+    </div>
+
+    <div class="form-group">
+      <label class="form-label">Your Organization</label>
+      <select class="form-control">
+        <option>Devolver Digital</option>
+        <option>Your Company...</option>
+        <option>Other Publisher</option>
+      </select>
+    </div>
+
+    <div class="form-group">
+      <label class="form-label">Deal Type Offered</label>
+      <select class="form-control">
+        <option>Publishing Deal</option>
+        <option>Distribution</option>
+        <option>Co-development</option>
+      </select>
+    </div>
+
+    <div class="form-group">
+      <label class="form-label">Proposed Revenue Share</label>
+      <div class="rev-split">
+        <div>
+          <label class="form-label" style="font-size:11px;margin-bottom:4px;">Developer %</label>
+          <input type="number" class="form-control" placeholder="e.g. 70" min="0" max="100" value="70">
+        </div>
+        <div>
+          <label class="form-label" style="font-size:11px;margin-bottom:4px;">Publisher %</label>
+          <input type="number" class="form-control" placeholder="e.g. 30" min="0" max="100" value="30">
+        </div>
+      </div>
+    </div>
+
+    <div class="form-group">
+      <label class="form-label">Minimum Guarantee Offered (USD)</label>
+      <input type="text" class="form-control" placeholder="e.g. $250,000">
+    </div>
+
+    <div class="form-group">
+      <label class="form-label">Cover Letter</label>
+      <textarea class="form-control" placeholder="Introduce your organization, describe your experience with similar titles, and explain why you'd be an ideal publishing partner for Echoes of Jade Dynasty..."></textarea>
+    </div>
+
+    <div class="form-group">
+      <label class="form-label">Attachments (optional)</label>
+      <div class="upload-btn">
+        <span>📎</span>
+        <span>Upload company deck, case studies, or references...</span>
+      </div>
+    </div>
+
+    <div class="modal-footer">
+      <button class="btn-cancel" onclick="document.getElementById('proposalModal').classList.remove('active')">Cancel</button>
+      <button class="btn-submit-modal">Submit Proposal</button>
+    </div>
+  </div>
+</div>
+
+<script>
+  // Close modal on overlay click
+  document.getElementById('proposalModal').addEventListener('click', function(e) {
+    if (e.target === this) this.classList.remove('active');
+  });
+</script>
+</body>
+</html>
