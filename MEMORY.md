@@ -32,7 +32,9 @@
 ## 重要项目 & 截止日期
 
 ### 🔴 紧急（本周）
-- **3/26**：Newsletter西安GC+Deep Rock公告（赵少东）
+- **3/25（今天）**：MacBook Pro取货 — Fnac Lyon Bellecour，营业到19:30，需企业发票（薛田田提供SIRET）
+- **3/25（今天）**：同舟共济 iOS CPU优化截止
+- **3/26（明天）**：Newsletter西安GC+Deep Rock公告（赵少东）
 - **3/27**：Ghostship第一笔款$30,000（薛田田）⚠️ Critical
 - **3/27**：新签合同境外汇款（薛田田）
 
@@ -44,9 +46,14 @@
 
 ### 项目状态
 - **百战天虫**：4/2首发，iOS版权授权问题未解决，Android内购80%，12家渠道对接中
-- **Deep Rock Galactic**：与Ghostship签约，代码交接需确认，版号资料准备中
-- **同舟共济**：版号申请中，iOS CPU优化截止3/25
+- **Deep Rock Galactic**：与Ghostship签约，代码交接 ⚠️超期未确认（3/24截止，张元琦），版号资料准备中
+- **同舟共济**：版号申请中，iOS CPU优化截止3/25（今天）
 - **财务**：Apple结汇$107,863.33、Ironhide付汇$172,663.85（Critical，薛田田）
+
+### ✅ 近期完成
+- Game Connection平台：94页面全部完成并推送 GitHub Pages
+- MEMORY.md精简（600行→90行），memory/子文件归档
+- Anthropic账单（6笔）已转发给tonbby
 
 ---
 
@@ -65,6 +72,7 @@
 - GitHub Pages: https://qq847.github.io/gc-platform/
 - 已完成94个页面，7个Phase，B2B/B2C对应
 - index.html：左右双栏+可编辑设计说明，localStorage存备注（note-id不能改！）
+- **🚀 Journey tab**（2026-03-29完成）：index.html第三个tab，iframe串联所有页面，3条流程：B2C参会者（16步）、B2B展商（14步）、主办方（10步），已push到GitHub Pages
 
 ---
 
@@ -87,4 +95,4 @@
 
 ---
 
-*最后更新：2026-03-24*
+*最后更新：2026-03-25*
