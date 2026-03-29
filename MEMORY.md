@@ -70,9 +70,33 @@
 → 详见 memory/gc-platform.md
 
 - GitHub Pages: https://qq847.github.io/gc-platform/
-- 已完成94个页面，7个Phase，B2B/B2C对应
-- index.html：左右双栏+可编辑设计说明，localStorage存备注（note-id不能改！）
-- **🚀 Journey tab**（2026-03-29完成）：index.html第三个tab，iframe串联所有页面，3条流程：B2C参会者（16步）、B2B展商（14步）、主办方（10步），已push到GitHub Pages
+- GitHub 仓库: https://github.com/qq847/gc-platform
+- 本地路径: /Users/qiang/.openclaw/workspace/gc-platform/
+- 102个HTML原型（PC+Mobile），4个Tab（Roadmap/Module/Journey/VI待建）
+- Drive根目录ID: 10000WlzNJtr1m4_3DTZ1wgEUIo1Rij88
+
+**设计系统：**
+- 背景 #e8e4da，橙色 #d95f2b，深字 #1c1a17，次字 #6b6660，边框 #e0dbd2，字体 DM Sans
+- Premium区（Buyer/Sponsor/DealRoom）：背景 #1c1a17 黑色系
+- 侧边栏4种：A.Dashboard白 B.Wizard白 C.Filter白 D.Premium黑
+- 顶导2种：标准白60px / Premium黑60px
+
+**平台架构12个Phase（飞机上重新梳理）：**
+Phase1:Discovery Phase2:Identity Phase3:Messaging Phase4:EventPublishing+Showcase
+Phase5:Conference Phase6:SponsorshipBasic Phase7:Ticketing Phase8:BuyerProgram
+Phase9:Exhibition Phase10:Meetings Phase11:Awards Phase12:SponsorshipAdvanced
+
+**9种用户角色：** Attendee/Developer/Buyer/ServiceProvider/Sponsor/Organizer/Speaker/Press/Jury
+
+**待做优先级（P1最高）：**
+- P1 🔴 Buyer Commerce 分叉（B3电商入口，ProjectBiz加按钮，进入Premium黑色UI）
+- P2 🟡 Organizer模块动态导航（选模块后侧边栏菜单动态变化）
+- P3 🟡 谈判Loop节点（条款未达成→返回循环）
+- P4 🟢 Speaker_v1_PC.html 真实内容（提案表单+审核状态）
+- P5 🟢 统一VI（7种侧边栏变体→4种标准，批量Agent处理）
+
+**🚀 Journey tab（已完成）：** 10条角色流程，侧边栏跳转，分叉标记
+**🎨 VI tab：** 待建
 
 ---
 
