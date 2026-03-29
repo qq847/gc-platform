@@ -281,6 +281,7 @@ details .pname { font-size: 11px; color: var(--text3); }
 <div class="view-tabs">
   <button class="view-tab active" onclick="switchView('roadmap')">📍 Roadmap View</button>
   <button class="view-tab" onclick="switchView('module')">🧩 Module View</button>
+  <button class="view-tab" onclick="switchView('journey')">🚀 Journey</button>
 </div>
 
 
@@ -914,6 +915,72 @@ details .pname { font-size: 11px; color: var(--text3); }
 <!-- END ROADMAP VIEW -->
 
 <!-- ===== MODULE VIEW ===== -->
+<div id="journey-view" style="display:none;">
+<style>
+.journey-ctrl {
+  background:#fff; border:1px solid var(--border); border-radius:12px;
+  padding:16px 20px; margin-bottom:16px;
+  display:flex; align-items:center; gap:16px; flex-wrap:wrap;
+}
+.journey-select {
+  font-family:'DM Sans',sans-serif; font-size:13px; font-weight:600;
+  padding:7px 12px; border:1px solid #ddd; border-radius:8px;
+  background:#fafaf8; cursor:pointer; color:var(--text1);
+}
+.journey-nav-btn {
+  font-family:'DM Sans',sans-serif; font-size:13px; font-weight:700;
+  padding:7px 16px; border-radius:8px; border:1px solid var(--border);
+  background:#fff; cursor:pointer; color:var(--text1);
+  transition:background .15s;
+}
+.journey-nav-btn:hover:not(:disabled) { background:var(--orange); color:#fff; border-color:var(--orange); }
+.journey-nav-btn:disabled { opacity:.4; cursor:not-allowed; }
+.journey-step-info { flex:1; min-width:180px; }
+.journey-step-name { font-size:14px; font-weight:700; color:var(--text1); }
+.journey-step-desc { font-size:11px; color:var(--text3); margin-top:2px; }
+.journey-progress-wrap { display:flex; align-items:center; gap:8px; min-width:160px; }
+.journey-progress-bar { flex:1; height:6px; background:#e8e4da; border-radius:3px; overflow:hidden; }
+.journey-progress-fill { height:100%; background:var(--orange); border-radius:3px; transition:width .3s; }
+.journey-progress-label { font-size:11px; color:var(--text3); font-weight:700; white-space:nowrap; }
+.journey-missing-overlay {
+  position:absolute; inset:0; background:rgba(28,26,23,0.75);
+  display:flex; flex-direction:column; align-items:center; justify-content:center;
+  border-radius:12px; z-index:10;
+}
+.journey-missing-text { color:#fff; font-size:18px; font-weight:800; margin-bottom:8px; }
+.journey-missing-sub { color:rgba(255,255,255,0.6); font-size:13px; }
+.journey-iframe-wrap { position:relative; background:#f0ede8; border-radius:12px; overflow:hidden; border:1px solid var(--border); }
+.journey-iframe { width:100%; height:calc(100vh - 220px); border:none; display:block; }
+</style>
+
+<div class="journey-ctrl">
+  <select class="journey-select" id="journey-flow-select" onchange="journeyLoadFlow(this.value)">
+    <option value="b2c">👤 B2C 参会者旅程（16步）</option>
+    <option value="b2b">🏢 B2B 展商旅程（14步）</option>
+    <option value="organizer">🎯 主办方旅程（10步）</option>
+  </select>
+  <button class="journey-nav-btn" id="journey-prev" onclick="journeyGo(-1)">← 上一步</button>
+  <div class="journey-step-info">
+    <div class="journey-step-name" id="journey-step-name">—</div>
+    <div class="journey-step-desc" id="journey-step-desc">选择流程开始</div>
+  </div>
+  <button class="journey-nav-btn" id="journey-next" onclick="journeyGo(1)">下一步 →</button>
+  <div class="journey-progress-wrap">
+    <div class="journey-progress-bar"><div class="journey-progress-fill" id="journey-prog-fill" style="width:0%"></div></div>
+    <span class="journey-progress-label" id="journey-prog-label">0/0</span>
+  </div>
+</div>
+
+<div class="journey-iframe-wrap" id="journey-frame-wrap">
+  <div class="journey-missing-overlay" id="journey-missing" style="display:none;">
+    <div class="journey-missing-text">🚧 页面尚未完成</div>
+    <div class="journey-missing-sub" id="journey-missing-name">—</div>
+  </div>
+  <iframe class="journey-iframe" id="journey-iframe" src="about:blank"></iframe>
+</div>
+
+</div>
+
 <div id="module-view" style="display:none;">
 
 <!-- 01 Auth -->
@@ -1489,7 +1556,11 @@ details .pname { font-size: 11px; color: var(--text3); }
 function switchView(view) {
   document.getElementById('roadmap-view').style.display = view === 'roadmap' ? 'block' : 'none';
   document.getElementById('module-view').style.display = view === 'module' ? 'block' : 'none';
-  document.querySelectorAll('.view-tab').forEach((t,i) => t.classList.toggle('active', (i===0)===(view==='roadmap')));
+  document.getElementById('journey-view').style.display = view === 'journey' ? 'block' : 'none';
+  const tabs = document.querySelectorAll('.view-tab');
+  tabs[0].classList.toggle('active', view === 'roadmap');
+  tabs[1].classList.toggle('active', view === 'module');
+  tabs[2].classList.toggle('active', view === 'journey');
 }
 
 function exportNotes() {
@@ -1525,6 +1596,109 @@ const observer = new IntersectionObserver(entries => {
   });
 }, { rootMargin: '-10% 0px -80% 0px', threshold: 0 });
 phaseBlocks.forEach(b => observer.observe(b));
+
+// ===== JOURNEY MODE =====
+const JOURNEY_FLOWS = {
+  b2c: {
+    name: 'B2C 参会者',
+    steps: [
+      { name: '首页浏览', desc: 'Phase 1 — Discovery', file: 'Homepage_Feed_v1_PC.html' },
+      { name: '发现展会', desc: 'Phase 1 — 展会日历', file: 'ConferenceCalendar_v2_PC.html' },
+      { name: '展会详情页', desc: 'Phase 1 — 公开页', file: 'EventPublicPage_v2_PC.html' },
+      { name: 'Live 现场', desc: 'Phase 1 — 到场体验', file: 'Live_v43_PC.html' },
+      { name: '登录', desc: 'Phase 2 — Identity', file: 'Login_v1.html' },
+      { name: 'Onboarding', desc: 'Phase 2 — 新用户引导', file: 'Onboarding_v1.html' },
+      { name: '免费注册', desc: 'Phase 3 — 注册流程', file: 'FreeRegistration_v1_PC.html' },
+      { name: '付费票务', desc: 'Phase 3 — 买票', file: 'PaidTicketing_v1_PC.html' },
+      { name: '购票结算', desc: 'Phase 3 — 结账', file: 'TicketPurchase_v1_PC.html' },
+      { name: '订单确认', desc: 'Phase 3 — 确认页', file: 'OrderConfirm_v1_PC.html' },
+      { name: '我的日程', desc: 'Phase 4 — 活动中', file: 'MySchedule_v1_PC.html' },
+      { name: '场地地图', desc: 'Phase 4 — 现场导航', file: 'VenueMap_v1_PC.html' },
+      { name: '个人主页', desc: 'Phase 5 — Profile', file: 'Profile_v2_PC.html' },
+      { name: '消息', desc: 'Phase 5 — 私信', file: 'Messages_v1_PC.html' },
+      { name: '约见浏览', desc: 'Phase 6 — Let\'s Meet', file: 'LetsMeet_Browse_v1_PC.html' },
+      { name: '约见排期', desc: 'Phase 6 — 确认时间', file: 'LetsMeet_Schedule_v1_PC.html' },
+    ]
+  },
+  b2b: {
+    name: 'B2B 展商',
+    steps: [
+      { name: '首页浏览', desc: 'Phase 1 — Discovery', file: 'Homepage_Feed_v1_PC.html' },
+      { name: '登录', desc: 'Phase 2 — Identity', file: 'Login_v1.html' },
+      { name: 'Onboarding', desc: 'Phase 2 — 新用户引导', file: 'Onboarding_v1.html' },
+      { name: '个人主页', desc: 'Phase 2 — Profile', file: 'Profile_v2_PC.html' },
+      { name: '组织管理', desc: 'Phase 2 — 公司信息', file: 'Organizations_v1_PC.html' },
+      { name: '项目管理', desc: 'Phase 2 — 游戏项目', file: 'Projects_v1_PC.html' },
+      { name: '游戏展示', desc: 'Phase 3 — 展台内容', file: 'GameShowcase_v1_PC.html' },
+      { name: '展商浏览', desc: 'Phase 3 — 找合作', file: 'ExhibitorBrowse_v1_PC.html' },
+      { name: '展位管理', desc: 'Phase 4 — 展台', file: 'BoothManagement_v1_PC.html' },
+      { name: '商务谈判', desc: 'Phase 5 — 谈合作', file: 'DealNegotiation_v1_PC.html' },
+      { name: 'Deal Room', desc: 'Phase 5 — 项目详情', file: 'DealRoom_v1_PC.html' },
+      { name: '合同签署', desc: 'Phase 5 — 签约', file: 'ContractSign_v1_PC.html' },
+      { name: '项目商务', desc: 'Phase 5 — ProjectBiz', file: 'ProjectBiz_v1_PC.html' },
+      { name: '消息', desc: 'Phase 5 — 沟通', file: 'Messages_v1_PC.html' },
+    ]
+  },
+  organizer: {
+    name: '主办方',
+    steps: [
+      { name: '登录', desc: 'Phase 2 — Identity', file: 'Login_v1.html' },
+      { name: '活动创建向导', desc: 'Phase 7 — 建活动', file: 'EventSetupWizard_v3_PC.html' },
+      { name: '模块配置', desc: 'Phase 7 — 功能开关', file: 'EventModuleSetup_v4_PC.html' },
+      { name: '赞助方案', desc: 'Phase 7 — 招商', file: 'SponsorBuilder_v1_PC.html' },
+      { name: '日程搭建', desc: 'Phase 7 — 内容编排', file: 'ConferenceScheduleBuilder_v2_PC.html' },
+      { name: '活动发布', desc: 'Phase 7 — 上线', file: 'EventPublishing_v1_PC.html' },
+      { name: 'EventHQ 后台', desc: 'Phase 7 — 管理仪表盘', file: 'EventHQ_Dashboard_v1_PC.html' },
+      { name: 'Session 管理', desc: 'Phase 7 — 演讲管理', file: 'SessionManagement_v1_PC.html' },
+      { name: '入场管理', desc: 'Phase 7 — Buyer邀请', file: 'BuyerInvitation_v1_PC.html' },
+      { name: 'Buyer 仪表盘', desc: 'Phase 7 — 买家数据', file: 'BuyerDashboard_v1_PC.html' },
+    ]
+  }
+};
+
+let journeyCurrentFlow = 'b2c';
+let journeyCurrentStep = 0;
+
+function journeyLoadFlow(flowKey) {
+  journeyCurrentFlow = flowKey;
+  journeyCurrentStep = 0;
+  journeyRender();
+}
+
+function journeyGo(delta) {
+  const flow = JOURNEY_FLOWS[journeyCurrentFlow];
+  journeyCurrentStep = Math.max(0, Math.min(flow.steps.length - 1, journeyCurrentStep + delta));
+  journeyRender();
+}
+
+function journeyRender() {
+  const flow = JOURNEY_FLOWS[journeyCurrentFlow];
+  const step = flow.steps[journeyCurrentStep];
+  const total = flow.steps.length;
+  const idx = journeyCurrentStep;
+  document.getElementById('journey-step-name').textContent = (idx + 1) + '. ' + step.name;
+  document.getElementById('journey-step-desc').textContent = step.desc;
+  document.getElementById('journey-prog-fill').style.width = ((idx + 1) / total * 100) + '%';
+  document.getElementById('journey-prog-label').textContent = (idx + 1) + '/' + total;
+  document.getElementById('journey-prev').disabled = idx === 0;
+  document.getElementById('journey-next').disabled = idx === total - 1;
+  const iframe = document.getElementById('journey-iframe');
+  const missing = document.getElementById('journey-missing');
+  if (step.file) {
+    iframe.src = step.file;
+    missing.style.display = 'none';
+  } else {
+    iframe.src = 'about:blank';
+    missing.style.display = 'flex';
+    document.getElementById('journey-missing-name').textContent = step.name + ' — 页面未创建';
+  }
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+  if (document.getElementById('journey-flow-select')) {
+    journeyLoadFlow('b2c');
+  }
+});
 </script>
 
 </body>
