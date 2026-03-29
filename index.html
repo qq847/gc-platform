@@ -949,8 +949,51 @@ details .pname { font-size: 11px; color: var(--text3); }
 }
 .journey-missing-text { color:#fff; font-size:18px; font-weight:800; margin-bottom:8px; }
 .journey-missing-sub { color:rgba(255,255,255,0.6); font-size:13px; }
-.journey-iframe-wrap { position:relative; background:#f0ede8; border-radius:12px; overflow:hidden; border:1px solid var(--border); }
-.journey-iframe { width:100%; height:calc(100vh - 260px); border:none; display:block; }
+.journey-body { display:flex; gap:0; height:calc(100vh - 200px); }
+/* Sidebar */
+.journey-sidebar {
+  width:240px; flex-shrink:0; background:#fff; border:1px solid var(--border);
+  border-radius:12px; overflow:hidden; display:flex; flex-direction:column;
+  transition:width .2s ease; margin-right:12px;
+}
+.journey-sidebar.collapsed { width:40px; }
+.journey-sidebar-header {
+  display:flex; align-items:center; justify-content:space-between;
+  padding:12px 14px; border-bottom:1px solid #f0ede8; flex-shrink:0;
+}
+.journey-sidebar.collapsed .journey-sidebar-header { padding:12px 10px; justify-content:center; }
+.journey-sidebar-title { font-size:11px; font-weight:800; color:var(--text2); text-transform:uppercase; letter-spacing:.5px; }
+.journey-sidebar.collapsed .journey-sidebar-title { display:none; }
+.journey-collapse-btn {
+  width:22px; height:22px; border-radius:6px; border:1px solid var(--border);
+  background:#fafaf8; cursor:pointer; display:flex; align-items:center; justify-content:center;
+  font-size:11px; color:var(--text2); flex-shrink:0; transition:background .15s;
+}
+.journey-collapse-btn:hover { background:var(--orange); color:#fff; border-color:var(--orange); }
+.journey-sidebar-list { overflow-y:auto; flex:1; padding:8px 0; }
+.journey-sidebar.collapsed .journey-sidebar-list { display:none; }
+.journey-sidebar-item {
+  display:flex; align-items:flex-start; gap:10px; padding:8px 14px;
+  cursor:pointer; border-left:3px solid transparent; transition:all .15s;
+}
+.journey-sidebar-item:hover { background:#fdf9f7; border-left-color:#e8c8b8; }
+.journey-sidebar-item.active { background:#fdf5f1; border-left-color:var(--orange); }
+.journey-sidebar-num {
+  width:20px; height:20px; border-radius:5px; background:#f0ede8;
+  font-size:10px; font-weight:800; display:flex; align-items:center; justify-content:center;
+  flex-shrink:0; color:var(--text2); margin-top:1px;
+}
+.journey-sidebar-item.active .journey-sidebar-num { background:var(--orange); color:#fff; }
+.journey-sidebar-item.has-fork .journey-sidebar-num { background:#f5c842; color:#5a3e00; }
+.journey-sidebar-item.active.has-fork .journey-sidebar-num { background:var(--orange); color:#fff; }
+.journey-sidebar-text { flex:1; min-width:0; }
+.journey-sidebar-name { font-size:12px; font-weight:600; color:var(--text1); line-height:1.3; }
+.journey-sidebar-item.active .journey-sidebar-name { color:var(--orange); font-weight:800; }
+.journey-sidebar-phase { font-size:10px; color:var(--text3); margin-top:1px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+/* Main area */
+.journey-main { flex:1; min-width:0; display:flex; flex-direction:column; gap:12px; }
+.journey-iframe-wrap { position:relative; background:#f0ede8; border-radius:12px; overflow:hidden; border:1px solid var(--border); flex:1; }
+.journey-iframe { width:100%; height:100%; border:none; display:block; }
 .journey-fork-bar {
   display:none; background:#fff8e1; border:2px solid #f5c842; border-radius:12px;
   padding:14px 18px; margin-bottom:14px; font-size:12px; color:#7a5c00;
@@ -997,20 +1040,34 @@ details .pname { font-size: 11px; color: var(--text3); }
   </div>
 </div>
 
-<div class="journey-fork-bar" id="journey-fork-bar">
-  <div class="journey-fork-icon">⚠️</div>
-  <div class="journey-fork-content">
-    <div class="journey-fork-title" id="journey-fork-title">分叉点 — 根据角色选择，后续流程不同</div>
-    <div id="journey-fork-desc" style="font-size:11px;margin-bottom:4px;"></div>
-    <div class="journey-fork-roles" id="journey-fork-roles"></div>
+<div class="journey-body">
+  <!-- 左侧边栏 -->
+  <div class="journey-sidebar" id="journey-sidebar">
+    <div class="journey-sidebar-header">
+      <span class="journey-sidebar-title">流程节点</span>
+      <button class="journey-collapse-btn" id="journey-collapse-btn" onclick="journeyToggleSidebar()" title="收起/展开">◀</button>
+    </div>
+    <div class="journey-sidebar-list" id="journey-sidebar-list"></div>
   </div>
-</div>
-<div class="journey-iframe-wrap" id="journey-frame-wrap">
-  <div class="journey-missing-overlay" id="journey-missing" style="display:none;">
-    <div class="journey-missing-text">🚧 页面尚未完成</div>
-    <div class="journey-missing-sub" id="journey-missing-name">—</div>
+
+  <!-- 右侧主区域 -->
+  <div class="journey-main">
+    <div class="journey-fork-bar" id="journey-fork-bar">
+      <div class="journey-fork-icon">⚠️</div>
+      <div class="journey-fork-content">
+        <div class="journey-fork-title" id="journey-fork-title">分叉点 — 根据角色选择，后续流程不同</div>
+        <div id="journey-fork-desc" class="journey-fork-desc"></div>
+        <div class="journey-fork-roles" id="journey-fork-roles"></div>
+      </div>
+    </div>
+    <div class="journey-iframe-wrap" id="journey-frame-wrap">
+      <div class="journey-missing-overlay" id="journey-missing" style="display:none;">
+        <div class="journey-missing-text">🚧 页面尚未完成</div>
+        <div class="journey-missing-sub" id="journey-missing-name">—</div>
+      </div>
+      <iframe class="journey-iframe" id="journey-iframe" src="about:blank"></iframe>
+    </div>
   </div>
-  <iframe class="journey-iframe" id="journey-iframe" src="about:blank"></iframe>
 </div>
 
 </div>
@@ -1885,6 +1942,54 @@ const JOURNEY_FLOWS = {
 let journeyCurrentFlow = 'attendee';
 let journeyCurrentStep = 0;
 
+let journeySidebarCollapsed = false;
+
+function journeyToggleSidebar() {
+  journeySidebarCollapsed = !journeySidebarCollapsed;
+  const sidebar = document.getElementById('journey-sidebar');
+  const btn = document.getElementById('journey-collapse-btn');
+  sidebar.classList.toggle('collapsed', journeySidebarCollapsed);
+  btn.textContent = journeySidebarCollapsed ? '▶' : '◀';
+}
+
+function journeyRenderSidebar() {
+  const flow = JOURNEY_FLOWS[journeyCurrentFlow];
+  const list = document.getElementById('journey-sidebar-list');
+  list.innerHTML = '';
+  flow.steps.forEach(function(step, i) {
+    const item = document.createElement('div');
+    item.className = 'journey-sidebar-item' +
+      (i === journeyCurrentStep ? ' active' : '') +
+      (step.fork ? ' has-fork' : '');
+    item.onclick = function() { journeyCurrentStep = i; journeyRender(); };
+
+    const num = document.createElement('div');
+    num.className = 'journey-sidebar-num';
+    num.textContent = step.fork ? '⚠' : (i + 1);
+
+    const text = document.createElement('div');
+    text.className = 'journey-sidebar-text';
+
+    const name = document.createElement('div');
+    name.className = 'journey-sidebar-name';
+    name.textContent = step.name;
+
+    const phase = document.createElement('div');
+    phase.className = 'journey-sidebar-phase';
+    phase.textContent = step.desc.split('\n')[0];
+
+    text.appendChild(name);
+    text.appendChild(phase);
+    item.appendChild(num);
+    item.appendChild(text);
+    list.appendChild(item);
+  });
+
+  // 滚动到当前步骤
+  const activeItem = list.querySelector('.active');
+  if (activeItem) activeItem.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+}
+
 function journeyLoadFlow(flowKey) {
   journeyCurrentFlow = flowKey;
   journeyCurrentStep = 0;
@@ -1903,6 +2008,7 @@ function journeyRender() {
   const total = flow.steps.length;
   const idx = journeyCurrentStep;
 
+  // 顶部控制栏
   document.getElementById('journey-step-name').textContent = (idx + 1) + '. ' + step.name;
   document.getElementById('journey-step-desc').textContent = step.desc;
   document.getElementById('journey-prog-fill').style.width = ((idx + 1) / total * 100) + '%';
@@ -1910,12 +2016,14 @@ function journeyRender() {
   document.getElementById('journey-prev').disabled = idx === 0;
   document.getElementById('journey-next').disabled = idx === total - 1;
 
+  // 侧边栏同步
+  journeyRenderSidebar();
+
   // 分叉提示
   const forkBar = document.getElementById('journey-fork-bar');
   if (step.fork) {
     document.getElementById('journey-fork-title').textContent = step.fork.title;
     const descEl = document.getElementById('journey-fork-desc');
-    descEl.className = 'journey-fork-desc';
     descEl.textContent = step.fork.desc || '';
     const rolesEl = document.getElementById('journey-fork-roles');
     rolesEl.innerHTML = '';
