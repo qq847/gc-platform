@@ -72,6 +72,22 @@ body{background:#e8e4da}
   cursor:pointer;font-family:inherit;white-space:nowrap;
 }
 .nav-share:hover{border-color:var(--text3);color:var(--text1)}
+.nav-tab.active { color:var(--orange); border-bottom:2px solid var(--orange); }
+.nav-tab.active-teal { color:#0a7fa8; border-bottom:2px solid #0a7fa8; }
+.center-tags {
+  display:flex; gap:6px; padding:10px 20px;
+  border-bottom:1px solid var(--border2);
+  flex-wrap:wrap; background:#e8e4da;
+  position:sticky; top:42px; z-index:9;
+}
+.ctag {
+  padding:4px 12px; border-radius:20px;
+  border:1px solid var(--border); background:var(--card);
+  font-size:11px; font-weight:600; color:var(--text2);
+  cursor:pointer; font-family:inherit; transition:all .15s;
+}
+.ctag.active { background:var(--orange); color:#fff; border-color:var(--orange); }
+.ctag:hover:not(.active) { border-color:var(--text3); color:var(--text1); }
 
 /* ── CONFERENCE BAR ── */
 .conf-bar{
@@ -354,8 +370,6 @@ body{background:#e8e4da}
   </div>
   <div class="nav-sep"></div>
   <div class="nav-ai-btn">✦ AI Pick</div>
-  <div class="nav-sep"></div>
-  <button class="nav-share">+ Share an Event</button>
 </div>
 
 <!-- CONFERENCE SELECTOR BAR -->
@@ -486,34 +500,21 @@ body{background:#e8e4da}
       </div>
     </div>
 
-    <!-- Shared Tags -->
-    <div class="left-section">
-      <div class="left-title">Event Type</div>
-      <div class="tag-grid">
-        <button class="tag t-free" onclick="togTag(this)">Free</button>
-        <button class="tag" onclick="togTag(this)">Paid</button>
-        <button class="tag t-net" onclick="togTag(this)">Networking</button>
-        <button class="tag" onclick="togTag(this)">Party</button>
-        <button class="tag t-show" onclick="togTag(this)">Showcase</button>
-        <button class="tag" onclick="togTag(this)">Panel / Talk</button>
-        <button class="tag" onclick="togTag(this)">No Pass Needed</button>
-        <button class="tag" onclick="togTag(this)">Hackathon</button>
-        <button class="tag" onclick="togTag(this)">Indie</button>
-        <button class="tag" onclick="togTag(this)">B2B</button>
-      </div>
-    </div>
-
   </div><!-- /left -->
 
   <!-- CENTER -->
   <div class="center">
     <div class="center-top">
-      <span class="center-label" id="center-label">Game Industry Conferences 2026</span>
       <span class="center-cnt" id="center-cnt">48 results</span>
     </div>
-    <div class="csearch">
-      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#a09890" stroke-width="2.2"><circle cx="11" cy="11" r="7"/><line x1="16.5" y1="16.5" x2="22" y2="22"/></svg>
-      <input type="text" placeholder="Search events, venues, sponsors…">
+    <div class="center-tags" id="center-tags">
+      <button class="ctag active" onclick="filterTag(this,'all')">All</button>
+      <button class="ctag" onclick="filterTag(this,'free')">🟢 Free</button>
+      <button class="ctag" onclick="filterTag(this,'networking')">🤝 Networking</button>
+      <button class="ctag" onclick="filterTag(this,'showcase')">🎮 Showcase</button>
+      <button class="ctag" onclick="filterTag(this,'conference')">🎤 Conference</button>
+      <button class="ctag" onclick="filterTag(this,'awards')">🏆 Awards</button>
+      <button class="ctag" onclick="filterTag(this,'workshop')">🛠 Workshop</button>
     </div>
 
     <!-- CALENDAR CARDS -->
@@ -1144,10 +1145,12 @@ let currentMode = 'calendar';
 function switchMode(mode) {
   currentMode = mode;
 
-  // Update nav-tabs active state
-  document.querySelectorAll('.nav-tab').forEach((t, i) => {
-    t.classList.toggle('active', (i === 0) === (mode === 'calendar'));
-  });
+  // Update nav-tabs active state with mode-specific color
+  const tabs = document.querySelectorAll('.nav-tab');
+  tabs[0].classList.toggle('active-teal', mode === 'calendar');
+  tabs[0].classList.toggle('active', mode === 'calendar');
+  tabs[1].classList.toggle('active', mode === 'live');
+  tabs[1].classList.remove('active-teal');
 
   // Toggle left sidebar date sections
   document.getElementById('calendar-dates').style.display = mode === 'calendar' ? 'block' : 'none';
@@ -1213,6 +1216,12 @@ function togTag(btn) {
 function selectConf(card) {
   document.querySelectorAll('.conf-card').forEach(c => c.classList.remove('active'));
   card.classList.add('active');
+}
+
+function filterTag(btn, tag) {
+  document.querySelectorAll('.ctag').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  // TODO: filter cards by tag
 }
 </script>
 </body>
