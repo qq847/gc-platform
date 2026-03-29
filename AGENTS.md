@@ -232,6 +232,15 @@ Think of it like a human reviewing their journal and updating their mental model
 
 The goal: Be helpful without being annoying. Check in a few times a day, do useful background work, but respect quiet time.
 
+## GC Platform 铁律
+
+**每次新建或修改 gc-platform 页面，必须同时更新 index.html 的三个地方：**
+1. Roadmap View — 对应 Phase 的卡片
+2. Module View — 对应功能 Section 的卡片
+3. Journey — 对应角色流程的 steps
+
+少一个就是没做完。
+
 ## Make It Yours
 
 This is a starting point. Add your own conventions, style, and rules as you figure out what works.
