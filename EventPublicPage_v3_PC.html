@@ -1,0 +1,617 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Indie Game Fest 2026 – Game Connection</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --bg: #e8e4da;
+    --orange: #d95f2b;
+    --teal: #0a7fa8;
+    --green: #0d9b72;
+    --card: #ffffff;
+    --text: #1a1a2e;
+    --muted: #6b7280;
+    --border: #e0ddd6;
+    --radius: 10px;
+    --shadow: 0 2px 8px rgba(0,0,0,0.08);
+  }
+  body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--text); line-height: 1.5; }
+
+  /* -------- NAVBAR -------- */
+  .navbar {
+    position: sticky; top: 0; z-index: 100;
+    background: var(--text); color: #fff;
+    padding: 0 32px; height: 60px;
+    display: flex; align-items: center; gap: 20px;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.2);
+  }
+  .nav-back { color: rgba(255,255,255,0.7); text-decoration: none; font-size: 14px; display: flex; align-items: center; gap: 6px; transition: color 0.2s; }
+  .nav-back:hover { color: var(--orange); }
+  .nav-divider { color: rgba(255,255,255,0.2); }
+  .nav-logo { font-size: 18px; font-weight: 700; color: var(--orange); }
+  .nav-logo span { color: #fff; font-weight: 400; }
+  .nav-spacer { flex: 1; }
+  .nav-signin { background: var(--orange); color: #fff; border: none; padding: 8px 20px; border-radius: 8px; font-family: inherit; font-size: 14px; font-weight: 600; cursor: pointer; }
+  .nav-register { background: var(--green); color: #fff; border: none; padding: 8px 20px; border-radius: 8px; font-family: inherit; font-size: 14px; font-weight: 600; cursor: pointer; }
+
+  /* -------- FLOATING SOURCE BADGE -------- */
+  .source-badge-float {
+    position: fixed; top: 80px; right: 24px; z-index: 500;
+    cursor: pointer; transition: all 0.2s;
+  }
+  .source-badge {
+    display: flex; align-items: center; gap: 6px;
+    padding: 6px 14px; border-radius: 20px; font-size: 12px; font-weight: 700;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.15); white-space: nowrap;
+  }
+  .source-badge.platform { background: #fff3e0; color: var(--orange); border: 1.5px solid #ffd0a0; }
+  .source-badge.crawler { background: #f3f4f6; color: var(--muted); border: 1.5px solid var(--border); }
+
+  /* -------- FLOATING DEBUG PANEL -------- */
+  .debug-fab {
+    position: fixed; bottom: 24px; right: 24px; z-index: 600;
+  }
+  .debug-toggle {
+    width: 44px; height: 44px; border-radius: 50%;
+    background: var(--text); color: #fff; border: none;
+    font-size: 20px; cursor: pointer; box-shadow: 0 4px 16px rgba(0,0,0,0.2);
+    display: flex; align-items: center; justify-content: center;
+    transition: transform 0.2s;
+  }
+  .debug-toggle:hover { transform: rotate(30deg); }
+  .debug-panel {
+    position: absolute; bottom: 54px; right: 0;
+    background: var(--card); border: 1px solid var(--border); border-radius: var(--radius);
+    box-shadow: 0 8px 32px rgba(0,0,0,0.15); padding: 18px; width: 260px;
+    display: none;
+  }
+  .debug-panel.open { display: block; }
+  .debug-panel h4 { font-size: 13px; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 12px; }
+  .debug-btn-group { display: flex; gap: 6px; margin-bottom: 14px; }
+  .debug-btn {
+    flex: 1; padding: 7px 4px; border-radius: 6px; font-size: 12px; font-weight: 600;
+    cursor: pointer; border: 1px solid var(--border); background: var(--bg); color: var(--muted);
+    transition: all 0.2s; text-align: center;
+  }
+  .debug-btn.active-upcoming { background: #d1fae5; color: #065f46; border-color: #6ee7b7; }
+  .debug-btn.active-live { background: #fee2e2; color: #991b1b; border-color: #fc8181; }
+  .debug-btn.active-ended { background: #f3f4f6; color: var(--muted); border-color: #d1d5db; }
+  .debug-label { font-size: 12px; color: var(--muted); margin-bottom: 6px; }
+  .debug-source-group { display: flex; gap: 6px; }
+  .debug-src-btn {
+    flex: 1; padding: 7px; border-radius: 6px; font-size: 12px; font-weight: 600;
+    cursor: pointer; border: 1px solid var(--border); background: var(--bg); color: var(--muted);
+    text-align: center; transition: all 0.2s;
+  }
+  .debug-src-btn.active-platform { background: #fff3e0; color: var(--orange); border-color: #ffd0a0; }
+  .debug-src-btn.active-crawler { background: #f3f4f6; color: var(--muted); border-color: #d1d5db; }
+
+  /* -------- HERO -------- */
+  .hero {
+    background: linear-gradient(135deg, #2d1b69 0%, #553c9a 50%, #0a7fa8 100%);
+    color: #fff; padding: 60px 32px 0;
+    position: relative; overflow: hidden;
+  }
+  .hero::before {
+    content: ''; position: absolute; inset: 0;
+    background: linear-gradient(to bottom, transparent 60%, rgba(0,0,0,0.4) 100%);
+  }
+  .hero-inner { max-width: 1400px; margin: 0 auto; position: relative; z-index: 1; }
+  .hero-tags { display: flex; gap: 8px; margin-bottom: 16px; }
+  .hero-tag { background: rgba(255,255,255,0.15); border: 1px solid rgba(255,255,255,0.3); padding: 4px 12px; border-radius: 20px; font-size: 12px; font-weight: 600; }
+  .hero h1 { font-size: 52px; font-weight: 700; margin-bottom: 12px; line-height: 1.1; }
+  .hero-sub { font-size: 18px; color: rgba(255,255,255,0.8); margin-bottom: 24px; }
+  .hero-meta { display: flex; gap: 24px; margin-bottom: 32px; }
+  .hero-meta span { display: flex; align-items: center; gap: 8px; font-size: 15px; color: rgba(255,255,255,0.85); }
+  .hero-status-bar {
+    background: rgba(0,0,0,0.3); backdrop-filter: blur(10px);
+    padding: 12px 0; display: flex; gap: 40px; margin-top: 20px;
+    border-top: 1px solid rgba(255,255,255,0.1);
+  }
+  .hero-stat { text-align: center; }
+  .hero-stat-num { font-size: 28px; font-weight: 700; color: #ffd080; }
+  .hero-stat-label { font-size: 12px; color: rgba(255,255,255,0.6); }
+  .status-pill {
+    display: inline-flex; align-items: center; gap: 6px;
+    padding: 6px 16px; border-radius: 20px; font-size: 13px; font-weight: 700;
+    margin-bottom: 16px;
+  }
+  .status-pill.upcoming { background: #d1fae5; color: #065f46; }
+  .status-pill.live { background: #fee2e2; color: #991b1b; }
+  .status-pill.ended { background: #f3f4f6; color: #6b7280; }
+  .live-dot { width: 8px; height: 8px; background: #e53e3e; border-radius: 50%; animation: pulse 1.5s infinite; }
+  @keyframes pulse {
+    0% { box-shadow: 0 0 0 0 rgba(229,62,62,0.7); }
+    70% { box-shadow: 0 0 0 8px rgba(229,62,62,0); }
+    100% { box-shadow: 0 0 0 0 rgba(229,62,62,0); }
+  }
+
+  /* -------- CONTAINER -------- */
+  .container { max-width: 1400px; margin: 0 auto; padding: 0 32px; }
+  .page-layout { max-width: 1400px; margin: 40px auto; padding: 0 32px; display: flex; gap: 28px; }
+  .page-main { flex: 1; min-width: 0; }
+  .page-sidebar { width: 360px; flex-shrink: 0; }
+
+  /* -------- SECTION -------- */
+  .section { background: var(--card); border-radius: var(--radius); box-shadow: var(--shadow); padding: 32px; margin-bottom: 24px; }
+  .section-title { font-size: 20px; font-weight: 700; margin-bottom: 20px; display: flex; align-items: center; gap: 10px; }
+  .section-title::after { content: ''; flex: 1; height: 1px; background: var(--border); }
+
+  /* -------- ABOUT -------- */
+  .about-text { font-size: 15px; color: var(--muted); line-height: 1.7; }
+  .about-highlights { display: flex; gap: 16px; margin-top: 20px; flex-wrap: wrap; }
+  .highlight-card { background: var(--bg); border-radius: 8px; padding: 14px 18px; flex: 1; min-width: 120px; }
+  .highlight-card .num { font-size: 24px; font-weight: 700; color: var(--orange); }
+  .highlight-card .lbl { font-size: 12px; color: var(--muted); margin-top: 2px; }
+
+  /* -------- FEATURED GAMES -------- */
+  .games-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
+  .game-card {
+    border-radius: 10px; overflow: hidden;
+    border: 1px solid var(--border); transition: transform 0.2s;
+  }
+  .game-card:hover { transform: translateY(-2px); }
+  .game-cover { height: 120px; }
+  .game-cover-1 { background: linear-gradient(135deg, #2d1b69, #553c9a); }
+  .game-cover-2 { background: linear-gradient(135deg, #1a3a2d, #0d9b72); }
+  .game-cover-3 { background: linear-gradient(135deg, #2d1a1a, #d95f2b); }
+  .game-info { padding: 12px; }
+  .game-developer { font-size: 11px; color: var(--teal); font-weight: 600; text-transform: uppercase; margin-bottom: 3px; }
+  .game-title { font-size: 14px; font-weight: 700; margin-bottom: 3px; }
+  .game-genre { font-size: 12px; color: var(--muted); }
+  .game-badge { display: inline-block; background: #fff3e0; color: var(--orange); font-size: 10px; font-weight: 700; padding: 2px 6px; border-radius: 4px; margin-top: 6px; }
+
+  /* -------- SPEAKERS & SESSIONS -------- */
+  .sessions-list { display: flex; flex-direction: column; gap: 16px; }
+  .session-card { background: var(--bg); border-radius: 10px; padding: 18px; border: 1px solid var(--border); }
+  .session-time { font-size: 12px; color: var(--teal); font-weight: 700; margin-bottom: 6px; }
+  .session-title { font-size: 16px; font-weight: 700; margin-bottom: 8px; }
+  .session-speaker { display: flex; align-items: center; gap: 10px; }
+  .speaker-avatar { width: 36px; height: 36px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 16px; }
+  .sa-1 { background: linear-gradient(135deg, #553c9a, #0a7fa8); }
+  .sa-2 { background: linear-gradient(135deg, #d95f2b, #e8a030); }
+  .sa-3 { background: linear-gradient(135deg, #0d9b72, #0a7fa8); }
+  .sa-4 { background: linear-gradient(135deg, #1a1a2e, #0f3460); }
+  .sa-5 { background: linear-gradient(135deg, #9b2335, #d95f2b); }
+  .speaker-name { font-size: 13px; font-weight: 600; }
+  .speaker-role { font-size: 12px; color: var(--muted); }
+  .session-tag { display: inline-block; background: rgba(10,127,168,0.1); color: var(--teal); font-size: 11px; font-weight: 600; padding: 3px 8px; border-radius: 4px; margin-top: 8px; }
+
+  /* -------- LET'S MEET -------- */
+  .meet-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px; }
+  .meet-card { background: var(--bg); border-radius: 10px; padding: 20px; border: 1px solid var(--border); display: flex; flex-direction: column; gap: 12px; }
+  .meet-icon { font-size: 32px; }
+  .meet-card h4 { font-size: 16px; font-weight: 700; }
+  .meet-card p { font-size: 13px; color: var(--muted); }
+  .meet-btn { background: var(--teal); color: #fff; border: none; padding: 9px 16px; border-radius: 8px; font-family: inherit; font-size: 13px; font-weight: 600; cursor: pointer; align-self: flex-start; margin-top: auto; }
+
+  /* -------- AWARDS -------- */
+  .awards-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
+  .award-card { text-align: center; padding: 20px; background: var(--bg); border-radius: 10px; border: 1px solid var(--border); }
+  .award-icon { font-size: 36px; margin-bottom: 8px; }
+  .award-name { font-size: 14px; font-weight: 700; margin-bottom: 4px; }
+  .award-desc { font-size: 12px; color: var(--muted); }
+
+  /* -------- SPONSORS -------- */
+  .sponsors-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-bottom: 16px; }
+  .sponsor-card {
+    background: var(--bg); border-radius: 10px; border: 1px solid var(--border);
+    height: 70px; display: flex; align-items: center; justify-content: center;
+    font-size: 14px; font-weight: 700; color: var(--muted);
+  }
+  .sponsor-tier { font-size: 12px; color: var(--muted); text-transform: uppercase; font-weight: 700; letter-spacing: 0.5px; margin-bottom: 10px; }
+
+  /* -------- SIDEBAR -------- */
+  .sidebar-widget { background: var(--card); border-radius: var(--radius); box-shadow: var(--shadow); padding: 24px; margin-bottom: 20px; }
+  .widget-title { font-size: 14px; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 16px; }
+  .register-cta-widget { background: linear-gradient(135deg, #553c9a, #d95f2b); color: #fff; }
+  .register-cta-widget .widget-title { color: rgba(255,255,255,0.7); }
+  .register-cta-widget h3 { font-size: 20px; font-weight: 700; margin-bottom: 8px; }
+  .register-cta-widget p { font-size: 14px; color: rgba(255,255,255,0.8); margin-bottom: 16px; }
+  .btn-register { width: 100%; background: #fff; color: #553c9a; border: none; padding: 12px; border-radius: 8px; font-family: inherit; font-size: 15px; font-weight: 700; cursor: pointer; transition: all 0.2s; }
+  .btn-register:hover { background: #f0e8ff; }
+  .event-info-item { display: flex; gap: 12px; padding: 10px 0; border-bottom: 1px solid var(--border); align-items: flex-start; }
+  .event-info-item:last-child { border-bottom: none; }
+  .info-icon { font-size: 18px; }
+  .info-label { font-size: 11px; color: var(--muted); font-weight: 600; text-transform: uppercase; }
+  .info-value { font-size: 14px; font-weight: 600; }
+  .tags-cloud { display: flex; flex-wrap: wrap; gap: 8px; }
+  .tag-chip { background: var(--bg); border: 1px solid var(--border); border-radius: 20px; padding: 5px 12px; font-size: 12px; color: var(--muted); cursor: pointer; transition: all 0.2s; }
+  .tag-chip:hover { border-color: var(--teal); color: var(--teal); }
+
+  /* -------- REGISTER CTA SECTION -------- */
+  .register-cta-section {
+    background: linear-gradient(135deg, #1a1a2e, #2d1b69);
+    color: #fff; padding: 60px 32px; text-align: center; margin-top: 0;
+  }
+  .register-cta-section h2 { font-size: 36px; font-weight: 700; margin-bottom: 12px; }
+  .register-cta-section p { font-size: 18px; color: rgba(255,255,255,0.7); margin-bottom: 32px; }
+  .cta-buttons { display: flex; gap: 16px; justify-content: center; }
+  .btn-cta-primary { background: var(--orange); color: #fff; border: none; padding: 16px 40px; border-radius: 10px; font-family: inherit; font-size: 16px; font-weight: 700; cursor: pointer; transition: all 0.2s; }
+  .btn-cta-primary:hover { background: #c0521f; }
+  .btn-cta-secondary { background: transparent; color: #fff; border: 2px solid rgba(255,255,255,0.4); padding: 16px 40px; border-radius: 10px; font-family: inherit; font-size: 16px; font-weight: 700; cursor: pointer; transition: all 0.2s; }
+  .btn-cta-secondary:hover { border-color: #fff; }
+
+  /* -------- FOOTER -------- */
+  footer { background: var(--text); color: rgba(255,255,255,0.6); text-align: center; padding: 24px; font-size: 13px; }
+  footer a { color: var(--orange); text-decoration: none; }
+
+  /* -------- TOAST -------- */
+  .toast { position: fixed; bottom: 30px; right: 80px; background: #1a1a2e; color: #fff; padding: 14px 22px; border-radius: 10px; font-size: 14px; font-weight: 500; box-shadow: 0 4px 20px rgba(0,0,0,0.3); transform: translateY(100px); opacity: 0; transition: all 0.3s; z-index: 1000; }
+  .toast.show { transform: translateY(0); opacity: 1; }
+</style>
+</head>
+<body>
+
+<!-- NAVBAR -->
+<nav class="navbar">
+  <a href="Homepage_Feed_v2_PC.html" class="nav-back">← Back to Hub</a>
+  <span class="nav-divider">|</span>
+  <div class="nav-logo">GC <span>/ Game Connection</span></div>
+  <div class="nav-spacer"></div>
+  <button class="nav-signin">Sign In</button>
+  <button class="nav-register" onclick="showToast('🎉 Registration coming soon!')">Register Now</button>
+</nav>
+
+<!-- FLOATING SOURCE BADGE -->
+<div class="source-badge-float" id="sourceBadgeFloat" onclick="toggleSource()">
+  <div class="source-badge platform" id="sourceBadge">✅ Platform Published</div>
+</div>
+
+<!-- FLOATING DEBUG PANEL -->
+<div class="debug-fab">
+  <div class="debug-panel" id="debugPanel">
+    <h4>⚙️ Debug Controls</h4>
+    <div class="debug-label">Event Status</div>
+    <div class="debug-btn-group">
+      <div class="debug-btn" id="dbUpcoming" onclick="setStatus('upcoming')">🟢 Upcoming</div>
+      <div class="debug-btn active-live" id="dbLive" onclick="setStatus('live')">🔴 Live</div>
+      <div class="debug-btn" id="dbEnded" onclick="setStatus('ended')">⚫ Ended</div>
+    </div>
+    <div class="debug-label">Data Source</div>
+    <div class="debug-source-group">
+      <div class="debug-src-btn active-platform" id="dbPlatform" onclick="setSource('platform')">✅ Platform</div>
+      <div class="debug-src-btn" id="dbCrawler" onclick="setSource('crawler')">🕷 Crawler</div>
+    </div>
+  </div>
+  <button class="debug-toggle" id="debugToggle" onclick="toggleDebug()">⚙️</button>
+</div>
+
+<!-- HERO -->
+<div class="hero" id="hero">
+  <div class="hero-inner">
+    <div id="statusPill" class="status-pill live">
+      <div class="live-dot"></div> Live Now
+    </div>
+    <div class="hero-tags">
+      <span class="hero-tag">Indie</span>
+      <span class="hero-tag">B2B</span>
+      <span class="hero-tag">Game Development</span>
+      <span class="hero-tag">Showcasing</span>
+    </div>
+    <h1>Indie Game Fest 2026</h1>
+    <div class="hero-sub">Where independent developers meet publishers, investors, and the press.</div>
+    <div class="hero-meta">
+      <span>📅 Apr 15–17, 2026</span>
+      <span>📍 Berlin Exhibition Center</span>
+      <span>🎮 Indie / B2B</span>
+    </div>
+    <div class="hero-status-bar">
+      <div class="hero-stat"><div class="hero-stat-num">320</div><div class="hero-stat-label">Exhibitors</div></div>
+      <div class="hero-stat"><div class="hero-stat-num">4,800</div><div class="hero-stat-label">Attendees</div></div>
+      <div class="hero-stat"><div class="hero-stat-num">48</div><div class="hero-stat-label">Sessions</div></div>
+      <div class="hero-stat"><div class="hero-stat-num">12</div><div class="hero-stat-label">Awards</div></div>
+      <div class="hero-stat"><div class="hero-stat-num">3</div><div class="hero-stat-label">Days</div></div>
+    </div>
+  </div>
+</div>
+
+<!-- PAGE LAYOUT -->
+<div class="page-layout">
+  <div class="page-main">
+
+    <!-- ABOUT -->
+    <div class="section">
+      <div class="section-title">📖 About This Event</div>
+      <p class="about-text">Indie Game Fest 2026 is Europe's premier gathering for independent game developers, publishers, and investors. Over three intensive days at the Berlin Exhibition Center, attendees enjoy curated one-on-one meetings, keynote sessions from industry icons, an awards ceremony celebrating the year's best indie titles, and a public showcase floor featuring 60+ new games.</p>
+      <p class="about-text" style="margin-top:12px;">Whether you're an indie studio looking for your first publisher deal, an investor scouting the next breakout title, or a press member covering Europe's creative gaming scene — Indie Game Fest 2026 is the place to be.</p>
+      <div class="about-highlights">
+        <div class="highlight-card"><div class="num">60+</div><div class="lbl">Games Showcased</div></div>
+        <div class="highlight-card"><div class="num">320</div><div class="lbl">Exhibitors</div></div>
+        <div class="highlight-card"><div class="num">4,800</div><div class="lbl">Attendees</div></div>
+        <div class="highlight-card"><div class="num">48</div><div class="lbl">Sessions</div></div>
+        <div class="highlight-card"><div class="num">€2M+</div><div class="lbl">Deals Facilitated</div></div>
+      </div>
+    </div>
+
+    <!-- FEATURED GAMES -->
+    <div class="section">
+      <div class="section-title">🎮 Featured Games</div>
+      <div class="games-grid">
+        <div class="game-card">
+          <div class="game-cover game-cover-1"></div>
+          <div class="game-info">
+            <div class="game-developer">Starfall Studios</div>
+            <div class="game-title">Echoes of Eternity</div>
+            <div class="game-genre">RPG · PC / Console</div>
+            <span class="game-badge">🏆 Awards Nominee</span>
+          </div>
+        </div>
+        <div class="game-card">
+          <div class="game-cover game-cover-2"></div>
+          <div class="game-info">
+            <div class="game-developer">Greenleaf Games</div>
+            <div class="game-title">Verdant World</div>
+            <div class="game-genre">Simulation · Mobile</div>
+            <span class="game-badge">🎯 Featured</span>
+          </div>
+        </div>
+        <div class="game-card">
+          <div class="game-cover game-cover-3"></div>
+          <div class="game-info">
+            <div class="game-developer">Ember Interactive</div>
+            <div class="game-title">Ashfall Chronicles</div>
+            <div class="game-genre">Action · PC</div>
+            <span class="game-badge">🏆 Best Art</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- SPEAKERS & SESSIONS -->
+    <div class="section">
+      <div class="section-title">🎤 Speakers & Sessions</div>
+      <div class="sessions-list">
+        <div class="session-card">
+          <div class="session-time">Day 1 — Apr 15 · 10:00 AM</div>
+          <div class="session-title">Keynote: The Indie Renaissance — How Small Teams Win Big</div>
+          <div class="session-speaker">
+            <div class="speaker-avatar sa-1">👩</div>
+            <div><div class="speaker-name">Emma Schultz</div><div class="speaker-role">CEO · Devolver Digital Europe</div></div>
+          </div>
+          <span class="session-tag">Keynote</span>
+        </div>
+        <div class="session-card">
+          <div class="session-time">Day 1 — Apr 15 · 02:00 PM</div>
+          <div class="session-title">Workshop: Pitching to Publishers — What Investors Actually Look For</div>
+          <div class="session-speaker">
+            <div class="speaker-avatar sa-2">👨</div>
+            <div><div class="speaker-name">Marcus Weber</div><div class="speaker-role">Investment Director · Andreessen Horowitz Games</div></div>
+          </div>
+          <span class="session-tag">Workshop</span>
+        </div>
+        <div class="session-card">
+          <div class="session-time">Day 2 — Apr 16 · 11:00 AM</div>
+          <div class="session-title">Panel: Monetization Without Compromise — Ethical Revenue in Indie Games</div>
+          <div class="session-speaker">
+            <div class="speaker-avatar sa-3">👩</div>
+            <div><div class="speaker-name">Sophie Mäkinen</div><div class="speaker-role">Head of Revenue · Supercell Indie</div></div>
+          </div>
+          <span class="session-tag">Panel</span>
+        </div>
+        <div class="session-card">
+          <div class="session-time">Day 2 — Apr 16 · 03:30 PM</div>
+          <div class="session-title">Fireside Chat: From Prototype to $10M — Lessons from Indie Breakouts</div>
+          <div class="session-speaker">
+            <div class="speaker-avatar sa-4">👨</div>
+            <div><div class="speaker-name">Jörg Fischer</div><div class="speaker-role">Founder · 11 bit studios</div></div>
+          </div>
+          <span class="session-tag">Fireside Chat</span>
+        </div>
+        <div class="session-card">
+          <div class="session-time">Day 3 — Apr 17 · 02:00 PM</div>
+          <div class="session-title">Talk: AI Tools for Solo Devs — Accelerate Without Compromising Vision</div>
+          <div class="session-speaker">
+            <div class="speaker-avatar sa-5">👩</div>
+            <div><div class="speaker-name">Yuki Tanaka</div><div class="speaker-role">Lead AI Designer · Unity Technologies</div></div>
+          </div>
+          <span class="session-tag">Technical Talk</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- LET'S MEET -->
+    <div class="section">
+      <div class="section-title">🤝 Let's Meet</div>
+      <div class="meet-grid">
+        <div class="meet-card">
+          <div class="meet-icon">🗓️</div>
+          <h4>Schedule a Meeting</h4>
+          <p>Book one-on-one sessions with publishers, investors, and studios. Time slots limited — book early.</p>
+          <button class="meet-btn" onclick="showToast('Meeting scheduler coming soon!')">Book a Slot</button>
+        </div>
+        <div class="meet-card">
+          <div class="meet-icon">🎯</div>
+          <h4>Matchmaking</h4>
+          <p>Let our AI-powered matchmaker suggest the most relevant meetings based on your profile and goals.</p>
+          <button class="meet-btn" onclick="showToast('Matchmaking coming soon!')">Start Matching</button>
+        </div>
+        <div class="meet-card">
+          <div class="meet-icon">🏢</div>
+          <h4>Exhibitor Directory</h4>
+          <p>Browse all 320 exhibitors, filter by category, and add them to your meeting wishlist.</p>
+          <button class="meet-btn" onclick="showToast('Directory coming soon!')">Browse Exhibitors</button>
+        </div>
+        <div class="meet-card">
+          <div class="meet-icon">💬</div>
+          <h4>Networking Lounge</h4>
+          <p>Join topic-based networking lounges and connect with peers in your area of interest.</p>
+          <button class="meet-btn" onclick="showToast('Lounge coming soon!')">Join Lounge</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- AWARDS -->
+    <div class="section">
+      <div class="section-title">🏆 Awards</div>
+      <div class="awards-grid">
+        <div class="award-card"><div class="award-icon">🥇</div><div class="award-name">Best Indie Game</div><div class="award-desc">Awarded to the standout game of the year in indie development.</div></div>
+        <div class="award-card"><div class="award-icon">🎨</div><div class="award-name">Best Art Direction</div><div class="award-desc">For exceptional visual design and artistic achievement.</div></div>
+        <div class="award-card"><div class="award-icon">🎵</div><div class="award-name">Best Soundtrack</div><div class="award-desc">Recognizing outstanding original music and audio design.</div></div>
+        <div class="award-card"><div class="award-icon">📱</div><div class="award-name">Best Mobile Game</div><div class="award-desc">Excellence in mobile game design and engagement.</div></div>
+        <div class="award-card"><div class="award-icon">🌟</div><div class="award-name">Rising Studio</div><div class="award-desc">Celebrating an emerging studio with exceptional debut potential.</div></div>
+        <div class="award-card"><div class="award-icon">🤝</div><div class="award-name">Deal of the Year</div><div class="award-desc">The most impactful publisher-developer deal announced at the event.</div></div>
+      </div>
+    </div>
+
+    <!-- SPONSORS -->
+    <div class="section">
+      <div class="section-title">🤝 Sponsors & Partners</div>
+      <div class="sponsor-tier">Platinum</div>
+      <div class="sponsors-grid">
+        <div class="sponsor-card">Unity Technologies</div>
+        <div class="sponsor-card">Devolver Digital</div>
+      </div>
+      <div class="sponsor-tier">Gold</div>
+      <div class="sponsors-grid">
+        <div class="sponsor-card">Epic Games</div>
+        <div class="sponsor-card">Andreessen Horowitz</div>
+        <div class="sponsor-card">Steam / Valve</div>
+        <div class="sponsor-card">Discord</div>
+      </div>
+      <div class="sponsor-tier">Silver</div>
+      <div class="sponsors-grid">
+        <div class="sponsor-card">Humble Bundle</div>
+        <div class="sponsor-card">itch.io</div>
+        <div class="sponsor-card">GameMaker</div>
+        <div class="sponsor-card">Overwolf</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SIDEBAR -->
+  <div class="page-sidebar">
+    <!-- Register CTA -->
+    <div class="sidebar-widget register-cta-widget">
+      <div class="widget-title">🎟️ Register</div>
+      <h3>Join Indie Game Fest 2026</h3>
+      <p>Early bird pricing ends March 31. Don't miss out!</p>
+      <button class="btn-register" onclick="showToast('🎉 Registration form coming soon!')">Register Now →</button>
+    </div>
+
+    <!-- Event Info -->
+    <div class="sidebar-widget">
+      <div class="widget-title">📋 Event Details</div>
+      <div class="event-info-item">
+        <div class="info-icon">📅</div>
+        <div><div class="info-label">Dates</div><div class="info-value">April 15–17, 2026</div></div>
+      </div>
+      <div class="event-info-item">
+        <div class="info-icon">📍</div>
+        <div><div class="info-label">Venue</div><div class="info-value">Berlin Exhibition Center, Germany</div></div>
+      </div>
+      <div class="event-info-item">
+        <div class="info-icon">🎮</div>
+        <div><div class="info-label">Format</div><div class="info-value">In-Person + Online Hybrid</div></div>
+      </div>
+      <div class="event-info-item">
+        <div class="info-icon">🏢</div>
+        <div><div class="info-label">Exhibitors</div><div class="info-value">320 Studios & Publishers</div></div>
+      </div>
+      <div class="event-info-item">
+        <div class="info-icon">🌐</div>
+        <div><div class="info-label">Website</div><div class="info-value"><a href="#" style="color:var(--teal);">indiegamefest.com</a></div></div>
+      </div>
+    </div>
+
+    <!-- Tags -->
+    <div class="sidebar-widget">
+      <div class="widget-title">🏷️ Tags</div>
+      <div class="tags-cloud">
+        <span class="tag-chip">#Indie</span>
+        <span class="tag-chip">#GameDev</span>
+        <span class="tag-chip">#Publishing</span>
+        <span class="tag-chip">#InvestorDay</span>
+        <span class="tag-chip">#Mobile</span>
+        <span class="tag-chip">#PC</span>
+        <span class="tag-chip">#Awards</span>
+        <span class="tag-chip">#B2B</span>
+      </div>
+    </div>
+
+    <!-- Share -->
+    <div class="sidebar-widget">
+      <div class="widget-title">📤 Share This Event</div>
+      <div style="display:flex;gap:8px;">
+        <button onclick="showToast('Copied to clipboard!')" style="flex:1;background:var(--bg);border:1px solid var(--border);padding:9px;border-radius:8px;cursor:pointer;font-size:13px;font-weight:600;color:var(--text);">🔗 Copy Link</button>
+        <button onclick="showToast('Sharing to Twitter...')" style="flex:1;background:#1da1f2;color:#fff;border:none;padding:9px;border-radius:8px;cursor:pointer;font-size:13px;font-weight:600;">𝕏 Tweet</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- REGISTER CTA SECTION -->
+<div class="register-cta-section">
+  <h2>Ready to Join Indie Game Fest 2026?</h2>
+  <p>3 days, 320 exhibitors, 48 sessions — don't miss the most important indie event of the year.</p>
+  <div class="cta-buttons">
+    <button class="btn-cta-primary" onclick="showToast('🎉 Registration coming soon!')">Register as Attendee</button>
+    <button class="btn-cta-secondary" onclick="showToast('📋 Exhibitor form coming soon!')">Exhibit Your Game</button>
+  </div>
+</div>
+
+<!-- FOOTER -->
+<footer>
+  <p>© 2026 Game Connection. All rights reserved. &nbsp;·&nbsp; <a href="#">Privacy</a> &nbsp;·&nbsp; <a href="#">Terms</a> &nbsp;·&nbsp; <a href="Homepage_Feed_v2_PC.html">Back to Hub</a></p>
+</footer>
+
+<!-- TOAST -->
+<div class="toast" id="toast"></div>
+
+<script>
+  let currentStatus = 'live';
+  let currentSource = 'platform';
+
+  // Toggle debug panel
+  function toggleDebug() {
+    document.getElementById('debugPanel').classList.toggle('open');
+  }
+
+  // Toggle source badge
+  function toggleSource() {
+    setSource(currentSource === 'platform' ? 'crawler' : 'platform');
+  }
+
+  // Set status
+  function setStatus(s) {
+    currentStatus = s;
+    ['upcoming','live','ended'].forEach(x => {
+      document.getElementById('db' + x.charAt(0).toUpperCase() + x.slice(1)).className = 'debug-btn';
+    });
+    document.getElementById('db' + s.charAt(0).toUpperCase() + s.slice(1)).className = 'debug-btn active-' + s;
+    const pill = document.getElementById('statusPill');
+    pill.className = 'status-pill ' + s;
+    if (s === 'upcoming') pill.innerHTML = '🟢 Upcoming';
+    else if (s === 'live') pill.innerHTML = '<div class="live-dot" style="width:8px;height:8px;background:#e53e3e;border-radius:50%;animation:pulse 1.5s infinite;display:inline-block;margin-right:6px;"></div> Live Now';
+    else pill.innerHTML = '⚫ Ended';
+    showToast('Status set to: ' + s);
+  }
+
+  // Set source
+  function setSource(src) {
+    currentSource = src;
+    document.getElementById('dbPlatform').className = 'debug-src-btn' + (src === 'platform' ? ' active-platform' : '');
+    document.getElementById('dbCrawler').className = 'debug-src-btn' + (src === 'crawler' ? ' active-crawler' : '');
+    const badge = document.getElementById('sourceBadge');
+    if (src === 'platform') {
+      badge.className = 'source-badge platform';
+      badge.textContent = '✅ Platform Published';
+    } else {
+      badge.className = 'source-badge crawler';
+      badge.textContent = '🕷 Crawler Data';
+    }
+  }
+
+  // Toast
+  function showToast(msg) {
+    const t = document.getElementById('toast');
+    t.textContent = msg; t.classList.add('show');
+    setTimeout(() => t.classList.remove('show'), 3000);
+  }
+</script>
+</body>
+</html>
