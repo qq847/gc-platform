@@ -950,26 +950,38 @@ details .pname { font-size: 11px; color: var(--text3); }
 .journey-missing-text { color:#fff; font-size:18px; font-weight:800; margin-bottom:8px; }
 .journey-missing-sub { color:rgba(255,255,255,0.6); font-size:13px; }
 .journey-iframe-wrap { position:relative; background:#f0ede8; border-radius:12px; overflow:hidden; border:1px solid var(--border); }
-.journey-iframe { width:100%; height:calc(100vh - 220px); border:none; display:block; }
+.journey-iframe { width:100%; height:calc(100vh - 260px); border:none; display:block; }
+.journey-fork-bar {
+  display:none; background:#fff8e1; border:1px solid #f5c842; border-radius:10px;
+  padding:10px 16px; margin-bottom:12px; font-size:12px; color:#7a5c00;
+  align-items:flex-start; gap:10px;
+}
+.journey-fork-bar.visible { display:flex; }
+.journey-fork-icon { font-size:16px; flex-shrink:0; margin-top:1px; }
+.journey-fork-content { flex:1; }
+.journey-fork-title { font-weight:800; margin-bottom:4px; }
+.journey-fork-roles { display:flex; gap:6px; flex-wrap:wrap; margin-top:6px; }
+.journey-fork-role { padding:3px 10px; background:#fff; border:1px solid #f5c842; border-radius:20px; font-size:11px; font-weight:700; cursor:pointer; color:#7a5c00; }
+.journey-fork-role:hover { background:#f5c842; }
 </style>
 
 <div class="journey-ctrl">
   <select class="journey-select" id="journey-flow-select" onchange="journeyLoadFlow(this.value)">
     <optgroup label="── 参会方 ──">
-      <option value="attendee">👤 Attendee — 参会者（20步）</option>
-      <option value="mobile_attendee">📱 Mobile 参会者（19步）</option>
+      <option value="attendee">👤 Attendee — 参会者（21步）</option>
+      <option value="mobile_attendee">📱 Mobile 参会者（21步）</option>
     </optgroup>
     <optgroup label="── 行业参与方 ──">
-      <option value="developer">🎮 Developer — 游戏开发者（16步）</option>
-      <option value="buyer">📢 Buyer — 采购方 Publisher/Investor/Platform（15步）</option>
+      <option value="developer">🎮 Developer — 游戏开发者（19步）</option>
+      <option value="buyer">📢 Buyer — 采购方 Publisher/Investor/Platform（18步）</option>
       <option value="service_provider">🔧 Service Provider — 服务商（13步）</option>
-      <option value="sponsor">💰 Sponsor — 赞助商（9步）</option>
+      <option value="sponsor">💰 Sponsor — 赞助商（10步）</option>
     </optgroup>
     <optgroup label="── 活动方 ──">
-      <option value="organizer">🎯 Organizer — 主办方（14步）</option>
-      <option value="jury">⚖️ Jury — 专业评审（5步）</option>
-      <option value="speaker">🎤 Speaker — 演讲者（7步）</option>
-      <option value="press">📰 Press / Media — 媒体记者（8步）</option>
+      <option value="organizer">🎯 Organizer — 主办方（13步）</option>
+      <option value="jury">⚖️ Jury — 专业评审（6步）</option>
+      <option value="speaker">🎤 Speaker — 演讲者（8步）</option>
+      <option value="press">📰 Press / Media — 媒体（8步）</option>
     </optgroup>
   </select>
   <button class="journey-nav-btn" id="journey-prev" onclick="journeyGo(-1)">← 上一步</button>
@@ -984,6 +996,14 @@ details .pname { font-size: 11px; color: var(--text3); }
   </div>
 </div>
 
+<div class="journey-fork-bar" id="journey-fork-bar">
+  <div class="journey-fork-icon">⚠️</div>
+  <div class="journey-fork-content">
+    <div class="journey-fork-title" id="journey-fork-title">分叉点 — 根据角色选择，后续流程不同</div>
+    <div id="journey-fork-desc" style="font-size:11px;margin-bottom:4px;"></div>
+    <div class="journey-fork-roles" id="journey-fork-roles"></div>
+  </div>
+</div>
 <div class="journey-iframe-wrap" id="journey-frame-wrap">
   <div class="journey-missing-overlay" id="journey-missing" style="display:none;">
     <div class="journey-missing-text">🚧 页面尚未完成</div>
@@ -1611,6 +1631,7 @@ const observer = new IntersectionObserver(entries => {
 phaseBlocks.forEach(b => observer.observe(b));
 
 // ===== JOURNEY MODE =====
+// fork字段说明：{ label, roles:[{name,flow}] } — 显示分叉提示，roles是可跳转的其他角色流程
 const JOURNEY_FLOWS = {
   attendee: {
     name: '👤 Attendee — 参会者',
@@ -1618,11 +1639,25 @@ const JOURNEY_FLOWS = {
       { name: '首页浏览', desc: 'Phase 1 — 发现平台', file: 'Homepage_Feed_v1_PC.html' },
       { name: '展会日历', desc: 'Phase 1 — 找感兴趣的展会', file: 'ConferenceCalendar_v2_PC.html' },
       { name: '展会详情页', desc: 'Phase 1 — 了解活动详情', file: 'EventPublicPage_v2_PC.html' },
-      { name: '登录', desc: 'Phase 2 — 统一登录入口', file: 'Login_v1.html' },
-      { name: 'Onboarding — 选角色', desc: 'Phase 2 — ⚠️ 分叉点：选"Attendee"', file: 'Onboarding_v1.html' },
+      { name: '登录', desc: 'Phase 2 — 统一登录入口（所有角色共用）', file: 'Login_v1.html' },
+      { name: 'Onboarding — 选角色', desc: 'Phase 2 — 选择你的身份，后续流程由此分叉', file: 'Onboarding_v1.html',
+        fork: { title: '⚠️ 分叉点 — Onboarding 角色选择', desc: '选择 Attendee 继续参会者流程。其他角色请切换流程：', roles: [
+          { name: '🎮 Developer', flow: 'developer' },
+          { name: '📢 Buyer（Publisher/Investor）', flow: 'buyer' },
+          { name: '🔧 Service Provider', flow: 'service_provider' },
+          { name: '💰 Sponsor', flow: 'sponsor' },
+          { name: '🎯 Organizer', flow: 'organizer' },
+          { name: '🎤 Speaker', flow: 'speaker' },
+          { name: '📰 Press', flow: 'press' },
+        ]}
+      },
       { name: '个人主页', desc: 'Phase 2 — 完善个人资料', file: 'Profile_v2_PC.html' },
-      { name: '设置', desc: 'Phase 2 — 账号偏好', file: 'Settings_v1_PC.html' },
-      { name: '免费注册', desc: 'Phase 3 — 免费票注册流程', file: 'FreeRegistration_v1_PC.html' },
+      { name: '设置', desc: 'Phase 2 — 账号偏好设置', file: 'Settings_v1_PC.html' },
+      { name: '免费注册', desc: 'Phase 3 — 免费票注册流程', file: 'FreeRegistration_v1_PC.html',
+        fork: { title: '⚠️ 分叉点 — 票务类型', desc: '免费票走此页面。若购买付费票请切换：', roles: [
+          { name: '付费票务流程 →', flow: 'attendee' },
+        ]}
+      },
       { name: '付费票务', desc: 'Phase 3 — 浏览购票选项', file: 'PaidTicketing_v1_PC.html' },
       { name: '购物车', desc: 'Phase 3 — 确认票务信息', file: 'CheckoutCart_v1_PC.html' },
       { name: '购票结算', desc: 'Phase 3 — 支付', file: 'TicketPurchase_v1_PC.html' },
@@ -1633,42 +1668,61 @@ const JOURNEY_FLOWS = {
       { name: '消息', desc: 'Phase 5 — 与其他参与者沟通', file: 'Messages_v1_PC.html' },
       { name: '约见浏览', desc: 'Phase 6 — Let\'s Meet：找人约见', file: 'LetsMeet_Browse_v1_PC.html' },
       { name: '约见排期', desc: 'Phase 6 — 确认见面时间', file: 'LetsMeet_Schedule_v1_PC.html' },
-      { name: '奖项 & 投票', desc: 'Phase 6 — 参与大众评选', file: 'Awards_v1_PC.html' },
-      { name: '集市', desc: 'Phase 6 — 逛周边/商品', file: 'Market_v1_PC.html' },
+      { name: '集市浏览', desc: 'Phase 6 — 逛周边/商品', file: 'Market_v1_PC.html' },
+      { name: '商品详情', desc: 'Phase 6 — 查看商品详情', file: 'MarketListing_v1_PC.html' },
+      { name: '奖项 & 大众投票', desc: 'Phase 6 — 参与大众评选', file: 'Awards_v1_PC.html' },
     ]
   },
   developer: {
     name: '🎮 Developer — 游戏开发者',
     steps: [
       { name: '首页浏览', desc: 'Phase 1 — 发现平台', file: 'Homepage_Feed_v1_PC.html' },
+      { name: '展会日历', desc: 'Phase 1 — 找目标展会', file: 'ConferenceCalendar_v2_PC.html' },
+      { name: '展会详情页', desc: 'Phase 1 — 确认参展价值', file: 'EventPublicPage_v2_PC.html' },
       { name: '登录', desc: 'Phase 2 — 统一登录入口', file: 'Login_v1.html' },
-      { name: 'Onboarding — 选角色', desc: 'Phase 2 — ⚠️ 分叉点：选"Developer"', file: 'Onboarding_v1.html' },
+      { name: 'Onboarding — 选角色', desc: 'Phase 2 — 选择 Developer', file: 'Onboarding_v1.html',
+        fork: { title: '⚠️ 分叉点 — 选择角色', desc: '选择 Developer 继续。其他 B2B 角色：', roles: [
+          { name: '📢 Buyer', flow: 'buyer' },
+          { name: '🔧 Service Provider', flow: 'service_provider' },
+          { name: '💰 Sponsor', flow: 'sponsor' },
+        ]}
+      },
       { name: '个人主页', desc: 'Phase 2 — 展示个人/团队信息', file: 'Profile_v2_PC.html' },
       { name: '组织管理', desc: 'Phase 2 — 公司/工作室信息', file: 'Organizations_v1_PC.html' },
-      { name: '项目管理', desc: 'Phase 2 — 创建游戏项目', file: 'Projects_v1_PC.html' },
-      { name: '游戏展示页', desc: 'Phase 3 — 对外展示游戏（等人来找）', file: 'GameShowcase_v1_PC.html' },
+      { name: '项目管理', desc: 'Phase 2 — 创建并管理游戏项目', file: 'Projects_v1_PC.html' },
+      { name: '游戏展示页', desc: 'Phase 3 — 对外展示游戏，等 Buyer 来找', file: 'GameShowcase_v1_PC.html' },
       { name: '展位管理', desc: 'Phase 4 — 管理线下展台', file: 'BoothManagement_v1_PC.html' },
       { name: '展商浏览', desc: 'Phase 5 — 主动浏览其他展商', file: 'ExhibitorBrowse_v1_PC.html' },
-      { name: '约见浏览', desc: 'Phase 5 — Let\'s Meet：找 Buyer 约见', file: 'LetsMeet_Browse_v1_PC.html' },
+      { name: '约见浏览', desc: 'Phase 5 — Let\'s Meet：主动找 Buyer 约见', file: 'LetsMeet_Browse_v1_PC.html' },
       { name: '约见排期', desc: 'Phase 5 — 确认见面时间', file: 'LetsMeet_Schedule_v1_PC.html' },
       { name: '商务谈判', desc: 'Phase 5 — 收到 Buyer 邀约后进入谈判', file: 'DealNegotiation_v1_PC.html' },
       { name: 'Deal Room', desc: 'Phase 5 — 项目详情共享空间', file: 'DealRoom_v1_PC.html' },
       { name: '项目商务详情', desc: 'Phase 5 — 商务条款细化', file: 'ProjectBiz_v1_PC.html' },
       { name: '合同签署', desc: 'Phase 5 — 签约', file: 'ContractSign_v1_PC.html' },
       { name: '消息', desc: 'Phase 5 — 持续沟通', file: 'Messages_v1_PC.html' },
+      { name: '发起 Meetup', desc: 'Phase 6 — 自行组织小型线下活动（Mobile）', file: 'MeetupPublish_v1_Mobile.html' },
     ]
   },
   buyer: {
-    name: '📢 Buyer — 采购方（发行/投资/平台）',
+    name: '📢 Buyer — 采购方（Publisher / Investor / Platform）',
     steps: [
       { name: '首页浏览', desc: 'Phase 1 — 发现平台', file: 'Homepage_Feed_v1_PC.html' },
+      { name: '展会日历', desc: 'Phase 1 — 找目标展会', file: 'ConferenceCalendar_v2_PC.html' },
+      { name: '展会详情页', desc: 'Phase 1 — 确认参与价值', file: 'EventPublicPage_v2_PC.html' },
       { name: '登录', desc: 'Phase 2 — 统一登录入口', file: 'Login_v1.html' },
-      { name: 'Onboarding — 选角色', desc: 'Phase 2 — ⚠️ 分叉点：选"Publisher / Investor / Platform"', file: 'Onboarding_v1.html' },
-      { name: '个人主页', desc: 'Phase 2 — 展示公司背景和投资方向', file: 'Profile_v2_PC.html' },
+      { name: 'Onboarding — 选角色', desc: 'Phase 2 — 选择 Publisher / Investor / Platform\n💡 Buyer（采购方）= 在展会上寻找游戏项目进行发行、投资或平台合作的公司或个人。与 Developer（开发者/供给方）相对。', file: 'Onboarding_v1.html',
+        fork: { title: '⚠️ 分叉点 — 采购方身份说明', desc: 'Buyer 泛指所有采购方（Publisher/Investor/Platform均属于此类）。选择后即可申请 Buyer Program 认证。其他角色：', roles: [
+          { name: '🎮 Developer（供给方）', flow: 'developer' },
+          { name: '🔧 Service Provider', flow: 'service_provider' },
+          { name: '💰 Sponsor', flow: 'sponsor' },
+        ]}
+      },
+      { name: '个人主页', desc: 'Phase 2 — 展示公司背景和采购方向', file: 'Profile_v2_PC.html' },
       { name: '组织管理', desc: 'Phase 2 — 公司信息，建立可信度', file: 'Organizations_v1_PC.html' },
-      { name: '游戏展示浏览', desc: 'Phase 3 — 主动找游戏项目（Buyer核心页面）', file: 'GameShowcaseBrowse_v1_PC.html' },
+      { name: 'Buyer 邀请函', desc: 'Phase 3 — 接受主办方邀请，激活 Buyer Program 资质', file: 'BuyerInvitation_v1_PC.html' },
+      { name: 'Buyer 仪表盘', desc: 'Phase 3 — Buyer Program 专属看板（洽谈进度/推荐项目）\n💡 Buyer Program = 主办方认证的采购方资质，享有优先排期等特权', file: 'BuyerDashboard_v1_PC.html' },
+      { name: '游戏展示浏览', desc: 'Phase 3 — 浏览所有参展游戏项目（Buyer 核心页面）', file: 'GameShowcaseBrowse_v1_PC.html' },
       { name: '展商浏览', desc: 'Phase 3 — 浏览所有参展方', file: 'ExhibitorBrowse_v1_PC.html' },
-      { name: 'Buyer 仪表盘', desc: 'Phase 3 — Buyer Program专属：我的洽谈总览\n💡 Buyer = 经主办方认证的采购方资质，Publisher/Investor/Platform均可申请', file: 'BuyerDashboard_v1_PC.html' },
       { name: '约见浏览', desc: 'Phase 5 — Let\'s Meet：主动发起约见', file: 'LetsMeet_Browse_v1_PC.html' },
       { name: '约见排期', desc: 'Phase 5 — 安排见面时间', file: 'LetsMeet_Schedule_v1_PC.html' },
       { name: '商务谈判', desc: 'Phase 5 — 主动发起合作谈判', file: 'DealNegotiation_v1_PC.html' },
@@ -1682,10 +1736,16 @@ const JOURNEY_FLOWS = {
     name: '🔧 Service Provider — 服务商',
     steps: [
       { name: '首页浏览', desc: 'Phase 1 — 发现平台', file: 'Homepage_Feed_v1_PC.html' },
+      { name: '展会详情页', desc: 'Phase 1 — 确认参展价值', file: 'EventPublicPage_v2_PC.html' },
       { name: '登录', desc: 'Phase 2 — 统一登录入口', file: 'Login_v1.html' },
-      { name: 'Onboarding — 选角色', desc: 'Phase 2 — ⚠️ 分叉点：选"Service Provider"', file: 'Onboarding_v1.html' },
-      { name: '个人主页', desc: 'Phase 2 — 展示服务能力和案例', file: 'Profile_v2_PC.html' },
-      { name: '组织管理', desc: 'Phase 2 — 公司信息（本地化/QA/中间件等）', file: 'Organizations_v1_PC.html' },
+      { name: 'Onboarding — 选角色', desc: 'Phase 2 — 选择 Service Provider（本地化/QA/中间件/发行服务等）', file: 'Onboarding_v1.html',
+        fork: { title: '⚠️ 分叉点', desc: '选择 Service Provider。其他展商类角色：', roles: [
+          { name: '🎮 Developer', flow: 'developer' },
+          { name: '📢 Buyer', flow: 'buyer' },
+        ]}
+      },
+      { name: '个人主页', desc: 'Phase 2 — 展示服务能力和成功案例', file: 'Profile_v2_PC.html' },
+      { name: '组织管理', desc: 'Phase 2 — 公司信息', file: 'Organizations_v1_PC.html' },
       { name: '项目管理', desc: 'Phase 2 — 展示服务项目/案例', file: 'Projects_v1_PC.html' },
       { name: '展位管理', desc: 'Phase 4 — 管理线下展台', file: 'BoothManagement_v1_PC.html' },
       { name: '展商浏览', desc: 'Phase 5 — 找潜在客户（开发者/发行商）', file: 'ExhibitorBrowse_v1_PC.html' },
@@ -1700,8 +1760,15 @@ const JOURNEY_FLOWS = {
     name: '💰 Sponsor — 赞助商',
     steps: [
       { name: '首页浏览', desc: 'Phase 1 — 发现平台', file: 'Homepage_Feed_v1_PC.html' },
+      { name: '展会详情页', desc: 'Phase 1 — 了解赞助机会', file: 'EventPublicPage_v2_PC.html' },
       { name: '登录', desc: 'Phase 2 — 统一登录入口', file: 'Login_v1.html' },
-      { name: 'Onboarding — 选角色', desc: 'Phase 2 — ⚠️ 分叉点：选"Sponsor"', file: 'Onboarding_v1.html' },
+      { name: 'Onboarding — 选角色', desc: 'Phase 2 — 选择 Sponsor', file: 'Onboarding_v1.html',
+        fork: { title: '⚠️ 分叉点', desc: '选择 Sponsor 继续赞助流程。', roles: [
+          { name: '🎮 Developer', flow: 'developer' },
+          { name: '📢 Buyer', flow: 'buyer' },
+          { name: '🎯 Organizer', flow: 'organizer' },
+        ]}
+      },
       { name: '个人主页', desc: 'Phase 2 — 展示品牌信息', file: 'Profile_v2_PC.html' },
       { name: '组织管理', desc: 'Phase 2 — 公司/品牌信息', file: 'Organizations_v1_PC.html' },
       { name: '浏览赞助机会', desc: 'Phase 6 — 查看各档位赞助权益', file: 'SponsorExplore_v1_PC.html' },
@@ -1714,39 +1781,51 @@ const JOURNEY_FLOWS = {
     name: '🎯 Organizer — 主办方',
     steps: [
       { name: '登录', desc: 'Phase 2 — 统一登录入口', file: 'Login_v1.html' },
-      { name: 'Onboarding — 选角色', desc: 'Phase 2 — ⚠️ 分叉点：选"Event Organizer"', file: 'Onboarding_v1.html' },
-      { name: '活动创建向导', desc: 'Phase 7 — 新建活动', file: 'EventSetupWizard_v3_PC.html' },
+      { name: 'Onboarding — 选角色', desc: 'Phase 2 — 选择 Event Organizer', file: 'Onboarding_v1.html',
+        fork: { title: '⚠️ 分叉点', desc: '选择 Event Organizer 进入主办方后台。', roles: [
+          { name: '👤 Attendee', flow: 'attendee' },
+          { name: '🎮 Developer', flow: 'developer' },
+        ]}
+      },
+      { name: '活动创建向导', desc: 'Phase 7 — 新建活动（Step by Step）', file: 'EventSetupWizard_v3_PC.html' },
       { name: '模块配置', desc: 'Phase 7 — 开启/关闭功能模块', file: 'EventModuleSetup_v4_PC.html' },
-      { name: '赞助方案搭建', desc: 'Phase 7 — 设计赞助档位', file: 'SponsorBuilder_v1_PC.html' },
-      { name: '会议日程搭建', desc: 'Phase 7 — 编排演讲/论坛', file: 'ConferenceScheduleBuilder_v2_PC.html' },
-      { name: '场次管理', desc: 'Phase 7 — 细化场次时间地点', file: 'ScheduleBuilder_v1_PC.html' },
-      { name: 'Session 管理', desc: 'Phase 7 — 审核演讲申请', file: 'SessionManagement_v1_PC.html' },
-      { name: '活动发布', desc: 'Phase 7 — 正式上线活动', file: 'EventPublishing_v1_PC.html' },
+      { name: '赞助方案搭建', desc: 'Phase 7 — 设计赞助档位目录', file: 'SponsorBuilder_v1_PC.html' },
+      { name: '会议日程搭建', desc: 'Phase 7 — 编排演讲/论坛/Workshop', file: 'ConferenceScheduleBuilder_v2_PC.html' },
+      { name: '场次管理', desc: 'Phase 7 — 细化场次时间与地点', file: 'ScheduleBuilder_v1_PC.html' },
+      { name: 'Session 管理', desc: 'Phase 7 — 审核演讲申请，排期演讲者', file: 'SessionManagement_v1_PC.html' },
+      { name: '活动发布', desc: 'Phase 7 — 正式对外上线活动', file: 'EventPublishing_v1_PC.html' },
       { name: 'EventHQ 后台', desc: 'Phase 7 — 实时运营仪表盘', file: 'EventHQ_Dashboard_v1_PC.html' },
-      { name: 'Buyer 邀请', desc: 'Phase 7 — 邀请采购方参与', file: 'BuyerInvitation_v1_PC.html' },
-      { name: 'Buyer 仪表盘', desc: 'Phase 7 — 查看采购方数据', file: 'BuyerDashboard_v1_PC.html' },
-      { name: 'Let\'s Meet 配置', desc: 'Phase 7 — 设置B2B约见规则', file: 'LetsMeet_Setup_v1_PC.html' },
-      { name: 'Let\'s Meet 运营', desc: 'Phase 7 — 管理约见进展', file: 'LetsMeet_Organizer_v1_PC.html' },
+      { name: 'Buyer 邀请', desc: 'Phase 7 — 向采购方发送邀请函', file: 'BuyerInvitation_v1_PC.html' },
+      { name: 'Buyer 仪表盘', desc: 'Phase 7 — 查看采购方洽谈数据', file: 'BuyerDashboard_v1_PC.html' },
+      { name: 'Let\'s Meet 配置', desc: 'Phase 7 — 设置B2B约见规则与时间表', file: 'LetsMeet_Setup_v1_PC.html' },
+      { name: 'Let\'s Meet 运营', desc: 'Phase 7 — 实时管理约见进展', file: 'LetsMeet_Organizer_v1_PC.html' },
     ]
   },
   jury: {
     name: '⚖️ Jury — 专业评审',
     steps: [
       { name: '首页浏览', desc: 'Phase 1 — 发现平台', file: 'Homepage_Feed_v1_PC.html' },
-      { name: '登录', desc: 'Phase 2 — 统一登录入口（主办方邀请）', file: 'Login_v1.html' },
+      { name: '登录', desc: 'Phase 2 — 主办方邀请链接登录', file: 'Login_v1.html' },
       { name: '个人主页', desc: 'Phase 2 — 评委资历展示', file: 'Profile_v2_PC.html' },
-      { name: '奖项总览', desc: 'Phase 6 — 查看评审类别和规则', file: 'Awards_v1_PC.html' },
-      { name: '评审投票', desc: 'Phase 6 — 对提名作品评分', file: 'AwardsVoting_v1_PC.html' },
+      { name: '奖项总览', desc: 'Phase 6 — 查看评审类别、提名作品和评审规则', file: 'Awards_v1_PC.html' },
+      { name: '评审投票', desc: 'Phase 6 — 对提名作品逐项评分', file: 'AwardsVoting_v1_PC.html' },
+      { name: '消息', desc: 'Phase 6 — 与主办方沟通', file: 'Messages_v1_PC.html' },
     ]
   },
   speaker: {
     name: '🎤 Speaker — 演讲者',
     steps: [
       { name: '首页浏览', desc: 'Phase 1 — 发现平台', file: 'Homepage_Feed_v1_PC.html' },
+      { name: '展会日历', desc: 'Phase 1 — 找目标展会征稿', file: 'ConferenceCalendar_v2_PC.html' },
       { name: '登录', desc: 'Phase 2 — 统一登录入口', file: 'Login_v1.html' },
-      { name: 'Onboarding — 选角色', desc: 'Phase 2 — ⚠️ 分叉点：选角色后申请Speaker资质', file: 'Onboarding_v1.html' },
-      { name: '个人主页', desc: 'Phase 2 — 完善演讲者简介', file: 'Profile_v2_PC.html' },
-      { name: 'Speaker 申请/管理', desc: 'Phase 7 — 🚧 占位：提交演讲提案、管理Session', file: 'Speaker_v1_PC.html' },
+      { name: 'Onboarding — 选角色', desc: 'Phase 2 — 选择任意角色后申请 Speaker 资质', file: 'Onboarding_v1.html',
+        fork: { title: '⚠️ 分叉点', desc: 'Speaker 不是独立角色，而是附加资质。你先选主角色（如 Developer），再申请演讲。', roles: [
+          { name: '🎮 Developer + Speaker', flow: 'developer' },
+          { name: '📢 Buyer + Speaker', flow: 'buyer' },
+        ]}
+      },
+      { name: '个人主页', desc: 'Phase 2 — 完善演讲者简介和主题', file: 'Profile_v2_PC.html' },
+      { name: 'Speaker 申请/管理', desc: 'Phase 7 — 🚧 占位页：提交演讲提案、查看审核状态、管理 Session 资料', file: 'Speaker_v1_PC.html' },
       { name: '我的日程', desc: 'Phase 4 — 查看确认后的演讲时间', file: 'MySchedule_v1_PC.html' },
       { name: '消息', desc: 'Phase 7 — 与主办方沟通演讲细节', file: 'Messages_v1_PC.html' },
     ]
@@ -1755,10 +1834,15 @@ const JOURNEY_FLOWS = {
     name: '📰 Press / Media — 媒体记者',
     steps: [
       { name: '首页浏览', desc: 'Phase 1 — 发现平台', file: 'Homepage_Feed_v1_PC.html' },
+      { name: '展会详情页', desc: 'Phase 1 — 确认报道价值', file: 'EventPublicPage_v2_PC.html' },
       { name: '登录', desc: 'Phase 2 — 统一登录入口', file: 'Login_v1.html' },
-      { name: 'Onboarding — 选角色', desc: 'Phase 2 — ⚠️ 分叉点：选角色后申请媒体资质', file: 'Onboarding_v1.html' },
-      { name: '个人主页', desc: 'Phase 2 — 媒体机构信息', file: 'Profile_v2_PC.html' },
-      { name: 'Press Center', desc: 'Phase 1 — 🚧 占位：申请媒体证、下载媒体包、预约采访', file: 'Press_v1_PC.html' },
+      { name: 'Onboarding — 选角色', desc: 'Phase 2 — 选择任意角色后申请媒体资质', file: 'Onboarding_v1.html',
+        fork: { title: '⚠️ 分叉点', desc: 'Press 是附加资质，需主办方审核通过后解锁 Press Center。', roles: [
+          { name: '👤 Attendee 流程', flow: 'attendee' },
+        ]}
+      },
+      { name: '个人主页', desc: 'Phase 2 — 填写媒体机构信息', file: 'Profile_v2_PC.html' },
+      { name: 'Press Center', desc: 'Phase 1 — 🚧 占位页：申请媒体证、下载媒体包、预约采访', file: 'Press_v1_PC.html' },
       { name: '约见浏览', desc: 'Phase 5 — 预约采访开发者/发行商', file: 'LetsMeet_Browse_v1_PC.html' },
       { name: '约见排期', desc: 'Phase 5 — 确认采访时间', file: 'LetsMeet_Schedule_v1_PC.html' },
       { name: '消息', desc: 'Phase 5 — 与受访方沟通', file: 'Messages_v1_PC.html' },
@@ -1771,7 +1855,12 @@ const JOURNEY_FLOWS = {
       { name: '展会日历', desc: 'Phase 1 — 发现展会', file: 'ConferenceCalendar_v2_Mobile.html' },
       { name: '展会详情', desc: 'Phase 1 — 公开页', file: 'EventPublicPage_v2_Mobile.html' },
       { name: '登录', desc: 'Phase 2 — 统一登录入口', file: 'Login_v1_Mobile.html' },
-      { name: 'Onboarding', desc: 'Phase 2 — 选角色', file: 'Onboarding_v1_Mobile.html' },
+      { name: 'Onboarding — 选角色', desc: 'Phase 2 — 选择你的身份', file: 'Onboarding_v1_Mobile.html',
+        fork: { title: '⚠️ 分叉点 — Mobile 角色选择', desc: '参会者继续本流程。行业人士请使用 PC 端完整流程。', roles: [
+          { name: '🖥️ PC Attendee 完整版', flow: 'attendee' },
+          { name: '🎮 PC Developer', flow: 'developer' },
+        ]}
+      },
       { name: '设置', desc: 'Phase 2 — 账号设置', file: 'Settings_v1_Mobile.html' },
       { name: '免费注册', desc: 'Phase 3 — 注册流程', file: 'FreeRegistration_v1_Mobile.html' },
       { name: '付费票务', desc: 'Phase 3 — 买票', file: 'PaidTicketing_v1_Mobile.html' },
@@ -1784,8 +1873,10 @@ const JOURNEY_FLOWS = {
       { name: '约见浏览', desc: 'Phase 6 — Let\'s Meet', file: 'LetsMeet_Browse_v1_Mobile.html' },
       { name: '约见排期', desc: 'Phase 6 — 确认时间', file: 'LetsMeet_Schedule_v1_Mobile.html' },
       { name: '集市', desc: 'Phase 6 — Market', file: 'Market_v1_Mobile.html' },
+      { name: '商品详情', desc: 'Phase 6 — 商品列表', file: 'MarketListing_v1_Mobile.html' },
       { name: '赞助浏览', desc: 'Phase 6 — 赞助探索', file: 'SponsorExplore_v1_Mobile.html' },
-      { name: '投票', desc: 'Phase 6 — 评奖投票', file: 'AwardsVoting_v1_Mobile.html' },
+      { name: '赞助管理', desc: 'Phase 6 — 已购赞助权益', file: 'SponsorshipManagement_v1_Mobile.html' },
+      { name: '投票', desc: 'Phase 6 — 评奖大众投票', file: 'AwardsVoting_v1_Mobile.html' },
     ]
   }
 };
@@ -1810,12 +1901,34 @@ function journeyRender() {
   const step = flow.steps[journeyCurrentStep];
   const total = flow.steps.length;
   const idx = journeyCurrentStep;
+
   document.getElementById('journey-step-name').textContent = (idx + 1) + '. ' + step.name;
   document.getElementById('journey-step-desc').textContent = step.desc;
   document.getElementById('journey-prog-fill').style.width = ((idx + 1) / total * 100) + '%';
   document.getElementById('journey-prog-label').textContent = (idx + 1) + '/' + total;
   document.getElementById('journey-prev').disabled = idx === 0;
   document.getElementById('journey-next').disabled = idx === total - 1;
+
+  // 分叉提示
+  const forkBar = document.getElementById('journey-fork-bar');
+  if (step.fork) {
+    document.getElementById('journey-fork-title').textContent = step.fork.title;
+    document.getElementById('journey-fork-desc').textContent = step.fork.desc || '';
+    const rolesEl = document.getElementById('journey-fork-roles');
+    rolesEl.innerHTML = '';
+    (step.fork.roles || []).forEach(function(r) {
+      const btn = document.createElement('button');
+      btn.className = 'journey-fork-role';
+      btn.textContent = r.name;
+      btn.onclick = function() { journeyLoadFlow(r.flow); document.getElementById('journey-flow-select').value = r.flow; };
+      rolesEl.appendChild(btn);
+    });
+    forkBar.classList.add('visible');
+  } else {
+    forkBar.classList.remove('visible');
+  }
+
+  // iframe
   const iframe = document.getElementById('journey-iframe');
   const missing = document.getElementById('journey-missing');
   if (step.file) {
