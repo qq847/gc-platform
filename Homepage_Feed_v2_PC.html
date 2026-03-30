@@ -4,860 +4,1025 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Game Connection – The Game Industry Hub</title>
-<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;0,9..40,800;1,9..40,400&display=swap" rel="stylesheet">
 <style>
-  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-  :root {
-    --bg: #e8e4da;
-    --orange: #d95f2b;
-    --teal: #0a7fa8;
-    --green: #0d9b72;
-    --card: #ffffff;
-    --text: #1a1a2e;
-    --muted: #6b7280;
-    --border: #e0ddd6;
-    --radius: 10px;
-    --shadow: 0 2px 8px rgba(0,0,0,0.08);
-  }
-  body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--text); line-height: 1.5; }
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --orange:#d95f2b;--orange-dark:#b84e20;
+  --teal:#0a7fa8;--green:#0d9b72;
+  --bg:#e8e4da;--card:#fff;
+  --text:#1c1a17;--muted:#6b6660;
+  --border:#dedad2;--live-red:#e53935;
+  --radius:10px;
+  --shadow:0 2px 8px rgba(0,0,0,.08);
+  --shadow-h:0 6px 24px rgba(0,0,0,.14);
+}
+body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);font-size:15px;line-height:1.6}
+a{text-decoration:none;color:inherit}
 
-  /* NAVBAR */
-  .navbar {
-    position: sticky; top: 0; z-index: 100;
-    background: var(--text); color: #fff;
-    padding: 0 32px; height: 60px;
-    display: flex; align-items: center; gap: 20px;
-    box-shadow: 0 2px 12px rgba(0,0,0,0.2);
-  }
-  .nav-logo { font-size: 18px; font-weight: 700; color: var(--orange); white-space: nowrap; text-decoration: none; }
-  .nav-logo span { color: #fff; font-weight: 400; }
-  .nav-search {
-    flex: 1; max-width: 400px;
-    background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2);
-    border-radius: 8px; padding: 8px 14px;
-    color: #fff; font-family: inherit; font-size: 14px;
-    outline: none;
-  }
-  .nav-search::placeholder { color: rgba(255,255,255,0.5); }
-  .nav-lang {
-    background: transparent; border: 1px solid rgba(255,255,255,0.3);
-    border-radius: 6px; color: #fff; padding: 6px 10px;
-    font-family: inherit; font-size: 13px; cursor: pointer;
-  }
-  .nav-signin {
-    background: var(--orange); color: #fff; border: none;
-    padding: 8px 20px; border-radius: 8px; font-family: inherit;
-    font-size: 14px; font-weight: 600; cursor: pointer;
-    transition: background 0.2s;
-  }
-  .nav-signin:hover { background: #c0521f; }
+/* ── NAVBAR ── */
+.navbar{position:sticky;top:0;z-index:200;background:#fff;border-bottom:1px solid var(--border);box-shadow:0 2px 12px rgba(0,0,0,.07)}
+.navbar-inner{max-width:1400px;margin:0 auto;padding:0 24px;height:64px;display:flex;align-items:center;gap:16px}
+.logo{display:flex;align-items:center;gap:10px;flex-shrink:0}
+.logo-icon{width:38px;height:38px;background:linear-gradient(135deg,var(--orange),#f5853a);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:19px;font-weight:800;color:#fff}
+.logo-text{font-size:16px;font-weight:800;color:var(--text);line-height:1.1}
+.logo-text span{color:var(--orange)}
+.logo-sub{font-size:10px;font-weight:400;color:var(--muted);letter-spacing:.5px}
+.search-wrap{flex:1;max-width:480px;position:relative}
+.search-wrap input{width:100%;height:40px;border:1.5px solid var(--border);border-radius:20px;padding:0 16px 0 42px;font-family:inherit;font-size:14px;background:var(--bg);color:var(--text);outline:none;transition:.2s}
+.search-wrap input:focus{border-color:var(--teal);box-shadow:0 0 0 3px rgba(10,127,168,.12);background:#fff}
+.search-icon{position:absolute;left:14px;top:50%;transform:translateY(-50%);color:var(--muted);pointer-events:none}
+.nav-right{display:flex;align-items:center;gap:10px;margin-left:auto;flex-shrink:0}
+.lang-btn{display:flex;align-items:center;gap:6px;padding:7px 12px;border:1.5px solid var(--border);border-radius:8px;cursor:pointer;font-size:13px;font-family:inherit;color:var(--text);background:var(--bg)}
+.lang-btn select{border:none;outline:none;background:transparent;font-family:inherit;font-size:13px;cursor:pointer;color:var(--text)}
+.btn-signin{padding:9px 22px;background:var(--orange);color:#fff;border:none;border-radius:8px;font-family:inherit;font-size:14px;font-weight:600;cursor:pointer;transition:.2s}
+.btn-signin:hover{background:var(--orange-dark)}
 
-  /* MAIN TABS */
-  .main-tabs {
-    position: sticky; top: 60px; z-index: 99;
-    background: var(--card); border-bottom: 2px solid var(--border);
-    display: flex; align-items: center; gap: 0;
-    padding: 0 32px;
-  }
-  .main-tab {
-    padding: 16px 28px; font-size: 15px; font-weight: 600;
-    cursor: pointer; border-bottom: 3px solid transparent;
-    margin-bottom: -2px; color: var(--muted); transition: all 0.2s;
-    display: flex; align-items: center; gap: 8px;
-  }
-  .main-tab:hover { color: var(--text); }
-  .main-tab.active { color: var(--orange); border-bottom-color: var(--orange); }
+/* ── MAIN TABS BAR (sticky below navbar) ── */
+.main-tabs{background:#fff;border-bottom:2px solid var(--border);position:sticky;top:64px;z-index:199}
+.main-tabs-inner{max-width:1400px;margin:0 auto;padding:0 24px;display:flex;gap:0}
+.mtab{padding:14px 24px;border:none;background:none;font-family:inherit;font-size:15px;font-weight:500;color:var(--muted);cursor:pointer;border-bottom:3px solid transparent;transition:.2s;white-space:nowrap;position:relative;top:2px;display:flex;align-items:center;gap:8px}
+.mtab:hover{color:var(--text)}
+.mtab.active{color:var(--orange);border-bottom-color:var(--orange);font-weight:700}
+.mtab-badge{background:var(--live-red);color:#fff;border-radius:20px;font-size:10px;font-weight:700;padding:1px 6px;letter-spacing:.3px;animation:pulse-badge 1.5s ease-in-out infinite}
+@keyframes pulse-badge{0%,100%{opacity:1}50%{opacity:.6}}
 
-  /* VIEWS */
-  .view { display: none; }
-  .view.active { display: block; }
+/* ── SECTION PANELS ── */
+.tab-panel{display:none}
+.tab-panel.active{display:block}
 
-  /* MAX WIDTH CONTAINER */
-  .container { max-width: 1400px; margin: 0 auto; padding: 0 32px; }
+/* ── HERO ── */
+.hero{background:linear-gradient(135deg,#1a1a2e 0%,#16213e 50%,#0f3460 100%);color:#fff;position:relative;overflow:hidden}
+.hero-inner{max-width:1400px;margin:0 auto;padding:48px 24px 44px;position:relative;z-index:1}
+.hero-eyebrow{display:inline-flex;align-items:center;gap:10px;background:rgba(229,57,53,.15);border:1px solid rgba(229,57,53,.4);border-radius:8px;padding:7px 14px;margin-bottom:20px;font-size:13px;font-weight:500;cursor:pointer}
+.live-dot{width:9px;height:9px;background:var(--live-red);border-radius:50%;animation:pulse-dot 1.4s ease-in-out infinite;flex-shrink:0}
+@keyframes pulse-dot{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.4;transform:scale(1.3)}}
+.hero-title{font-size:46px;font-weight:800;line-height:1.1;margin-bottom:12px;letter-spacing:-1.5px}
+.hero-title span{color:var(--orange)}
+.hero-subtitle{font-size:17px;color:rgba(255,255,255,.72);max-width:580px;font-weight:400;margin-bottom:28px}
+.hero-stats{display:flex;gap:36px;flex-wrap:wrap}
+.hero-stat{text-align:center}
+.hstat-num{font-size:28px;font-weight:800;color:#fff;line-height:1}
+.hstat-num span{color:var(--orange)}
+.hstat-label{font-size:11px;color:rgba(255,255,255,.5);margin-top:3px;letter-spacing:.5px;text-transform:uppercase}
+.hero-deco{position:absolute;right:-60px;top:-60px;width:400px;height:400px;border-radius:50%;background:radial-gradient(circle,rgba(217,95,43,.18) 0%,transparent 70%);pointer-events:none}
+.hero-deco2{position:absolute;right:200px;bottom:-80px;width:280px;height:280px;border-radius:50%;background:radial-gradient(circle,rgba(10,127,168,.14) 0%,transparent 70%);pointer-events:none}
 
-  /* ==================== HOME VIEW ==================== */
-  .hero {
-    background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
-    color: #fff; padding: 60px 32px;
-  }
-  .hero-inner { max-width: 1400px; margin: 0 auto; }
-  .hero h1 { font-size: 48px; font-weight: 700; margin-bottom: 12px; line-height: 1.2; }
-  .hero h1 span { color: var(--orange); }
-  .hero p { font-size: 18px; color: rgba(255,255,255,0.7); margin-bottom: 36px; }
-  .hero-stats { display: flex; gap: 40px; }
-  .stat { text-align: center; }
-  .stat-num { font-size: 32px; font-weight: 700; color: var(--orange); }
-  .stat-label { font-size: 13px; color: rgba(255,255,255,0.6); margin-top: 2px; }
+/* ── FEED LAYOUT ── */
+.feed-layout{max-width:1400px;margin:0 auto;padding:24px 24px 60px;display:grid;grid-template-columns:1fr 360px;gap:28px;align-items:start}
 
-  /* HOME CONTENT LAYOUT */
-  .home-content { max-width: 1400px; margin: 32px auto; padding: 0 32px; display: flex; gap: 28px; }
-  .main-feed { flex: 1; min-width: 0; }
-  .sidebar { width: 380px; flex-shrink: 0; }
+/* ── FILTER CHIPS ── */
+.filter-row{display:flex;gap:8px;margin-bottom:18px;flex-wrap:wrap}
+.chip{padding:7px 18px;border-radius:20px;border:1.5px solid var(--border);background:#fff;font-family:inherit;font-size:13px;font-weight:500;color:var(--muted);cursor:pointer;transition:.2s}
+.chip:hover{border-color:var(--orange);color:var(--orange)}
+.chip.active{background:var(--orange);color:#fff;border-color:var(--orange)}
 
-  /* SUB TABS */
-  .sub-tabs { display: flex; gap: 8px; margin-bottom: 20px; }
-  .sub-tab {
-    padding: 8px 18px; border-radius: 20px; font-size: 14px; font-weight: 500;
-    cursor: pointer; border: 1px solid var(--border); background: var(--card);
-    color: var(--muted); transition: all 0.2s;
-  }
-  .sub-tab.active { background: var(--orange); color: #fff; border-color: var(--orange); }
-  .sub-tab:hover:not(.active) { border-color: var(--orange); color: var(--orange); }
+/* ── FEED CARDS ── */
+.feed-col{display:flex;flex-direction:column;gap:16px}
+.card{background:var(--card);border-radius:var(--radius);box-shadow:var(--shadow);overflow:hidden;transition:.2s;cursor:pointer;position:relative}
+.card:hover{box-shadow:var(--shadow-h);transform:translateY(-2px)}
 
-  /* FEED CARDS */
-  .feed { display: flex; flex-direction: column; gap: 16px; }
+/* Data badge */
+.data-badge{position:absolute;top:10px;right:10px;z-index:10;padding:3px 9px;border-radius:20px;font-size:10px;font-weight:700;letter-spacing:.4px}
+.badge-platform{background:#fff3ee;border:1px solid rgba(217,95,43,.3);color:var(--orange)}
+.badge-crawler{background:#f5f5f5;border:1px solid #ccc;color:#666}
 
-  /* LIVE CARD */
-  .live-card {
-    background: var(--card); border-radius: var(--radius);
-    border: 2px solid #e53e3e; box-shadow: 0 0 20px rgba(229,62,62,0.15);
-    overflow: hidden;
-  }
-  .live-card-inner { padding: 20px 24px; display: flex; align-items: center; gap: 20px; }
-  .live-cover {
-    width: 140px; height: 90px; border-radius: 8px; flex-shrink: 0;
-    background: linear-gradient(135deg, #1a1a2e, #e53e3e);
-    display: flex; align-items: center; justify-content: center;
-  }
-  .live-pulse {
-    width: 14px; height: 14px; background: #e53e3e; border-radius: 50%;
-    animation: pulse 1.5s infinite;
-  }
-  @keyframes pulse {
-    0% { box-shadow: 0 0 0 0 rgba(229,62,62,0.7); }
-    70% { box-shadow: 0 0 0 10px rgba(229,62,62,0); }
-    100% { box-shadow: 0 0 0 0 rgba(229,62,62,0); }
-  }
-  .live-badge {
-    display: inline-flex; align-items: center; gap: 6px;
-    background: #e53e3e; color: #fff; font-size: 11px; font-weight: 700;
-    padding: 3px 8px; border-radius: 4px; margin-bottom: 8px;
-    text-transform: uppercase; letter-spacing: 0.5px;
-  }
-  .live-info h3 { font-size: 20px; font-weight: 700; margin-bottom: 6px; }
-  .live-info p { color: var(--muted); font-size: 14px; }
+/* Live card */
+.card-live{border:2px solid var(--live-red);background:linear-gradient(135deg,#fff 60%,#fff5f5 100%)}
+.card-live-inner{padding:20px 22px;display:flex;align-items:center;gap:20px}
+.live-badge-big{display:flex;align-items:center;gap:7px;background:var(--live-red);color:#fff;font-size:13px;font-weight:700;padding:7px 14px;border-radius:6px;letter-spacing:.5px;flex-shrink:0}
+.card-live-info{flex:1}
+.card-live-info h3{font-size:18px;font-weight:700;margin-bottom:4px}
+.card-live-meta{font-size:13px;color:var(--muted);display:flex;gap:14px;flex-wrap:wrap}
+.card-live-meta span{display:flex;align-items:center;gap:5px}
+.btn-live{padding:10px 20px;background:var(--live-red);color:#fff;border:none;border-radius:8px;font-family:inherit;font-size:13px;font-weight:600;cursor:pointer;flex-shrink:0;transition:.2s}
+.btn-live:hover{background:#c62828}
+.live-stats-row{display:flex;gap:20px;padding:12px 22px;border-top:1px solid #ffe0e0;background:#fff9f9}
+.live-stat-item{text-align:center}
+.live-stat-item strong{display:block;font-size:18px;font-weight:700;color:var(--live-red)}
+.live-stat-item span{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.4px}
 
-  /* EVENT CARD */
-  .event-card {
-    background: var(--card); border-radius: var(--radius);
-    box-shadow: var(--shadow); overflow: hidden;
-    display: flex; position: relative;
-  }
-  .event-cover {
-    width: 160px; height: 110px; flex-shrink: 0;
-  }
-  .event-cover-gc { background: linear-gradient(135deg, #0a7fa8, #1a1a2e); }
-  .event-cover-gca { background: linear-gradient(135deg, #0d9b72, #0a7fa8); }
-  .event-cover-ng { background: linear-gradient(135deg, #d95f2b, #9b2335); }
-  .event-info { padding: 14px 16px; flex: 1; }
-  .event-info h3 { font-size: 16px; font-weight: 700; margin-bottom: 4px; }
-  .event-meta { font-size: 13px; color: var(--muted); margin-bottom: 8px; }
-  .status-badge {
-    display: inline-block; font-size: 11px; font-weight: 600;
-    padding: 2px 8px; border-radius: 4px;
-  }
-  .status-upcoming { background: #d1fae5; color: #065f46; }
-  .status-live { background: #fee2e2; color: #991b1b; }
-  .status-ended { background: #f3f4f6; color: #6b7280; }
-  .corner-badge {
-    position: absolute; top: 10px; right: 10px;
-    font-size: 11px; font-weight: 600; padding: 3px 8px; border-radius: 4px;
-  }
-  .badge-platform { background: #fff3e0; color: #d95f2b; border: 1px solid #ffd0a0; }
-  .badge-crawler { background: #f3f4f6; color: #6b7280; border: 1px solid #e0ddd6; }
+/* Event card */
+.card-event-cover{height:140px;position:relative;display:flex;align-items:flex-end;padding:14px}
+.evt-status{position:absolute;top:12px;right:12px;padding:4px 10px;border-radius:20px;font-size:11px;font-weight:700;letter-spacing:.5px;text-transform:uppercase}
+.s-live{background:rgba(229,57,53,.15);color:var(--live-red);border:1px solid rgba(229,57,53,.3);animation:border-pulse 1.4s ease-in-out infinite}
+.s-upcoming{background:rgba(13,155,114,.15);color:var(--green);border:1px solid rgba(13,155,114,.3)}
+.s-ended{background:rgba(107,107,123,.1);color:var(--muted);border:1px solid rgba(107,107,123,.2)}
+@keyframes border-pulse{0%,100%{opacity:1}50%{opacity:.6}}
+.evt-cover-year{font-size:48px;font-weight:800;color:rgba(255,255,255,.12);line-height:1;position:absolute;right:14px;bottom:8px;letter-spacing:-2px}
+.evt-cover-text{font-size:13px;font-weight:600;color:rgba(255,255,255,.9);text-shadow:0 1px 4px rgba(0,0,0,.4)}
+.card-event-body{padding:16px 20px 20px}
+.card-event-body h3{font-size:17px;font-weight:700;margin-bottom:8px;line-height:1.3}
+.evt-meta{display:flex;flex-wrap:wrap;gap:10px;margin-bottom:14px}
+.evt-meta-i{display:flex;align-items:center;gap:5px;font-size:13px;color:var(--muted)}
+.btn-view{padding:9px 18px;background:transparent;border:1.5px solid var(--teal);color:var(--teal);border-radius:7px;font-family:inherit;font-size:13px;font-weight:600;cursor:pointer;transition:.2s}
+.btn-view:hover{background:var(--teal);color:#fff}
 
-  /* NEWS CARD */
-  .news-card {
-    background: var(--card); border-radius: var(--radius);
-    box-shadow: var(--shadow); padding: 16px 20px;
-    display: flex; gap: 16px; align-items: flex-start;
-  }
-  .news-icon {
-    width: 60px; height: 60px; border-radius: 8px; flex-shrink: 0;
-    display: flex; align-items: center; justify-content: center;
-    font-size: 24px;
-  }
-  .news-icon-1 { background: linear-gradient(135deg, #0a7fa8, #0d9b72); }
-  .news-icon-2 { background: linear-gradient(135deg, #d95f2b, #e8a030); }
-  .news-icon-3 { background: linear-gradient(135deg, #0f3460, #0a7fa8); }
-  .news-tag {
-    font-size: 11px; font-weight: 600; color: var(--teal);
-    text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 4px;
-  }
-  .news-title { font-size: 15px; font-weight: 600; margin-bottom: 4px; line-height: 1.4; }
-  .news-excerpt { font-size: 13px; color: var(--muted); }
-  .news-date { font-size: 12px; color: var(--muted); margin-top: 6px; }
+/* Gradient event covers */
+.grad-1{background:linear-gradient(135deg,#1a1a2e,#e53935)}
+.grad-2{background:linear-gradient(135deg,#0d1b2e,#0a7fa8)}
+.grad-3{background:linear-gradient(135deg,#1a2e0d,#0d9b72)}
+.grad-4{background:linear-gradient(135deg,#2e1a0d,#d95f2b)}
+.grad-5{background:linear-gradient(135deg,#1a0d2e,#7c3aed)}
+.grad-6{background:linear-gradient(135deg,#0d2e2e,#0a7fa8)}
 
-  /* GAME CARD */
-  .game-card {
-    background: var(--card); border-radius: var(--radius);
-    box-shadow: var(--shadow); overflow: hidden;
-    display: flex; position: relative;
-  }
-  .game-cover {
-    width: 120px; height: 90px; flex-shrink: 0;
-  }
-  .game-cover-fp { background: linear-gradient(135deg, #2d3748, #4a5568); }
-  .game-cover-hk { background: linear-gradient(135deg, #553c9a, #805ad5); }
-  .game-info { padding: 14px 16px; flex: 1; }
-  .game-tag { font-size: 11px; color: var(--teal); font-weight: 600; text-transform: uppercase; margin-bottom: 4px; }
-  .game-info h3 { font-size: 15px; font-weight: 700; margin-bottom: 4px; }
-  .game-info p { font-size: 13px; color: var(--muted); }
+/* News card */
+.card-news-inner{padding:18px 20px;display:flex;gap:14px}
+.news-logo{width:42px;height:42px;border-radius:8px;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:800;color:#fff}
+.news-content{flex:1;min-width:0}
+.news-src{font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.7px;color:var(--muted);margin-bottom:4px}
+.news-content h3{font-size:16px;font-weight:600;line-height:1.35;margin-bottom:6px}
+.news-content p{font-size:13px;color:var(--muted);line-height:1.5;margin-bottom:10px;overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical}
+.news-footer{display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap}
+.news-time{font-size:12px;color:var(--muted)}
+.tags{display:flex;gap:6px;flex-wrap:wrap}
+.tag{padding:3px 9px;background:var(--bg);border-radius:20px;font-size:11px;font-weight:500;color:var(--muted);border:1px solid var(--border);cursor:pointer;transition:.2s}
+.tag:hover{background:var(--teal);color:#fff;border-color:var(--teal)}
 
-  /* LOAD MORE */
-  .load-more-wrap { text-align: center; margin-top: 24px; }
-  .load-more-btn {
-    background: var(--card); border: 1px solid var(--border);
-    padding: 12px 32px; border-radius: var(--radius); font-family: inherit;
-    font-size: 14px; font-weight: 600; cursor: pointer; color: var(--text);
-    transition: all 0.2s;
-  }
-  .load-more-btn:hover { border-color: var(--orange); color: var(--orange); }
+/* Game card */
+.card-game-inner{display:flex}
+.game-cover{width:120px;flex-shrink:0;min-height:130px;display:flex;align-items:center;justify-content:center;font-size:36px}
+.game-info{flex:1;padding:16px 18px}
+.game-label{font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.7px;color:var(--green);margin-bottom:5px}
+.game-info h3{font-size:17px;font-weight:700;line-height:1.3;margin-bottom:4px}
+.game-studio{font-size:13px;color:var(--muted);margin-bottom:9px}
+.game-plats{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:9px}
+.plat{padding:3px 9px;background:var(--bg);border-radius:5px;font-size:11px;font-weight:600;color:var(--text);border:1px solid var(--border)}
+.game-release{font-size:13px;color:var(--muted);display:flex;align-items:center;gap:5px}
+.game-release strong{color:var(--text);font-weight:600}
 
-  /* SIDEBAR */
-  .sidebar-widget {
-    background: var(--card); border-radius: var(--radius);
-    box-shadow: var(--shadow); padding: 20px; margin-bottom: 20px;
-  }
-  .widget-title { font-size: 14px; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 14px; }
-  .live-now-card {
-    background: linear-gradient(135deg, #1a1a2e, #0f3460);
-    border-radius: 8px; padding: 16px; color: #fff; position: relative;
-  }
-  .live-dot { display: flex; align-items: center; gap: 8px; margin-bottom: 10px; font-size: 12px; font-weight: 700; color: #fc8181; }
-  .live-dot-circle { width: 10px; height: 10px; background: #fc8181; border-radius: 50%; animation: pulse 1.5s infinite; }
-  .live-now-card h4 { font-size: 16px; font-weight: 700; margin-bottom: 4px; }
-  .live-now-card p { font-size: 13px; color: rgba(255,255,255,0.7); margin-bottom: 14px; }
-  .btn-join {
-    background: #e53e3e; color: #fff; border: none; padding: 8px 18px;
-    border-radius: 6px; font-family: inherit; font-size: 13px; font-weight: 600;
-    cursor: pointer; width: 100%;
-  }
-  .upcoming-item { display: flex; gap: 12px; align-items: flex-start; padding: 12px 0; border-bottom: 1px solid var(--border); }
-  .upcoming-item:last-child { border-bottom: none; }
-  .upcoming-date { min-width: 44px; text-align: center; background: var(--bg); border-radius: 6px; padding: 6px 4px; }
-  .upcoming-date .month { font-size: 10px; color: var(--muted); text-transform: uppercase; font-weight: 600; }
-  .upcoming-date .day { font-size: 18px; font-weight: 700; color: var(--text); line-height: 1; }
-  .upcoming-info h5 { font-size: 14px; font-weight: 600; margin-bottom: 2px; }
-  .upcoming-info p { font-size: 12px; color: var(--muted); }
-  .tags-cloud { display: flex; flex-wrap: wrap; gap: 8px; }
-  .tag-chip {
-    background: var(--bg); border: 1px solid var(--border); border-radius: 20px;
-    padding: 5px 12px; font-size: 12px; color: var(--muted); cursor: pointer;
-    transition: all 0.2s;
-  }
-  .tag-chip:hover { border-color: var(--teal); color: var(--teal); }
-  .newsletter-form { display: flex; gap: 8px; margin-top: 12px; }
-  .newsletter-input {
-    flex: 1; padding: 9px 12px; border: 1px solid var(--border);
-    border-radius: 8px; font-family: inherit; font-size: 13px;
-    outline: none; background: var(--bg);
-  }
-  .newsletter-input:focus { border-color: var(--orange); }
-  .btn-subscribe {
-    background: var(--orange); color: #fff; border: none;
-    padding: 9px 16px; border-radius: 8px; font-family: inherit;
-    font-size: 13px; font-weight: 600; cursor: pointer; white-space: nowrap;
-  }
+/* game cover gradients */
+.gg1{background:linear-gradient(135deg,#0a1a2e,#1e40af)}
+.gg2{background:linear-gradient(135deg,#1a0533,#7c3aed)}
+.gg3{background:linear-gradient(135deg,#1a2e0d,#0d9b72)}
+.gg4{background:linear-gradient(135deg,#2e1a0d,#d95f2b)}
 
-  /* ==================== CAL VIEW ==================== */
-  #calView { background: var(--bg); min-height: 60vh; }
-  .cal-header { max-width: 1400px; margin: 0 auto; padding: 28px 32px 16px; }
-  .month-nav { display: flex; align-items: center; gap: 16px; margin-bottom: 24px; }
-  .month-nav-btn {
-    background: var(--card); border: 1px solid var(--border); border-radius: 8px;
-    width: 36px; height: 36px; display: flex; align-items: center; justify-content: center;
-    cursor: pointer; font-size: 16px; transition: all 0.2s;
-  }
-  .month-nav-btn:hover { border-color: var(--orange); color: var(--orange); }
-  .month-label { font-size: 20px; font-weight: 700; min-width: 200px; text-align: center; }
-  .cal-layout { max-width: 1400px; margin: 0 auto; padding: 0 32px 40px; display: flex; gap: 24px; }
-  .cal-timeline { flex: 1; }
-  .cal-filters { width: 280px; flex-shrink: 0; }
-  .timeline-item {
-    background: var(--card); border-radius: var(--radius); box-shadow: var(--shadow);
-    padding: 16px 20px; margin-bottom: 12px;
-    display: flex; align-items: center; gap: 16px;
-  }
-  .tl-date {
-    min-width: 60px; height: 60px; border-radius: 8px;
-    display: flex; flex-direction: column; align-items: center; justify-content: center;
-    background: var(--bg); border: 1px solid var(--border);
-  }
-  .tl-date .tl-month { font-size: 10px; color: var(--muted); text-transform: uppercase; font-weight: 600; }
-  .tl-date .tl-day { font-size: 22px; font-weight: 700; line-height: 1; }
-  .tl-date.live-date { background: #fee2e2; border-color: #fc8181; }
-  .tl-date.live-date .tl-day { color: #e53e3e; }
-  .tl-info { flex: 1; }
-  .tl-info h4 { font-size: 15px; font-weight: 700; margin-bottom: 4px; }
-  .tl-meta { font-size: 13px; color: var(--muted); display: flex; gap: 16px; }
-  .tl-meta span { display: flex; align-items: center; gap: 4px; }
-  .tl-right { display: flex; flex-direction: column; align-items: flex-end; gap: 8px; }
-  .view-details-btn {
-    background: var(--teal); color: #fff; border: none;
-    padding: 7px 14px; border-radius: 6px; font-family: inherit;
-    font-size: 12px; font-weight: 600; cursor: pointer;
-  }
-  .cal-filter-widget { background: var(--card); border-radius: var(--radius); box-shadow: var(--shadow); padding: 20px; margin-bottom: 16px; }
-  .filter-title { font-size: 14px; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 14px; }
-  .filter-option { display: flex; align-items: center; gap: 10px; padding: 8px 0; cursor: pointer; }
-  .filter-option input[type="checkbox"] { accent-color: var(--orange); width: 16px; height: 16px; }
-  .filter-option label { font-size: 14px; cursor: pointer; }
+/* Load more */
+.load-more-wrap{text-align:center;padding:8px 0}
+.btn-load-more{padding:12px 36px;background:#fff;border:1.5px solid var(--border);border-radius:8px;font-family:inherit;font-size:14px;font-weight:600;color:var(--text);cursor:pointer;transition:.2s}
+.btn-load-more:hover{border-color:var(--orange);color:var(--orange)}
 
-  /* ==================== LIVE VIEW ==================== */
-  #liveView { background: var(--bg); min-height: 60vh; }
-  .live-layout { max-width: 1400px; margin: 0 auto; padding: 32px; display: flex; gap: 24px; }
-  .live-main { flex: 1; }
-  .live-sidebar { width: 320px; flex-shrink: 0; }
-  .live-hero-card {
-    background: linear-gradient(135deg, #1a1a2e 0%, #0f3460 100%);
-    border-radius: var(--radius); padding: 40px; color: #fff; margin-bottom: 24px;
-    border: 2px solid rgba(229,62,62,0.5);
-    box-shadow: 0 0 30px rgba(229,62,62,0.1);
-  }
-  .live-now-label {
-    display: inline-flex; align-items: center; gap: 10px;
-    background: #e53e3e; color: #fff; font-size: 13px; font-weight: 700;
-    padding: 6px 14px; border-radius: 6px; margin-bottom: 20px;
-    text-transform: uppercase; letter-spacing: 1px;
-  }
-  .live-pulse-dot { width: 10px; height: 10px; background: #fff; border-radius: 50%; animation: pulse 1.5s infinite; }
-  .live-hero-card h2 { font-size: 32px; font-weight: 700; margin-bottom: 10px; }
-  .live-hero-card p { color: rgba(255,255,255,0.7); font-size: 15px; margin-bottom: 6px; }
-  .live-hero-stats { display: flex; gap: 32px; margin-top: 24px; }
-  .live-hero-stats .stat { text-align: left; }
-  .live-hero-stats .stat-num { font-size: 24px; color: #ffd080; }
-  .live-hero-stats .stat-label { font-size: 12px; color: rgba(255,255,255,0.6); }
-  .live-stats-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-bottom: 24px; }
-  .live-stat-card {
-    background: var(--card); border-radius: var(--radius); box-shadow: var(--shadow);
-    padding: 20px; text-align: center;
-  }
-  .live-stat-card .stat-num { font-size: 28px; font-weight: 700; color: var(--orange); }
-  .live-stat-card .stat-label { font-size: 13px; color: var(--muted); margin-top: 4px; }
-  .agenda-list { background: var(--card); border-radius: var(--radius); box-shadow: var(--shadow); overflow: hidden; }
-  .agenda-title { padding: 16px 20px; border-bottom: 1px solid var(--border); font-size: 16px; font-weight: 700; }
-  .agenda-item { padding: 16px 20px; border-bottom: 1px solid var(--border); display: flex; gap: 16px; align-items: flex-start; }
-  .agenda-item:last-child { border-bottom: none; }
-  .agenda-time { font-size: 13px; font-weight: 700; color: var(--teal); min-width: 70px; }
-  .agenda-info h5 { font-size: 14px; font-weight: 700; margin-bottom: 2px; }
-  .agenda-info p { font-size: 13px; color: var(--muted); }
-  .live-sidebar-widget { background: var(--card); border-radius: var(--radius); box-shadow: var(--shadow); padding: 20px; margin-bottom: 20px; }
-  .live-chat-btn {
-    width: 100%; background: linear-gradient(135deg, var(--teal), #0d9b72);
-    color: #fff; border: none; padding: 14px; border-radius: 8px;
-    font-family: inherit; font-size: 15px; font-weight: 700; cursor: pointer;
-    margin-top: 10px; transition: opacity 0.2s;
-  }
-  .live-chat-btn:hover { opacity: 0.9; }
-  .hot-topic {
-    display: inline-block; background: var(--bg); border: 1px solid var(--border);
-    border-radius: 20px; padding: 5px 12px; font-size: 12px; margin: 4px;
-    cursor: pointer; transition: all 0.2s;
-  }
-  .hot-topic:hover { border-color: var(--orange); color: var(--orange); }
+/* ── SIDEBAR ── */
+.sidebar{display:flex;flex-direction:column;gap:20px;position:sticky;top:130px}
+.sbox{background:#fff;border-radius:var(--radius);box-shadow:var(--shadow);overflow:hidden}
+.sbox-hdr{padding:14px 18px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between}
+.sbox-hdr h4{font-size:14px;font-weight:700;display:flex;align-items:center;gap:7px}
+.sbox-hdr a{font-size:12px;color:var(--teal);font-weight:500}
+.sbox-hdr a:hover{text-decoration:underline}
+.sbox-body{padding:12px 0}
 
-  /* FOOTER */
-  footer {
-    background: var(--text); color: rgba(255,255,255,0.6);
-    text-align: center; padding: 24px; font-size: 13px; margin-top: 40px;
-  }
-  footer a { color: var(--orange); text-decoration: none; }
+/* sidebar live now */
+.live-now-item{padding:10px 18px;display:flex;align-items:center;gap:12px;border-bottom:1px solid var(--border)}
+.live-now-item:last-child{border-bottom:0}
+.lni-dot{width:10px;height:10px;border-radius:50%;background:var(--live-red);flex-shrink:0;animation:pulse-dot 1.4s ease-in-out infinite}
+.lni-info{flex:1;min-width:0}
+.lni-name{font-size:13px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.lni-meta{font-size:11px;color:var(--muted)}
+.lni-viewers{font-size:12px;font-weight:600;color:var(--live-red);white-space:nowrap}
 
-  /* TOAST */
-  .toast {
-    position: fixed; bottom: 30px; right: 30px;
-    background: #1a1a2e; color: #fff; padding: 14px 22px;
-    border-radius: 10px; font-size: 14px; font-weight: 500;
-    box-shadow: 0 4px 20px rgba(0,0,0,0.3);
-    transform: translateY(100px); opacity: 0; transition: all 0.3s;
-    z-index: 1000;
-  }
-  .toast.show { transform: translateY(0); opacity: 1; }
+/* sidebar upcoming */
+.upcoming-item{padding:10px 18px;display:flex;gap:12px;align-items:flex-start;border-bottom:1px solid var(--border)}
+.upcoming-item:last-child{border-bottom:0}
+.upi-date{flex-shrink:0;text-align:center;background:var(--bg);border-radius:6px;padding:4px 8px;min-width:40px}
+.upi-date-m{font-size:10px;font-weight:700;text-transform:uppercase;color:var(--teal)}
+.upi-date-d{font-size:18px;font-weight:800;color:var(--text);line-height:1}
+.upi-name{font-size:13px;font-weight:600;margin-bottom:2px}
+.upi-loc{font-size:11px;color:var(--muted);display:flex;align-items:center;gap:4px}
+
+/* trending tags */
+.trending-tags{padding:14px 18px;display:flex;flex-wrap:wrap;gap:8px}
+.ttag{padding:6px 14px;background:var(--bg);border-radius:20px;font-size:12px;font-weight:500;color:var(--muted);border:1px solid var(--border);cursor:pointer;transition:.2s}
+.ttag:hover{background:var(--teal);color:#fff;border-color:var(--teal)}
+
+/* newsletter */
+.newsletter-box{padding:18px}
+.newsletter-box p{font-size:13px;color:var(--muted);margin-bottom:12px}
+.newsletter-row{display:flex;gap:8px}
+.newsletter-row input{flex:1;height:38px;border:1.5px solid var(--border);border-radius:7px;padding:0 12px;font-family:inherit;font-size:13px;outline:none;background:var(--bg)}
+.newsletter-row input:focus{border-color:var(--teal)}
+.btn-sub{padding:0 16px;height:38px;background:var(--orange);color:#fff;border:none;border-radius:7px;font-family:inherit;font-size:13px;font-weight:600;cursor:pointer;white-space:nowrap}
+
+/* ── CAL TAB ── */
+.cal-layout{max-width:1400px;margin:0 auto;padding:24px 24px 60px;display:grid;grid-template-columns:1fr 300px;gap:28px;align-items:start}
+.cal-main{}
+.month-nav{display:flex;align-items:center;gap:12px;margin-bottom:20px}
+.month-nav h2{font-size:22px;font-weight:700;flex:1;text-align:center}
+.mnav-btn{width:36px;height:36px;border-radius:50%;border:1.5px solid var(--border);background:#fff;cursor:pointer;font-size:18px;display:flex;align-items:center;justify-content:center;transition:.2s}
+.mnav-btn:hover{border-color:var(--orange);color:var(--orange)}
+.month-pills{display:flex;gap:8px;justify-content:center;margin-bottom:24px;flex-wrap:wrap}
+.mpill{padding:6px 18px;border-radius:20px;border:1.5px solid var(--border);background:#fff;font-family:inherit;font-size:13px;font-weight:500;cursor:pointer;transition:.2s;color:var(--muted)}
+.mpill.active{background:var(--orange);color:#fff;border-color:var(--orange)}
+
+.cal-event-list{display:flex;flex-direction:column;gap:14px}
+.cal-event-item{background:#fff;border-radius:var(--radius);box-shadow:var(--shadow);padding:20px;display:flex;gap:18px;align-items:flex-start;cursor:pointer;transition:.2s}
+.cal-event-item:hover{box-shadow:var(--shadow-h);transform:translateY(-1px)}
+.cal-date-badge{flex-shrink:0;background:var(--bg);border-radius:8px;padding:8px 12px;text-align:center;min-width:56px}
+.cdb-month{font-size:10px;font-weight:700;text-transform:uppercase;color:var(--teal);letter-spacing:.5px}
+.cdb-day{font-size:24px;font-weight:800;color:var(--text);line-height:1}
+.cal-event-info{flex:1}
+.cal-event-info h3{font-size:17px;font-weight:700;margin-bottom:6px}
+.cal-event-meta{display:flex;flex-wrap:wrap;gap:12px;margin-bottom:10px}
+.cal-meta-i{display:flex;align-items:center;gap:5px;font-size:13px;color:var(--muted)}
+.cal-event-footer{display:flex;align-items:center;gap:12px}
+.cal-status{padding:4px 10px;border-radius:20px;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.5px}
+.cs-upcoming{background:rgba(13,155,114,.12);color:var(--green);border:1px solid rgba(13,155,114,.3)}
+.cs-live{background:rgba(229,57,53,.12);color:var(--live-red);border:1px solid rgba(229,57,53,.3);animation:border-pulse 1.4s ease-in-out infinite}
+.cs-ended{background:rgba(107,107,123,.1);color:var(--muted);border:1px solid rgba(107,107,123,.2)}
+.btn-details{padding:7px 16px;background:transparent;border:1.5px solid var(--teal);color:var(--teal);border-radius:7px;font-family:inherit;font-size:13px;font-weight:600;cursor:pointer;margin-left:auto;transition:.2s}
+.btn-details:hover{background:var(--teal);color:#fff}
+
+/* cal sidebar */
+.cal-sidebar{}
+.filter-section{background:#fff;border-radius:var(--radius);box-shadow:var(--shadow);overflow:hidden;margin-bottom:16px}
+.filter-hdr{padding:14px 18px;border-bottom:1px solid var(--border);font-size:14px;font-weight:700}
+.filter-group{padding:14px 18px;border-bottom:1px solid var(--border)}
+.filter-group:last-child{border-bottom:0}
+.filter-group-label{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.7px;color:var(--muted);margin-bottom:10px}
+.filter-options{display:flex;flex-direction:column;gap:8px}
+.filter-opt{display:flex;align-items:center;gap:8px;font-size:13px;cursor:pointer}
+.filter-opt input{accent-color:var(--orange)}
+.btn-today{width:100%;padding:11px;background:var(--teal);color:#fff;border:none;border-radius:8px;font-family:inherit;font-size:14px;font-weight:600;cursor:pointer;margin-top:14px;transition:.2s}
+.btn-today:hover{background:#085d7a}
+
+/* ── LIVE TAB ── */
+.live-layout{max-width:1400px;margin:0 auto;padding:24px 24px 60px;display:grid;grid-template-columns:1fr 300px;gap:28px;align-items:start}
+.live-main{}
+
+/* big live card */
+.live-hero-card{background:linear-gradient(135deg,#1a0808 0%,#3d1515 50%,#1a1a2e 100%);border-radius:14px;border:2px solid var(--live-red);padding:28px;color:#fff;margin-bottom:24px;position:relative;overflow:hidden}
+.live-hero-card::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse at 70% 50%,rgba(229,57,53,.2) 0%,transparent 60%);pointer-events:none}
+.lhc-top{display:flex;align-items:center;gap:16px;margin-bottom:16px;position:relative}
+.lhc-live-badge{display:flex;align-items:center;gap:8px;background:rgba(229,57,53,.25);border:1.5px solid rgba(229,57,53,.6);border-radius:8px;padding:8px 16px;font-size:14px;font-weight:700;letter-spacing:.5px}
+.lhc-live-badge .live-dot{width:12px;height:12px}
+.lhc-date{font-size:13px;color:rgba(255,255,255,.7);margin-left:auto}
+.live-hero-card h2{font-size:28px;font-weight:800;margin-bottom:8px;line-height:1.2;position:relative}
+.live-hero-card .sub{font-size:15px;color:rgba(255,255,255,.7);margin-bottom:18px;position:relative}
+.live-hero-stats{display:flex;gap:24px;flex-wrap:wrap;position:relative}
+.lhs-item{text-align:center}
+.lhs-num{font-size:22px;font-weight:800;color:#fff;line-height:1}
+.lhs-label{font-size:10px;color:rgba(255,255,255,.5);text-transform:uppercase;letter-spacing:.5px;margin-top:2px}
+.lhc-btns{display:flex;gap:12px;margin-top:20px;position:relative}
+.btn-join-live{padding:12px 28px;background:var(--live-red);color:#fff;border:none;border-radius:9px;font-family:inherit;font-size:15px;font-weight:700;cursor:pointer;animation:live-glow 2s ease-in-out infinite}
+@keyframes live-glow{0%,100%{box-shadow:0 0 0 0 rgba(229,57,53,0)}50%{box-shadow:0 0 16px 4px rgba(229,57,53,.4)}}
+.btn-agenda{padding:12px 24px;background:rgba(255,255,255,.12);color:#fff;border:1.5px solid rgba(255,255,255,.3);border-radius:9px;font-family:inherit;font-size:15px;font-weight:600;cursor:pointer;transition:.2s}
+.btn-agenda:hover{background:rgba(255,255,255,.2)}
+
+/* sessions */
+.section-title{font-size:18px;font-weight:700;margin-bottom:14px;display:flex;align-items:center;gap:8px}
+.sessions-list{display:flex;flex-direction:column;gap:10px;margin-bottom:28px}
+.session-item{background:#fff;border-radius:var(--radius);box-shadow:var(--shadow);padding:14px 18px;display:flex;gap:16px;align-items:flex-start;cursor:pointer;transition:.2s}
+.session-item:hover{box-shadow:var(--shadow-h)}
+.session-time{font-size:12px;font-weight:700;color:var(--orange);white-space:nowrap;min-width:52px;margin-top:2px}
+.session-info h4{font-size:14px;font-weight:600;margin-bottom:2px}
+.session-info p{font-size:12.5px;color:var(--muted)}
+.session-tag{margin-left:auto;padding:3px 9px;border-radius:20px;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.4px;flex-shrink:0}
+.st-live{background:rgba(229,57,53,.12);color:var(--live-red);border:1px solid rgba(229,57,53,.3)}
+.st-next{background:rgba(10,127,168,.12);color:var(--teal);border:1px solid rgba(10,127,168,.3)}
+.st-done{background:rgba(107,107,123,.1);color:var(--muted);border:1px solid rgba(107,107,123,.2)}
+
+/* live sidebar */
+.chat-box{background:#fff;border-radius:var(--radius);box-shadow:var(--shadow);overflow:hidden;margin-bottom:16px}
+.chat-hdr{padding:14px 18px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:8px;font-size:14px;font-weight:700}
+.chat-preview{padding:14px 18px}
+.chat-msg{padding:8px 0;border-bottom:1px solid var(--border);font-size:13px}
+.chat-msg:last-child{border-bottom:0}
+.chat-user{font-weight:600;color:var(--teal)}
+.chat-input-row{padding:12px 18px;border-top:1px solid var(--border);display:flex;gap:8px}
+.chat-input-row input{flex:1;height:36px;border:1.5px solid var(--border);border-radius:7px;padding:0 12px;font-family:inherit;font-size:13px;outline:none;background:var(--bg)}
+.btn-chat-send{padding:0 14px;height:36px;background:var(--teal);color:#fff;border:none;border-radius:7px;font-family:inherit;font-size:13px;font-weight:600;cursor:pointer}
+
+.hot-topics{background:#fff;border-radius:var(--radius);box-shadow:var(--shadow);overflow:hidden}
+.ht-body{padding:14px 18px}
+.ht-item{display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid var(--border)}
+.ht-item:last-child{border-bottom:0}
+.ht-rank{font-size:11px;font-weight:800;color:var(--muted);min-width:18px}
+.ht-name{font-size:13px;font-weight:500;flex:1}
+.ht-count{font-size:12px;color:var(--orange);font-weight:600}
 </style>
 </head>
 <body>
 
 <!-- NAVBAR -->
 <nav class="navbar">
-  <a class="nav-logo" href="#">GC <span>/ Game Connection</span></a>
-  <input class="nav-search" type="text" placeholder="🔍  Search events, games, studios...">
-  <select class="nav-lang">
-    <option>🌐 EN</option>
-    <option>🌐 FR</option>
-    <option>🌐 ZH</option>
-  </select>
-  <button class="nav-signin">Sign In</button>
+  <div class="navbar-inner">
+    <a class="logo" href="#">
+      <div class="logo-icon">GC</div>
+      <div>
+        <div class="logo-text">Game<span>Connection</span></div>
+        <div class="logo-sub">Industry Hub</div>
+      </div>
+    </a>
+    <div class="search-wrap">
+      <svg class="search-icon" width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+      <input type="text" placeholder="Search events, news, games, people…">
+    </div>
+    <div class="nav-right">
+      <div class="lang-btn">🌐 <select><option>EN</option><option>FR</option><option>DE</option><option>ZH</option></select></div>
+      <button class="btn-signin">Sign In</button>
+    </div>
+  </div>
 </nav>
 
 <!-- MAIN TABS -->
 <div class="main-tabs">
-  <div class="main-tab active" data-view="homeView">🏠 Home</div>
-  <div class="main-tab" data-view="calView">📅 Cal</div>
-  <div class="main-tab" data-view="liveView">🔴 Live</div>
+  <div class="main-tabs-inner">
+    <button class="mtab active" onclick="switchMainTab('home', this)">🏠 Home</button>
+    <button class="mtab" onclick="switchMainTab('cal', this)">📅 Cal</button>
+    <button class="mtab" onclick="switchMainTab('live', this)">
+      🔴 Live
+      <span class="mtab-badge">1</span>
+    </button>
+  </div>
 </div>
 
-<!-- ==================== HOME VIEW ==================== -->
-<div id="homeView" class="view active">
+<!-- ═══════════════ HOME TAB ═══════════════ -->
+<div id="tab-home" class="tab-panel active">
   <!-- Hero -->
   <div class="hero">
+    <div class="hero-deco"></div>
+    <div class="hero-deco2"></div>
     <div class="hero-inner">
-      <h1>The <span>Game Industry</span> Hub</h1>
-      <p>Connect with 12,000+ professionals, discover top events, and stay ahead in gaming.</p>
+      <div class="hero-eyebrow" onclick="switchMainTab('live', document.querySelectorAll('.mtab')[2])">
+        <div class="live-dot"></div>
+        Game Connection Live 2026 is happening now · Helsinki &amp; Tallinn
+      </div>
+      <h1 class="hero-title">The <span>Game Industry</span> Hub</h1>
+      <p class="hero-subtitle">Your gateway to game events, industry news, and professional connections worldwide.</p>
       <div class="hero-stats">
-        <div class="stat"><div class="stat-num">6+</div><div class="stat-label">Events</div></div>
-        <div class="stat"><div class="stat-num">180</div><div class="stat-label">Exhibitors</div></div>
-        <div class="stat"><div class="stat-num">12K</div><div class="stat-label">Professionals</div></div>
-        <div class="stat"><div class="stat-num">4</div><div class="stat-label">New Games</div></div>
+        <div class="hero-stat"><div class="hstat-num">6<span>+</span></div><div class="hstat-label">Active Events</div></div>
+        <div class="hero-stat"><div class="hstat-num">180</div><div class="hstat-label">Exhibitors</div></div>
+        <div class="hero-stat"><div class="hstat-num">12<span>K</span></div><div class="hstat-label">Professionals</div></div>
+        <div class="hero-stat"><div class="hstat-num">4</div><div class="hstat-label">New Game Announces</div></div>
       </div>
     </div>
   </div>
 
-  <!-- Content -->
-  <div class="home-content">
-    <!-- Main Feed -->
-    <div class="main-feed">
-      <div class="sub-tabs">
-        <div class="sub-tab active" data-filter="all">All</div>
-        <div class="sub-tab" data-filter="events">Events</div>
-        <div class="sub-tab" data-filter="news">News</div>
-        <div class="sub-tab" data-filter="games">Games</div>
+  <!-- Feed Layout -->
+  <div class="feed-layout">
+    <!-- MAIN FEED -->
+    <div>
+      <div class="filter-row">
+        <button class="chip active" onclick="filterFeed('all',this)">All</button>
+        <button class="chip" onclick="filterFeed('events',this)">📅 Events</button>
+        <button class="chip" onclick="filterFeed('news',this)">📰 News</button>
+        <button class="chip" onclick="filterFeed('games',this)">🎮 Games</button>
       </div>
+      <div class="feed-col" id="feed">
 
-      <div class="feed" id="mainFeed">
-        <!-- LIVE Card -->
-        <div class="feed-item" data-type="live">
-          <div class="live-card">
-            <div class="live-card-inner">
-              <div class="live-cover">
-                <div class="live-pulse"></div>
-              </div>
-              <div class="live-info">
-                <div class="live-badge"><div class="live-pulse" style="width:8px;height:8px;background:#fff;animation:pulse 1.5s infinite;border-radius:50%;"></div> LIVE NOW</div>
-                <h3>Game Connection Live 2026</h3>
-                <p>📍 Helsinki & Tallinn &nbsp;·&nbsp; Mar 29 – Apr 3, 2026 &nbsp;·&nbsp; 180 Exhibitors Active</p>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <!-- Event Card 1 -->
-        <div class="feed-item" data-type="events">
-          <div class="event-card">
-            <div class="event-cover event-cover-gc"></div>
-            <div class="event-info">
+        <!-- LIVE CARD -->
+        <div class="card card-live" data-type="events">
+          <div class="card-live-inner">
+            <div class="live-badge-big"><div class="live-dot"></div> LIVE</div>
+            <div class="card-live-info">
               <h3>Game Connection Live 2026</h3>
-              <p class="event-meta">📍 Helsinki & Tallinn &nbsp;·&nbsp; Mar 29 – Apr 3, 2026 &nbsp;·&nbsp; 180 Exhibitors</p>
-              <span class="status-badge status-live">🔴 Live</span>
+              <div class="card-live-meta">
+                <span>📍 Helsinki &amp; Tallinn</span>
+                <span>📅 Mar 29 – Apr 3, 2026</span>
+                <span>👥 180 Exhibitors</span>
+              </div>
             </div>
-            <div class="corner-badge badge-platform">✅ Platform</div>
+            <button class="btn-live" onclick="switchMainTab('live', document.querySelectorAll('.mtab')[2])">Watch Live →</button>
+          </div>
+          <div class="live-stats-row">
+            <div class="live-stat-item"><strong>2,847</strong><span>Online Now</span></div>
+            <div class="live-stat-item"><strong>14</strong><span>Sessions Today</span></div>
+            <div class="live-stat-item"><strong>180</strong><span>Active Exhibitors</span></div>
+            <div class="live-stat-item"><strong>342</strong><span>Meetings Set</span></div>
           </div>
         </div>
 
-        <!-- Event Card 2 -->
-        <div class="feed-item" data-type="events">
-          <div class="event-card">
-            <div class="event-cover event-cover-gca"></div>
-            <div class="event-info">
-              <h3>Gamescom Asia 2026</h3>
-              <p class="event-meta">📍 Singapore &nbsp;·&nbsp; Apr 15–18, 2026 &nbsp;·&nbsp; 120 Exhibitors</p>
-              <span class="status-badge status-upcoming">🟢 Upcoming</span>
-            </div>
-            <div class="corner-badge badge-platform">✅ Platform</div>
-          </div>
-        </div>
-
-        <!-- Event Card 3 -->
-        <div class="feed-item" data-type="events">
-          <div class="event-card">
-            <div class="event-cover event-cover-ng"></div>
-            <div class="event-info">
-              <h3>Nordic Game 2026</h3>
-              <p class="event-meta">📍 Malmö, Sweden &nbsp;·&nbsp; May 21–23, 2026 &nbsp;·&nbsp; 90 Exhibitors</p>
-              <span class="status-badge status-upcoming">🟢 Upcoming</span>
-            </div>
-            <div class="corner-badge badge-crawler">🕷 Crawler</div>
-          </div>
-        </div>
-
-        <!-- News Card 1 -->
-        <div class="feed-item" data-type="news">
-          <div class="news-card">
-            <div class="news-icon news-icon-1">📱</div>
-            <div>
-              <div class="news-tag">Market Report</div>
-              <div class="news-title">Mobile Gaming Revenue Hits $100B for the First Time in 2025</div>
-              <div class="news-excerpt">New data from market analyst firm Newzoo reveals that mobile gaming surpassed the $100 billion revenue threshold in 2025, driven by Asia-Pacific growth.</div>
-              <div class="news-date">Mar 28, 2026</div>
+        <!-- NEWS CARD 1 -->
+        <div class="card" data-type="news">
+          <div class="card-news-inner">
+            <div class="news-logo" style="background:linear-gradient(135deg,#1a73e8,#0d47a1)">GI</div>
+            <div class="news-content">
+              <div class="news-src">GamesIndustry.biz</div>
+              <h3>Mobile Gaming Revenue Hits Record $120B in 2025</h3>
+              <p>The mobile gaming market surpassed all previous records, reaching $120 billion in annual revenue driven by hypercasual and live-service titles across Asia and North America.</p>
+              <div class="news-footer">
+                <span class="news-time">2 hours ago</span>
+                <div class="tags"><span class="tag">Mobile</span><span class="tag">Revenue</span><span class="tag">Market</span></div>
+              </div>
             </div>
           </div>
         </div>
 
-        <!-- News Card 2 -->
-        <div class="feed-item" data-type="news">
-          <div class="news-card">
-            <div class="news-icon news-icon-2">🎮</div>
-            <div>
-              <div class="news-tag">Studio News</div>
-              <div class="news-title">Supercell Announces New Flagship Title, Expected Q4 2026</div>
-              <div class="news-excerpt">The Finnish gaming giant quietly confirmed a new flagship IP at a closed-door session at Game Connection Live 2026 in Helsinki.</div>
-              <div class="news-date">Mar 27, 2026</div>
-            </div>
-          </div>
-        </div>
-
-        <!-- News Card 3 -->
-        <div class="feed-item" data-type="news">
-          <div class="news-card">
-            <div class="news-icon news-icon-3">🌏</div>
-            <div>
-              <div class="news-tag">Industry</div>
-              <div class="news-title">Epic Games Accelerates Asian Market Expansion with New Singapore Studio</div>
-              <div class="news-excerpt">Epic Games has announced a new regional development studio in Singapore, reinforcing its commitment to the rapidly growing Southeast Asian gaming market.</div>
-              <div class="news-date">Mar 25, 2026</div>
-            </div>
-          </div>
-        </div>
-
-        <!-- Game Card 1 -->
-        <div class="feed-item" data-type="games">
-          <div class="game-card">
-            <div class="game-cover game-cover-fp"></div>
+        <!-- GAME CARD 1 -->
+        <div class="card" data-type="games">
+          <span class="data-badge badge-platform">✅ Platform</span>
+          <div class="card-game-inner">
+            <div class="game-cover gg1">🏙️</div>
             <div class="game-info">
-              <div class="game-tag">🆕 New Game Announced</div>
+              <div class="game-label">🎮 New Announcement</div>
               <h3>Frostpunk 3</h3>
-              <p>11 bit studios unveils the third installment of the critically acclaimed city-survival series. Releases Winter 2026.</p>
+              <div class="game-studio">by 11 bit studios</div>
+              <div class="game-plats"><span class="plat">PC</span><span class="plat">PS5</span><span class="plat">Xbox</span></div>
+              <div class="game-release">📅 Expected: <strong>Q3 2026</strong></div>
             </div>
-            <div class="corner-badge badge-platform">✅ Platform</div>
           </div>
         </div>
 
-        <!-- Game Card 2 -->
-        <div class="feed-item" data-type="games">
-          <div class="game-card">
-            <div class="game-cover game-cover-hk"></div>
+        <!-- EVENT CARD 1 -->
+        <div class="card" data-type="events">
+          <span class="data-badge badge-platform">✅ Platform</span>
+          <div class="card-event-cover grad-2">
+            <span class="evt-status s-upcoming">Upcoming</span>
+            <div class="evt-cover-year">2026</div>
+            <span class="evt-cover-text">GDC 2026</span>
+          </div>
+          <div class="card-event-body">
+            <h3>GDC 2026 – Game Developers Conference</h3>
+            <div class="evt-meta">
+              <div class="evt-meta-i">📅 May 18–22, 2026</div>
+              <div class="evt-meta-i">📍 San Francisco, CA</div>
+              <div class="evt-meta-i">👥 30K+ Attendees</div>
+            </div>
+            <button class="btn-view" onclick="event.stopPropagation()">View Details</button>
+          </div>
+        </div>
+
+        <!-- NEWS CARD 2 -->
+        <div class="card" data-type="news">
+          <div class="card-news-inner">
+            <div class="news-logo" style="background:linear-gradient(135deg,#e91e63,#880e4f)">PG</div>
+            <div class="news-content">
+              <div class="news-src">Pocket Gamer</div>
+              <h3>Supercell Announces New Strategy Title for 2026</h3>
+              <p>Finnish mobile powerhouse Supercell has revealed a brand-new strategy game set in a sci-fi universe, marking a bold departure from their signature cartoon aesthetic.</p>
+              <div class="news-footer">
+                <span class="news-time">4 hours ago</span>
+                <div class="tags"><span class="tag">Supercell</span><span class="tag">Strategy</span><span class="tag">Mobile</span></div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- GAME CARD 2 -->
+        <div class="card" data-type="games">
+          <span class="data-badge badge-crawler">🕷️ Crawler</span>
+          <div class="card-game-inner">
+            <div class="game-cover gg2">🦋</div>
             <div class="game-info">
-              <div class="game-tag">🆕 Release Date Confirmed</div>
+              <div class="game-label">🔥 Highly Anticipated</div>
               <h3>Hollow Knight: Silksong</h3>
-              <p>Team Cherry confirms release date for the long-awaited sequel. June 2026 across all platforms.</p>
+              <div class="game-studio">by Team Cherry</div>
+              <div class="game-plats"><span class="plat">PC</span><span class="plat">Switch</span><span class="plat">PS5</span></div>
+              <div class="game-release">📅 Expected: <strong>2026</strong></div>
             </div>
-            <div class="corner-badge badge-crawler">🕷 Crawler</div>
           </div>
         </div>
-      </div>
 
-      <div class="load-more-wrap">
-        <button class="load-more-btn" id="loadMoreBtn">Load More ↓</button>
+        <!-- EVENT CARD 2 -->
+        <div class="card" data-type="events">
+          <span class="data-badge badge-crawler">🕷️ Crawler</span>
+          <div class="card-event-cover grad-3">
+            <span class="evt-status s-upcoming">Upcoming</span>
+            <div class="evt-cover-year">2026</div>
+            <span class="evt-cover-text">Gamescom Asia 2026</span>
+          </div>
+          <div class="card-event-body">
+            <h3>Gamescom Asia 2026</h3>
+            <div class="evt-meta">
+              <div class="evt-meta-i">📅 Apr 15–18, 2026</div>
+              <div class="evt-meta-i">📍 Singapore</div>
+              <div class="evt-meta-i">👥 320 Exhibitors</div>
+            </div>
+            <button class="btn-view" onclick="event.stopPropagation()">View Details</button>
+          </div>
+        </div>
+
+        <!-- NEWS CARD 3 -->
+        <div class="card" data-type="news">
+          <div class="card-news-inner">
+            <div class="news-logo" style="background:linear-gradient(135deg,#00bcd4,#006064)">GD</div>
+            <div class="news-content">
+              <div class="news-src">Game Developer</div>
+              <h3>Epic Games Store Expands to Asian Markets</h3>
+              <p>Epic Games officially launched its storefront in Southeast Asia and Japan, partnering with local publishers and offering region-specific payment methods.</p>
+              <div class="news-footer">
+                <span class="news-time">6 hours ago</span>
+                <div class="tags"><span class="tag">Epic Games</span><span class="tag">Asia</span><span class="tag">Distribution</span></div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- GAME CARD 3 -->
+        <div class="card" data-type="games">
+          <span class="data-badge badge-platform">✅ Platform</span>
+          <div class="card-game-inner">
+            <div class="game-cover gg3">⚔️</div>
+            <div class="game-info">
+              <div class="game-label">🎮 New Announcement</div>
+              <h3>Project Eternity 3</h3>
+              <div class="game-studio">by Obsidian Entertainment</div>
+              <div class="game-plats"><span class="plat">PC</span><span class="plat">Xbox</span></div>
+              <div class="game-release">📅 Expected: <strong>TBA 2026</strong></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- EVENT CARD 3 -->
+        <div class="card" data-type="events">
+          <span class="data-badge badge-platform">✅ Platform</span>
+          <div class="card-event-cover grad-4">
+            <span class="evt-status s-upcoming">Upcoming</span>
+            <div class="evt-cover-year">2026</div>
+            <span class="evt-cover-text">Nordic Game 2026</span>
+          </div>
+          <div class="card-event-body">
+            <h3>Nordic Game 2026</h3>
+            <div class="evt-meta">
+              <div class="evt-meta-i">📅 May 21–23, 2026</div>
+              <div class="evt-meta-i">📍 Malmö, Sweden</div>
+              <div class="evt-meta-i">👥 450 Exhibitors</div>
+            </div>
+            <button class="btn-view" onclick="event.stopPropagation()">View Details</button>
+          </div>
+        </div>
+
+        <!-- NEWS CARD 4 -->
+        <div class="card" data-type="news">
+          <div class="card-news-inner">
+            <div class="news-logo" style="background:linear-gradient(135deg,#ff9800,#e65100)">KI</div>
+            <div class="news-content">
+              <div class="news-src">Kotaku International</div>
+              <h3>Nintendo Switch 2 Launch Titles Confirmed — Full List Inside</h3>
+              <p>Nintendo officially revealed the full lineup of 28 launch titles for the Nintendo Switch 2, headlined by a new 3D Mario title and a reimagined Pokémon experience.</p>
+              <div class="news-footer">
+                <span class="news-time">1 day ago</span>
+                <div class="tags"><span class="tag">Nintendo</span><span class="tag">Switch 2</span><span class="tag">Launch</span></div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- GAME CARD 4 -->
+        <div class="card" data-type="games">
+          <span class="data-badge badge-platform">✅ Platform</span>
+          <div class="card-game-inner">
+            <div class="game-cover gg4">🌌</div>
+            <div class="game-info">
+              <div class="game-label">🚀 Coming to GC Live</div>
+              <h3>Starbound Chronicles</h3>
+              <div class="game-studio">by Chucklefish Games</div>
+              <div class="game-plats"><span class="plat">PC</span><span class="plat">Switch 2</span></div>
+              <div class="game-release">📅 Expected: <strong>Late 2026</strong></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="load-more-wrap">
+          <button class="btn-load-more" onclick="alert('Loading more content…')">Load More</button>
+        </div>
       </div>
     </div>
 
     <!-- SIDEBAR -->
     <div class="sidebar">
       <!-- Live Now -->
-      <div class="sidebar-widget">
-        <div class="widget-title">🔴 Live Now</div>
-        <div class="live-now-card">
-          <div class="live-dot"><div class="live-dot-circle"></div> LIVE NOW</div>
-          <h4>Game Connection Live 2026</h4>
-          <p>Helsinki & Tallinn &nbsp;·&nbsp; Day 1 of 5</p>
-          <button class="btn-join">Join Live Hub →</button>
+      <div class="sbox">
+        <div class="sbox-hdr">
+          <h4>🔴 Live Now</h4>
+          <a href="#" onclick="switchMainTab('live', document.querySelectorAll('.mtab')[2]); return false;">See All</a>
+        </div>
+        <div class="sbox-body">
+          <div class="live-now-item">
+            <div class="lni-dot"></div>
+            <div class="lni-info">
+              <div class="lni-name">Opening Keynote — GC Live 2026</div>
+              <div class="lni-meta">Helsinki Main Stage</div>
+            </div>
+            <span class="lni-viewers">2.8K</span>
+          </div>
+          <div class="live-now-item">
+            <div class="lni-dot"></div>
+            <div class="lni-info">
+              <div class="lni-name">Mobile Monetization Trends 2026</div>
+              <div class="lni-meta">Tallinn Track B</div>
+            </div>
+            <span class="lni-viewers">1.1K</span>
+          </div>
+          <div class="live-now-item">
+            <div class="lni-dot"></div>
+            <div class="lni-info">
+              <div class="lni-name">Publisher–Developer Speed Meetings</div>
+              <div class="lni-meta">Networking Hall A</div>
+            </div>
+            <span class="lni-viewers">342</span>
+          </div>
         </div>
       </div>
 
       <!-- Upcoming Events -->
-      <div class="sidebar-widget">
-        <div class="widget-title">📅 Upcoming Events</div>
-        <div class="upcoming-item">
-          <div class="upcoming-date"><div class="month">APR</div><div class="day">15</div></div>
-          <div class="upcoming-info"><h5>Gamescom Asia</h5><p>Singapore · 120 exhibitors</p></div>
+      <div class="sbox">
+        <div class="sbox-hdr">
+          <h4>📅 Upcoming Events</h4>
+          <a href="#" onclick="switchMainTab('cal', document.querySelectorAll('.mtab')[1]); return false;">View All</a>
         </div>
-        <div class="upcoming-item">
-          <div class="upcoming-date"><div class="month">MAY</div><div class="day">21</div></div>
-          <div class="upcoming-info"><h5>Nordic Game</h5><p>Malmö, Sweden · 90 exhibitors</p></div>
-        </div>
-        <div class="upcoming-item">
-          <div class="upcoming-date"><div class="month">JUN</div><div class="day">10</div></div>
-          <div class="upcoming-info"><h5>Casual Connect</h5><p>Amsterdam · 80 exhibitors</p></div>
-        </div>
-        <div class="upcoming-item">
-          <div class="upcoming-date"><div class="month">SEP</div><div class="day">25</div></div>
-          <div class="upcoming-info"><h5>Tokyo Game Show</h5><p>Tokyo · 600 exhibitors</p></div>
+        <div class="sbox-body">
+          <div class="upcoming-item">
+            <div class="upi-date"><div class="upi-date-m">APR</div><div class="upi-date-d">15</div></div>
+            <div>
+              <div class="upi-name">Gamescom Asia 2026</div>
+              <div class="upi-loc">📍 Singapore</div>
+            </div>
+          </div>
+          <div class="upcoming-item">
+            <div class="upi-date"><div class="upi-date-m">MAY</div><div class="upi-date-d">18</div></div>
+            <div>
+              <div class="upi-name">GDC 2026</div>
+              <div class="upi-loc">📍 San Francisco, CA</div>
+            </div>
+          </div>
+          <div class="upcoming-item">
+            <div class="upi-date"><div class="upi-date-m">MAY</div><div class="upi-date-d">21</div></div>
+            <div>
+              <div class="upi-name">Nordic Game 2026</div>
+              <div class="upi-loc">📍 Malmö, Sweden</div>
+            </div>
+          </div>
+          <div class="upcoming-item">
+            <div class="upi-date"><div class="upi-date-m">AUG</div><div class="upi-date-d">20</div></div>
+            <div>
+              <div class="upi-name">Gamescom 2026</div>
+              <div class="upi-loc">📍 Cologne, Germany</div>
+            </div>
+          </div>
         </div>
       </div>
 
       <!-- Trending Tags -->
-      <div class="sidebar-widget">
-        <div class="widget-title">🔥 Trending Tags</div>
-        <div class="tags-cloud">
-          <span class="tag-chip">#MobileGaming</span>
-          <span class="tag-chip">#Indie</span>
-          <span class="tag-chip">#GDC2026</span>
-          <span class="tag-chip">#AI</span>
-          <span class="tag-chip">#Metaverse</span>
-          <span class="tag-chip">#Publishing</span>
-          <span class="tag-chip">#Monetization</span>
-          <span class="tag-chip">#LiveOps</span>
+      <div class="sbox">
+        <div class="sbox-hdr"><h4>🔥 Trending Tags</h4></div>
+        <div class="trending-tags">
+          <span class="ttag">#GCLive2026</span>
+          <span class="ttag">#IndieGames</span>
+          <span class="ttag">#MobileGaming</span>
+          <span class="ttag">#GDC2026</span>
+          <span class="ttag">#NintendoSwitch2</span>
+          <span class="ttag">#GameFunding</span>
+          <span class="ttag">#Gamescom</span>
+          <span class="ttag">#GameDev</span>
+          <span class="ttag">#Networking</span>
+          <span class="ttag">#Publishing</span>
         </div>
       </div>
 
       <!-- Newsletter -->
-      <div class="sidebar-widget">
-        <div class="widget-title">📬 Newsletter</div>
-        <p style="font-size:14px;color:var(--muted);margin-bottom:10px;">Get weekly industry updates in your inbox.</p>
-        <div class="newsletter-form">
-          <input class="newsletter-input" id="newsletterInput" type="email" placeholder="your@email.com">
-          <button class="btn-subscribe" id="subscribeBtn">Subscribe</button>
+      <div class="sbox">
+        <div class="sbox-hdr"><h4>✉️ Newsletter</h4></div>
+        <div class="newsletter-box">
+          <p>Get the weekly game industry digest — events, deals &amp; launches, delivered every Monday.</p>
+          <div class="newsletter-row">
+            <input type="email" placeholder="your@email.com">
+            <button class="btn-sub">Subscribe</button>
+          </div>
         </div>
       </div>
     </div>
   </div>
 </div>
 
-<!-- ==================== CAL VIEW ==================== -->
-<div id="calView" class="view">
-  <div class="cal-header">
-    <div class="month-nav">
-      <button class="month-nav-btn" id="prevMonth">◀</button>
-      <div class="month-label" id="monthLabel">Mar 2026 | Apr 2026</div>
-      <button class="month-nav-btn" id="nextMonth">▶</button>
-    </div>
-  </div>
+<!-- ═══════════════ CAL TAB ═══════════════ -->
+<div id="tab-cal" class="tab-panel">
   <div class="cal-layout">
-    <div class="cal-timeline" id="calTimeline">
-      <!-- Events rendered by JS -->
-    </div>
-    <div class="cal-filters">
-      <div class="cal-filter-widget">
-        <div class="filter-title">📍 Region</div>
-        <label class="filter-option"><input type="checkbox" checked><label>North America</label></label>
-        <label class="filter-option"><input type="checkbox" checked><label>Europe</label></label>
-        <label class="filter-option"><input type="checkbox" checked><label>Asia Pacific</label></label>
-        <label class="filter-option"><input type="checkbox" checked><label>Middle East</label></label>
+    <div class="cal-main">
+      <div class="month-nav">
+        <button class="mnav-btn" onclick="prevMonth()">‹</button>
+        <h2 id="cal-month-title">April 2026</h2>
+        <button class="mnav-btn" onclick="nextMonth()">›</button>
       </div>
-      <div class="cal-filter-widget">
-        <div class="filter-title">📊 Status</div>
-        <label class="filter-option"><input type="checkbox" checked><label>🟢 Upcoming</label></label>
-        <label class="filter-option"><input type="checkbox" checked><label>🔴 Live</label></label>
-        <label class="filter-option"><input type="checkbox"><label>⚫ Ended</label></label>
+      <div class="month-pills">
+        <button class="mpill" onclick="setCalMonth('Mar 2026',this)">Mar 2026</button>
+        <button class="mpill active" onclick="setCalMonth('Apr 2026',this)">Apr 2026</button>
+        <button class="mpill" onclick="setCalMonth('May 2026',this)">May 2026</button>
+      </div>
+
+      <div class="cal-event-list">
+        <!-- GC Live -->
+        <div class="cal-event-item">
+          <div class="cal-date-badge"><div class="cdb-month">MAR</div><div class="cdb-day">29</div></div>
+          <div class="cal-event-info">
+            <h3>Game Connection Live 2026</h3>
+            <div class="cal-event-meta">
+              <div class="cal-meta-i">📍 Helsinki &amp; Tallinn</div>
+              <div class="cal-meta-i">👥 180 Exhibitors</div>
+              <div class="cal-meta-i">🏢 Industry B2B</div>
+            </div>
+            <div class="cal-event-footer">
+              <span class="cal-status cs-live">🔴 Live Now</span>
+              <button class="btn-details" onclick="window.location.href='EventPublicPage_v3_PC.html'">View Details</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Gamescom Asia -->
+        <div class="cal-event-item">
+          <div class="cal-date-badge"><div class="cdb-month">APR</div><div class="cdb-day">15</div></div>
+          <div class="cal-event-info">
+            <h3>Gamescom Asia 2026</h3>
+            <div class="cal-event-meta">
+              <div class="cal-meta-i">📍 Singapore</div>
+              <div class="cal-meta-i">👥 320 Exhibitors</div>
+              <div class="cal-meta-i">🌏 Asia Pacific</div>
+            </div>
+            <div class="cal-event-footer">
+              <span class="cal-status cs-upcoming">Upcoming</span>
+              <button class="btn-details">View Details</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Indie Game Fest -->
+        <div class="cal-event-item">
+          <div class="cal-date-badge"><div class="cdb-month">APR</div><div class="cdb-day">24</div></div>
+          <div class="cal-event-info">
+            <h3>Indie Game Fest 2026</h3>
+            <div class="cal-event-meta">
+              <div class="cal-meta-i">📍 Berlin, Germany</div>
+              <div class="cal-meta-i">👥 500+ Attendees</div>
+              <div class="cal-meta-i">🎮 Indie Showcase</div>
+            </div>
+            <div class="cal-event-footer">
+              <span class="cal-status cs-upcoming">Upcoming</span>
+              <button class="btn-details">View Details</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- GDC -->
+        <div class="cal-event-item">
+          <div class="cal-date-badge"><div class="cdb-month">MAY</div><div class="cdb-day">18</div></div>
+          <div class="cal-event-info">
+            <h3>GDC 2026 – Game Developers Conference</h3>
+            <div class="cal-event-meta">
+              <div class="cal-meta-i">📍 San Francisco, CA</div>
+              <div class="cal-meta-i">👥 30K+ Attendees</div>
+              <div class="cal-meta-i">🎓 5 Days</div>
+            </div>
+            <div class="cal-event-footer">
+              <span class="cal-status cs-upcoming">Upcoming</span>
+              <button class="btn-details">View Details</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Nordic Game -->
+        <div class="cal-event-item">
+          <div class="cal-date-badge"><div class="cdb-month">MAY</div><div class="cdb-day">21</div></div>
+          <div class="cal-event-info">
+            <h3>Nordic Game 2026</h3>
+            <div class="cal-event-meta">
+              <div class="cal-meta-i">📍 Malmö, Sweden</div>
+              <div class="cal-meta-i">👥 450 Exhibitors</div>
+              <div class="cal-meta-i">🌍 Nordic / Europe</div>
+            </div>
+            <div class="cal-event-footer">
+              <span class="cal-status cs-upcoming">Upcoming</span>
+              <button class="btn-details">View Details</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- E3 Revival -->
+        <div class="cal-event-item">
+          <div class="cal-date-badge"><div class="cdb-month">JUN</div><div class="cdb-day">10</div></div>
+          <div class="cal-event-info">
+            <h3>E3 Revival Summit 2026</h3>
+            <div class="cal-event-meta">
+              <div class="cal-meta-i">📍 Los Angeles, CA</div>
+              <div class="cal-meta-i">👥 25K Attendees</div>
+              <div class="cal-meta-i">🎮 Consumer + Trade</div>
+            </div>
+            <div class="cal-event-footer">
+              <span class="cal-status cs-upcoming">Upcoming</span>
+              <button class="btn-details">View Details</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Gamescom -->
+        <div class="cal-event-item">
+          <div class="cal-date-badge"><div class="cdb-month">AUG</div><div class="cdb-day">20</div></div>
+          <div class="cal-event-info">
+            <h3>Gamescom 2026</h3>
+            <div class="cal-event-meta">
+              <div class="cal-meta-i">📍 Cologne, Germany</div>
+              <div class="cal-meta-i">👥 370K Visitors</div>
+              <div class="cal-meta-i">🌍 World's Largest</div>
+            </div>
+            <div class="cal-event-footer">
+              <span class="cal-status cs-upcoming">Upcoming</span>
+              <button class="btn-details">View Details</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- TGS -->
+        <div class="cal-event-item">
+          <div class="cal-date-badge"><div class="cdb-month">SEP</div><div class="cdb-day">24</div></div>
+          <div class="cal-event-info">
+            <h3>Tokyo Game Show 2026</h3>
+            <div class="cal-event-meta">
+              <div class="cal-meta-i">📍 Chiba, Japan</div>
+              <div class="cal-meta-i">👥 250K Visitors</div>
+              <div class="cal-meta-i">🗾 Asia Premier</div>
+            </div>
+            <div class="cal-event-footer">
+              <span class="cal-status cs-upcoming">Upcoming</span>
+              <button class="btn-details">View Details</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Cal Sidebar -->
+    <div class="cal-sidebar">
+      <div class="filter-section">
+        <div class="filter-hdr">🔍 Filter Events</div>
+        <div class="filter-group">
+          <div class="filter-group-label">Region</div>
+          <div class="filter-options">
+            <label class="filter-opt"><input type="checkbox" checked> All Regions</label>
+            <label class="filter-opt"><input type="checkbox"> Europe</label>
+            <label class="filter-opt"><input type="checkbox"> North America</label>
+            <label class="filter-opt"><input type="checkbox"> Asia Pacific</label>
+          </div>
+        </div>
+        <div class="filter-group">
+          <div class="filter-group-label">Status</div>
+          <div class="filter-options">
+            <label class="filter-opt"><input type="checkbox" checked> Live Now</label>
+            <label class="filter-opt"><input type="checkbox" checked> Upcoming</label>
+            <label class="filter-opt"><input type="checkbox"> Ended</label>
+          </div>
+        </div>
+        <div class="filter-group">
+          <div class="filter-group-label">Type</div>
+          <div class="filter-options">
+            <label class="filter-opt"><input type="checkbox" checked> Trade Show</label>
+            <label class="filter-opt"><input type="checkbox" checked> Conference</label>
+            <label class="filter-opt"><input type="checkbox"> Indie Showcase</label>
+            <label class="filter-opt"><input type="checkbox"> Consumer Event</label>
+          </div>
+        </div>
+        <div style="padding:14px 18px">
+          <button class="btn-today" onclick="document.querySelector('.cal-event-item').scrollIntoView({behavior:'smooth'})">📅 Jump to Today</button>
+        </div>
       </div>
     </div>
   </div>
 </div>
 
-<!-- ==================== LIVE VIEW ==================== -->
-<div id="liveView" class="view">
+<!-- ═══════════════ LIVE TAB ═══════════════ -->
+<div id="tab-live" class="tab-panel">
   <div class="live-layout">
     <div class="live-main">
-      <!-- Hero Live Card -->
+
+      <!-- Big Live Card -->
       <div class="live-hero-card">
-        <div class="live-now-label"><div class="live-pulse-dot"></div> LIVE NOW</div>
+        <div class="lhc-top">
+          <div class="lhc-live-badge"><div class="live-dot"></div> LIVE NOW</div>
+          <span class="lhc-date">📅 Mar 29 – Apr 3, 2026 · Day 1</span>
+        </div>
         <h2>Game Connection Live 2026</h2>
-        <p>📍 Helsinki & Tallinn, Finland/Estonia</p>
-        <p>📅 March 29 – April 3, 2026</p>
+        <p class="sub">📍 Helsinki Exhibition Centre &amp; Tallinn Creative Hub</p>
         <div class="live-hero-stats">
-          <div class="stat"><div class="stat-num">180</div><div class="stat-label">Exhibitors Active</div></div>
-          <div class="stat"><div class="stat-num">24</div><div class="stat-label">Sessions Today</div></div>
-          <div class="stat"><div class="stat-num">847</div><div class="stat-label">Online Now</div></div>
+          <div class="lhs-item"><div class="lhs-num">2,847</div><div class="lhs-label">Online Now</div></div>
+          <div class="lhs-item"><div class="lhs-num">180</div><div class="lhs-label">Exhibitors</div></div>
+          <div class="lhs-item"><div class="lhs-num">14</div><div class="lhs-label">Sessions Today</div></div>
+          <div class="lhs-item"><div class="lhs-num">342</div><div class="lhs-label">Meetings Set</div></div>
+        </div>
+        <div class="lhc-btns">
+          <button class="btn-join-live">🔴 Join Live Stream</button>
+          <button class="btn-agenda">📋 Full Agenda</button>
+          <button class="btn-agenda" onclick="window.location.href='EventPublicPage_v3_PC.html'">📄 Event Page →</button>
         </div>
       </div>
 
-      <!-- Stats Row -->
-      <div class="live-stats-row">
-        <div class="live-stat-card">
-          <div class="stat-num">847</div>
-          <div class="stat-label">Online Now</div>
-        </div>
-        <div class="live-stat-card">
-          <div class="stat-num">24</div>
-          <div class="stat-label">Sessions Today</div>
-        </div>
-        <div class="live-stat-card">
-          <div class="stat-num">180</div>
-          <div class="stat-label">Active Exhibitors</div>
-        </div>
-      </div>
-
-      <!-- Agenda -->
-      <div class="agenda-list">
-        <div class="agenda-title">📋 Today's Agenda — Day 1</div>
-        <div class="agenda-item">
-          <div class="agenda-time">09:00 AM</div>
-          <div class="agenda-info">
-            <h5>Opening Keynote: The Future of Indie Publishing</h5>
-            <p>Maria Koskinen, CEO · Nordic Game Fund</p>
+      <!-- Today's Agenda -->
+      <div class="section-title">📋 Today's Sessions</div>
+      <div class="sessions-list">
+        <div class="session-item">
+          <div class="session-time">09:30</div>
+          <div class="session-info">
+            <h4>Opening Keynote: The State of the Game Industry 2026</h4>
+            <p>Mikael Heikkinen, CEO Game Connection · Helsinki Main Stage</p>
           </div>
+          <span class="session-tag st-live">🔴 Live</span>
         </div>
-        <div class="agenda-item">
-          <div class="agenda-time">10:30 AM</div>
-          <div class="agenda-info">
-            <h5>Panel: Mobile Monetization in 2026 — Beyond IAP</h5>
-            <p>James Liu, VP · Tencent Games &nbsp;·&nbsp; Sara Beck, Head of Revenue · Supercell</p>
+        <div class="session-item">
+          <div class="session-time">11:00</div>
+          <div class="session-info">
+            <h4>Mobile Monetization Trends: What Works in 2026</h4>
+            <p>Sarah Chen, Nexus Publishing VP · Tallinn Track A</p>
           </div>
+          <span class="session-tag st-live">🔴 Live</span>
         </div>
-        <div class="agenda-item">
-          <div class="agenda-time">12:00 PM</div>
-          <div class="agenda-info">
-            <h5>Networking Lunch & Exhibitor Showcase</h5>
-            <p>Main Hall · All exhibitors</p>
+        <div class="session-item">
+          <div class="session-time">13:00</div>
+          <div class="session-info">
+            <h4>Funding the Next Indie Breakthrough</h4>
+            <p>Marcus Reid, IndieFund VC · Helsinki Room 3</p>
           </div>
+          <span class="session-tag st-next">Next</span>
         </div>
-        <div class="agenda-item">
-          <div class="agenda-time">02:00 PM</div>
-          <div class="agenda-info">
-            <h5>Workshop: AI-Driven Game Design — Tools & Workflows</h5>
-            <p>Lena Bergman, Research Director · Unity Technologies</p>
+        <div class="session-item">
+          <div class="session-time">14:30</div>
+          <div class="session-info">
+            <h4>AI in Game Development: Tools, Risks &amp; Opportunities</h4>
+            <p>Felix Wagner, Game Analytics · Tallinn Track B</p>
           </div>
+          <span class="session-tag st-next">Next</span>
         </div>
-        <div class="agenda-item">
-          <div class="agenda-time">03:30 PM</div>
-          <div class="agenda-info">
-            <h5>Fireside Chat: Building AAA Studios in Nordic Markets</h5>
-            <p>Anders Larsson, Founder · Remedy Entertainment</p>
+        <div class="session-item">
+          <div class="session-time">16:00</div>
+          <div class="session-info">
+            <h4>From Solo Dev to Studio: Lessons Learned the Hard Way</h4>
+            <p>Yuki Tanaka, Pixel Valley Studio · Helsinki Room 2</p>
           </div>
+          <span class="session-tag st-next">Next</span>
         </div>
-        <div class="agenda-item">
-          <div class="agenda-time">05:00 PM</div>
-          <div class="agenda-info">
-            <h5>Investor Meetup: Early Stage Gaming Ventures</h5>
-            <p>Moderated by VC Panel · Helsinki Investor Club</p>
+        <div class="session-item">
+          <div class="session-time">08:00</div>
+          <div class="session-info">
+            <h4>B2B Speed Meetings — Round 1</h4>
+            <p>Networking Area · Both Venues</p>
           </div>
+          <span class="session-tag st-done">Done</span>
         </div>
       </div>
     </div>
 
     <!-- Live Sidebar -->
-    <div class="live-sidebar">
-      <div class="live-sidebar-widget">
-        <div class="widget-title" style="font-size:14px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:12px;">💬 Live Chat</div>
-        <p style="font-size:14px;color:var(--muted);margin-bottom:10px;">Join the conversation with attendees and speakers in real time.</p>
-        <button class="live-chat-btn">💬 Open Live Chat</button>
+    <div>
+      <!-- Live Chat (UI only) -->
+      <div class="chat-box">
+        <div class="chat-hdr">💬 Live Chat <span style="font-size:11px;color:var(--muted);font-weight:400;margin-left:auto">2,847 online</span></div>
+        <div class="chat-preview">
+          <div class="chat-msg"><span class="chat-user">@AlexDev</span> This keynote is 🔥 loving the data on mobile trends</div>
+          <div class="chat-msg"><span class="chat-user">@NinaP</span> The Let's Meet platform is incredible this year</div>
+          <div class="chat-msg"><span class="chat-user">@YukiT</span> See you all at the indie networking session at 16h!</div>
+          <div class="chat-msg"><span class="chat-user">@MarcusR</span> Great turnout for Helsinki. ~2800 online already</div>
+          <div class="chat-msg"><span class="chat-user">@SarahC</span> Mobile numbers in the keynote are wild 📈</div>
+        </div>
+        <div class="chat-input-row">
+          <input type="text" placeholder="Join the conversation…">
+          <button class="btn-chat-send">Send</button>
+        </div>
       </div>
-      <div class="live-sidebar-widget">
-        <div class="widget-title" style="font-size:14px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:12px;">🔥 Hot Topics</div>
-        <div>
-          <span class="hot-topic">#IndiePublishing</span>
-          <span class="hot-topic">#MobileAdRevenue</span>
-          <span class="hot-topic">#AIGameDesign</span>
-          <span class="hot-topic">#NordicGaming</span>
-          <span class="hot-topic">#EarlyStageVC</span>
-          <span class="hot-topic">#LiveOps</span>
-          <span class="hot-topic">#Supercell</span>
-          <span class="hot-topic">#Unity2026</span>
+
+      <!-- Hot Topics -->
+      <div class="hot-topics">
+        <div class="sbox-hdr"><h4>🔥 Hot Topics</h4></div>
+        <div class="ht-body">
+          <div class="ht-item"><span class="ht-rank">#1</span><span class="ht-name">#GCLive2026</span><span class="ht-count">4.2K</span></div>
+          <div class="ht-item"><span class="ht-rank">#2</span><span class="ht-name">#MobileMonetization</span><span class="ht-count">1.8K</span></div>
+          <div class="ht-item"><span class="ht-rank">#3</span><span class="ht-name">#IndieFunding</span><span class="ht-count">1.1K</span></div>
+          <div class="ht-item"><span class="ht-rank">#4</span><span class="ht-name">#AIGameDev</span><span class="ht-count">980</span></div>
+          <div class="ht-item"><span class="ht-rank">#5</span><span class="ht-name">#LetsMeet</span><span class="ht-count">742</span></div>
+          <div class="ht-item"><span class="ht-rank">#6</span><span class="ht-name">#Helsinki2026</span><span class="ht-count">614</span></div>
         </div>
       </div>
     </div>
   </div>
 </div>
 
-<!-- FOOTER -->
-<footer>
-  <p>© 2026 Game Connection. All rights reserved. &nbsp;·&nbsp; <a href="#">Privacy Policy</a> &nbsp;·&nbsp; <a href="#">Terms</a> &nbsp;·&nbsp; <a href="#">Contact</a></p>
-</footer>
-
-<!-- TOAST -->
-<div class="toast" id="toast"></div>
-
 <script>
-  // ---- Main Tab switching ----
-  const mainTabs = document.querySelectorAll('.main-tab');
-  const views = document.querySelectorAll('.view');
-  mainTabs.forEach(tab => {
-    tab.addEventListener('click', () => {
-      mainTabs.forEach(t => t.classList.remove('active'));
-      views.forEach(v => v.classList.remove('active'));
-      tab.classList.add('active');
-      document.getElementById(tab.dataset.view).classList.add('active');
-    });
-  });
+function switchMainTab(name, btn) {
+  document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.mtab').forEach(b => b.classList.remove('active'));
+  document.getElementById('tab-' + name).classList.add('active');
+  if (btn) btn.classList.add('active');
+  window.scrollTo({top:0, behavior:'smooth'});
+}
 
-  // ---- Sub Tab filtering ----
-  const subTabs = document.querySelectorAll('.sub-tab');
-  const feedItems = document.querySelectorAll('.feed-item');
-  subTabs.forEach(tab => {
-    tab.addEventListener('click', () => {
-      subTabs.forEach(t => t.classList.remove('active'));
-      tab.classList.add('active');
-      const filter = tab.dataset.filter;
-      feedItems.forEach(item => {
-        item.style.display = (filter === 'all' || item.dataset.type === filter) ? '' : 'none';
-      });
-    });
-  });
-
-  // ---- Load More ----
-  document.getElementById('loadMoreBtn').addEventListener('click', function() {
-    this.textContent = 'No more items';
-    this.disabled = true;
-    this.style.opacity = '0.5';
-    showToast('All content loaded!');
-  });
-
-  // ---- Newsletter ----
-  document.getElementById('subscribeBtn').addEventListener('click', () => {
-    const val = document.getElementById('newsletterInput').value.trim();
-    if (val && val.includes('@')) {
-      showToast('🎉 Subscribed! Welcome to the GC Newsletter.');
-      document.getElementById('newsletterInput').value = '';
+function filterFeed(type, btn) {
+  document.querySelectorAll('.chip').forEach(c => c.classList.remove('active'));
+  btn.classList.add('active');
+  document.querySelectorAll('#feed > .card').forEach(card => {
+    if (type === 'all' || card.dataset.type === type) {
+      card.style.display = '';
     } else {
-      showToast('Please enter a valid email address.');
+      card.style.display = 'none';
     }
   });
+}
 
-  // ---- Toast ----
-  function showToast(msg) {
-    const t = document.getElementById('toast');
-    t.textContent = msg; t.classList.add('show');
-    setTimeout(() => t.classList.remove('show'), 3000);
-  }
-
-  // ---- Cal Events Data ----
-  const events = [
-    { month:'MAR', day:'17', name:'GDC 2026', range:'Mar 17–21', location:'San Francisco, USA', exhibitors:'1,200', status:'ended' },
-    { month:'MAR', day:'29', name:'Game Connection Live', range:'Mar 29 – Apr 3', location:'Helsinki & Tallinn', exhibitors:'180', status:'live' },
-    { month:'APR', day:'15', name:'Gamescom Asia', range:'Apr 15–18', location:'Singapore', exhibitors:'120', status:'upcoming' },
-    { month:'MAY', day:'21', name:'Nordic Game', range:'May 21–23', location:'Malmö, Sweden', exhibitors:'90', status:'upcoming' },
-    { month:'JUN', day:'10', name:'Casual Connect', range:'Jun 10–12', location:'Amsterdam, Netherlands', exhibitors:'80', status:'upcoming' },
-    { month:'SEP', day:'25', name:'Tokyo Game Show', range:'Sep 25–28', location:'Tokyo, Japan', exhibitors:'600', status:'upcoming' },
-    { month:'OCT', day:'01', name:'Gamescom', range:'Oct 2026', location:'Cologne, Germany', exhibitors:'1,400', status:'upcoming' },
-  ];
-
-  function renderCal() {
-    const container = document.getElementById('calTimeline');
-    container.innerHTML = events.map(e => `
-      <div class="timeline-item">
-        <div class="tl-date ${e.status === 'live' ? 'live-date' : ''}">
-          <div class="tl-month">${e.month}</div>
-          <div class="tl-day">${e.day}</div>
-        </div>
-        <div class="tl-info">
-          <h4>${e.name}</h4>
-          <div class="tl-meta">
-            <span>📍 ${e.location}</span>
-            <span>📅 ${e.range}</span>
-            <span>🏢 ${e.exhibitors} Exhibitors</span>
-          </div>
-        </div>
-        <div class="tl-right">
-          <span class="status-badge status-${e.status}">${e.status === 'upcoming' ? '🟢 Upcoming' : e.status === 'live' ? '🔴 Live' : '⚫ Ended'}</span>
-          <button class="view-details-btn">View Details</button>
-        </div>
-      </div>
-    `).join('');
-  }
-  renderCal();
-
-  // Month navigation (visual only)
-  const months = ['Jan 2026','Feb 2026','Mar 2026','Apr 2026','May 2026','Jun 2026','Jul 2026','Aug 2026','Sep 2026','Oct 2026','Nov 2026','Dec 2026'];
-  let monthIdx = 2;
-  const monthLabel = document.getElementById('monthLabel');
-  document.getElementById('prevMonth').addEventListener('click', () => {
-    if (monthIdx > 0) monthIdx--;
-    monthLabel.textContent = months[monthIdx] + ' | ' + months[Math.min(monthIdx+1, months.length-1)];
-  });
-  document.getElementById('nextMonth').addEventListener('click', () => {
-    if (monthIdx < months.length - 2) monthIdx++;
-    monthLabel.textContent = months[monthIdx] + ' | ' + months[Math.min(monthIdx+1, months.length-1)];
-  });
+const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+let calMonthIdx = 3; // April = index 3
+function updateCalTitle() {
+  document.getElementById('cal-month-title').textContent = months[calMonthIdx % 12] + ' 2026';
+}
+function prevMonth() { calMonthIdx = Math.max(0, calMonthIdx - 1); updateCalTitle(); }
+function nextMonth() { calMonthIdx = Math.min(11, calMonthIdx + 1); updateCalTitle(); }
+function setCalMonth(label, btn) {
+  document.querySelectorAll('.mpill').forEach(p => p.classList.remove('active'));
+  btn.classList.add('active');
+  document.getElementById('cal-month-title').textContent = label;
+}
 </script>
 </body>
 </html>
