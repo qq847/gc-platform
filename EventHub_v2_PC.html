@@ -76,6 +76,24 @@ body{background:#f3f2ef}
 .nav-ai-btn:hover{background:#2e2b27;transform:translateY(-1px)}
 .nav-ai-btn:active{transform:translateY(0)}
 .nav-sep{width:1px;height:20px;background:var(--border);margin:0 4px}
+/* ── For Business Dropdown ── */
+.biz-dropdown-wrap{position:relative;display:flex;align-items:center}
+.biz-btn{display:flex;align-items:center;gap:6px;height:32px;padding:0 14px;border-radius:24px;background:linear-gradient(135deg,#1c1a17,#2a2520);border:1px solid rgba(232,100,10,0.4);color:#fff;font-size:12px;font-weight:700;cursor:pointer;font-family:inherit;letter-spacing:.2px;transition:all .2s;white-space:nowrap}
+.biz-btn:hover{background:linear-gradient(135deg,#2a2520,#3a3020);border-color:rgba(232,100,10,0.7)}
+.biz-btn .biz-chevron{font-size:9px;opacity:.7;transition:transform .2s}
+.biz-btn.open .biz-chevron{transform:rotate(180deg)}
+.biz-menu{position:absolute;top:calc(100% + 8px);right:0;width:240px;background:#fff;border:1px solid #e0dfdc;border-radius:12px;box-shadow:0 8px 24px rgba(0,0,0,0.12);z-index:9999;overflow:hidden;display:none;animation:fadeInDown .15s ease}
+.biz-menu.open{display:block}
+@keyframes fadeInDown{from{opacity:0;transform:translateY(-6px)}to{opacity:1;transform:translateY(0)}}
+.biz-menu-header{padding:10px 16px 8px;font-size:10px;font-weight:700;letter-spacing:1px;color:#999;text-transform:uppercase;border-bottom:1px solid #f0efec}
+.biz-menu-item{display:flex;align-items:center;gap:12px;padding:11px 16px;cursor:pointer;transition:background .12s;text-decoration:none;color:inherit}
+.biz-menu-item:hover{background:#fdf0e9}
+.biz-menu-item:hover .biz-item-icon{transform:scale(1.1)}
+.biz-item-icon{width:32px;height:32px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:15px;flex-shrink:0;transition:transform .15s}
+.biz-item-text{flex:1}
+.biz-item-title{font-size:13px;font-weight:700;color:#1a1a1a;line-height:1.2}
+.biz-item-desc{font-size:11px;color:#888;margin-top:1px}
+.biz-menu-divider{height:1px;background:#f0efec;margin:4px 0}
 
 /* ── Profile Drawer ── */
 .profile-drawer-overlay{
@@ -697,6 +715,34 @@ body{background:#f3f2ef}
     <div class="nav-tab" onclick="switchMode('projects')">🎮 Projects</div>
     <div class="nav-tab" onclick="switchMode('companies')">🏢 Companies</div>
     <div class="nav-tab" onclick="switchMode('profile')">👤 Profile</div>
+  </div>
+  <!-- For Business Dropdown -->
+  <div class="biz-dropdown-wrap" id="biz-dropdown-wrap">
+    <button class="biz-btn" id="biz-btn" onclick="toggleBizMenu(event)">⚡ For Business <span class="biz-chevron">▼</span></button>
+    <div class="biz-menu" id="biz-menu">
+      <div class="biz-menu-header">Business Portals</div>
+      <a class="biz-menu-item" href="EventHQ_Dashboard_v1_PC.html">
+        <div class="biz-item-icon" style="background:linear-gradient(135deg,#1c1a17,#2a2520)">⚡</div>
+        <div class="biz-item-text"><div class="biz-item-title">Organizer</div><div class="biz-item-desc">Manage your event end-to-end</div></div>
+      </a>
+      <a class="biz-menu-item" href="Sponsor_Portal_v1_PC.html">
+        <div class="biz-item-icon" style="background:linear-gradient(135deg,#78350f,#d97706)">💼</div>
+        <div class="biz-item-text"><div class="biz-item-title">Sponsor</div><div class="biz-item-desc">Browse &amp; manage sponsorship packages</div></div>
+      </a>
+      <a class="biz-menu-item" href="Media_Portal_v1_PC.html">
+        <div class="biz-item-icon" style="background:linear-gradient(135deg,#1e3a5f,#1d4ed8)">📰</div>
+        <div class="biz-item-text"><div class="biz-item-title">Media</div><div class="biz-item-desc">Press pass, schedule &amp; interviews</div></div>
+      </a>
+      <a class="biz-menu-item" href="Association_Portal_v1_PC.html">
+        <div class="biz-item-icon" style="background:linear-gradient(135deg,#14532d,#16a34a)">🏛️</div>
+        <div class="biz-item-text"><div class="biz-item-title">Association</div><div class="biz-item-desc">Manage your delegation &amp; members</div></div>
+      </a>
+      <div class="biz-menu-divider"></div>
+      <a class="biz-menu-item" href="DealFlow_v1_PC.html">
+        <div class="biz-item-icon" style="background:linear-gradient(135deg,#4c1d95,#7c3aed)">🤝</div>
+        <div class="biz-item-text"><div class="biz-item-title">Deal Flow</div><div class="biz-item-desc">Publisher &amp; investor deal pipeline</div></div>
+      </a>
+    </div>
   </div>
   <div class="nav-sep"></div>
   <!-- Messages icon button -->
@@ -3033,6 +3079,23 @@ function cpRender() {
     '</div>';
   }).join('');
 }
+
+// ── For Business Dropdown ──
+function toggleBizMenu(e) {
+  e.stopPropagation();
+  const btn = document.getElementById('biz-btn');
+  const menu = document.getElementById('biz-menu');
+  const isOpen = menu.classList.contains('open');
+  menu.classList.toggle('open', !isOpen);
+  btn.classList.toggle('open', !isOpen);
+}
+document.addEventListener('click', function(e) {
+  const wrap = document.getElementById('biz-dropdown-wrap');
+  if (wrap && !wrap.contains(e.target)) {
+    document.getElementById('biz-menu').classList.remove('open');
+    document.getElementById('biz-btn').classList.remove('open');
+  }
+});
 </script>
 </body>
 </html>
