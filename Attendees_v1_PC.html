@@ -1,0 +1,654 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Attendees — Event HQ</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --bg: #f3f2ef;
+    --orange: #d95f2b;
+    --teal: #0a7fa8;
+    --green: #0d9b72;
+    --purple: #7c3aed;
+    --white: #fff;
+    --text: #000000;
+    --muted: #666666;
+    --faint: #999999;
+    --border: #e0dfdc;
+    --radius: 8px;
+  }
+  body { font-family: 'DM Sans', sans-serif;line-height: 1.5; background: var(--bg); color: var(--text); min-height: 100vh; }
+
+  /* ── TOPBAR ── */
+  .topbar {
+    position: sticky; top: 0; z-index: 100;
+    height: 58px; background: var(--white);
+    border-bottom: 1px solid var(--border);
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 0 28px;
+  }
+  .topbar-logo { font-weight: 700; font-size: 15px; letter-spacing: .04em; }
+  .topbar-logo span { color: var(--orange); }
+  .topbar-right { display: flex; align-items: center; gap: 10px; }
+  .btn-primary{
+    background: var(--orange); color: #fff; border: none;
+    padding: 7px 16px; border-radius: 24px; font-size: 13px;
+    font-weight: 600; cursor: pointer; font-family: inherit;
+  }
+  .btn-primary:hover { background: #c2521f; }
+  .btn-secondary {
+    background: none; color: var(--muted); border: 1px solid var(--border);
+    padding: 7px 14px; border-radius: 7px; font-size: 13px;
+    font-weight: 500; cursor: pointer; font-family: inherit;
+  }
+  .btn-secondary:hover { background: var(--bg); }
+
+  /* ── TAB BAR ── */
+  .tab-bar {
+    background: var(--white); border-bottom: 1px solid var(--border);
+    display: flex; align-items: center; padding: 0 28px; gap: 4px;
+  }
+  .tab-btn {
+    padding: 14px 20px; font-size: 14px; font-weight: 500;
+    color: var(--muted); border: none; background: none;
+    cursor: pointer; font-family: inherit; border-bottom: 2px solid transparent;
+    margin-bottom: -1px; transition: color .15s;
+  }
+  .tab-btn:hover { color: var(--text); }
+  .tab-btn.active { color: var(--orange); border-bottom-color: var(--orange); font-weight: 600; }
+
+  /* ── PANELS ── */
+  .tab-panel { display: none; padding: 28px; }
+  .tab-panel.active { display: block; }
+
+  /* ── STATS ROW ── */
+  .stats-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; margin-bottom: 22px; }
+  .stat-card {
+    background: var(--white); border: 1px solid var(--border);
+    border-radius: var(--radius); padding: 16px 18px;
+  }
+  .stat-label { font-size: 12px; color: var(--muted); font-weight: 500; margin-bottom: 6px; }
+  .stat-value { font-size: 22px; font-weight: 700; }
+  .stat-sub { font-size: 12px; color: var(--muted); margin-top: 3px; }
+
+  /* ── TOOLBAR ── */
+  .toolbar {
+    background: var(--white); border: 1px solid var(--border);
+    border-radius: var(--radius); padding: 14px 18px;
+    display: flex; align-items: center; gap: 12px;
+    margin-bottom: 18px; flex-wrap: wrap;
+  }
+  .search-input {
+    flex: 1; min-width: 200px; border: 1px solid var(--border);
+    border-radius: 7px; padding: 8px 12px; font-size: 13px;
+    font-family: inherit; outline: none;
+  }
+  .search-input:focus { border-color: var(--orange); }
+  .filter-select {
+    border: 1px solid var(--border); border-radius: 7px;
+    padding: 8px 12px; font-size: 13px; font-family: inherit;
+    outline: none; background: var(--white); cursor: pointer;
+  }
+  .filter-select:focus { border-color: var(--orange); }
+
+  /* ── TABLE ── */
+  .card {
+    background: var(--white); border-radius: var(--radius);
+    border: 1px solid var(--border); overflow: hidden; margin-bottom: 18px;
+  }
+  .card-header {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 16px 20px; border-bottom: 1px solid var(--border);
+  }
+  .card-title { font-size: 15px; font-weight: 700; display: flex; align-items: center; gap: 8px; }
+  .card-actions { display: flex; gap: 8px; }
+  .data-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  .data-table th {
+    text-align: left; padding: 10px 16px; font-size: 12px;
+    font-weight: 600; color: var(--muted); background: var(--bg);
+    border-bottom: 1px solid var(--border);
+  }
+  .data-table td { padding: 12px 16px; border-bottom: 1px solid var(--border); }
+  .data-table tr:last-child td { border-bottom: none; }
+  .data-table tr:hover td { background: #fafaf8; }
+  .avatar {
+    width: 32px; height: 32px; border-radius: 50%;
+    display: inline-flex; align-items: center; justify-content: center;
+    font-size: 13px; font-weight: 700; color: #fff;
+    margin-right: 8px; flex-shrink: 0;
+  }
+  .name-cell { display: flex; align-items: center; }
+  .name-info .name { font-weight: 600; font-size: 13px; }
+  .name-info .company { font-size: 12px; color: var(--muted); }
+
+  /* ── BADGES ── */
+  .badge {
+    padding: 2px 8px; border-radius: 8px;
+    font-size: 11px; font-weight: 700; display: inline-block;
+  }
+  .badge-free { background: #e0f5ee; color: var(--green); }
+  .badge-paid { background: #fff3ec; color: var(--orange); }
+  .badge-vip { background: #f3e8ff; color: var(--purple); }
+  .badge-buyer { background: #e0f3fa; color: var(--teal); }
+  .badge-confirmed { background: #e0f5ee; color: var(--green); }
+  .badge-pending { background: #fff3ec; color: var(--orange); }
+  .badge-checked-in { background: #1a1a1a; color: #fff; }
+
+  /* ── BUYER INVITATIONS ── */
+  .invite-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 14px; margin-bottom: 20px; }
+  .invite-card {
+    background: var(--white); border: 1.5px solid var(--border);
+    border-radius: var(--radius); padding: 18px;
+  }
+  .invite-card.accepted { border-left: 4px solid var(--green); }
+  .invite-card.pending { border-left: 4px solid var(--orange); }
+  .invite-card.declined { border-left: 4px solid #ef4444; opacity: .7; }
+  .invite-name { font-size: 14px; font-weight: 700; margin-bottom: 2px; }
+  .invite-role { font-size: 12px; color: var(--muted); margin-bottom: 10px; }
+  .invite-tags { display: flex; flex-wrap: wrap; gap: 5px; margin-bottom: 10px; }
+  .invite-tag {
+    padding: 2px 7px; border-radius: 6px; font-size: 11px;
+    font-weight: 500; background: var(--bg); color: var(--muted);
+  }
+  .invite-status { font-size: 12px; font-weight: 700; }
+  .invite-actions { display: flex; gap: 8px; margin-top: 10px; }
+  .btn-sm {
+    padding: 5px 12px; border-radius: 6px; font-size: 12px;
+    font-weight: 600; cursor: pointer; font-family: inherit;
+    border: 1px solid var(--border); background: none; color: var(--muted);
+  }
+  .btn-sm:hover { background: var(--bg); }
+  .btn-sm.primary { background: var(--teal); color: #fff; border-color: var(--teal); }
+  .btn-sm.primary:hover { background: #086e93; }
+
+  /* ── ANALYTICS ── */
+  .analytics-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; margin-bottom: 18px; }
+  .chart-card {
+    background: var(--white); border: 1px solid var(--border);
+    border-radius: var(--radius); padding: 20px;
+  }
+  .chart-title { font-size: 14px; font-weight: 700; margin-bottom: 16px; }
+  .bar-chart { display: flex; flex-direction: column; gap: 10px; }
+  .bar-row { display: flex; align-items: center; gap: 10px; }
+  .bar-label { font-size: 12px; color: var(--muted); width: 100px; flex-shrink: 0; text-align: right; }
+  .bar-track { flex: 1; height: 20px; background: var(--bg); border-radius: 4px; overflow: hidden; }
+  .bar-fill { height: 100%; border-radius: 4px; }
+  .bar-value { font-size: 12px; font-weight: 600; width: 40px; }
+  .donut-row { display: flex; align-items: center; gap: 16px; }
+  .donut-legend { display: flex; flex-direction: column; gap: 8px; }
+  .legend-item { display: flex; align-items: center; gap: 8px; font-size: 13px; }
+  .legend-dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
+  .donut-placeholder {
+    width: 120px; height: 120px; border-radius: 50%;
+    background: conic-gradient(var(--green) 0% 48%, var(--orange) 48% 82%, var(--purple) 82% 93%, var(--teal) 93% 100%);
+    flex-shrink: 0; position: relative;
+  }
+  .donut-placeholder::after {
+    content: ''; position: absolute; inset: 24px;
+    background: var(--white); border-radius: 50%;
+  }
+
+  /* ── TOAST ── */
+  .toast {
+    position: fixed; bottom: 28px; left: 50%; transform: translateX(-50%);
+    background: #1a1a1a; color: #fff; padding: 10px 20px;
+    border-radius: 8px; font-size: 13px; font-weight: 600;
+    z-index: 9999; box-shadow: none; transition: opacity .3s;
+  }
+
+  /* ── EMBED MODE ── */
+  body.embed-mode .topbar { display: none !important; }
+  body.embed-mode .tab-bar { top: 0; }
+</style>
+</head>
+<body>
+
+<!-- TOPBAR -->
+<div class="topbar">
+  <div class="topbar-logo">GAME <span>CONNECTION</span> · Event HQ</div>
+  <div class="topbar-right">
+    <button class="btn-secondary" onclick="showToast('Exporting attendee list…')">📤 Export</button>
+    <button class="btn-primary" onclick="showToast('Invite form opened')">＋ Invite Attendee</button>
+  </div>
+</div>
+
+<!-- TAB BAR -->
+<div class="tab-bar">
+  <button class="tab-btn active" id="tab-registrations" onclick="switchTab('registrations')">📋 Registrations</button>
+  <button class="tab-btn" id="tab-buyers" onclick="switchTab('buyers')">🎫 Buyer Invitations</button>
+  <button class="tab-btn" id="tab-analytics" onclick="switchTab('analytics')">📊 Analytics</button>
+</div>
+
+<!-- ══════════════════════════════════════
+     TAB 1: REGISTRATIONS
+     ══════════════════════════════════════ -->
+<div class="tab-panel active" id="panel-registrations">
+
+  <div class="stats-row">
+    <div class="stat-card">
+      <div class="stat-label">Total Registered</div>
+      <div class="stat-value">847</div>
+      <div class="stat-sub">+23 this week</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">Checked In</div>
+      <div class="stat-value">0</div>
+      <div class="stat-sub">Event not started</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">Pending Approval</div>
+      <div class="stat-value">14</div>
+      <div class="stat-sub">Awaiting review</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">Cancelled</div>
+      <div class="stat-value">8</div>
+      <div class="stat-sub">0.9% cancellation rate</div>
+    </div>
+  </div>
+
+  <div class="toolbar">
+    <input type="text" class="search-input" placeholder="🔍 Search by name, company or email…">
+    <select class="filter-select">
+      <option>All Ticket Types</option>
+      <option>Free — General</option>
+      <option>Professional Pass</option>
+      <option>VIP All-Access</option>
+    </select>
+    <select class="filter-select">
+      <option>All Statuses</option>
+      <option>Confirmed</option>
+      <option>Pending</option>
+      <option>Checked In</option>
+    </select>
+    <button class="btn-secondary" onclick="showToast('Filters cleared')">Clear</button>
+  </div>
+
+  <div class="card">
+    <div class="card-header">
+      <div class="card-title">👥 Attendee List <span style="font-size:13px;font-weight:400;color:var(--muted);">847 total</span></div>
+      <div class="card-actions">
+        <button class="btn-secondary" onclick="showToast('Sending bulk email…')">📧 Bulk Email</button>
+        <button class="btn-secondary" onclick="showToast('Exporting CSV…')">📤 Export CSV</button>
+      </div>
+    </div>
+    <table class="data-table">
+      <thead>
+        <tr>
+          <th>Attendee</th>
+          <th>Ticket</th>
+          <th>Registered</th>
+          <th>Status</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>
+            <div class="name-cell">
+              <div class="avatar" style="background:#d95f2b;">JD</div>
+              <div class="name-info">
+                <div class="name">Jean Dupont</div>
+                <div class="company">Ubisoft · jean.dupont@ubisoft.com</div>
+              </div>
+            </div>
+          </td>
+          <td><span class="badge badge-paid">Professional</span></td>
+          <td style="color:var(--muted);">Mar 15, 2026</td>
+          <td><span class="badge badge-confirmed">Confirmed</span></td>
+          <td><button class="btn-sm" onclick="showToast('Jean Dupont profile')">View</button></td>
+        </tr>
+        <tr>
+          <td>
+            <div class="name-cell">
+              <div class="avatar" style="background:#0a7fa8;">SM</div>
+              <div class="name-info">
+                <div class="name">Sarah Miller</div>
+                <div class="company">Indie Studio · sarah@indiegame.io</div>
+              </div>
+            </div>
+          </td>
+          <td><span class="badge badge-free">Free</span></td>
+          <td style="color:var(--muted);">Mar 18, 2026</td>
+          <td><span class="badge badge-confirmed">Confirmed</span></td>
+          <td><button class="btn-sm" onclick="showToast('Sarah Miller profile')">View</button></td>
+        </tr>
+        <tr>
+          <td>
+            <div class="name-cell">
+              <div class="avatar" style="background:#7c3aed;">TK</div>
+              <div class="name-info">
+                <div class="name">Takeshi Kimura</div>
+                <div class="company">Sony Interactive · t.kimura@sony.com</div>
+              </div>
+            </div>
+          </td>
+          <td><span class="badge badge-vip">VIP</span></td>
+          <td style="color:var(--muted);">Feb 28, 2026</td>
+          <td><span class="badge badge-confirmed">Confirmed</span></td>
+          <td><button class="btn-sm" onclick="showToast('Takeshi Kimura profile')">View</button></td>
+        </tr>
+        <tr>
+          <td>
+            <div class="name-cell">
+              <div class="avatar" style="background:#0d9b72;">AL</div>
+              <div class="name-info">
+                <div class="name">Anna Larsson</div>
+                <div class="company">Paradox Interactive · a.larsson@paradox.com</div>
+              </div>
+            </div>
+          </td>
+          <td><span class="badge badge-paid">Professional</span></td>
+          <td style="color:var(--muted);">Mar 20, 2026</td>
+          <td><span class="badge badge-pending">Pending</span></td>
+          <td><button class="btn-sm" onclick="showToast('Anna Larsson profile')">View</button></td>
+        </tr>
+        <tr>
+          <td>
+            <div class="name-cell">
+              <div class="avatar" style="background:#f59e0b;">MR</div>
+              <div class="name-info">
+                <div class="name">Marco Rossi</div>
+                <div class="company">505 Games · m.rossi@505games.com</div>
+              </div>
+            </div>
+          </td>
+          <td><span class="badge badge-free">Free</span></td>
+          <td style="color:var(--muted);">Mar 22, 2026</td>
+          <td><span class="badge badge-confirmed">Confirmed</span></td>
+          <td><button class="btn-sm" onclick="showToast('Marco Rossi profile')">View</button></td>
+        </tr>
+      </tbody>
+    </table>
+    <div style="padding:14px 16px;border-top:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;">
+      <span style="font-size:13px;color:var(--muted);">Showing 5 of 847 attendees</span>
+      <div style="display:flex;gap:6px;">
+        <button class="btn-sm" onclick="showToast('Previous page')">← Prev</button>
+        <button class="btn-sm primary" onclick="showToast('Next page')">Next →</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════
+     TAB 2: BUYER INVITATIONS
+     ══════════════════════════════════════ -->
+<div class="tab-panel" id="panel-buyers">
+
+  <div class="stats-row">
+    <div class="stat-card">
+      <div class="stat-label">Invitations Sent</div>
+      <div class="stat-value">156</div>
+      <div class="stat-sub">to qualified buyers</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">Accepted</div>
+      <div class="stat-value" style="color:var(--green);">89</div>
+      <div class="stat-sub">57% acceptance rate</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">Pending Response</div>
+      <div class="stat-value" style="color:var(--orange);">42</div>
+      <div class="stat-sub">Follow-up recommended</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">Declined</div>
+      <div class="stat-value">25</div>
+      <div class="stat-sub">16% decline rate</div>
+    </div>
+  </div>
+
+  <div class="toolbar">
+    <input type="text" class="search-input" placeholder="🔍 Search buyers by name, company or role…">
+    <select class="filter-select">
+      <option>All Buyer Types</option>
+      <option>Publisher</option>
+      <option>Investor</option>
+      <option>Platform Holder</option>
+      <option>Press / Media</option>
+    </select>
+    <select class="filter-select">
+      <option>All Statuses</option>
+      <option>Accepted</option>
+      <option>Pending</option>
+      <option>Declined</option>
+    </select>
+    <button class="btn-primary" onclick="showToast('Invite buyer form opened')">＋ Invite Buyer</button>
+  </div>
+
+  <div class="invite-grid">
+    <div class="invite-card accepted">
+      <div class="invite-name">Marie Chen</div>
+      <div class="invite-role">Senior Producer · Devolver Digital</div>
+      <div class="invite-tags">
+        <span class="invite-tag">Publisher</span>
+        <span class="invite-tag">Action RPG</span>
+        <span class="invite-tag">Indie</span>
+      </div>
+      <div class="invite-status" style="color:var(--green);">✅ Accepted</div>
+      <div class="invite-actions">
+        <button class="btn-sm" onclick="showToast('Marie Chen profile')">Profile</button>
+        <button class="btn-sm primary" onclick="showToast('Schedule meeting with Marie')">Schedule Meeting</button>
+      </div>
+    </div>
+    <div class="invite-card accepted">
+      <div class="invite-name">James Park</div>
+      <div class="invite-role">Investment Director · Konvoy Ventures</div>
+      <div class="invite-tags">
+        <span class="invite-tag">Investor</span>
+        <span class="invite-tag">Gaming VC</span>
+        <span class="invite-tag">Early Stage</span>
+      </div>
+      <div class="invite-status" style="color:var(--green);">✅ Accepted</div>
+      <div class="invite-actions">
+        <button class="btn-sm" onclick="showToast('James Park profile')">Profile</button>
+        <button class="btn-sm primary" onclick="showToast('Schedule meeting with James')">Schedule Meeting</button>
+      </div>
+    </div>
+    <div class="invite-card pending">
+      <div class="invite-name">Lucia Fernandez</div>
+      <div class="invite-role">Business Development · Nintendo Europe</div>
+      <div class="invite-tags">
+        <span class="invite-tag">Platform Holder</span>
+        <span class="invite-tag">Nintendo Switch</span>
+      </div>
+      <div class="invite-status" style="color:var(--orange);">⏳ Pending — Sent Mar 20</div>
+      <div class="invite-actions">
+        <button class="btn-sm" onclick="showToast('Reminder sent to Lucia')">Send Reminder</button>
+        <button class="btn-sm" onclick="showToast('Lucia Fernandez profile')">Profile</button>
+      </div>
+    </div>
+    <div class="invite-card pending">
+      <div class="invite-name">David Okonkwo</div>
+      <div class="invite-role">Acquisitions Manager · Xbox Game Studios</div>
+      <div class="invite-tags">
+        <span class="invite-tag">Platform Holder</span>
+        <span class="invite-tag">Xbox</span>
+        <span class="invite-tag">PC</span>
+      </div>
+      <div class="invite-status" style="color:var(--orange);">⏳ Pending — Sent Mar 18</div>
+      <div class="invite-actions">
+        <button class="btn-sm" onclick="showToast('Reminder sent to David')">Send Reminder</button>
+        <button class="btn-sm" onclick="showToast('David Okonkwo profile')">Profile</button>
+      </div>
+    </div>
+    <div class="invite-card declined">
+      <div class="invite-name">Hana Watanabe</div>
+      <div class="invite-role">PR Manager · Bandai Namco</div>
+      <div class="invite-tags">
+        <span class="invite-tag">Press</span>
+        <span class="invite-tag">Publisher</span>
+      </div>
+      <div class="invite-status" style="color:#ef4444;">❌ Declined</div>
+      <div class="invite-actions">
+        <button class="btn-sm" onclick="showToast('Hana Watanabe profile')">Profile</button>
+      </div>
+    </div>
+    <!-- Add New -->
+    <div style="border:2px dashed var(--border);border-radius:var(--radius);padding:28px;text-align:center;cursor:pointer;color:var(--muted);" onclick="showToast('Invite buyer form opened')">
+      <div style="font-size:28px;margin-bottom:8px;">＋</div>
+      <div style="font-size:14px;font-weight:600;">Invite a Buyer</div>
+      <div style="font-size:12px;margin-top:4px;">Publisher, investor, platform holder or press</div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════
+     TAB 3: ANALYTICS
+     ══════════════════════════════════════ -->
+<div class="tab-panel" id="panel-analytics">
+
+  <div class="stats-row">
+    <div class="stat-card">
+      <div class="stat-label">Total Attendees</div>
+      <div class="stat-value">847</div>
+      <div class="stat-sub">70.6% of capacity</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">Countries Represented</div>
+      <div class="stat-value">34</div>
+      <div class="stat-sub">Truly international</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">Avg. Ticket Value</div>
+      <div class="stat-value">€28.75</div>
+      <div class="stat-sub">incl. free registrations</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">Buyer Acceptance Rate</div>
+      <div class="stat-value" style="color:var(--green);">57%</div>
+      <div class="stat-sub">industry avg: 42%</div>
+    </div>
+  </div>
+
+  <div class="analytics-grid">
+    <!-- Ticket Breakdown -->
+    <div class="chart-card">
+      <div class="chart-title">Attendee Breakdown by Ticket</div>
+      <div class="bar-chart">
+        <div class="bar-row">
+          <div class="bar-label">Free</div>
+          <div class="bar-track"><div class="bar-fill" style="width:48.6%;background:var(--green);"></div></div>
+          <div class="bar-value">412</div>
+        </div>
+        <div class="bar-row">
+          <div class="bar-label">Professional</div>
+          <div class="bar-track"><div class="bar-fill" style="width:33.7%;background:var(--orange);"></div></div>
+          <div class="bar-value">285</div>
+        </div>
+        <div class="bar-row">
+          <div class="bar-label">VIP</div>
+          <div class="bar-track"><div class="bar-fill" style="width:11.6%;background:var(--purple);"></div></div>
+          <div class="bar-value">98</div>
+        </div>
+        <div class="bar-row">
+          <div class="bar-label">Buyer</div>
+          <div class="bar-track"><div class="bar-fill" style="width:6.1%;background:var(--teal);"></div></div>
+          <div class="bar-value">52</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Role Breakdown -->
+    <div class="chart-card">
+      <div class="chart-title">Attendee Roles</div>
+      <div class="donut-row">
+        <div class="donut-placeholder"></div>
+        <div class="donut-legend">
+          <div class="legend-item"><div class="legend-dot" style="background:var(--green);"></div>Developer / Studio (48%)</div>
+          <div class="legend-item"><div class="legend-dot" style="background:var(--orange);"></div>Publisher / Buyer (34%)</div>
+          <div class="legend-item"><div class="legend-dot" style="background:var(--purple);"></div>Investor (11%)</div>
+          <div class="legend-item"><div class="legend-dot" style="background:var(--teal);"></div>Press / Other (7%)</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Registration Over Time -->
+    <div class="chart-card">
+      <div class="chart-title">Registrations Over Time</div>
+      <div class="bar-chart">
+        <div class="bar-row">
+          <div class="bar-label">Jan</div>
+          <div class="bar-track"><div class="bar-fill" style="width:8%;background:var(--teal);"></div></div>
+          <div class="bar-value">68</div>
+        </div>
+        <div class="bar-row">
+          <div class="bar-label">Feb</div>
+          <div class="bar-track"><div class="bar-fill" style="width:22%;background:var(--teal);"></div></div>
+          <div class="bar-value">186</div>
+        </div>
+        <div class="bar-row">
+          <div class="bar-label">Mar</div>
+          <div class="bar-track"><div class="bar-fill" style="width:58%;background:var(--teal);"></div></div>
+          <div class="bar-value">491</div>
+        </div>
+        <div class="bar-row">
+          <div class="bar-label">Apr (so far)</div>
+          <div class="bar-track"><div class="bar-fill" style="width:12%;background:var(--orange);"></div></div>
+          <div class="bar-value">102</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Top Countries -->
+    <div class="chart-card">
+      <div class="chart-title">Top Countries</div>
+      <div class="bar-chart">
+        <div class="bar-row">
+          <div class="bar-label">France</div>
+          <div class="bar-track"><div class="bar-fill" style="width:28%;background:var(--orange);"></div></div>
+          <div class="bar-value">237</div>
+        </div>
+        <div class="bar-row">
+          <div class="bar-label">Germany</div>
+          <div class="bar-track"><div class="bar-fill" style="width:16%;background:var(--orange);"></div></div>
+          <div class="bar-value">135</div>
+        </div>
+        <div class="bar-row">
+          <div class="bar-label">UK</div>
+          <div class="bar-track"><div class="bar-fill" style="width:13%;background:var(--orange);"></div></div>
+          <div class="bar-value">110</div>
+        </div>
+        <div class="bar-row">
+          <div class="bar-label">USA</div>
+          <div class="bar-track"><div class="bar-fill" style="width:11%;background:var(--orange);"></div></div>
+          <div class="bar-value">93</div>
+        </div>
+        <div class="bar-row">
+          <div class="bar-label">Japan</div>
+          <div class="bar-track"><div class="bar-fill" style="width:8%;background:var(--orange);"></div></div>
+          <div class="bar-value">68</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  // ── EMBED MODE ──
+  (function() {
+    var p = new URLSearchParams(window.location.search);
+    if (p.get('embed') === '1') document.body.classList.add('embed-mode');
+  })();
+
+  // ── TAB SWITCHING ──
+  function switchTab(name) {
+    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+    document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+    document.getElementById('tab-' + name).classList.add('active');
+    document.getElementById('panel-' + name).classList.add('active');
+  }
+
+  // ── TOAST ──
+  function showToast(msg) {
+    var t = document.createElement('div');
+    t.className = 'toast'; t.textContent = msg;
+    document.body.appendChild(t);
+    setTimeout(() => { t.style.opacity = '0'; setTimeout(() => t.remove(), 300); }, 2500);
+  }
+</script>
+</body>
+</html>

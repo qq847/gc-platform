@@ -1,0 +1,711 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Event Setup — Event HQ</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --bg: #f3f2ef;
+    --orange: #d95f2b;
+    --teal: #0a7fa8;
+    --green: #0d9b72;
+    --white: #fff;
+    --text: #000000;
+    --muted: #666666;
+    --faint: #999999;
+    --border: #e0dfdc;
+    --radius: 8px;
+    --topbar-h: 58px;
+  }
+  body { font-family: 'DM Sans', sans-serif;line-height: 1.5; background: var(--bg); color: var(--text); min-height: 100vh; }
+
+  /* ── TOPBAR ── */
+  .topbar {
+    position: sticky; top: 0; z-index: 100;
+    height: var(--topbar-h); background: var(--white);
+    border-bottom: 1px solid var(--border);
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 0 28px; gap: 16px;
+  }
+  .topbar-logo { font-weight: 700; font-size: 15px; letter-spacing: .04em; }
+  .topbar-logo span { color: var(--orange); }
+  .topbar-right { display: flex; align-items: center; gap: 12px; }
+  .btn-save{
+    background: var(--orange); color: #fff; border: none;
+    padding: 7px 18px; border-radius: 24px; font-size: 13px;
+    font-weight: 600; cursor: pointer; font-family: inherit;
+  }
+  .btn-save:hover { background: #c2521f; }
+  .btn-secondary {
+    background: none; color: var(--muted); border: 1px solid var(--border);
+    padding: 7px 16px; border-radius: 7px; font-size: 13px;
+    font-weight: 500; cursor: pointer; font-family: inherit;
+  }
+  .btn-secondary:hover { background: var(--bg); }
+
+  /* ── TAB BAR ── */
+  .tab-bar {
+    background: var(--white); border-bottom: 1px solid var(--border);
+    display: flex; align-items: center; padding: 0 28px; gap: 4px;
+  }
+  .tab-btn {
+    padding: 14px 20px; font-size: 14px; font-weight: 500;
+    color: var(--muted); border: none; background: none;
+    cursor: pointer; font-family: inherit; border-bottom: 2px solid transparent;
+    margin-bottom: -1px; transition: color .15s;
+  }
+  .tab-btn:hover { color: var(--text); }
+  .tab-btn.active { color: var(--orange); border-bottom-color: var(--orange); font-weight: 600; }
+
+  /* ── MAIN CONTENT ── */
+  .tab-panel { display: none; padding: 28px; max-width: 860px; margin: 0 auto; }
+  .tab-panel.active { display: block; }
+
+  /* ── CARDS ── */
+  .card {
+    background: var(--white); border-radius: var(--radius);
+    border: 1px solid var(--border); padding: 24px; margin-bottom: 20px;
+  }
+  .card-title {
+    font-size: 15px; font-weight: 700; margin-bottom: 18px;
+    display: flex; align-items: center; gap: 8px;
+  }
+  .card-title .icon { font-size: 18px; }
+
+  /* ── FORM ── */
+  .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  .form-grid.col-3 { grid-template-columns: 1fr 1fr 1fr; }
+  .form-field { display: flex; flex-direction: column; gap: 6px; }
+  .form-field.full { grid-column: 1 / -1; }
+  .form-label { font-size: 13px; font-weight: 600; color: var(--text); }
+  .form-label .req { color: var(--orange); }
+  .form-input, .form-select, .form-textarea {
+    border: 1px solid var(--border); border-radius: 7px;
+    padding: 9px 12px; font-size: 14px; font-family: inherit;
+    color: var(--text); background: var(--white); outline: none;
+    transition: border-color .15s;
+  }
+  .form-input:focus, .form-select:focus, .form-textarea:focus { border-color: var(--orange); }
+  .form-textarea { resize: vertical; min-height: 100px; }
+  .form-input::placeholder, .form-textarea::placeholder { color: var(--faint); }
+  .divider { border: none; border-top: 1px solid var(--border); margin: 18px 0; }
+
+  /* ── TYPE SELECTOR ── */
+  .type-group { display: flex; flex-wrap: wrap; gap: 8px; }
+  .type-opt {
+    padding: 7px 14px; border-radius: 7px; border: 1.5px solid var(--border);
+    font-size: 13px; font-weight: 500; cursor: pointer;
+    transition: all .15s; user-select: none;
+  }
+  .type-opt:hover { border-color: var(--orange); }
+  .type-opt.sel { border-color: var(--orange); background: #fff3ec; color: var(--orange); }
+
+  /* ── LOCATION TOGGLE ── */
+  .loc-toggle { display: flex; gap: 8px; margin-bottom: 14px; }
+  .loc-btn {
+    padding: 7px 16px; border-radius: 7px; border: 1.5px solid var(--border);
+    font-size: 13px; font-weight: 500; cursor: pointer; background: var(--white);
+    font-family: inherit; transition: all .15s;
+  }
+  .loc-btn.active { border-color: var(--teal); background: #e0f3fa; color: var(--teal); }
+  .loc-sub { display: none; }
+  .loc-sub.show { display: block; }
+
+  /* ── MODULES GRID ── */
+  .modules-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 12px; margin-bottom: 16px; }
+  .mod-card {
+    border: 1.5px solid var(--border); border-radius: var(--radius);
+    padding: 14px; cursor: pointer; transition: all .15s;
+    display: flex; gap: 12px; align-items: flex-start;
+    position: relative;
+  }
+  .mod-card:hover { border-color: var(--teal); }
+  .mod-card.on { border-color: var(--teal); background: #f0f9ff; }
+  .mod-card.locked { cursor: default; opacity: .7; }
+  .mod-icon { width: 36px; height: 36px; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 18px; flex-shrink: 0; }
+  .mod-body { flex: 1; min-width: 0; }
+  .mod-name { font-size: 13px; font-weight: 700; margin-bottom: 3px; }
+  .mod-desc { font-size: 12px; color: var(--muted); line-height: 1.4; }
+  .mod-toggle {
+    position: absolute; top: 12px; right: 12px;
+    width: 34px; height: 20px;
+  }
+  .mod-toggle input { opacity: 0; width: 0; height: 0; position: absolute; }
+  .toggle-track {
+    display: block; width: 34px; height: 20px; border-radius: 8px;
+    background: var(--border); position: relative; cursor: pointer;
+    transition: background .2s;
+  }
+  .toggle-track::before {
+    content: ''; position: absolute; top: 3px; left: 3px;
+    width: 14px; height: 14px; border-radius: 50%;
+    background: #fff; transition: transform .2s;
+    box-shadow: none;
+  }
+  .mod-toggle input:checked + .toggle-track { background: var(--teal); }
+  .mod-toggle input:checked + .toggle-track::before { transform: translateX(14px); }
+  .section-label { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: .08em; color: var(--faint); margin: 16px 0 10px; }
+
+  /* ── PUBLISH SETTINGS ── */
+  .vis-group { display: flex; gap: 10px; flex-wrap: wrap; }
+  .vis-card {
+    flex: 1; min-width: 140px; border: 1.5px solid var(--border);
+    border-radius: var(--radius); padding: 14px; cursor: pointer;
+    transition: all .15s; text-align: center;
+  }
+  .vis-card:hover { border-color: var(--orange); }
+  .vis-card.sel { border-color: var(--orange); background: #fff3ec; }
+  .vis-icon { font-size: 22px; margin-bottom: 6px; }
+  .vis-name { font-size: 13px; font-weight: 700; }
+  .vis-desc { font-size: 11px; color: var(--muted); margin-top: 3px; }
+
+  /* ── URL FIELD ── */
+  .url-wrap { display: flex; align-items: center; border: 1px solid var(--border); border-radius: 7px; overflow: hidden; }
+  .url-prefix { padding: 9px 12px; background: var(--bg); font-size: 13px; color: var(--muted); border-right: 1px solid var(--border); white-space: nowrap; }
+  .url-input { border: none; outline: none; padding: 9px 12px; font-size: 14px; font-family: inherit; flex: 1; }
+
+  /* ── PREVIEW TAB ── */
+  .preview-header {
+    background: var(--white); border-radius: var(--radius);
+    border: 1px solid var(--border); padding: 20px 24px;
+    margin-bottom: 20px; display: flex; align-items: center; justify-content: space-between;
+  }
+  .preview-info h2 { font-size: 18px; font-weight: 700; margin-bottom: 4px; }
+  .preview-info p { font-size: 13px; color: var(--muted); }
+  .preview-actions { display: flex; gap: 10px; }
+  .btn-preview {
+    padding: 8px 18px; border-radius: 7px; font-size: 13px; font-weight: 600;
+    cursor: pointer; font-family: inherit; border: none;
+  }
+  .btn-preview.primary { background: var(--orange); color: #fff; }
+  .btn-preview.primary:hover { background: #c2521f; }
+  .btn-preview.outline { background: none; border: 1.5px solid var(--border); color: var(--muted); }
+  .btn-preview.outline:hover { border-color: var(--text); color: var(--text); }
+
+  .preview-modules { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 12px; }
+  .preview-mod-card {
+    background: var(--white); border: 1px solid var(--border);
+    border-radius: var(--radius); padding: 16px; text-align: center;
+  }
+  .preview-mod-card .pm-icon { font-size: 24px; margin-bottom: 8px; }
+  .preview-mod-card .pm-name { font-size: 13px; font-weight: 700; margin-bottom: 4px; }
+  .preview-mod-card .pm-status {
+    font-size: 11px; font-weight: 700; padding: 2px 8px;
+    border-radius: 8px; display: inline-block;
+  }
+  .pm-status.on { background: #e0f5ee; color: var(--green); }
+  .pm-status.off { background: var(--bg); color: var(--faint); }
+
+  .checklist { list-style: none; }
+  .checklist li {
+    display: flex; align-items: center; gap: 10px;
+    padding: 10px 0; border-bottom: 1px solid var(--border);
+    font-size: 14px;
+  }
+  .checklist li:last-child { border-bottom: none; }
+  .check-icon { font-size: 16px; width: 20px; text-align: center; }
+  .check-label { flex: 1; }
+  .check-status { font-size: 12px; font-weight: 600; }
+  .check-status.done { color: var(--green); }
+  .check-status.warn { color: #f59e0b; }
+  .check-status.miss { color: #ef4444; }
+
+  .publish-bar {
+    background: var(--white); border: 1px solid var(--border);
+    border-radius: var(--radius); padding: 20px 24px;
+    display: flex; align-items: center; justify-content: space-between;
+    margin-top: 20px;
+  }
+  .publish-bar-info { font-size: 14px; color: var(--muted); }
+  .publish-bar-info strong { color: var(--text); }
+  .btn-publish{
+    background: var(--green); color: #fff; border: none;
+    padding: 10px 28px; border-radius: 24px; font-size: 14px;
+    font-weight: 700; cursor: pointer; font-family: inherit;
+  }
+  .btn-publish:hover { background: #0a8660; }
+
+  /* ── TOAST ── */
+  .toast {
+    position: fixed; bottom: 28px; left: 50%; transform: translateX(-50%);
+    background: #1a1a1a; color: #fff; padding: 10px 20px;
+    border-radius: 8px; font-size: 13px; font-weight: 600;
+    z-index: 9999; box-shadow: none;
+    transition: opacity .3s;
+  }
+
+  /* ── EMBED MODE ── */
+  body.embed-mode .topbar { display: none !important; }
+  body.embed-mode .tab-bar { top: 0; }
+</style>
+</head>
+<body>
+
+<!-- TOPBAR -->
+<div class="topbar">
+  <div class="topbar-logo">GAME <span>CONNECTION</span> · Event HQ</div>
+  <div class="topbar-right">
+    <button class="btn-secondary" onclick="showToast('Draft saved ✓')">Save Draft</button>
+    <button class="btn-save" onclick="switchTab('preview')">Review & Publish →</button>
+  </div>
+</div>
+
+<!-- TAB BAR -->
+<div class="tab-bar">
+  <button class="tab-btn active" id="tab-info" onclick="switchTab('info')">✏️ Event Info</button>
+  <button class="tab-btn" id="tab-modules" onclick="switchTab('modules')">🧩 Modules</button>
+  <button class="tab-btn" id="tab-preview" onclick="switchTab('preview')">🌐 Preview & Publish</button>
+</div>
+
+<!-- ══════════════════════════════════════
+     TAB 1: EVENT INFO
+     ══════════════════════════════════════ -->
+<div class="tab-panel active" id="panel-info">
+
+  <!-- Basic Details -->
+  <div class="card">
+    <div class="card-title"><span class="icon">📋</span> Event Details</div>
+    <div class="form-grid">
+      <div class="form-field full">
+        <label class="form-label">Event Name <span class="req">*</span></label>
+        <input type="text" class="form-input" id="eventName" placeholder="e.g. Indie Game Fest 2026" oninput="syncPreview()">
+      </div>
+      <div class="form-field full">
+        <label class="form-label">Event Type <span class="req">*</span></label>
+        <div class="type-group">
+          <div class="type-opt sel" onclick="selectType(this)">🎤 Conference</div>
+          <div class="type-opt" onclick="selectType(this)">🏛️ Expo</div>
+          <div class="type-opt" onclick="selectType(this)">🤝 Meetup</div>
+          <div class="type-opt" onclick="selectType(this)">💻 Online</div>
+          <div class="type-opt" onclick="selectType(this)">🔀 Hybrid</div>
+        </div>
+      </div>
+      <div class="form-field">
+        <label class="form-label">Start Date <span class="req">*</span></label>
+        <input type="date" class="form-input" id="startDate" oninput="syncPreview()">
+      </div>
+      <div class="form-field">
+        <label class="form-label">End Date</label>
+        <input type="date" class="form-input" id="endDate">
+      </div>
+    </div>
+    <hr class="divider">
+    <div class="form-field" style="margin-bottom:14px;">
+      <label class="form-label">Location <span class="req">*</span></label>
+      <div class="loc-toggle">
+        <button class="loc-btn active" id="locPhysical" onclick="setLoc('physical')">📍 Physical</button>
+        <button class="loc-btn" id="locOnline" onclick="setLoc('online')">🌐 Online</button>
+        <button class="loc-btn" id="locHybrid" onclick="setLoc('hybrid')">🔀 Hybrid</button>
+      </div>
+    </div>
+    <div class="loc-sub show" id="subPhysical">
+      <div class="form-grid col-3">
+        <div class="form-field">
+          <label class="form-label">Venue</label>
+          <input type="text" class="form-input" placeholder="Convention Center">
+        </div>
+        <div class="form-field">
+          <label class="form-label">City <span class="req">*</span></label>
+          <input type="text" class="form-input" id="eventCity" placeholder="Lyon" oninput="syncPreview()">
+        </div>
+        <div class="form-field">
+          <label class="form-label">Country <span class="req">*</span></label>
+          <input type="text" class="form-input" id="eventCountry" placeholder="France" oninput="syncPreview()">
+        </div>
+      </div>
+    </div>
+    <div class="loc-sub" id="subOnline">
+      <div class="form-field">
+        <label class="form-label">Platform URL</label>
+        <input type="text" class="form-input" placeholder="https://zoom.us/j/...">
+      </div>
+    </div>
+    <div class="loc-sub" id="subHybrid">
+      <div class="form-grid col-3" style="margin-bottom:12px;">
+        <div class="form-field">
+          <label class="form-label">Venue</label>
+          <input type="text" class="form-input" placeholder="Convention Center">
+        </div>
+        <div class="form-field">
+          <label class="form-label">City</label>
+          <input type="text" class="form-input" placeholder="Lyon">
+        </div>
+        <div class="form-field">
+          <label class="form-label">Country</label>
+          <input type="text" class="form-input" placeholder="France">
+        </div>
+      </div>
+      <div class="form-field">
+        <label class="form-label">Online Platform URL</label>
+        <input type="text" class="form-input" placeholder="https://zoom.us/j/...">
+      </div>
+    </div>
+  </div>
+
+  <!-- Media & Description -->
+  <div class="card">
+    <div class="card-title"><span class="icon">🖼️</span> Media & Description</div>
+    <div class="form-grid">
+      <div class="form-field full">
+        <label class="form-label">Short Description <span class="req">*</span></label>
+        <textarea class="form-textarea" id="eventDesc" placeholder="Describe your event in 2–3 sentences. This appears on the public listing." oninput="syncPreview()"></textarea>
+      </div>
+      <div class="form-field full">
+        <label class="form-label">Banner Image</label>
+        <div style="border:2px dashed var(--border);border-radius:8px;padding:24px;text-align:center;color:var(--muted);cursor:pointer;font-size:13px;" onclick="showToast('Image upload — coming soon')">
+          🖼️ Click to upload banner (1200×400 recommended)
+        </div>
+      </div>
+      <div class="form-field">
+        <label class="form-label">Website URL</label>
+        <input type="text" class="form-input" placeholder="https://yourevent.com">
+      </div>
+      <div class="form-field">
+        <label class="form-label">Expected Attendees</label>
+        <input type="number" class="form-input" placeholder="e.g. 500">
+      </div>
+    </div>
+  </div>
+
+  <!-- Organizer Info -->
+  <div class="card">
+    <div class="card-title"><span class="icon">🏢</span> Organizer Information</div>
+    <div class="form-grid">
+      <div class="form-field">
+        <label class="form-label">Organization Name <span class="req">*</span></label>
+        <input type="text" class="form-input" placeholder="Game Connection Inc.">
+      </div>
+      <div class="form-field">
+        <label class="form-label">Contact Email <span class="req">*</span></label>
+        <input type="email" class="form-input" placeholder="organizer@yourevent.com">
+      </div>
+      <div class="form-field">
+        <label class="form-label">Phone</label>
+        <input type="text" class="form-input" placeholder="+33 1 23 45 67 89">
+      </div>
+      <div class="form-field">
+        <label class="form-label">Country</label>
+        <select class="form-select">
+          <option value="">Select country…</option>
+          <option>France</option><option>Germany</option><option>United Kingdom</option>
+          <option>United States</option><option>Japan</option><option>South Korea</option>
+          <option>China</option><option>Canada</option><option>Australia</option>
+          <option>Other</option>
+        </select>
+      </div>
+    </div>
+  </div>
+
+  <div style="display:flex;justify-content:flex-end;gap:10px;margin-top:4px;">
+    <button class="btn-secondary" onclick="showToast('Draft saved ✓')">Save Draft</button>
+    <button class="btn-save" onclick="switchTab('modules')">Next: Modules →</button>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════
+     TAB 2: MODULES
+     ══════════════════════════════════════ -->
+<div class="tab-panel" id="panel-modules">
+
+  <div class="card">
+    <div class="card-title"><span class="icon">🧩</span> Feature Modules</div>
+    <p style="font-size:13px;color:var(--muted);margin-bottom:18px;">Enable the features you need for your event. You can change these at any time before publishing.</p>
+
+    <div class="section-label">Core Modules</div>
+    <div class="modules-grid">
+      <div class="mod-card locked on" id="mod-reg">
+        <div class="mod-icon" style="background:#fff3ec;">🎫</div>
+        <div class="mod-body">
+          <div class="mod-name">Registration & Ticketing</div>
+          <div class="mod-desc">Attendee sign-ups, free & paid tickets, check-in</div>
+        </div>
+        <label class="mod-toggle"><input type="checkbox" checked disabled><span class="toggle-track"></span></label>
+      </div>
+      <div class="mod-card on" id="mod-matchmaking" onclick="toggleMod(this)">
+        <div class="mod-icon" style="background:#f0e8ff;">🤝</div>
+        <div class="mod-body">
+          <div class="mod-name">Let's Meet</div>
+          <div class="mod-desc">AI-powered 1-on-1 meeting scheduling</div>
+        </div>
+        <label class="mod-toggle" onclick="event.stopPropagation()"><input type="checkbox" checked onchange="syncToggle(this)"><span class="toggle-track"></span></label>
+      </div>
+      <div class="mod-card" id="mod-showcase" onclick="toggleMod(this)">
+        <div class="mod-icon" style="background:#e8f5e9;">🎮</div>
+        <div class="mod-body">
+          <div class="mod-name">Project Showcase</div>
+          <div class="mod-desc">Game submissions, demos, trailers & press kits</div>
+        </div>
+        <label class="mod-toggle" onclick="event.stopPropagation()"><input type="checkbox" onchange="syncToggle(this)"><span class="toggle-track"></span></label>
+      </div>
+      <div class="mod-card" id="mod-conference" onclick="toggleMod(this)">
+        <div class="mod-icon" style="background:#e0f3fa;">🗓️</div>
+        <div class="mod-body">
+          <div class="mod-name">Conference Program</div>
+          <div class="mod-desc">Sessions, speakers, schedule builder</div>
+        </div>
+        <label class="mod-toggle" onclick="event.stopPropagation()"><input type="checkbox" onchange="syncToggle(this)"><span class="toggle-track"></span></label>
+      </div>
+    </div>
+
+    <div class="section-label">Premium Add-ons</div>
+    <div class="modules-grid">
+      <div class="mod-card" id="mod-buyer" onclick="toggleMod(this)">
+        <div class="mod-icon" style="background:#fce4ec;">🎫</div>
+        <div class="mod-body">
+          <div class="mod-name">Buyer Invitation Program</div>
+          <div class="mod-desc">Curated buyer access with priority meeting slots</div>
+        </div>
+        <label class="mod-toggle" onclick="event.stopPropagation()"><input type="checkbox" onchange="syncToggle(this)"><span class="toggle-track"></span></label>
+      </div>
+      <div class="mod-card" id="mod-expo" onclick="toggleMod(this)">
+        <div class="mod-icon" style="background:#fff8e1;">🏛️</div>
+        <div class="mod-body">
+          <div class="mod-name">Exhibition & Booths</div>
+          <div class="mod-desc">Booth/pod management, floor plans, exhibitor portal</div>
+        </div>
+        <label class="mod-toggle" onclick="event.stopPropagation()"><input type="checkbox" onchange="syncToggle(this)"><span class="toggle-track"></span></label>
+      </div>
+      <div class="mod-card" id="mod-sponsorship" onclick="toggleMod(this)">
+        <div class="mod-icon" style="background:#fff3e0;">💼</div>
+        <div class="mod-body">
+          <div class="mod-name">Sponsorship</div>
+          <div class="mod-desc">Sponsor packages, marketplace listings, revenue tracking</div>
+        </div>
+        <label class="mod-toggle" onclick="event.stopPropagation()"><input type="checkbox" onchange="syncToggle(this)"><span class="toggle-track"></span></label>
+      </div>
+      <div class="mod-card" id="mod-awards" onclick="toggleMod(this)">
+        <div class="mod-icon" style="background:#fffde0;">🏆</div>
+        <div class="mod-body">
+          <div class="mod-name">Awards & Jury</div>
+          <div class="mod-desc">Game awards, indie competitions, community voting</div>
+        </div>
+        <label class="mod-toggle" onclick="event.stopPropagation()"><input type="checkbox" onchange="syncToggle(this)"><span class="toggle-track"></span></label>
+      </div>
+    </div>
+  </div>
+
+  <div style="display:flex;justify-content:space-between;gap:10px;margin-top:4px;">
+    <button class="btn-secondary" onclick="switchTab('info')">← Back to Info</button>
+    <div style="display:flex;gap:10px;">
+      <button class="btn-secondary" onclick="showToast('Draft saved ✓')">Save Draft</button>
+      <button class="btn-save" onclick="switchTab('preview')">Next: Preview & Publish →</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════
+     TAB 3: PREVIEW & PUBLISH
+     ══════════════════════════════════════ -->
+<div class="tab-panel" id="panel-preview">
+
+  <!-- Event Summary -->
+  <div class="preview-header">
+    <div class="preview-info">
+      <h2 id="prev-name">Indie Game Fest 2026</h2>
+      <p id="prev-meta">📅 Apr 15–17, 2026 · 📍 Lyon, France</p>
+    </div>
+    <div class="preview-actions">
+      <button class="btn-preview outline" onclick="showToast('Opening public page preview…')">👁 Preview Public Page</button>
+      <button class="btn-preview outline" onclick="showToast('Copied link!')">🔗 Copy Link</button>
+    </div>
+  </div>
+
+  <!-- Readiness Checklist -->
+  <div class="card">
+    <div class="card-title"><span class="icon">✅</span> Pre-Publish Checklist</div>
+    <ul class="checklist">
+      <li>
+        <span class="check-icon">✅</span>
+        <span class="check-label">Event name and dates set</span>
+        <span class="check-status done">Done</span>
+      </li>
+      <li>
+        <span class="check-icon">✅</span>
+        <span class="check-label">Location configured</span>
+        <span class="check-status done">Done</span>
+      </li>
+      <li>
+        <span class="check-icon">⚠️</span>
+        <span class="check-label">Event description added</span>
+        <span class="check-status warn">In progress</span>
+      </li>
+      <li>
+        <span class="check-icon">⚠️</span>
+        <span class="check-label">Banner image uploaded</span>
+        <span class="check-status warn">Optional</span>
+      </li>
+      <li>
+        <span class="check-icon">✅</span>
+        <span class="check-label">At least one module enabled</span>
+        <span class="check-status done">Done</span>
+      </li>
+      <li>
+        <span class="check-icon">✅</span>
+        <span class="check-label">Registration configured</span>
+        <span class="check-status done">Done</span>
+      </li>
+    </ul>
+  </div>
+
+  <!-- Active Modules -->
+  <div class="card">
+    <div class="card-title"><span class="icon">🧩</span> Active Modules</div>
+    <div class="preview-modules">
+      <div class="preview-mod-card">
+        <div class="pm-icon">🎫</div>
+        <div class="pm-name">Registration</div>
+        <div class="pm-status on">Active</div>
+      </div>
+      <div class="preview-mod-card">
+        <div class="pm-icon">🤝</div>
+        <div class="pm-name">Let's Meet</div>
+        <div class="pm-status on">Active</div>
+      </div>
+      <div class="preview-mod-card">
+        <div class="pm-icon">🎮</div>
+        <div class="pm-name">Project Showcase</div>
+        <div class="pm-status off">Disabled</div>
+      </div>
+      <div class="preview-mod-card">
+        <div class="pm-icon">🗓️</div>
+        <div class="pm-name">Conference</div>
+        <div class="pm-status off">Disabled</div>
+      </div>
+      <div class="preview-mod-card">
+        <div class="pm-icon">🏛️</div>
+        <div class="pm-name">Exhibition</div>
+        <div class="pm-status off">Disabled</div>
+      </div>
+      <div class="preview-mod-card">
+        <div class="pm-icon">🏆</div>
+        <div class="pm-name">Awards</div>
+        <div class="pm-status off">Disabled</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Visibility & URL -->
+  <div class="card">
+    <div class="card-title"><span class="icon">🔗</span> Visibility & Public URL</div>
+    <div class="form-field" style="margin-bottom:18px;">
+      <label class="form-label">Visibility</label>
+      <div class="vis-group">
+        <div class="vis-card sel" onclick="selectVis(this)">
+          <div class="vis-icon">🌐</div>
+          <div class="vis-name">Public</div>
+          <div class="vis-desc">Listed in directory</div>
+        </div>
+        <div class="vis-card" onclick="selectVis(this)">
+          <div class="vis-icon">🔗</div>
+          <div class="vis-name">Unlisted</div>
+          <div class="vis-desc">Link-only access</div>
+        </div>
+        <div class="vis-card" onclick="selectVis(this)">
+          <div class="vis-icon">🔒</div>
+          <div class="vis-name">Private</div>
+          <div class="vis-desc">Invite-only</div>
+        </div>
+      </div>
+    </div>
+    <div class="form-field">
+      <label class="form-label">Event URL</label>
+      <div class="url-wrap">
+        <span class="url-prefix">gc.events/</span>
+        <input type="text" class="url-input" placeholder="indie-game-fest-2026" value="indie-game-fest-2026">
+      </div>
+    </div>
+  </div>
+
+  <!-- Publish Bar -->
+  <div class="publish-bar">
+    <div class="publish-bar-info">
+      Status: <strong style="color:#f59e0b;">Draft</strong> · Last saved 2 min ago
+    </div>
+    <div style="display:flex;gap:10px;">
+      <button class="btn-secondary" onclick="showToast('Saved as draft ✓')">Save Draft</button>
+      <button class="btn-publish" onclick="publishEvent()">🚀 Publish Event</button>
+    </div>
+  </div>
+</div>
+
+<script>
+  // ── EMBED MODE ──
+  (function() {
+    var p = new URLSearchParams(window.location.search);
+    if (p.get('embed') === '1') document.body.classList.add('embed-mode');
+  })();
+
+  // ── TAB SWITCHING ──
+  function switchTab(name) {
+    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+    document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+    document.getElementById('tab-' + name).classList.add('active');
+    document.getElementById('panel-' + name).classList.add('active');
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+
+  // ── TYPE SELECTOR ──
+  function selectType(el) {
+    document.querySelectorAll('.type-opt').forEach(o => o.classList.remove('sel'));
+    el.classList.add('sel');
+  }
+
+  // ── LOCATION TOGGLE ──
+  function setLoc(type) {
+    ['physical','online','hybrid'].forEach(t => {
+      document.getElementById('loc' + t.charAt(0).toUpperCase() + t.slice(1)).classList.toggle('active', t === type);
+      document.getElementById('sub' + t.charAt(0).toUpperCase() + t.slice(1)).classList.toggle('show', t === type);
+    });
+  }
+
+  // ── MODULE TOGGLE ──
+  function toggleMod(card) {
+    if (card.classList.contains('locked')) return;
+    var toggle = card.querySelector('input[type="checkbox"]');
+    toggle.checked = !toggle.checked;
+    card.classList.toggle('on', toggle.checked);
+  }
+  function syncToggle(input) {
+    input.closest('.mod-card').classList.toggle('on', input.checked);
+  }
+
+  // ── VISIBILITY SELECTOR ──
+  function selectVis(el) {
+    document.querySelectorAll('.vis-card').forEach(c => c.classList.remove('sel'));
+    el.classList.add('sel');
+  }
+
+  // ── SYNC PREVIEW ──
+  function syncPreview() {
+    var name = document.getElementById('eventName').value || 'Your Event';
+    var start = document.getElementById('startDate').value;
+    var city = document.getElementById('eventCity') ? document.getElementById('eventCity').value : '';
+    var country = document.getElementById('eventCountry') ? document.getElementById('eventCountry').value : '';
+    document.getElementById('prev-name').textContent = name;
+    var meta = '';
+    if (start) meta += '📅 ' + start + ' ';
+    if (city || country) meta += '· 📍 ' + [city, country].filter(Boolean).join(', ');
+    if (meta) document.getElementById('prev-meta').textContent = meta;
+  }
+
+  // ── PUBLISH ──
+  function publishEvent() {
+    showToast('🚀 Event published successfully!');
+    setTimeout(() => {
+      document.querySelector('.publish-bar-info').innerHTML = 'Status: <strong style="color:var(--green);">Published</strong> · Just now';
+    }, 500);
+  }
+
+  // ── TOAST ──
+  function showToast(msg) {
+    var t = document.createElement('div');
+    t.className = 'toast'; t.textContent = msg;
+    document.body.appendChild(t);
+    setTimeout(() => { t.style.opacity = '0'; setTimeout(() => t.remove(), 300); }, 2500);
+  }
+</script>
+</body>
+</html>

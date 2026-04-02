@@ -1,0 +1,575 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Conference — Event HQ</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --bg: #f3f2ef;
+    --orange: #d95f2b;
+    --teal: #0a7fa8;
+    --green: #0d9b72;
+    --purple: #7c3aed;
+    --white: #fff;
+    --text: #000000;
+    --muted: #666666;
+    --faint: #999999;
+    --border: #e0dfdc;
+    --radius: 8px;
+  }
+  body { font-family: 'DM Sans', sans-serif;line-height: 1.5; background: var(--bg); color: var(--text); min-height: 100vh; }
+
+  /* ── TOPBAR ── */
+  .topbar {
+    position: sticky; top: 0; z-index: 100;
+    height: 58px; background: var(--white);
+    border-bottom: 1px solid var(--border);
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 0 28px;
+  }
+  .topbar-logo { font-weight: 700; font-size: 15px; letter-spacing: .04em; }
+  .topbar-logo span { color: var(--orange); }
+  .topbar-right { display: flex; align-items: center; gap: 10px; }
+  .btn-primary{
+    background: var(--orange); color: #fff; border: none;
+    padding: 7px 16px; border-radius: 24px; font-size: 13px;
+    font-weight: 600; cursor: pointer; font-family: inherit;
+  }
+  .btn-primary:hover { background: #c2521f; }
+  .btn-secondary {
+    background: none; color: var(--muted); border: 1px solid var(--border);
+    padding: 7px 14px; border-radius: 7px; font-size: 13px;
+    font-weight: 500; cursor: pointer; font-family: inherit;
+  }
+  .btn-secondary:hover { background: var(--bg); }
+
+  /* ── TAB BAR ── */
+  .tab-bar {
+    background: var(--white); border-bottom: 1px solid var(--border);
+    display: flex; align-items: center; padding: 0 28px; gap: 4px;
+  }
+  .tab-btn {
+    padding: 14px 20px; font-size: 14px; font-weight: 500;
+    color: var(--muted); border: none; background: none;
+    cursor: pointer; font-family: inherit; border-bottom: 2px solid transparent;
+    margin-bottom: -1px; transition: color .15s;
+  }
+  .tab-btn:hover { color: var(--text); }
+  .tab-btn.active { color: var(--orange); border-bottom-color: var(--orange); font-weight: 600; }
+
+  /* ── PANELS ── */
+  .tab-panel { display: none; padding: 28px; }
+  .tab-panel.active { display: block; }
+
+  /* ── STATS ROW ── */
+  .stats-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; margin-bottom: 22px; }
+  .stat-card {
+    background: var(--white); border: 1px solid var(--border);
+    border-radius: var(--radius); padding: 16px 18px;
+  }
+  .stat-label { font-size: 12px; color: var(--muted); font-weight: 500; margin-bottom: 6px; }
+  .stat-value { font-size: 22px; font-weight: 700; }
+  .stat-sub { font-size: 12px; color: var(--muted); margin-top: 3px; }
+
+  /* ── TOOLBAR ── */
+  .toolbar {
+    background: var(--white); border: 1px solid var(--border);
+    border-radius: var(--radius); padding: 14px 18px;
+    display: flex; align-items: center; gap: 12px;
+    margin-bottom: 18px; flex-wrap: wrap;
+  }
+  .search-input {
+    flex: 1; min-width: 200px; border: 1px solid var(--border);
+    border-radius: 7px; padding: 8px 12px; font-size: 13px;
+    font-family: inherit; outline: none;
+  }
+  .search-input:focus { border-color: var(--orange); }
+  .filter-select {
+    border: 1px solid var(--border); border-radius: 7px;
+    padding: 8px 12px; font-size: 13px; font-family: inherit;
+    outline: none; background: var(--white); cursor: pointer;
+  }
+
+  /* ── SESSION LIST ── */
+  .card {
+    background: var(--white); border-radius: var(--radius);
+    border: 1px solid var(--border); margin-bottom: 18px; overflow: hidden;
+  }
+  .card-header {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 16px 20px; border-bottom: 1px solid var(--border);
+  }
+  .card-title { font-size: 15px; font-weight: 700; display: flex; align-items: center; gap: 8px; }
+  .card-actions { display: flex; gap: 8px; }
+
+  .session-item {
+    display: flex; align-items: flex-start; gap: 16px;
+    padding: 16px 20px; border-bottom: 1px solid var(--border);
+    transition: background .1s;
+  }
+  .session-item:last-child { border-bottom: none; }
+  .session-item:hover { background: #fafaf8; }
+  .session-time {
+    min-width: 90px; text-align: right; flex-shrink: 0;
+  }
+  .session-time .time { font-size: 13px; font-weight: 700; }
+  .session-time .duration { font-size: 11px; color: var(--muted); }
+  .session-bar {
+    width: 4px; border-radius: 2px; flex-shrink: 0;
+    align-self: stretch; min-height: 40px;
+  }
+  .session-body { flex: 1; min-width: 0; }
+  .session-title { font-size: 14px; font-weight: 700; margin-bottom: 4px; }
+  .session-meta { font-size: 12px; color: var(--muted); margin-bottom: 8px; }
+  .session-tags { display: flex; flex-wrap: wrap; gap: 5px; }
+  .session-tag {
+    padding: 2px 7px; border-radius: 6px; font-size: 11px;
+    font-weight: 500; background: var(--bg); color: var(--muted);
+  }
+  .session-actions { display: flex; gap: 8px; flex-shrink: 0; align-items: flex-start; }
+  .btn-sm {
+    padding: 5px 12px; border-radius: 6px; font-size: 12px;
+    font-weight: 600; cursor: pointer; font-family: inherit;
+    border: 1px solid var(--border); background: none; color: var(--muted);
+  }
+  .btn-sm:hover { background: var(--bg); }
+  .btn-sm.primary { background: var(--orange); color: #fff; border-color: var(--orange); }
+
+  .day-header {
+    padding: 10px 20px; background: var(--bg);
+    font-size: 12px; font-weight: 700; color: var(--muted);
+    text-transform: uppercase; letter-spacing: .06em;
+    border-bottom: 1px solid var(--border);
+  }
+
+  /* ── CALENDAR VIEW ── */
+  .cal-nav {
+    display: flex; align-items: center; justify-content: space-between;
+    background: var(--white); border: 1px solid var(--border);
+    border-radius: var(--radius); padding: 14px 20px; margin-bottom: 18px;
+  }
+  .cal-nav-title { font-size: 16px; font-weight: 700; }
+  .cal-nav-btns { display: flex; gap: 8px; }
+
+  .cal-grid {
+    background: var(--white); border: 1px solid var(--border);
+    border-radius: var(--radius); overflow: hidden;
+  }
+  .cal-header {
+    display: grid; grid-template-columns: 80px repeat(3, 1fr);
+    border-bottom: 1px solid var(--border);
+  }
+  .cal-header-cell {
+    padding: 12px 16px; font-size: 13px; font-weight: 700;
+    border-right: 1px solid var(--border); text-align: center;
+  }
+  .cal-header-cell:first-child { background: var(--bg); }
+  .cal-header-cell:last-child { border-right: none; }
+  .cal-day-label { font-size: 12px; color: var(--muted); font-weight: 400; margin-top: 2px; }
+
+  .cal-body { position: relative; }
+  .cal-row {
+    display: grid; grid-template-columns: 80px repeat(3, 1fr);
+    border-bottom: 1px solid var(--border); min-height: 60px;
+  }
+  .cal-row:last-child { border-bottom: none; }
+  .cal-time {
+    padding: 8px 12px; font-size: 11px; color: var(--muted);
+    font-weight: 600; background: var(--bg);
+    border-right: 1px solid var(--border); text-align: right;
+    display: flex; align-items: flex-start; justify-content: flex-end;
+  }
+  .cal-cell {
+    border-right: 1px solid var(--border); padding: 4px;
+    position: relative; min-height: 60px;
+  }
+  .cal-cell:last-child { border-right: none; }
+  .cal-event {
+    border-radius: 6px; padding: 6px 8px; font-size: 11px;
+    font-weight: 600; cursor: pointer; margin-bottom: 3px;
+    line-height: 1.3;
+  }
+  .cal-event:hover { opacity: .85; }
+  .cal-event .ev-time { font-weight: 400; opacity: .8; font-size: 10px; }
+  .cal-event .ev-room { font-weight: 400; opacity: .7; font-size: 10px; }
+
+  /* ── BADGE ── */
+  .badge {
+    padding: 2px 8px; border-radius: 8px;
+    font-size: 11px; font-weight: 700; display: inline-block;
+  }
+  .badge-keynote { background: #fff3ec; color: var(--orange); }
+  .badge-panel { background: #e0f3fa; color: var(--teal); }
+  .badge-workshop { background: #e0f5ee; color: var(--green); }
+  .badge-talk { background: #f3e8ff; color: var(--purple); }
+
+  /* ── TOAST ── */
+  .toast {
+    position: fixed; bottom: 28px; left: 50%; transform: translateX(-50%);
+    background: #1a1a1a; color: #fff; padding: 10px 20px;
+    border-radius: 8px; font-size: 13px; font-weight: 600;
+    z-index: 9999; box-shadow: none; transition: opacity .3s;
+  }
+
+  /* ── EMBED MODE ── */
+  body.embed-mode .topbar { display: none !important; }
+  body.embed-mode .tab-bar { top: 0; }
+</style>
+</head>
+<body>
+
+<!-- TOPBAR -->
+<div class="topbar">
+  <div class="topbar-logo">GAME <span>CONNECTION</span> · Event HQ</div>
+  <div class="topbar-right">
+    <button class="btn-secondary" onclick="showToast('Exporting schedule…')">📤 Export</button>
+    <button class="btn-primary" onclick="showToast('Add session form opened')">＋ Add Session</button>
+  </div>
+</div>
+
+<!-- TAB BAR -->
+<div class="tab-bar">
+  <button class="tab-btn active" id="tab-sessions" onclick="switchTab('sessions')">📋 Sessions List</button>
+  <button class="tab-btn" id="tab-schedule" onclick="switchTab('schedule')">🗓️ Schedule Calendar</button>
+</div>
+
+<!-- ══════════════════════════════════════
+     TAB 1: SESSIONS LIST
+     ══════════════════════════════════════ -->
+<div class="tab-panel active" id="panel-sessions">
+
+  <div class="stats-row">
+    <div class="stat-card">
+      <div class="stat-label">Total Sessions</div>
+      <div class="stat-value">28</div>
+      <div class="stat-sub">across 3 days</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">Confirmed Speakers</div>
+      <div class="stat-value">34</div>
+      <div class="stat-sub">6 keynote speakers</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">Rooms / Stages</div>
+      <div class="stat-value">3</div>
+      <div class="stat-sub">Main · Industry · Workshop</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">Total Duration</div>
+      <div class="stat-value">22h</div>
+      <div class="stat-sub">of programmed content</div>
+    </div>
+  </div>
+
+  <div class="toolbar">
+    <input type="text" class="search-input" placeholder="🔍 Search sessions by title or speaker…">
+    <select class="filter-select">
+      <option>All Days</option>
+      <option>Day 1 — Apr 15</option>
+      <option>Day 2 — Apr 16</option>
+      <option>Day 3 — Apr 17</option>
+    </select>
+    <select class="filter-select">
+      <option>All Rooms</option>
+      <option>Main Stage</option>
+      <option>Industry Room</option>
+      <option>Workshop Room</option>
+    </select>
+    <select class="filter-select">
+      <option>All Types</option>
+      <option>Keynote</option>
+      <option>Panel</option>
+      <option>Talk</option>
+      <option>Workshop</option>
+    </select>
+  </div>
+
+  <!-- Day 1 -->
+  <div class="card">
+    <div class="day-header">Day 1 — Wednesday, April 15, 2026</div>
+
+    <div class="session-item">
+      <div class="session-time">
+        <div class="time">09:00</div>
+        <div class="duration">60 min</div>
+      </div>
+      <div class="session-bar" style="background:var(--orange);"></div>
+      <div class="session-body">
+        <div class="session-title">Opening Keynote: The Future of Indie Publishing</div>
+        <div class="session-meta">Main Stage · Marie Chen (Devolver Digital) · 500 seats</div>
+        <div class="session-tags">
+          <span class="session-tag badge-keynote" style="background:#fff3ec;color:var(--orange);">Keynote</span>
+          <span class="session-tag">Publishing</span>
+          <span class="session-tag">Industry Trends</span>
+        </div>
+      </div>
+      <div class="session-actions">
+        <button class="btn-sm" onclick="showToast('Editing Opening Keynote…')">Edit</button>
+      </div>
+    </div>
+
+    <div class="session-item">
+      <div class="session-time">
+        <div class="time">10:30</div>
+        <div class="duration">45 min</div>
+      </div>
+      <div class="session-bar" style="background:var(--teal);"></div>
+      <div class="session-body">
+        <div class="session-title">Panel: Funding Your Game in 2026</div>
+        <div class="session-meta">Industry Room · James Park + 3 panelists · 150 seats</div>
+        <div class="session-tags">
+          <span class="session-tag" style="background:#e0f3fa;color:var(--teal);">Panel</span>
+          <span class="session-tag">Funding</span>
+          <span class="session-tag">Investment</span>
+        </div>
+      </div>
+      <div class="session-actions">
+        <button class="btn-sm" onclick="showToast('Editing Panel…')">Edit</button>
+      </div>
+    </div>
+
+    <div class="session-item">
+      <div class="session-time">
+        <div class="time">11:30</div>
+        <div class="duration">90 min</div>
+      </div>
+      <div class="session-bar" style="background:var(--green);"></div>
+      <div class="session-body">
+        <div class="session-title">Workshop: Pitching to Publishers — Live Feedback</div>
+        <div class="session-meta">Workshop Room · Anna Larsson (Paradox) · 40 seats</div>
+        <div class="session-tags">
+          <span class="session-tag" style="background:#e0f5ee;color:var(--green);">Workshop</span>
+          <span class="session-tag">Pitching</span>
+          <span class="session-tag">Publishers</span>
+        </div>
+      </div>
+      <div class="session-actions">
+        <button class="btn-sm" onclick="showToast('Editing Workshop…')">Edit</button>
+      </div>
+    </div>
+
+    <div class="session-item">
+      <div class="session-time">
+        <div class="time">14:00</div>
+        <div class="duration">30 min</div>
+      </div>
+      <div class="session-bar" style="background:var(--purple);"></div>
+      <div class="session-body">
+        <div class="session-title">Talk: From Jam to Steam — A 12-Month Journey</div>
+        <div class="session-meta">Main Stage · Sarah Miller (Indie Studio) · 500 seats</div>
+        <div class="session-tags">
+          <span class="session-tag" style="background:#f3e8ff;color:var(--purple);">Talk</span>
+          <span class="session-tag">Indie Dev</span>
+          <span class="session-tag">Steam</span>
+        </div>
+      </div>
+      <div class="session-actions">
+        <button class="btn-sm" onclick="showToast('Editing Talk…')">Edit</button>
+      </div>
+    </div>
+
+    <div style="padding:12px 20px;border-top:1px solid var(--border);display:flex;justify-content:flex-end;">
+      <button class="btn-sm primary" onclick="showToast('Add session to Day 1')">＋ Add Session to Day 1</button>
+    </div>
+  </div>
+
+  <!-- Day 2 -->
+  <div class="card">
+    <div class="day-header">Day 2 — Thursday, April 16, 2026</div>
+    <div class="session-item">
+      <div class="session-time">
+        <div class="time">09:30</div>
+        <div class="duration">45 min</div>
+      </div>
+      <div class="session-bar" style="background:var(--orange);"></div>
+      <div class="session-body">
+        <div class="session-title">Keynote: Building for Global Markets</div>
+        <div class="session-meta">Main Stage · Takeshi Kimura (Sony Interactive) · 500 seats</div>
+        <div class="session-tags">
+          <span class="session-tag" style="background:#fff3ec;color:var(--orange);">Keynote</span>
+          <span class="session-tag">Localization</span>
+          <span class="session-tag">Global</span>
+        </div>
+      </div>
+      <div class="session-actions">
+        <button class="btn-sm" onclick="showToast('Editing Keynote…')">Edit</button>
+      </div>
+    </div>
+    <div style="padding:12px 20px;border-top:1px solid var(--border);display:flex;justify-content:flex-end;">
+      <button class="btn-sm primary" onclick="showToast('Add session to Day 2')">＋ Add Session to Day 2</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════
+     TAB 2: SCHEDULE CALENDAR
+     ══════════════════════════════════════ -->
+<div class="tab-panel" id="panel-schedule">
+
+  <div class="cal-nav">
+    <div class="cal-nav-title">GC Europe 2026 — Apr 15–17, 2026</div>
+    <div class="cal-nav-btns">
+      <button class="btn-secondary" onclick="showToast('Exporting calendar PDF…')">📤 Export PDF</button>
+      <button class="btn-primary" onclick="showToast('Add session to calendar')">＋ Add Session</button>
+    </div>
+  </div>
+
+  <div class="cal-grid">
+    <!-- Header -->
+    <div class="cal-header">
+      <div class="cal-header-cell" style="background:var(--bg);"></div>
+      <div class="cal-header-cell">
+        Day 1
+        <div class="cal-day-label">Wednesday, Apr 15</div>
+      </div>
+      <div class="cal-header-cell">
+        Day 2
+        <div class="cal-day-label">Thursday, Apr 16</div>
+      </div>
+      <div class="cal-header-cell">
+        Day 3
+        <div class="cal-day-label">Friday, Apr 17</div>
+      </div>
+    </div>
+
+    <!-- 09:00 -->
+    <div class="cal-row">
+      <div class="cal-time">09:00</div>
+      <div class="cal-cell">
+        <div class="cal-event" style="background:#fff3ec;color:var(--orange);border-left:3px solid var(--orange);" onclick="showToast('Opening Keynote details')">
+          <div>Opening Keynote</div>
+          <div class="ev-time">09:00–10:00 · Main Stage</div>
+        </div>
+      </div>
+      <div class="cal-cell">
+        <div class="cal-event" style="background:#fff3ec;color:var(--orange);border-left:3px solid var(--orange);" onclick="showToast('Day 2 Keynote details')">
+          <div>Global Markets Keynote</div>
+          <div class="ev-time">09:30–10:15 · Main Stage</div>
+        </div>
+      </div>
+      <div class="cal-cell">
+        <div class="cal-event" style="background:#fff3ec;color:var(--orange);border-left:3px solid var(--orange);" onclick="showToast('Closing Keynote details')">
+          <div>Closing Keynote</div>
+          <div class="ev-time">09:00–09:45 · Main Stage</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 10:30 -->
+    <div class="cal-row">
+      <div class="cal-time">10:30</div>
+      <div class="cal-cell">
+        <div class="cal-event" style="background:#e0f3fa;color:var(--teal);border-left:3px solid var(--teal);" onclick="showToast('Funding Panel details')">
+          <div>Funding Your Game Panel</div>
+          <div class="ev-time">10:30–11:15 · Industry Room</div>
+        </div>
+        <div class="cal-event" style="background:#e0f5ee;color:var(--green);border-left:3px solid var(--green);" onclick="showToast('Workshop details')">
+          <div>Pitching Workshop</div>
+          <div class="ev-time">11:30–13:00 · Workshop Room</div>
+        </div>
+      </div>
+      <div class="cal-cell">
+        <div class="cal-event" style="background:#e0f3fa;color:var(--teal);border-left:3px solid var(--teal);" onclick="showToast('Panel details')">
+          <div>Console Publishing Panel</div>
+          <div class="ev-time">10:30–11:30 · Industry Room</div>
+        </div>
+      </div>
+      <div class="cal-cell">
+        <div class="cal-event" style="background:#f3e8ff;color:var(--purple);border-left:3px solid var(--purple);" onclick="showToast('Talk details')">
+          <div>Marketing on a Budget</div>
+          <div class="ev-time">10:00–10:45 · Main Stage</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 14:00 -->
+    <div class="cal-row">
+      <div class="cal-time">14:00</div>
+      <div class="cal-cell">
+        <div class="cal-event" style="background:#f3e8ff;color:var(--purple);border-left:3px solid var(--purple);" onclick="showToast('Talk details')">
+          <div>From Jam to Steam</div>
+          <div class="ev-time">14:00–14:30 · Main Stage</div>
+        </div>
+      </div>
+      <div class="cal-cell">
+        <div class="cal-event" style="background:#e0f5ee;color:var(--green);border-left:3px solid var(--green);" onclick="showToast('Workshop details')">
+          <div>Narrative Design Workshop</div>
+          <div class="ev-time">14:00–15:30 · Workshop Room</div>
+        </div>
+      </div>
+      <div class="cal-cell">
+        <div class="cal-event" style="background:#e0f3fa;color:var(--teal);border-left:3px solid var(--teal);" onclick="showToast('Panel details')">
+          <div>Indie Awards Ceremony</div>
+          <div class="ev-time">14:00–15:00 · Main Stage</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 16:00 -->
+    <div class="cal-row">
+      <div class="cal-time">16:00</div>
+      <div class="cal-cell">
+        <div class="cal-event" style="background:#e0f3fa;color:var(--teal);border-left:3px solid var(--teal);" onclick="showToast('Networking details')">
+          <div>Networking Reception</div>
+          <div class="ev-time">17:00–19:00 · Lobby</div>
+        </div>
+      </div>
+      <div class="cal-cell">
+        <div class="cal-event" style="background:#f3e8ff;color:var(--purple);border-left:3px solid var(--purple);" onclick="showToast('Talk details')">
+          <div>VR/AR in Gaming Talk</div>
+          <div class="ev-time">16:00–16:45 · Main Stage</div>
+        </div>
+      </div>
+      <div class="cal-cell">
+        <div class="cal-event" style="background:#fff3ec;color:var(--orange);border-left:3px solid var(--orange);" onclick="showToast('Closing ceremony details')">
+          <div>Closing Ceremony</div>
+          <div class="ev-time">16:00–17:00 · Main Stage</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div style="margin-top:14px;display:flex;gap:12px;flex-wrap:wrap;">
+    <div style="display:flex;align-items:center;gap:6px;font-size:12px;color:var(--muted);">
+      <div style="width:12px;height:12px;border-radius:3px;background:var(--orange);"></div>Keynote
+    </div>
+    <div style="display:flex;align-items:center;gap:6px;font-size:12px;color:var(--muted);">
+      <div style="width:12px;height:12px;border-radius:3px;background:var(--teal);"></div>Panel / Networking
+    </div>
+    <div style="display:flex;align-items:center;gap:6px;font-size:12px;color:var(--muted);">
+      <div style="width:12px;height:12px;border-radius:3px;background:var(--green);"></div>Workshop
+    </div>
+    <div style="display:flex;align-items:center;gap:6px;font-size:12px;color:var(--muted);">
+      <div style="width:12px;height:12px;border-radius:3px;background:var(--purple);"></div>Talk
+    </div>
+  </div>
+</div>
+
+<script>
+  // ── EMBED MODE ──
+  (function() {
+    var p = new URLSearchParams(window.location.search);
+    if (p.get('embed') === '1') document.body.classList.add('embed-mode');
+  })();
+
+  // ── TAB SWITCHING ──
+  function switchTab(name) {
+    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+    document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+    document.getElementById('tab-' + name).classList.add('active');
+    document.getElementById('panel-' + name).classList.add('active');
+  }
+
+  // ── TOAST ──
+  function showToast(msg) {
+    var t = document.createElement('div');
+    t.className = 'toast'; t.textContent = msg;
+    document.body.appendChild(t);
+    setTimeout(() => { t.style.opacity = '0'; setTimeout(() => t.remove(), 300); }, 2500);
+  }
+</script>
+</body>
+</html>

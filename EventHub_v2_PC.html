@@ -1,0 +1,3038 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Game Connection — Event Hub v2</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%;font-family:"DM Sans","PingFang SC",sans-serif;color:#000000;overflow:hidden;line-height:1.5}
+body{background:#f3f2ef}
+
+:root{
+  --orange:#d95f2b;--orange-dim:rgba(217,95,43,0.1);--orange-border:rgba(217,95,43,0.25);
+  --teal:#0a7fa8;--teal-dim:rgba(10,127,168,0.1);--teal-border:rgba(10,127,168,0.22);
+  --green:#0d9b72;--green-dim:rgba(13,155,114,0.1);--green-border:rgba(13,155,114,0.25);
+  --purple:#7c3aed;--purple-dim:rgba(124,58,237,0.1);--purple-border:rgba(124,58,237,0.25);
+  --card:#fff;--border:#e0dfdc;--border2:#e8e7e4;
+  --text1:#000000;--text2:#666666;--text3:#999999;
+  --nav-h:54px;--conf-h:88px;
+  --s1:0 1px 3px rgba(0,0,0,0.07);--s2:0 2px 8px rgba(0,0,0,0.1);
+  --live-red:#e53935;
+  --bg:#f3f2ef;--muted:#666666;
+  --shadow:none;--shadow-h:none;
+  --radius:8px;
+}
+
+/* ── TOP NAV ── */
+.topnav{
+  position:fixed;top:0;left:0;right:0;z-index:300;
+  height:var(--nav-h);background:#f3f2ef;
+  border-bottom:1px solid #e0dfdc;
+  display:flex;align-items:center;padding:0 24px;gap:12px;
+}
+.nav-logo{font-size:15px;font-weight:900;color:var(--text1);letter-spacing:-.3px;flex-shrink:0}
+.nav-logo span{color:var(--orange)}
+.nav-live-badge{
+  display:flex;align-items:center;gap:5px;
+  background:rgba(217,95,43,0.1);border:1px solid rgba(217,95,43,0.25);
+  border-radius:6px;padding:3px 10px;flex-shrink:0;
+}
+.live-dot{
+  width:6px;height:6px;border-radius:50%;background:var(--orange);
+  animation:pulse 1.8s ease-in-out infinite;
+}
+@keyframes pulse{0%,100%{box-shadow:0 0 0 0 rgba(217,95,43,0.6)}60%{box-shadow:0 0 0 5px rgba(217,95,43,0)}}
+@keyframes pulse-dot{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.4;transform:scale(1.3)}}
+@keyframes pulse-badge{0%,100%{opacity:1}50%{opacity:.6}}
+@keyframes border-pulse{0%,100%{opacity:1}50%{opacity:.6}}
+@keyframes live-glow{0%,100%{box-shadow:0 0 0 0 rgba(229,57,53,0)}50%{box-shadow:0 0 16px 4px rgba(229,57,53,.4)}}
+.nav-live-badge span{font-size:10px;font-weight:800;color:var(--orange);letter-spacing:.5px}
+.nav-search{
+  flex:1;max-width:340px;height:34px;
+  background:var(--card);border:1px solid #e0dfdc;border-radius:7px;
+  display:flex;align-items:center;gap:8px;padding:0 12px;box-shadow:var(--s1);
+}
+.nav-search svg{opacity:.4;flex-shrink:0}
+.nav-search span{font-size:13px;color:var(--text3)}
+.nav-gap{flex:1}
+.nav-tabs{display:flex;align-items:stretch;height:var(--nav-h);gap:2px}
+.nav-tab{
+  display:flex;align-items:center;gap:6px;padding:0 16px;
+  cursor:pointer;font-size:13px;font-weight:600;color:var(--text3);
+  border-bottom:2px solid transparent;white-space:nowrap;transition:all .15s;
+}
+.nav-tab:hover{color:var(--text2);border-bottom-color:rgba(0,0,0,0.1)}
+.nav-tab.active{color:var(--orange);border-bottom-color:var(--orange)}
+.nav-ai-btn{
+  display:flex;align-items:center;gap:6px;height:32px;padding:0 16px;
+  border-radius:24px;background:var(--text1);
+  border:none;color:#fff;font-size:12px;font-weight:700;
+  cursor:pointer;font-family:inherit;letter-spacing:.2px;
+  text-decoration:none;
+  transition:background .2s,transform .15s;
+}
+.nav-ai-btn:hover{background:#2e2b27;transform:translateY(-1px)}
+.nav-ai-btn:active{transform:translateY(0)}
+.nav-sep{width:1px;height:20px;background:var(--border);margin:0 4px}
+
+/* ── Profile Drawer ── */
+.profile-drawer-overlay{
+  position:fixed;inset:0;z-index:800;
+  background:rgba(0,0,0,0.35);
+  opacity:0;pointer-events:none;
+  transition:opacity .25s;
+}
+.profile-drawer-overlay.open{opacity:1;pointer-events:all}
+.profile-drawer{
+  position:fixed;top:0;right:-440px;bottom:0;z-index:801;
+  width:420px;background:#fff;
+  box-shadow:-4px 0 32px rgba(0,0,0,0.18);
+  transition:right .3s cubic-bezier(.4,0,.2,1);
+  display:flex;flex-direction:column;
+  overflow:hidden;
+}
+.profile-drawer.open{right:0}
+.pd-header{
+  display:flex;align-items:center;gap:12px;
+  padding:16px 20px;
+  border-bottom:1px solid #f0f0f0;
+  flex-shrink:0;
+  background:#1a1a1a;
+}
+.pd-avatar{
+  width:44px;height:44px;border-radius:50%;
+  background:var(--orange);color:#fff;
+  display:flex;align-items:center;justify-content:center;
+  font-size:16px;font-weight:700;flex-shrink:0;
+}
+.pd-name{font-size:15px;font-weight:700;color:#fff}
+.pd-role{font-size:12px;color:rgba(255,255,255,0.55);margin-top:2px}
+.pd-close{
+  margin-left:auto;width:30px;height:30px;
+  border-radius:50%;background:rgba(255,255,255,0.12);
+  border:none;color:#fff;font-size:18px;line-height:1;
+  cursor:pointer;display:flex;align-items:center;justify-content:center;
+}
+.pd-close:hover{background:rgba(255,255,255,0.22)}
+.pd-actions{
+  display:flex;gap:8px;padding:12px 20px;
+  border-bottom:1px solid #f0f0f0;flex-shrink:0;
+}
+.pd-btn-redo{
+  flex:1;padding:9px 0;border-radius:24px;
+  background:var(--orange);color:#fff;
+  border:none;font-size:13px;font-weight:700;
+  cursor:pointer;font-family:inherit;
+  transition:background .15s;
+}
+.pd-btn-redo:hover{background:#c05020}
+.pd-btn-signout{
+  padding:9px 16px;border-radius:7px;
+  background:#fff;color:#666;
+  border:1.5px solid #e0e0e0;font-size:13px;font-weight:600;
+  cursor:pointer;font-family:inherit;
+  transition:all .15s;
+}
+.pd-btn-signout:hover{border-color:#999;color:#333}
+.pd-body{
+  flex:1;overflow-y:auto;padding:0;
+}
+.pd-hero-meta{display:flex;gap:10px;margin-top:3px;color:#777;font-size:11px;flex-wrap:wrap}
+.pd-tag{padding:3px 9px;border-radius:20px;font-size:11px;font-weight:500}
+.pd-tag-role{background:#f3f4f6;color:#374151}
+.pd-tag-looking{background:#fdf0ea;color:var(--orange);border:1px dashed var(--orange)}
+.pd-tag-open{background:#e6f4ea;color:#188038}
+.pd-stats-bar{
+  display:flex;border-top:1px solid #f0f0f0;border-bottom:1px solid #f0f0f0;
+  margin-bottom:4px;
+}
+.pd-stat{flex:1;text-align:center;padding:12px 6px;border-right:1px solid #f0f0f0}
+.pd-stat:last-child{border-right:none}
+.pd-stat-num{font-size:17px;font-weight:700;color:#1a1a1a}
+.pd-stat-label{font-size:10px;color:#888;margin-top:1px}
+.pd-section{padding:14px 20px;border-bottom:1px solid #f5f5f5}
+.pd-section-title{
+  font-size:11px;font-weight:700;text-transform:uppercase;
+  letter-spacing:0.8px;color:#888;margin-bottom:10px;
+}
+.pd-looking-grid{display:flex;gap:8px;flex-wrap:wrap}
+.pd-looking-item{
+  display:flex;align-items:center;gap:6px;
+  padding:7px 11px;border:1.5px solid var(--orange);
+  border-radius:7px;font-size:12px;color:var(--orange);background:#fdf8f5;
+}
+.pd-projects-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.pd-project-card{border-radius:7px;overflow:hidden;border:1px solid #eee}
+.pd-project-thumb{
+  height:60px;background:#e0e0e0;
+  display:flex;align-items:center;justify-content:center;
+  color:#bbb;font-size:10px;position:relative;
+}
+.pd-project-thumb.c1{background:#d0d8f0}
+.pd-project-thumb.c2{background:#f0d8d0}
+.pd-project-thumb.c3{background:#d0f0d8}
+.pd-project-role-badge{
+  position:absolute;bottom:4px;right:4px;
+  background:rgba(0,0,0,0.55);color:#fff;
+  font-size:9px;padding:1px 5px;border-radius:3px;
+}
+.pd-project-info{padding:6px 8px}
+.pd-project-name{font-size:12px;font-weight:600}
+.pd-project-genre{font-size:10px;color:#888;margin-top:1px}
+.pd-exp-list{display:flex;flex-direction:column;gap:10px}
+.pd-exp-item{display:flex;gap:10px}
+.pd-exp-logo{width:34px;height:34px;border-radius:5px;background:#e8e8e8;flex-shrink:0}
+.pd-exp-title{font-size:13px;font-weight:600}
+.pd-exp-company{font-size:12px;color:#555}
+.pd-exp-period{font-size:11px;color:#aaa;margin-top:1px}
+.pd-skills-list{display:flex;flex-wrap:wrap;gap:6px}
+.pd-skill-tag{padding:4px 10px;border-radius:20px;background:#f3f2ef;font-size:11px;color:#444;border:1px solid #e0e0e0}
+.pd-skill-tag.highlight{background:#1a1a1a;color:#fff;border-color:#1a1a1a}
+.pd-events-list{display:flex;flex-direction:column;gap:8px}
+.pd-event-item{display:flex;align-items:center;gap:10px;padding:8px;background:#f7f8fa;border-radius:7px}
+.pd-event-badge{
+  width:32px;height:32px;border-radius:5px;
+  background:#1a1a1a;color:#fff;font-size:9px;font-weight:700;
+  display:flex;align-items:center;justify-content:center;
+  text-align:center;line-height:1.2;flex-shrink:0;
+}
+.pd-event-name{font-size:12px;font-weight:600}
+.pd-event-year{font-size:11px;color:#888}
+.pd-ai-matches{
+  background:linear-gradient(135deg,rgba(217,95,43,0.06),rgba(217,95,43,0.02));
+  border:1px solid rgba(217,95,43,0.15);
+  border-radius:8px;padding:12px 14px;
+}
+.pd-ai-title{font-size:11px;font-weight:700;color:var(--orange);text-transform:uppercase;letter-spacing:0.6px;margin-bottom:8px}
+.pd-ai-stats{display:flex;gap:8px;flex-wrap:wrap}
+.pd-ai-stat{
+  flex:1;min-width:80px;background:#fff;
+  border-radius:6px;padding:8px 10px;text-align:center;
+  border:1px solid rgba(217,95,43,0.12);
+}
+.pd-ai-num{font-size:18px;font-weight:800;color:var(--orange)}
+.pd-ai-label{font-size:10px;color:#888;margin-top:2px;line-height:1.3}
+/* Nav avatar state */
+.nav-avatar-btn{
+  width:32px;height:32px;border-radius:50%;
+  background:var(--orange);color:#fff;
+  display:flex;align-items:center;justify-content:center;
+  font-size:11px;font-weight:700;
+  cursor:pointer;border:none;font-family:inherit;
+  transition:transform .15s,box-shadow .15s;
+}
+.nav-avatar-btn:hover{transform:scale(1.08);box-shadow:0 2px 8px rgba(217,95,43,0.4)}
+.nav-share{
+  height:32px;padding:0 12px;border-radius:7px;background:transparent;
+  border:1px solid #e0dfdc;color:var(--text2);font-size:12px;font-weight:600;
+  cursor:pointer;font-family:inherit;white-space:nowrap;
+}
+.nav-share:hover{border-color:var(--text3);color:var(--text1)}
+.nav-tab.active { color:var(--orange); border-bottom:2px solid var(--orange); }
+.nav-tab.active-teal { color:#0a7fa8; border-bottom:2px solid #0a7fa8; }
+/* ── Opportunity badge on nav tabs ── */
+.nav-tab-wrap{position:relative;display:inline-flex;align-items:center}
+.opp-badge{
+  position:absolute;top:-2px;right:-10px;
+  min-width:16px;height:16px;
+  background:var(--orange);
+  color:#fff;font-size:9px;font-weight:800;
+  border-radius:8px;padding:0 4px;
+  display:flex;align-items:center;justify-content:center;
+  line-height:1;
+  animation:badgePop .3s cubic-bezier(.34,1.56,.64,1);
+}
+@keyframes badgePop{from{transform:scale(0)}to{transform:scale(1)}}
+/* Welcome banner */
+.wizard-welcome-bar{
+  display:none;
+  align-items:center;gap:12px;
+  padding:10px 20px;
+  background:linear-gradient(90deg,rgba(217,95,43,0.08),rgba(217,95,43,0.03));
+  border-bottom:1px solid rgba(217,95,43,0.12);
+  font-size:13px;color:var(--text2);
+  position:relative;z-index:10;
+}
+.wizard-welcome-bar strong{color:var(--text1)}
+.wizard-welcome-bar .wwb-close{
+  margin-left:auto;cursor:pointer;color:var(--text3);
+  font-size:16px;line-height:1;background:none;border:none;padding:0;
+}
+.wwb-tag{
+  display:inline-flex;align-items:center;gap:5px;
+  padding:3px 10px;
+  background:rgba(217,95,43,0.1);
+  border-radius:100px;
+  font-size:11px;font-weight:600;color:var(--orange);
+}
+.center-tags {
+  display:flex; gap:6px; padding:10px 20px;
+  border-bottom:1px solid #e8e7e4;
+  flex-wrap:wrap; background:#f3f2ef;
+  position:sticky; top:0; z-index:9;
+}
+.ctag {
+  padding:4px 12px; border-radius:20px;
+  border:1px solid #e0dfdc; background:var(--card);
+  font-size:11px; font-weight:600; color:var(--text2);
+  cursor:pointer; font-family:inherit; transition:all .15s;
+}
+.ctag.active { background:var(--orange); color:#fff; border-color:var(--orange); }
+.ctag:hover:not(.active) { border-color:var(--text3); color:var(--text1); }
+
+/* ── CONFERENCE BAR ── */
+.conf-bar{
+  position:fixed;top:var(--nav-h);left:0;right:0;z-index:200;
+  height:var(--conf-h);background:#f3f2ef;
+  border-bottom:2px solid var(--border);
+  display:flex;align-items:center;gap:0;
+  padding:0 24px;overflow-x:auto;scrollbar-width:none;
+}
+.conf-bar::-webkit-scrollbar{display:none}
+.conf-label{
+  font-size:9px;font-weight:800;letter-spacing:1.5px;text-transform:uppercase;
+  color:var(--text3);white-space:nowrap;margin-right:16px;flex-shrink:0;
+}
+.conf-card{
+  flex-shrink:0;display:flex;align-items:center;gap:10px;
+  padding:10px 16px;margin-right:8px;
+  border-radius:10px;border:1.5px solid var(--border);
+  background:var(--card);cursor:pointer;transition:all .2s;
+  min-width:200px;max-width:240px;box-shadow:var(--s1);
+}
+.conf-card:hover{border-color:rgba(217,95,43,0.3);box-shadow:var(--s2);transform:translateY(-1px)}
+.conf-card.active{
+  border-color:var(--orange);background:rgba(217,95,43,0.04);
+  box-shadow:0 2px 12px rgba(217,95,43,0.12);
+}
+.conf-icon{
+  width:36px;height:36px;border-radius:8px;flex-shrink:0;
+  display:flex;align-items:center;justify-content:center;
+  font-size:11px;font-weight:900;color:#fff;letter-spacing:-.3px;
+}
+.conf-info{flex:1;min-width:0}
+.conf-name{font-size:13px;font-weight:700;color:var(--text1);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.conf-meta{font-size:10px;color:var(--text3);margin-top:1px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.conf-status{
+  flex-shrink:0;display:flex;align-items:center;gap:3px;
+  font-size:8px;font-weight:800;letter-spacing:.5px;padding:2px 7px;border-radius:20px;
+}
+.cs-live{background:rgba(217,95,43,0.12);border:1px solid rgba(217,95,43,0.25);color:var(--orange)}
+.cs-soon{background:rgba(10,127,168,0.1);border:1px solid rgba(10,127,168,0.22);color:var(--teal)}
+.cs-past{background:rgba(0,0,0,0.05);border:1px solid #e0dfdc;color:var(--text3)}
+.conf-add{
+  flex-shrink:0;display:flex;flex-direction:column;align-items:center;justify-content:center;
+  width:60px;height:64px;border-radius:10px;border:1.5px dashed var(--border);
+  cursor:pointer;color:var(--text3);font-size:10px;font-weight:600;gap:4px;
+  transition:all .2s;margin-left:4px;
+}
+.conf-add:hover{border-color:var(--orange);color:var(--orange);background:var(--orange-dim)}
+
+/* ── HOME PANEL ── */
+#home-panel{
+  position:fixed;
+  top:var(--nav-h);
+  left:0;right:0;bottom:0;
+  overflow-y:auto;
+  background:var(--bg);
+  display:none;
+}
+
+/* ── HERO (home panel) ── */
+.hero{background:linear-gradient(135deg,#1a1a2e 0%,#16213e 50%,#0f3460 100%);color:#fff;position:relative;overflow:hidden}
+.hero-inner{max-width:1400px;margin:0 auto;padding:48px 24px 44px;position:relative;z-index:1}
+.hero-eyebrow{display:inline-flex;align-items:center;gap:10px;background:rgba(229,57,53,.15);border:1px solid rgba(229,57,53,.4);border-radius:8px;padding:7px 14px;margin-bottom:20px;font-size:13px;font-weight:500;cursor:pointer}
+.hero-live-dot{width:9px;height:9px;background:var(--live-red);border-radius:50%;animation:pulse-dot 1.4s ease-in-out infinite;flex-shrink:0}
+.hero-title{font-size:46px;font-weight:800;line-height:1.1;margin-bottom:12px;letter-spacing:-1.5px}
+.hero-title span{color:var(--orange)}
+.hero-subtitle{font-size:17px;color:rgba(255,255,255,.72);max-width:580px;font-weight:400;margin-bottom:28px}
+.hero-stats{display:flex;gap:36px;flex-wrap:wrap}
+.hero-stat{text-align:center}
+.hstat-num{font-size:28px;font-weight:800;color:#fff;line-height:1}
+.hstat-num span{color:var(--orange)}
+.hstat-label{font-size:11px;color:rgba(255,255,255,.5);margin-top:3px;letter-spacing:.5px;text-transform:uppercase}
+.hero-deco{position:absolute;right:-60px;top:-60px;width:400px;height:400px;border-radius:50%;background:radial-gradient(circle,rgba(217,95,43,.18) 0%,transparent 70%);pointer-events:none}
+.hero-deco2{position:absolute;right:200px;bottom:-80px;width:280px;height:280px;border-radius:50%;background:radial-gradient(circle,rgba(10,127,168,.14) 0%,transparent 70%);pointer-events:none}
+
+/* ── FEED LAYOUT (home panel) ── */
+.feed-layout{max-width:1400px;margin:0 auto;padding:24px 24px 60px;display:grid;grid-template-columns:1fr 360px;gap:28px;align-items:start}
+.filter-row{display:flex;gap:8px;margin-bottom:18px;flex-wrap:wrap}
+.chip{padding:7px 18px;border-radius:20px;border:1.5px solid var(--border);background:#fff;font-family:inherit;font-size:13px;font-weight:500;color:var(--muted);cursor:pointer;transition:.2s}
+.chip:hover{border-color:var(--orange);color:var(--orange)}
+.chip.active{background:var(--orange);color:#fff;border-color:var(--orange)}
+.feed-col{display:flex;flex-direction:column;gap:16px}
+
+/* Feed cards */
+.card{background:var(--card);border-radius:var(--radius);box-shadow:var(--shadow);overflow:hidden;transition:.2s;cursor:pointer;position:relative;border:1px solid #e0dfdc}
+.card:hover{border-color:#b0afac;background:#fafaf8}
+.data-badge{position:absolute;top:10px;right:10px;z-index:10;padding:3px 9px;border-radius:20px;font-size:10px;font-weight:700;letter-spacing:.4px}
+.badge-platform{background:#fff3ee;border:1px solid rgba(217,95,43,.3);color:var(--orange)}
+.badge-crawler{background:#f5f5f5;border:1px solid #ccc;color:#666}
+
+/* Live card */
+.card-live-card{border:2px solid var(--live-red);background:linear-gradient(135deg,#fff 60%,#fff5f5 100%)}
+.card-live-inner{padding:20px 22px;display:flex;align-items:center;gap:20px}
+.live-badge-big{display:flex;align-items:center;gap:7px;background:var(--live-red);color:#fff;font-size:13px;font-weight:700;padding:7px 14px;border-radius:6px;letter-spacing:.5px;flex-shrink:0}
+.live-badge-big .hero-live-dot{width:8px;height:8px}
+.card-live-info{flex:1}
+.card-live-info h3{font-size:18px;font-weight:700;margin-bottom:4px}
+.card-live-meta{font-size:13px;color:var(--muted);display:flex;gap:14px;flex-wrap:wrap}
+.card-live-meta span{display:flex;align-items:center;gap:5px}
+.btn-live-card{padding:10px 20px;background:var(--live-red);color:#fff;border:none;border-radius:24px;font-family:inherit;font-size:13px;font-weight:600;cursor:pointer;flex-shrink:0;transition:.2s}
+.btn-live-card:hover{background:#c62828}
+.live-stats-row{display:flex;gap:20px;padding:12px 22px;border-top:1px solid #ffe0e0;background:#fff9f9}
+.live-stat-item{text-align:center}
+.live-stat-item strong{display:block;font-size:18px;font-weight:700;color:var(--live-red)}
+.live-stat-item span{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.4px}
+
+/* Event card (feed) */
+.card-event-cover{height:140px;position:relative;display:flex;align-items:flex-end;padding:14px}
+.evt-status{position:absolute;top:12px;right:12px;padding:4px 10px;border-radius:20px;font-size:11px;font-weight:700;letter-spacing:.5px;text-transform:uppercase}
+.s-live{background:rgba(229,57,53,.15);color:var(--live-red);border:1px solid rgba(229,57,53,.3);animation:border-pulse 1.4s ease-in-out infinite}
+.s-upcoming{background:rgba(13,155,114,.15);color:var(--green);border:1px solid rgba(13,155,114,.3)}
+.s-ended{background:rgba(107,107,123,.1);color:var(--muted);border:1px solid rgba(107,107,123,.2)}
+.evt-cover-year{font-size:48px;font-weight:800;color:rgba(255,255,255,.12);line-height:1;position:absolute;right:14px;bottom:8px;letter-spacing:-2px}
+.evt-cover-text{font-size:13px;font-weight:600;color:rgba(255,255,255,.9);text-shadow:0 1px 4px rgba(0,0,0,.4)}
+.card-event-body{padding:16px 20px 20px}
+.card-event-body h3{font-size:17px;font-weight:700;margin-bottom:8px;line-height:1.3}
+.evt-meta{display:flex;flex-wrap:wrap;gap:10px;margin-bottom:14px}
+.evt-meta-i{display:flex;align-items:center;gap:5px;font-size:13px;color:var(--muted)}
+.btn-view{padding:9px 18px;background:transparent;border:1.5px solid var(--teal);color:var(--teal);border-radius:7px;font-family:inherit;font-size:13px;font-weight:600;cursor:pointer;transition:.2s}
+.btn-view:hover{background:var(--teal);color:#fff}
+.grad-1{background:linear-gradient(135deg,#1a1a2e,#e53935)}
+.grad-2{background:linear-gradient(135deg,#0d1b2e,#0a7fa8)}
+.grad-3{background:linear-gradient(135deg,#1a2e0d,#0d9b72)}
+.grad-4{background:linear-gradient(135deg,#2e1a0d,#d95f2b)}
+.grad-5{background:linear-gradient(135deg,#1a0d2e,#7c3aed)}
+.grad-6{background:linear-gradient(135deg,#0d2e2e,#0a7fa8)}
+
+/* News card */
+.card-news-inner{padding:18px 20px;display:flex;gap:14px}
+.news-logo{width:42px;height:42px;border-radius:8px;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:800;color:#fff}
+.news-content{flex:1;min-width:0}
+.news-src{font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.7px;color:var(--muted);margin-bottom:4px}
+.news-content h3{font-size:16px;font-weight:600;line-height:1.35;margin-bottom:6px}
+.news-content p{font-size:13px;color:var(--muted);line-height:1.5;margin-bottom:10px;overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical}
+.news-footer{display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap}
+.news-time{font-size:12px;color:var(--muted)}
+.news-tags{display:flex;gap:6px;flex-wrap:wrap}
+.news-tag{padding:3px 9px;background:var(--bg);border-radius:20px;font-size:11px;font-weight:500;color:var(--muted);border:1px solid #e0dfdc;cursor:pointer;transition:.2s}
+.news-tag:hover{background:var(--teal);color:#fff;border-color:var(--teal)}
+
+/* Game card */
+.card-game-inner{display:flex}
+.game-cover{width:120px;flex-shrink:0;min-height:130px;display:flex;align-items:center;justify-content:center;font-size:36px}
+.game-info{flex:1;padding:16px 18px}
+.game-label{font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.7px;color:var(--green);margin-bottom:5px}
+.game-info h3{font-size:17px;font-weight:700;line-height:1.3;margin-bottom:4px}
+.game-studio{font-size:13px;color:var(--muted);margin-bottom:9px}
+.game-plats{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:9px}
+.plat{padding:3px 9px;background:var(--bg);border-radius:5px;font-size:11px;font-weight:600;color:var(--text1);border:1px solid #e0dfdc}
+.game-release{font-size:13px;color:var(--muted);display:flex;align-items:center;gap:5px}
+.game-release strong{color:var(--text1);font-weight:600}
+.gg1{background:linear-gradient(135deg,#0a1a2e,#1e40af)}
+.gg2{background:linear-gradient(135deg,#1a0533,#7c3aed)}
+.gg3{background:linear-gradient(135deg,#1a2e0d,#0d9b72)}
+.gg4{background:linear-gradient(135deg,#2e1a0d,#d95f2b)}
+
+.load-more-wrap{text-align:center;padding:8px 0}
+.btn-load-more{padding:12px 36px;background:#fff;border:1.5px solid var(--border);border-radius:8px;font-family:inherit;font-size:14px;font-weight:600;color:var(--text1);cursor:pointer;transition:.2s}
+.btn-load-more:hover{border-color:var(--orange);color:var(--orange)}
+
+/* Home Sidebar */
+.home-sidebar{display:flex;flex-direction:column;gap:20px;position:sticky;top:24px}
+.sbox{background:#fff;border-radius:var(--radius);box-shadow:var(--shadow);overflow:hidden;border:1px solid #e0dfdc}
+.sbox-hdr{padding:14px 18px;border-bottom:1px solid #e0dfdc;display:flex;align-items:center;justify-content:space-between}
+.sbox-hdr h4{font-size:14px;font-weight:700;display:flex;align-items:center;gap:7px}
+.sbox-hdr a{font-size:12px;color:var(--teal);font-weight:500;cursor:pointer}
+.sbox-hdr a:hover{text-decoration:underline}
+.sbox-body{padding:12px 0}
+
+.live-now-item{padding:10px 18px;display:flex;align-items:center;gap:12px;border-bottom:1px solid #e0dfdc}
+.live-now-item:last-child{border-bottom:0}
+.lni-dot{width:10px;height:10px;border-radius:50%;background:var(--live-red);flex-shrink:0;animation:pulse-dot 1.4s ease-in-out infinite}
+.lni-info{flex:1;min-width:0}
+.lni-name{font-size:13px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.lni-meta{font-size:11px;color:var(--muted)}
+.lni-viewers{font-size:12px;font-weight:600;color:var(--live-red);white-space:nowrap}
+
+.home-upcoming-item{padding:10px 18px;display:flex;gap:12px;align-items:flex-start;border-bottom:1px solid #e0dfdc}
+.home-upcoming-item:last-child{border-bottom:0}
+.upi-date{flex-shrink:0;text-align:center;background:var(--bg);border-radius:6px;padding:4px 8px;min-width:40px}
+.upi-date-m{font-size:10px;font-weight:700;text-transform:uppercase;color:var(--teal)}
+.upi-date-d{font-size:18px;font-weight:800;color:var(--text1);line-height:1}
+.upi-name{font-size:13px;font-weight:600;margin-bottom:2px}
+.upi-loc{font-size:11px;color:var(--muted);display:flex;align-items:center;gap:4px}
+
+.trending-tags{padding:14px 18px;display:flex;flex-wrap:wrap;gap:8px}
+.ttag{padding:6px 14px;background:var(--bg);border-radius:20px;font-size:12px;font-weight:500;color:var(--muted);border:1px solid #e0dfdc;cursor:pointer;transition:.2s}
+.ttag:hover{background:var(--teal);color:#fff;border-color:var(--teal)}
+
+.newsletter-box{padding:18px}
+.newsletter-box p{font-size:13px;color:var(--muted);margin-bottom:12px}
+.newsletter-row{display:flex;gap:8px}
+.newsletter-row input{flex:1;height:38px;border:1.5px solid var(--border);border-radius:7px;padding:0 12px;font-family:inherit;font-size:13px;outline:none;background:var(--bg)}
+.newsletter-row input:focus{border-color:var(--teal)}
+.btn-sub{padding:0 16px;height:38px;background:var(--orange);color:#fff;border:none;border-radius:24px;font-family:inherit;font-size:13px;font-weight:600;cursor:pointer;white-space:nowrap}
+
+/* ── LAYOUT ── */
+.layout{
+  position:fixed;
+  top:calc(var(--nav-h) + var(--conf-h));
+  left:0;right:0;bottom:0;
+  display:grid;
+  grid-template-columns:240px 1fr 320px;
+}
+
+/* ── LEFT SIDEBAR ── */
+.left{
+  border-right:1px solid #e0dfdc;
+  background:#f3f2ef;overflow-y:auto;
+  display:flex;flex-direction:column;
+  scrollbar-width:thin;scrollbar-color:rgba(0,0,0,0.08) transparent;
+}
+.left-section{padding:14px 16px 0}
+.left-title{
+  font-size:9px;font-weight:800;letter-spacing:1.5px;text-transform:uppercase;
+  color:var(--text3);margin-bottom:10px;
+}
+.stat-list{display:flex;flex-direction:column;gap:0;padding-bottom:16px}
+.stat-row{
+  display:flex;justify-content:space-between;align-items:center;
+  font-size:12px;padding:7px 0;border-bottom:1px solid #e8e7e4;
+}
+.stat-row:last-child{border-bottom:none}
+.stat-key{color:var(--text2)}
+.stat-val{font-weight:700;color:var(--text1)}
+.year-btns{display:flex;gap:5px;margin-bottom:10px}
+.year-btn-tab{
+  flex:1;padding:6px 4px;border-radius:7px;border:1px solid #e0dfdc;
+  background:transparent;font-size:12px;font-weight:600;color:var(--text2);
+  cursor:pointer;font-family:inherit;transition:all .15s;text-align:center;
+}
+.year-btn-tab:hover{background:rgba(0,0,0,0.04)}
+.year-btn-tab.active{background:var(--orange-dim);border-color:var(--orange-border);color:var(--orange)}
+.date-list{display:flex;flex-direction:column;gap:2px;margin-bottom:14px}
+.date-btn{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:7px 10px;border-radius:8px;border:none;cursor:pointer;
+  background:transparent;font-family:inherit;font-size:13px;color:var(--text2);
+  font-weight:500;transition:all .15s;text-align:left;width:100%;
+}
+.date-btn:hover{background:rgba(0,0,0,0.04);color:var(--text1)}
+.date-btn.active{background:rgba(217,95,43,0.09);color:var(--orange);font-weight:700}
+.date-cnt{
+  font-size:10px;font-weight:700;padding:1px 7px;border-radius:10px;
+  background:rgba(0,0,0,0.06);color:var(--text3);
+}
+.date-btn.active .date-cnt{background:rgba(217,95,43,0.14);color:var(--orange)}
+.tag-grid{display:flex;flex-wrap:wrap;gap:5px;margin-bottom:14px}
+.tag{
+  padding:4px 10px;border-radius:20px;border:none;background:#eef3f8;font-size:11px;font-weight:600;color:var(--text2);
+  cursor:pointer;transition:all .2s;font-family:inherit;
+}
+.tag:hover{border-color:var(--text3);color:var(--text1)}
+.tag.t-free{background:var(--green-dim);border-color:var(--green-border);color:var(--green)}
+.tag.t-net{background:var(--teal-dim);border-color:var(--teal-border);color:var(--teal)}
+.tag.t-show{background:rgba(236,72,153,0.08);border-color:rgba(236,72,153,0.25);color:#ec4899}
+
+/* ── CENTER ── */
+.center{overflow-y:auto;display:flex;flex-direction:column}
+.center-top{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:12px 20px 10px;border-bottom:1px solid #e8e7e4;
+  position:sticky;top:0;background:#f3f2ef;z-index:10;
+}
+.center-label{font-size:10px;font-weight:800;letter-spacing:1px;text-transform:uppercase;color:var(--text3)}
+.center-cnt{
+  font-size:11px;color:var(--text2);font-weight:600;
+  background:var(--card);border:1px solid #e0dfdc;
+  padding:2px 10px;border-radius:20px;box-shadow:var(--s1);
+}
+.csearch{
+  margin:8px 20px 8px;display:flex;align-items:center;gap:8px;
+  background:var(--card);border:1px solid #e0dfdc;
+  border-radius:9px;padding:8px 12px;box-shadow:var(--s1);
+}
+.csearch svg{opacity:.4;flex-shrink:0}
+.csearch input{
+  flex:1;background:none;border:none;outline:none;
+  font-size:13px;font-family:inherit;color:var(--text1);
+}
+.csearch input::placeholder{color:var(--text3)}
+.elist{padding:4px 20px 24px;display:flex;flex-direction:column;gap:10px}
+
+/* ── UNIFIED EVENT CARD ── */
+.event-card{
+  background:var(--card);border:1px solid #e0dfdc;border-radius:12px;
+  overflow:hidden;cursor:pointer;transition:all .15s;box-shadow:var(--s1);
+  display:flex;align-items:stretch;
+}
+.event-card:hover{border-color:rgba(217,95,43,0.28);box-shadow:var(--s2);transform:translateY(-1px)}
+.card-date{
+  width:56px;flex-shrink:0;
+  background:var(--orange-dim);border-right:1px solid var(--orange-border);
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  padding:12px 4px;
+}
+.card-month{font-size:9px;font-weight:800;color:rgba(217,95,43,0.7);text-transform:uppercase;letter-spacing:.4px}
+.card-day{font-size:20px;font-weight:900;color:var(--orange);line-height:1}
+.card-end{font-size:9px;color:rgba(217,95,43,0.6);font-weight:600;margin-top:1px}
+.card-body{flex:1;min-width:0;padding:11px 14px 10px}
+.card-title-row{display:flex;align-items:flex-start;justify-content:space-between;gap:8px;margin-bottom:5px}
+.card-title{font-size:14px;font-weight:700;color:var(--text1);line-height:1.3;flex:1}
+.card-tag{
+  font-size:8px;font-weight:800;padding:2px 7px;border-radius:20px;
+  letter-spacing:.4px;white-space:nowrap;flex-shrink:0;margin-top:2px;
+}
+.ct-conf{background:var(--teal-dim);border:1px solid var(--teal-border);color:var(--teal)}
+.ct-net{background:var(--teal-dim);border:1px solid var(--teal-border);color:var(--teal)}
+.ct-free{background:var(--green-dim);border:1px solid var(--green-border);color:var(--green)}
+.ct-party{background:var(--purple-dim);border:1px solid var(--purple-border);color:var(--purple)}
+.ct-b2b{background:rgba(249,115,22,0.1);border:1px solid rgba(249,115,22,0.25);color:#f97316}
+.ct-show{background:rgba(236,72,153,0.08);border:1px solid rgba(236,72,153,0.22);color:#ec4899}
+.ct-talk{background:rgba(6,182,212,0.08);border:1px solid rgba(6,182,212,0.22);color:#06b6d4}
+.ct-live{background:rgba(217,95,43,0.12);border:1px solid rgba(217,95,43,0.25);color:var(--orange)}
+.card-meta{font-size:11px;color:var(--text2);margin-bottom:5px;display:flex;flex-wrap:wrap;gap:6px;align-items:center}
+.card-time{font-size:11px;color:var(--text3);font-weight:500}
+.card-live-badge{
+  display:inline-flex;align-items:center;gap:4px;
+  background:rgba(217,95,43,0.12);border:1px solid rgba(217,95,43,0.25);
+  border-radius:20px;padding:1px 7px;font-size:9px;font-weight:800;color:var(--orange);
+}
+.card-desc{font-size:12px;color:var(--text2);line-height:1.6;margin-bottom:8px}
+.card-actions{display:flex;align-items:center;gap:6px;flex-wrap:wrap}
+.action-btn{
+  padding:5px 11px;border-radius:7px;border:1px solid #e0dfdc;
+  background:transparent;font-size:11px;font-weight:600;color:var(--text2);
+  cursor:pointer;font-family:inherit;transition:all .15s;
+}
+.action-btn:hover{border-color:var(--text3);color:var(--text1)}
+.action-btn.primary{background:var(--orange);border-color:var(--orange);color:#fff}
+.action-btn.primary:hover{opacity:.88}
+.action-btn.going{background:var(--green-dim);border-color:var(--green-border);color:var(--green)}
+.going-count{font-size:11px;color:var(--text3);font-weight:500}
+.action-link{
+  font-size:11px;font-weight:600;color:var(--teal);text-decoration:none;
+  padding:5px 4px;transition:opacity .15s;
+}
+.action-link:hover{opacity:.7}
+
+/* ── RIGHT PANEL ── */
+.right{
+  border-left:1px solid #e0dfdc;
+  display:flex;flex-direction:column;background:#f3f2ef;overflow:hidden;
+}
+#right-calendar{
+  flex-direction:column;overflow-y:auto;padding:16px;gap:0;
+  scrollbar-width:thin;scrollbar-color:rgba(0,0,0,0.08) transparent;
+}
+.right-title{
+  font-size:9px;font-weight:800;letter-spacing:1.5px;text-transform:uppercase;
+  color:var(--text3);margin-bottom:14px;
+}
+.upcoming-item{
+  display:flex;align-items:flex-start;gap:10px;
+  padding:10px 0;border-bottom:1px solid #e8e7e4;
+  cursor:pointer;transition:opacity .15s;
+}
+.upcoming-item:hover{opacity:.75}
+.upcoming-item:last-child{border-bottom:none}
+.upcoming-dot{
+  width:8px;height:8px;border-radius:50%;flex-shrink:0;margin-top:4px;
+}
+.upcoming-info{flex:1;min-width:0}
+.upcoming-name{font-size:13px;font-weight:700;color:var(--text1);line-height:1.3;margin-bottom:2px}
+.upcoming-date{font-size:11px;color:var(--text2)}
+.upcoming-count{font-size:11px;color:var(--text3);font-weight:600;margin-top:2px}
+.region-section{margin-top:20px}
+.region-row{margin-bottom:10px}
+.region-row-hdr{display:flex;justify-content:space-between;font-size:11px;margin-bottom:3px}
+.region-row-name{color:var(--text2);font-weight:500}
+.region-row-val{color:var(--text1);font-weight:700}
+.region-track{height:5px;background:rgba(0,0,0,0.06);border-radius:5px;overflow:hidden}
+.region-fill{height:100%;border-radius:5px}
+#right-live{flex-direction:column;overflow:hidden}
+.map-hdr{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:10px 16px;border-bottom:1px solid #e0dfdc;flex-shrink:0;
+}
+.map-ttl{font-size:10px;font-weight:800;letter-spacing:1px;text-transform:uppercase;color:var(--text3)}
+.map-btns{display:flex;gap:5px}
+.mbtn{
+  padding:4px 10px;border-radius:6px;border:1px solid #e0dfdc;
+  background:var(--card);font-size:10px;font-weight:600;color:var(--text2);
+  cursor:pointer;font-family:inherit;transition:all .15s;
+}
+.mbtn:hover{border-color:var(--text3);color:var(--text1)}
+.map-wrap{flex:1;position:relative;overflow:hidden;background:#f5f3ee}
+.map-leg{
+  display:flex;gap:14px;padding:8px 16px;border-top:1px solid #e0dfdc;
+  flex-shrink:0;background:rgba(240,236,228,0.95);
+}
+.leg-i{display:flex;align-items:center;gap:5px;font-size:10px;color:var(--text2);font-weight:500}
+.leg-d{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+</style>
+</head>
+<body>
+
+<!-- TOP NAV -->
+<div class="topnav">
+  <div class="nav-logo">GAME<span>CONNECTION</span></div>
+  <div class="nav-live-badge"><div class="live-dot"></div><span>LIVE</span></div>
+  <div class="nav-search" style="margin-left:8px">
+    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#999" stroke-width="2.2"><circle cx="11" cy="11" r="7"/><line x1="16.5" y1="16.5" x2="22" y2="22"/></svg>
+    <span>Search events, venues, sponsors…</span>
+  </div>
+  <div class="nav-gap"></div>
+  <div class="nav-tabs">
+    <div class="nav-tab active" onclick="switchMode('home')">🏠 Home</div>
+    <div class="nav-tab-wrap">
+      <div class="nav-tab" onclick="switchMode('calendar')">📅 Calendar</div>
+      <span class="opp-badge" id="badge-calendar" style="display:none"></span>
+    </div>
+    <div class="nav-tab" onclick="switchMode('live')">🔴 Live</div>
+    <div class="nav-tab" onclick="switchMode('projects')">🎮 Projects</div>
+    <div class="nav-tab" onclick="switchMode('companies')">🏢 Companies</div>
+    <div class="nav-tab" onclick="switchMode('profile')">👤 Profile</div>
+  </div>
+  <div class="nav-sep"></div>
+  <!-- Messages icon button -->
+  <button class="nav-msg-btn" id="nav-msg-btn" onclick="openMsgDrawer()" title="Messages">
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+    <span class="nav-msg-badge" id="nav-msg-badge" style="display:none">4</span>
+  </button>
+  <a class="nav-ai-btn" id="nav-signin-btn" href="Identity_Login_v1.0_PC.html">Sign In →</a>
+  <button class="nav-avatar-btn" id="nav-avatar-btn" style="display:none" onclick="switchMode('profile')"></button>
+</div>
+
+<!-- PROFILE DRAWER OVERLAY -->
+<div class="profile-drawer-overlay" id="profile-drawer-overlay" onclick="closeProfileDrawer()"></div>
+
+<!-- PROFILE DRAWER -->
+<div class="profile-drawer" id="profile-drawer">
+  <!-- Header: avatar + name + close -->
+  <div class="pd-header">
+    <div class="pd-avatar" id="pd-avatar-initials">?</div>
+    <div style="flex:1;min-width:0">
+      <div class="pd-name" id="pd-name">Your Profile</div>
+      <div class="pd-role" id="pd-role">Game Connection Member</div>
+      <div class="pd-hero-meta" style="margin-top:4px" id="pd-hero-meta">
+        <span id="pd-hero-country" style="color:rgba(255,255,255,0.55);font-size:11px"></span>
+        <span id="pd-hero-website" style="color:rgba(255,255,255,0.55);font-size:11px"></span>
+      </div>
+    </div>
+    <button class="pd-close" onclick="closeProfileDrawer()">✕</button>
+  </div>
+  <!-- Role tags row -->
+  <div id="pd-hero-tags-row" style="display:none;padding:8px 20px 0;flex-wrap:wrap;gap:6px;flex-shrink:0"></div>
+  <!-- Actions -->
+  <div class="pd-actions">
+    <button class="pd-btn-redo" onclick="redoMatching()">↺ Redo Matching</button>
+    <button class="pd-btn-signout" onclick="signOutUser()">Sign Out</button>
+  </div>
+  <div class="pd-body" id="pd-body">
+    <!-- AI Matches -->
+    <div class="pd-section">
+      <div class="pd-section-title">Your AI Matches</div>
+      <div class="pd-ai-matches">
+        <div class="pd-ai-title">✦ Matched for you</div>
+        <div class="pd-ai-stats" id="pd-ai-stats"></div>
+      </div>
+    </div>
+    <!-- Stats bar -->
+    <div class="pd-stats-bar">
+      <div class="pd-stat"><div class="pd-stat-num">—</div><div class="pd-stat-label">Games</div></div>
+      <div class="pd-stat"><div class="pd-stat-num">—</div><div class="pd-stat-label">Connections</div></div>
+      <div class="pd-stat"><div class="pd-stat-num">—</div><div class="pd-stat-label">Events</div></div>
+    </div>
+    <!-- Looking For -->
+    <div class="pd-section">
+      <div class="pd-section-title">Looking For</div>
+      <div class="pd-looking-grid" id="pd-looking-grid"></div>
+    </div>
+    <!-- Games & Projects -->
+    <div class="pd-section">
+      <div class="pd-section-title">Games & Projects</div>
+      <div class="pd-projects-grid">
+        <div class="pd-project-card"><div class="pd-project-thumb c1">Game Art<div class="pd-project-role-badge">Lead</div></div><div class="pd-project-info"><div class="pd-project-name">Project Aurora</div><div class="pd-project-genre">RPG · PC</div></div></div>
+        <div class="pd-project-card"><div class="pd-project-thumb c2">Game Art<div class="pd-project-role-badge">Designer</div></div><div class="pd-project-info"><div class="pd-project-name">Neon Runners</div><div class="pd-project-genre">Action · Mobile</div></div></div>
+        <div class="pd-project-card" style="display:flex;align-items:center;justify-content:center;height:88px;border:1.5px dashed #ddd;background:#fafafa;border-radius:7px;color:#aaa;font-size:11px;">+ Add project</div>
+      </div>
+    </div>
+    <!-- Experience -->
+    <div class="pd-section">
+      <div class="pd-section-title">Experience</div>
+      <div class="pd-exp-list">
+        <div class="pd-exp-item"><div class="pd-exp-logo"></div><div><div class="pd-exp-title" id="pd-exp-title">Member</div><div class="pd-exp-company" id="pd-exp-company">Game Connection</div><div class="pd-exp-period">2024 – Present</div></div></div>
+      </div>
+    </div>
+    <!-- Skills -->
+    <div class="pd-section">
+      <div class="pd-section-title">Skills & Interests</div>
+      <div class="pd-skills-list" id="pd-skills-list"></div>
+    </div>
+    <!-- Events -->
+    <div class="pd-section">
+      <div class="pd-section-title">Events Attended</div>
+      <div class="pd-events-list">
+        <div class="pd-event-item"><div class="pd-event-badge">GDC<br>2026</div><div><div class="pd-event-name">Game Developers Conference 2026</div><div class="pd-event-year">San Francisco · March 2026</div></div></div>
+        <div class="pd-event-item"><div class="pd-event-badge">GC<br>WEST</div><div><div class="pd-event-name">Game Connection West 2025</div><div class="pd-event-year">San Francisco · March 2025</div></div></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- WIZARD WELCOME BAR -->
+<div class="wizard-welcome-bar" id="wizard-welcome-bar">
+  <span>🎉 Welcome back, <strong id="wwb-name"></strong>!</span>
+  <span class="wwb-tag">✨ <span id="wwb-match"></span> waiting for you</span>
+  <span style="color:var(--text3);font-size:12px">Check Calendar for matched events →</span>
+  <button class="wwb-close" onclick="closeWelcomeBar()">&times;</button>
+</div>
+
+<!-- CONFERENCE SELECTOR BAR -->
+<div class="conf-bar" id="conf-bar">
+  <div class="conf-card active" onclick="selectConf(this)">
+    <div class="conf-icon" style="background:linear-gradient(135deg,#d95f2b,#aa3a10)">GDC</div>
+    <div class="conf-info">
+      <div class="conf-name">GDC 2026</div>
+      <div class="conf-meta">🇺🇸 San Francisco · Mar 7–14</div>
+    </div>
+    <div class="conf-status cs-live"><div class="live-dot" style="width:5px;height:5px"></div>LIVE</div>
+  </div>
+  <div class="conf-card" onclick="selectConf(this)">
+    <div class="conf-icon" style="background:linear-gradient(135deg,#0a7fa8,#055a7a)">GCA</div>
+    <div class="conf-info">
+      <div class="conf-name">Game Connection America</div>
+      <div class="conf-meta">🇺🇸 San Francisco · Mar 17–18</div>
+    </div>
+    <div class="conf-status cs-soon">SOON</div>
+  </div>
+  <div class="conf-card" onclick="selectConf(this)">
+    <div class="conf-icon" style="background:linear-gradient(135deg,#0d9b72,#076644)">NG</div>
+    <div class="conf-info">
+      <div class="conf-name">Nordic Game 2026</div>
+      <div class="conf-meta">🇸🇪 Malmö · May 20–22</div>
+    </div>
+    <div class="conf-status cs-soon">SOON</div>
+  </div>
+  <div class="conf-card" onclick="selectConf(this)">
+    <div class="conf-icon" style="background:linear-gradient(135deg,#7c3aed,#5b21b6)">GCA</div>
+    <div class="conf-info">
+      <div class="conf-name">Gamescom Asia 2026</div>
+      <div class="conf-meta">🇸🇬 Singapore · Oct 16–19</div>
+    </div>
+    <div class="conf-status cs-soon">SOON</div>
+  </div>
+  <div class="conf-card" onclick="selectConf(this)">
+    <div class="conf-icon" style="background:linear-gradient(135deg,#1d4ed8,#0a7fa8)">GCE</div>
+    <div class="conf-info">
+      <div class="conf-name">Game Connection Europe</div>
+      <div class="conf-meta">🇫🇷 Paris · Dec 3–4</div>
+    </div>
+    <div class="conf-status cs-soon">SOON</div>
+  </div>
+  <div class="conf-card" onclick="selectConf(this)">
+    <div class="conf-icon" style="background:linear-gradient(135deg,#be123c,#9f1239)">TGS</div>
+    <div class="conf-info">
+      <div class="conf-name">Tokyo Game Show 2026</div>
+      <div class="conf-meta">🇯🇵 Chiba · Sep 24–27</div>
+    </div>
+    <div class="conf-status cs-soon">SOON</div>
+  </div>
+  <div class="conf-card" onclick="selectConf(this)" style="opacity:.65">
+    <div class="conf-icon" style="background:linear-gradient(135deg,#6b7280,#4b5563)">GC</div>
+    <div class="conf-info">
+      <div class="conf-name">Gamescom 2025</div>
+      <div class="conf-meta">🇩🇪 Cologne · Aug 2025</div>
+    </div>
+    <div class="conf-status cs-past">ENDED</div>
+  </div>
+</div>
+
+<!-- MESSAGES DRAWER OVERLAY -->
+<div class="msg-drawer-overlay" id="msg-drawer-overlay" onclick="closeMsgDrawer()"></div>
+
+<!-- MESSAGES DRAWER -->
+<div class="msg-drawer" id="msg-drawer">
+  <!-- Drawer header -->
+  <div class="msg-drawer-hdr">
+    <div style="font-size:15px;font-weight:800;color:var(--text1)">Messages</div>
+    <div style="display:flex;gap:8px;align-items:center">
+      <button class="msg-icon-btn" onclick="togglePcMsgSearch()" title="Search">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="11" cy="11" r="7"/><line x1="16.5" y1="16.5" x2="22" y2="22"/></svg>
+      </button>
+      <button class="msg-icon-btn" onclick="closeMsgDrawer()" title="Close">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+    </div>
+  </div>
+  <!-- Search bar -->
+  <div id="pc-msg-search-bar" style="display:none;padding:0 16px 10px">
+    <input type="text" placeholder="Search conversations…" style="width:100%;padding:7px 12px;border:1.5px solid var(--border);border-radius:8px;font-size:13px;font-family:inherit;outline:none;background:#fff" oninput="filterPcMsgList(this.value)">
+  </div>
+  <!-- Two-pane layout -->
+  <div class="msg-drawer-body">
+    <!-- Left: conversation list -->
+    <div class="msg-conv-list" id="pc-msg-conv-list"></div>
+    <!-- Right: chat area -->
+    <div class="msg-chat-area" id="pc-msg-chat-area">
+      <!-- Empty state -->
+      <div id="pc-msg-empty" style="display:flex;flex-direction:column;align-items:center;justify-content:center;height:100%;color:var(--text3);gap:10px">
+        <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" opacity=".4"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+        <div style="font-size:13px;font-weight:600">Select a conversation</div>
+      </div>
+      <!-- Chat header -->
+      <div id="pc-chat-hdr" style="display:none;padding:14px 18px;border-bottom:1px solid #e0dfdc;background:#fff;flex-shrink:0;display:none;align-items:center;gap:12px">
+        <div id="pc-chat-av" style="width:38px;height:38px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:800;color:#fff;flex-shrink:0"></div>
+        <div style="flex:1;min-width:0">
+          <div id="pc-chat-name" style="font-size:14px;font-weight:700;color:var(--text1)"></div>
+          <div id="pc-chat-sub" style="font-size:11px;color:var(--text3)"></div>
+        </div>
+        <button class="msg-icon-btn" title="More">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="5" r="1"/><circle cx="12" cy="12" r="1"/><circle cx="12" cy="19" r="1"/></svg>
+        </button>
+      </div>
+      <!-- Messages area -->
+      <div id="pc-chat-messages" style="flex:1;overflow-y:auto;padding:16px 18px;display:flex;flex-direction:column;gap:10px;background:var(--bg)"></div>
+      <!-- Input bar -->
+      <div id="pc-chat-input-bar" style="display:none;padding:12px 16px;border-top:1px solid #e0dfdc;background:#fff;flex-shrink:0;display:none;gap:8px;align-items:center">
+        <input id="pc-chat-input" type="text" placeholder="Type a message…" style="flex:1;padding:9px 14px;border:1.5px solid var(--border);border-radius:22px;font-size:13px;font-family:inherit;outline:none;background:var(--bg)" onkeydown="pcSendMsgKey(event)">
+        <button onclick="pcSendMsgBtn()" style="width:36px;height:36px;border-radius:50%;background:var(--orange);border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.5"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- HOME PANEL -->
+<div id="home-panel">
+  <!-- Hero -->
+  <div class="hero">
+    <div class="hero-deco"></div>
+    <div class="hero-deco2"></div>
+    <div class="hero-inner">
+      <div class="hero-eyebrow" onclick="switchMode('live')">
+        <div class="hero-live-dot"></div>
+        Game Connection Live 2026 is happening now · Helsinki &amp; Tallinn
+      </div>
+      <h1 class="hero-title">The <span>Game Industry</span> Hub</h1>
+      <p class="hero-subtitle">Your gateway to game events, industry news, and professional connections worldwide.</p>
+      <div class="hero-stats">
+        <div class="hero-stat"><div class="hstat-num">6<span>+</span></div><div class="hstat-label">Active Events</div></div>
+        <div class="hero-stat"><div class="hstat-num">180</div><div class="hstat-label">Exhibitors</div></div>
+        <div class="hero-stat"><div class="hstat-num">12<span>K</span></div><div class="hstat-label">Professionals</div></div>
+        <div class="hero-stat"><div class="hstat-num">4</div><div class="hstat-label">New Game Announces</div></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Organizer entry moved to Home sidebar card (bottom of right column) -->
+
+  <!-- Feed Layout -->
+  <div class="feed-layout">
+    <!-- MAIN FEED -->
+    <div>
+
+      <div class="feed-col" id="feed">
+
+        <!-- LIVE CARD -->
+        <div class="card card-live-card" data-type="events">
+          <div class="card-live-inner">
+            <div class="live-badge-big"><div class="hero-live-dot"></div> LIVE</div>
+            <div class="card-live-info">
+              <h3>Game Connection Live 2026</h3>
+              <div class="card-live-meta">
+                <span>📍 Helsinki &amp; Tallinn</span>
+                <span>📅 Mar 29 – Apr 3, 2026</span>
+                <span>👥 180 Exhibitors</span>
+              </div>
+            </div>
+            <button class="btn-live-card" onclick="switchMode('live')">Watch Live →</button>
+          </div>
+          <div class="live-stats-row">
+            <div class="live-stat-item"><strong>2,847</strong><span>Online Now</span></div>
+            <div class="live-stat-item"><strong>14</strong><span>Sessions Today</span></div>
+            <div class="live-stat-item"><strong>180</strong><span>Active Exhibitors</span></div>
+            <div class="live-stat-item"><strong>342</strong><span>Meetings Set</span></div>
+          </div>
+        </div>
+
+        <!-- NEWS CARD 1 -->
+        <div class="card" data-type="news">
+          <div class="card-news-inner">
+            <div class="news-logo" style="background:linear-gradient(135deg,#1a73e8,#0d47a1)">GI</div>
+            <div class="news-content">
+              <div class="news-src">GamesIndustry.biz</div>
+              <h3>Mobile Gaming Revenue Hits Record $120B in 2025</h3>
+              <p>The mobile gaming market surpassed all previous records, reaching $120 billion in annual revenue driven by hypercasual and live-service titles across Asia and North America.</p>
+              <div class="news-footer">
+                <span class="news-time">2 hours ago</span>
+                <div class="news-tags"><span class="news-tag">Mobile</span><span class="news-tag">Revenue</span><span class="news-tag">Market</span></div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- GAME CARD 1 -->
+        <div class="card" data-type="games">
+          <span class="data-badge badge-platform">✅ Platform</span>
+          <div class="card-game-inner">
+            <div class="game-cover gg1">🏙️</div>
+            <div class="game-info">
+              <div class="game-label">🎮 New Announcement</div>
+              <h3>Frostpunk 3</h3>
+              <div class="game-studio">by 11 bit studios</div>
+              <div class="game-plats"><span class="plat">PC</span><span class="plat">PS5</span><span class="plat">Xbox</span></div>
+              <div class="game-release">📅 Expected: <strong>Q3 2026</strong></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- EVENT CARD 1 -->
+        <div class="card" data-type="events">
+          <span class="data-badge badge-platform">✅ Platform</span>
+          <div class="card-event-cover grad-2">
+            <span class="evt-status s-upcoming">Upcoming</span>
+            <div class="evt-cover-year">2026</div>
+            <span class="evt-cover-text">GDC 2026</span>
+          </div>
+          <div class="card-event-body">
+            <h3>GDC 2026 – Game Developers Conference</h3>
+            <div class="evt-meta">
+              <div class="evt-meta-i">📅 May 18–22, 2026</div>
+              <div class="evt-meta-i">📍 San Francisco, CA</div>
+              <div class="evt-meta-i">👥 30K+ Attendees</div>
+            </div>
+            <button class="btn-view" onclick="event.stopPropagation()">View Details</button>
+          </div>
+        </div>
+
+        <!-- NEWS CARD 2 -->
+        <div class="card" data-type="news">
+          <div class="card-news-inner">
+            <div class="news-logo" style="background:linear-gradient(135deg,#e91e63,#880e4f)">PG</div>
+            <div class="news-content">
+              <div class="news-src">Pocket Gamer</div>
+              <h3>Supercell Announces New Strategy Title for 2026</h3>
+              <p>Finnish mobile powerhouse Supercell has revealed a brand-new strategy game set in a sci-fi universe, marking a bold departure from their signature cartoon aesthetic.</p>
+              <div class="news-footer">
+                <span class="news-time">4 hours ago</span>
+                <div class="news-tags"><span class="news-tag">Supercell</span><span class="news-tag">Strategy</span><span class="news-tag">Mobile</span></div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- GAME CARD 2 -->
+        <div class="card" data-type="games">
+          <span class="data-badge badge-crawler">🕷️ Crawler</span>
+          <div class="card-game-inner">
+            <div class="game-cover gg2">🦋</div>
+            <div class="game-info">
+              <div class="game-label">🔥 Highly Anticipated</div>
+              <h3>Hollow Knight: Silksong</h3>
+              <div class="game-studio">by Team Cherry</div>
+              <div class="game-plats"><span class="plat">PC</span><span class="plat">Switch</span><span class="plat">PS5</span></div>
+              <div class="game-release">📅 Expected: <strong>2026</strong></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- EVENT CARD 2 -->
+        <div class="card" data-type="events">
+          <span class="data-badge badge-crawler">🕷️ Crawler</span>
+          <div class="card-event-cover grad-3">
+            <span class="evt-status s-upcoming">Upcoming</span>
+            <div class="evt-cover-year">2026</div>
+            <span class="evt-cover-text">Gamescom Asia 2026</span>
+          </div>
+          <div class="card-event-body">
+            <h3>Gamescom Asia 2026</h3>
+            <div class="evt-meta">
+              <div class="evt-meta-i">📅 Apr 15–18, 2026</div>
+              <div class="evt-meta-i">📍 Singapore</div>
+              <div class="evt-meta-i">👥 320 Exhibitors</div>
+            </div>
+            <button class="btn-view" onclick="event.stopPropagation()">View Details</button>
+          </div>
+        </div>
+
+        <!-- NEWS CARD 3 -->
+        <div class="card" data-type="news">
+          <div class="card-news-inner">
+            <div class="news-logo" style="background:linear-gradient(135deg,#00bcd4,#006064)">GD</div>
+            <div class="news-content">
+              <div class="news-src">Game Developer</div>
+              <h3>Epic Games Store Expands to Asian Markets</h3>
+              <p>Epic Games officially launched its storefront in Southeast Asia and Japan, partnering with local publishers and offering region-specific payment methods.</p>
+              <div class="news-footer">
+                <span class="news-time">6 hours ago</span>
+                <div class="news-tags"><span class="news-tag">Epic Games</span><span class="news-tag">Asia</span><span class="news-tag">Distribution</span></div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- GAME CARD 3 -->
+        <div class="card" data-type="games">
+          <span class="data-badge badge-platform">✅ Platform</span>
+          <div class="card-game-inner">
+            <div class="game-cover gg3">⚔️</div>
+            <div class="game-info">
+              <div class="game-label">🎮 New Announcement</div>
+              <h3>Project Eternity 3</h3>
+              <div class="game-studio">by Obsidian Entertainment</div>
+              <div class="game-plats"><span class="plat">PC</span><span class="plat">Xbox</span></div>
+              <div class="game-release">📅 Expected: <strong>TBA 2026</strong></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- EVENT CARD 3 -->
+        <div class="card" data-type="events">
+          <span class="data-badge badge-platform">✅ Platform</span>
+          <div class="card-event-cover grad-4">
+            <span class="evt-status s-upcoming">Upcoming</span>
+            <div class="evt-cover-year">2026</div>
+            <span class="evt-cover-text">Nordic Game 2026</span>
+          </div>
+          <div class="card-event-body">
+            <h3>Nordic Game 2026</h3>
+            <div class="evt-meta">
+              <div class="evt-meta-i">📅 May 21–23, 2026</div>
+              <div class="evt-meta-i">📍 Malmö, Sweden</div>
+              <div class="evt-meta-i">👥 450 Exhibitors</div>
+            </div>
+            <button class="btn-view" onclick="event.stopPropagation()">View Details</button>
+          </div>
+        </div>
+
+        <!-- NEWS CARD 4 -->
+        <div class="card" data-type="news">
+          <div class="card-news-inner">
+            <div class="news-logo" style="background:linear-gradient(135deg,#ff9800,#e65100)">KI</div>
+            <div class="news-content">
+              <div class="news-src">Kotaku International</div>
+              <h3>Nintendo Switch 2 Launch Titles Confirmed — Full List Inside</h3>
+              <p>Nintendo officially revealed the full lineup of 28 launch titles for the Nintendo Switch 2, headlined by a new 3D Mario title and a reimagined Pokémon experience.</p>
+              <div class="news-footer">
+                <span class="news-time">1 day ago</span>
+                <div class="news-tags"><span class="news-tag">Nintendo</span><span class="news-tag">Switch 2</span><span class="news-tag">Launch</span></div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- GAME CARD 4 -->
+        <div class="card" data-type="games">
+          <span class="data-badge badge-platform">✅ Platform</span>
+          <div class="card-game-inner">
+            <div class="game-cover gg4">🌌</div>
+            <div class="game-info">
+              <div class="game-label">🚀 Coming to GC Live</div>
+              <h3>Starbound Chronicles</h3>
+              <div class="game-studio">by Chucklefish Games</div>
+              <div class="game-plats"><span class="plat">PC</span><span class="plat">Switch 2</span></div>
+              <div class="game-release">📅 Expected: <strong>Late 2026</strong></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="load-more-wrap">
+          <button class="btn-load-more" onclick="alert('Loading more content…')">Load More</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- HOME SIDEBAR -->
+    <div class="home-sidebar">
+      <!-- Live Now -->
+      <div class="sbox">
+        <div class="sbox-hdr">
+          <h4>🔴 Live Now</h4>
+          <a onclick="switchMode('live')">See All</a>
+        </div>
+        <div class="sbox-body">
+          <div class="live-now-item">
+            <div class="lni-dot"></div>
+            <div class="lni-info">
+              <div class="lni-name">Opening Keynote — GC Live 2026</div>
+              <div class="lni-meta">Helsinki Main Stage</div>
+            </div>
+            <span class="lni-viewers">2.8K</span>
+          </div>
+          <div class="live-now-item">
+            <div class="lni-dot"></div>
+            <div class="lni-info">
+              <div class="lni-name">Mobile Monetization Trends 2026</div>
+              <div class="lni-meta">Tallinn Track B</div>
+            </div>
+            <span class="lni-viewers">1.1K</span>
+          </div>
+          <div class="live-now-item">
+            <div class="lni-dot"></div>
+            <div class="lni-info">
+              <div class="lni-name">Publisher–Developer Speed Meetings</div>
+              <div class="lni-meta">Networking Hall A</div>
+            </div>
+            <span class="lni-viewers">342</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Upcoming Events -->
+      <div class="sbox">
+        <div class="sbox-hdr">
+          <h4>📅 Upcoming Events</h4>
+          <a onclick="switchMode('calendar')">View All</a>
+        </div>
+        <div class="sbox-body">
+          <div class="home-upcoming-item">
+            <div class="upi-date"><div class="upi-date-m">APR</div><div class="upi-date-d">15</div></div>
+            <div>
+              <div class="upi-name">Gamescom Asia 2026</div>
+              <div class="upi-loc">📍 Singapore</div>
+            </div>
+          </div>
+          <div class="home-upcoming-item">
+            <div class="upi-date"><div class="upi-date-m">MAY</div><div class="upi-date-d">18</div></div>
+            <div>
+              <div class="upi-name">GDC 2026</div>
+              <div class="upi-loc">📍 San Francisco, CA</div>
+            </div>
+          </div>
+          <div class="home-upcoming-item">
+            <div class="upi-date"><div class="upi-date-m">MAY</div><div class="upi-date-d">21</div></div>
+            <div>
+              <div class="upi-name">Nordic Game 2026</div>
+              <div class="upi-loc">📍 Malmö, Sweden</div>
+            </div>
+          </div>
+          <div class="home-upcoming-item">
+            <div class="upi-date"><div class="upi-date-m">AUG</div><div class="upi-date-d">20</div></div>
+            <div>
+              <div class="upi-name">Gamescom 2026</div>
+              <div class="upi-loc">📍 Cologne, Germany</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Trending Tags -->
+      <div class="sbox">
+        <div class="sbox-hdr"><h4>🔥 Trending Tags</h4></div>
+        <div class="trending-tags">
+          <span class="ttag">#GCLive2026</span>
+          <span class="ttag">#IndieGames</span>
+          <span class="ttag">#MobileGaming</span>
+          <span class="ttag">#GDC2026</span>
+          <span class="ttag">#NintendoSwitch2</span>
+          <span class="ttag">#GameFunding</span>
+          <span class="ttag">#Gamescom</span>
+          <span class="ttag">#GameDev</span>
+          <span class="ttag">#Networking</span>
+          <span class="ttag">#Publishing</span>
+        </div>
+      </div>
+
+      <!-- Newsletter -->
+      <div class="sbox">
+        <div class="sbox-hdr"><h4>✉️ Newsletter</h4></div>
+        <div class="newsletter-box">
+          <p>Get the weekly game industry digest — events, deals &amp; launches, delivered every Monday.</p>
+          <div class="newsletter-row">
+            <input type="email" placeholder="your@email.com">
+            <button class="btn-sub">Subscribe</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- EventHQ B2B Entry Card -->
+      <div class="sbox" style="background:linear-gradient(135deg,#1c1a17 0%,#2a2520 100%);border:1px solid rgba(232,100,10,0.3);overflow:hidden;position:relative">
+        <div style="position:absolute;top:-20px;right:-20px;width:80px;height:80px;border-radius:50%;background:rgba(232,100,10,0.08);pointer-events:none"></div>
+        <div style="position:absolute;bottom:-30px;left:-10px;width:100px;height:100px;border-radius:50%;background:rgba(232,100,10,0.05);pointer-events:none"></div>
+        <div style="position:relative;padding:4px 0 2px">
+          <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px">
+            <div style="width:34px;height:34px;border-radius:8px;background:var(--orange);display:flex;align-items:center;justify-content:center;font-size:15px;flex-shrink:0">⚡</div>
+            <div>
+              <div style="font-size:13px;font-weight:700;color:#fff;line-height:1.2">Event HQ</div>
+              <div style="font-size:11px;color:rgba(255,255,255,0.45);margin-top:1px">For organizers</div>
+            </div>
+          </div>
+          <p style="font-size:12px;color:rgba(255,255,255,0.6);line-height:1.6;margin-bottom:14px">Publish your conference, expo, or meetup. Manage registrations, buyers, awards &amp; more — all in one place.</p>
+          <a href="EventHQ_Dashboard_v1_PC.html" style="display:flex;align-items:center;justify-content:center;gap:6px;padding:9px 16px;border-radius:8px;background:var(--orange);color:#fff;font-size:13px;font-weight:700;text-decoration:none;transition:background .15s;width:100%;box-sizing:border-box" onmouseover="this.style.background='#c05020'" onmouseout="this.style.background='var(--orange)'">Launch Event HQ →</a>
+        </div>
+      </div>
+    </div>
+  </div>
+</div><!-- /home-panel -->
+
+<!-- LAYOUT -->
+<div class="layout">
+
+  <!-- LEFT SIDEBAR -->
+  <div class="left">
+
+    <!-- Stats (mode-sensitive) -->
+    <div class="left-section" style="padding-top:14px">
+      <div class="left-title" id="left-stats-title">Statistics</div>
+      <div class="stat-list" id="stats-calendar">
+        <div class="stat-row"><span class="stat-key">Total Events</span><span class="stat-val" style="color:var(--orange)">48</span></div>
+        <div class="stat-row"><span class="stat-key">Countries</span><span class="stat-val">32</span></div>
+        <div class="stat-row"><span class="stat-key">Upcoming</span><span class="stat-val" style="color:var(--teal)">15</span></div>
+      </div>
+      <div class="stat-list" id="stats-live" style="display:none">
+        <div class="stat-row"><span class="stat-key">Sessions</span><span class="stat-val" style="color:var(--orange)">225</span></div>
+        <div class="stat-row"><span class="stat-key">Going</span><span class="stat-val" style="color:var(--green)">12</span></div>
+        <div class="stat-row"><span class="stat-key">Favorited</span><span class="stat-val">8</span></div>
+      </div>
+    </div>
+
+    <!-- Calendar: year + month filter -->
+    <div class="left-section" id="calendar-dates">
+      <div class="left-title" style="margin-top:12px">Year</div>
+      <div class="year-btns">
+        <button class="year-btn-tab" onclick="selYear(this,'2024')">2024</button>
+        <button class="year-btn-tab active" onclick="selYear(this,'2025')">2025</button>
+        <button class="year-btn-tab" onclick="selYear(this,'2026')">2026</button>
+      </div>
+      <div class="left-title">Month</div>
+      <div class="date-list">
+        <div class="date-btn active" onclick="selDate(this)"><span>All Months</span><span class="date-cnt">48</span></div>
+        <div class="date-btn" onclick="selDate(this)"><span>January</span><span class="date-cnt">2</span></div>
+        <div class="date-btn" onclick="selDate(this)"><span>February</span><span class="date-cnt">3</span></div>
+        <div class="date-btn" onclick="selDate(this)"><span>March</span><span class="date-cnt">7</span></div>
+        <div class="date-btn" onclick="selDate(this)"><span>April</span><span class="date-cnt">5</span></div>
+        <div class="date-btn" onclick="selDate(this)"><span>May</span><span class="date-cnt">5</span></div>
+        <div class="date-btn" onclick="selDate(this)"><span>June</span><span class="date-cnt">3</span></div>
+        <div class="date-btn" onclick="selDate(this)"><span>July</span><span class="date-cnt">3</span></div>
+        <div class="date-btn" onclick="selDate(this)"><span>August</span><span class="date-cnt">5</span></div>
+        <div class="date-btn" onclick="selDate(this)"><span>September</span><span class="date-cnt">4</span></div>
+        <div class="date-btn" onclick="selDate(this)"><span>October</span><span class="date-cnt">5</span></div>
+        <div class="date-btn" onclick="selDate(this)"><span>November</span><span class="date-cnt">4</span></div>
+        <div class="date-btn" onclick="selDate(this)"><span>December</span><span class="date-cnt">2</span></div>
+      </div>
+    </div>
+
+    <!-- Live: day filter -->
+    <div class="left-section" id="live-dates" style="display:none">
+      <div class="left-title" style="margin-top:12px">Filter by Day</div>
+      <div class="date-list">
+        <div class="date-btn active" onclick="selDate(this)"><span>All Days</span><span class="date-cnt">225</span></div>
+        <div class="date-btn" onclick="selDate(this)"><span>Sat Mar 7</span><span class="date-cnt">15</span></div>
+        <div class="date-btn" onclick="selDate(this)"><span>Sun Mar 8</span><span class="date-cnt">18</span></div>
+        <div class="date-btn" onclick="selDate(this)"><span>Mon Mar 9</span><span class="date-cnt">42</span></div>
+        <div class="date-btn" onclick="selDate(this)"><span>Tue Mar 10</span><span class="date-cnt">38</span></div>
+        <div class="date-btn" onclick="selDate(this)"><span>Wed Mar 11</span><span class="date-cnt">35</span></div>
+        <div class="date-btn" onclick="selDate(this)"><span>Thu Mar 12</span><span class="date-cnt">44</span></div>
+        <div class="date-btn" onclick="selDate(this)"><span>Fri Mar 13</span><span class="date-cnt">22</span></div>
+        <div class="date-btn" onclick="selDate(this)"><span>Sat Mar 14</span><span class="date-cnt">11</span></div>
+      </div>
+    </div>
+
+  </div><!-- /left -->
+
+  <!-- CENTER -->
+  <div class="center">
+
+    <div class="center-tags" id="center-tags">
+      <button class="ctag active" onclick="filterTag(this,'all')">All</button>
+      <button class="ctag" onclick="filterTag(this,'free')">🟢 Free</button>
+      <button class="ctag" onclick="filterTag(this,'networking')">🤝 Networking</button>
+      <button class="ctag" onclick="filterTag(this,'showcase')">🎮 Showcase</button>
+      <button class="ctag" onclick="filterTag(this,'conference')">🎤 Conference</button>
+      <button class="ctag" onclick="filterTag(this,'awards')">🏆 Awards</button>
+      <button class="ctag" onclick="filterTag(this,'workshop')">🛠 Workshop</button>
+    </div>
+
+    <!-- CALENDAR CARDS -->
+    <div class="elist" id="calendar-cards">
+
+      <div class="event-card">
+        <div class="card-date">
+          <div class="card-month">MAR</div>
+          <div class="card-day">17</div>
+          <div class="card-end">–21</div>
+        </div>
+        <div class="card-body">
+          <div class="card-title-row">
+            <span class="card-title">GDC 2026 — Game Developers Conference</span>
+            <span class="card-tag ct-conf">DEVELOPER</span>
+          </div>
+          <div class="card-meta">📍 San Francisco, USA · Moscone Center <span style="background:rgba(217,95,43,0.1);color:var(--orange);padding:1px 7px;border-radius:10px;font-size:10px;font-weight:700">30,000+</span></div>
+          <div class="card-desc">The world's largest professional game industry event. Five days of lectures, tutorials, and networking across all verticals of game development.</div>
+          <div class="card-actions">
+            <button class="action-btn">+ Add to Cal</button>
+            <button class="action-btn">🔖 Save</button>
+            <button class="action-btn primary">✅ I'm Going</button>
+            <span class="going-count">842 going</span>
+            <a class="action-link" href="https://gdconf.com/" target="_blank">↗ Website</a>
+          </div>
+        </div>
+      </div>
+
+      <div class="event-card">
+        <div class="card-date">
+          <div class="card-month">MAR</div>
+          <div class="card-day">17</div>
+          <div class="card-end">–18</div>
+        </div>
+        <div class="card-body">
+          <div class="card-title-row">
+            <span class="card-title">Game Connection America 2026</span>
+            <span class="card-tag ct-b2b">B2B</span>
+          </div>
+          <div class="card-meta">📍 San Francisco, USA · Co-located with GDC <span style="background:rgba(10,127,168,0.1);color:var(--teal);padding:1px 7px;border-radius:10px;font-size:10px;font-weight:700">3,000+</span></div>
+          <div class="card-desc">One-on-one meetings between developers and publishers. The premier B2B event at GDC week with structured networking and deal-making sessions.</div>
+          <div class="card-actions">
+            <button class="action-btn">+ Add to Cal</button>
+            <button class="action-btn">🔖 Save</button>
+            <button class="action-btn primary">✅ I'm Going</button>
+            <span class="going-count">247 going</span>
+            <a class="action-link" href="https://www.game-connection.com/" target="_blank">↗ Website</a>
+          </div>
+        </div>
+      </div>
+
+      <div class="event-card">
+        <div class="card-date">
+          <div class="card-month">MAY</div>
+          <div class="card-day">20</div>
+          <div class="card-end">–22</div>
+        </div>
+        <div class="card-body">
+          <div class="card-title-row">
+            <span class="card-title">Nordic Game 2026</span>
+            <span class="card-tag ct-conf">B2B / DEV</span>
+          </div>
+          <div class="card-meta">📍 Malmö, Sweden · Malmö Live <span style="background:rgba(13,155,114,0.1);color:var(--green);padding:1px 7px;border-radius:10px;font-size:10px;font-weight:700">3,000+</span></div>
+          <div class="card-desc">Premier Nordic games industry conference. Three days of talks, workshops, and business meetings at the heart of Scandinavia's thriving game development scene.</div>
+          <div class="card-actions">
+            <button class="action-btn">+ Add to Cal</button>
+            <button class="action-btn">🔖 Save</button>
+            <button class="action-btn primary">✅ I'm Going</button>
+            <span class="going-count">124 going</span>
+            <a class="action-link" href="https://nordicgame.com/" target="_blank">↗ Website</a>
+          </div>
+        </div>
+      </div>
+
+      <div class="event-card">
+        <div class="card-date">
+          <div class="card-month">JUN</div>
+          <div class="card-day">9</div>
+          <div class="card-end">–11</div>
+        </div>
+        <div class="card-body">
+          <div class="card-title-row">
+            <span class="card-title">E3 2026 — Electronic Entertainment Expo</span>
+            <span class="card-tag ct-show">CONSUMER</span>
+          </div>
+          <div class="card-meta">📍 Los Angeles, USA · Convention Center <span style="background:rgba(217,95,43,0.1);color:var(--orange);padding:1px 7px;border-radius:10px;font-size:10px;font-weight:700">60,000+</span></div>
+          <div class="card-desc">The iconic Electronic Entertainment Expo returns. The biggest stage for game announcements, demos, and publisher showcases in the industry.</div>
+          <div class="card-actions">
+            <button class="action-btn">+ Add to Cal</button>
+            <button class="action-btn">🔖 Save</button>
+            <button class="action-btn primary">✅ I'm Going</button>
+            <span class="going-count">518 going</span>
+            <a class="action-link" href="https://www.e3expo.com/" target="_blank">↗ Website</a>
+          </div>
+        </div>
+      </div>
+
+      <div class="event-card">
+        <div class="card-date">
+          <div class="card-month">AUG</div>
+          <div class="card-day">26</div>
+          <div class="card-end">–30</div>
+        </div>
+        <div class="card-body">
+          <div class="card-title-row">
+            <span class="card-title">Gamescom 2026</span>
+            <span class="card-tag ct-conf">CONSUMER / B2B</span>
+          </div>
+          <div class="card-meta">📍 Cologne, Germany · Koelnmesse <span style="background:rgba(217,95,43,0.1);color:var(--orange);padding:1px 7px;border-radius:10px;font-size:10px;font-weight:700">300,000+</span></div>
+          <div class="card-desc">The world's largest games trade fair. Five days combining a massive consumer expo with the dedicated business area (Biz Area) for B2B meetings.</div>
+          <div class="card-actions">
+            <button class="action-btn">+ Add to Cal</button>
+            <button class="action-btn">🔖 Save</button>
+            <button class="action-btn primary">✅ I'm Going</button>
+            <span class="going-count">1,204 going</span>
+            <a class="action-link" href="https://www.gamescom.de/" target="_blank">↗ Website</a>
+          </div>
+        </div>
+      </div>
+
+      <div class="event-card">
+        <div class="card-date">
+          <div class="card-month">SEP</div>
+          <div class="card-day">24</div>
+          <div class="card-end">–27</div>
+        </div>
+        <div class="card-body">
+          <div class="card-title-row">
+            <span class="card-title">Tokyo Game Show 2026</span>
+            <span class="card-tag ct-show">CONSUMER / B2B</span>
+          </div>
+          <div class="card-meta">📍 Chiba, Japan · Makuhari Messe <span style="background:rgba(124,58,237,0.1);color:var(--purple);padding:1px 7px;border-radius:10px;font-size:10px;font-weight:700">250,000+</span></div>
+          <div class="card-desc">Asia's largest game trade show. Featuring major consumer halls alongside a dedicated B2B area for international business meetings and publisher meetings.</div>
+          <div class="card-actions">
+            <button class="action-btn">+ Add to Cal</button>
+            <button class="action-btn">🔖 Save</button>
+            <button class="action-btn primary">✅ I'm Going</button>
+            <span class="going-count">389 going</span>
+            <a class="action-link" href="https://tgs.cesa.or.jp/" target="_blank">↗ Website</a>
+          </div>
+        </div>
+      </div>
+
+      <div class="event-card">
+        <div class="card-date">
+          <div class="card-month">OCT</div>
+          <div class="card-day">16</div>
+          <div class="card-end">–19</div>
+        </div>
+        <div class="card-body">
+          <div class="card-title-row">
+            <span class="card-title">Gamescom Asia 2026</span>
+            <span class="card-tag ct-b2b">B2B / CONSUMER</span>
+          </div>
+          <div class="card-meta">📍 Singapore · Marina Bay Sands Expo <span style="background:rgba(10,127,168,0.1);color:var(--teal);padding:1px 7px;border-radius:10px;font-size:10px;font-weight:700">30,000+</span></div>
+          <div class="card-desc">Asian edition of Gamescom combining a consumer fair with a B2B trade area. Key event for Southeast Asian market entry and regional publishing deals.</div>
+          <div class="card-actions">
+            <button class="action-btn">+ Add to Cal</button>
+            <button class="action-btn">🔖 Save</button>
+            <button class="action-btn primary">✅ I'm Going</button>
+            <span class="going-count">156 going</span>
+            <a class="action-link" href="https://www.gamescom.asia/" target="_blank">↗ Website</a>
+          </div>
+        </div>
+      </div>
+
+      <div class="event-card">
+        <div class="card-date">
+          <div class="card-month">DEC</div>
+          <div class="card-day">3</div>
+          <div class="card-end">–4</div>
+        </div>
+        <div class="card-body">
+          <div class="card-title-row">
+            <span class="card-title">Game Connection Europe 2026</span>
+            <span class="card-tag ct-b2b">B2B</span>
+          </div>
+          <div class="card-meta">📍 Paris, France · Palais des Congrès <span style="background:rgba(13,155,114,0.1);color:var(--green);padding:1px 7px;border-radius:10px;font-size:10px;font-weight:700">2,500+</span></div>
+          <div class="card-desc">The original Game Connection. Two days of structured one-on-one meetings between developers, publishers, and investors in the heart of Europe.</div>
+          <div class="card-actions">
+            <button class="action-btn">+ Add to Cal</button>
+            <button class="action-btn">🔖 Save</button>
+            <button class="action-btn primary">✅ I'm Going</button>
+            <span class="going-count">198 going</span>
+            <a class="action-link" href="https://www.game-connection.com/" target="_blank">↗ Website</a>
+          </div>
+        </div>
+      </div>
+
+      <div class="event-card">
+        <div class="card-date">
+          <div class="card-month">JUL</div>
+          <div class="card-day">8</div>
+          <div class="card-end">–10</div>
+        </div>
+        <div class="card-body">
+          <div class="card-title-row">
+            <span class="card-title">Develop:Brighton 2026</span>
+            <span class="card-tag ct-talk">DEVELOPER</span>
+          </div>
+          <div class="card-meta">📍 Brighton, UK · Brighton Centre <span style="background:rgba(6,182,212,0.08);color:#06b6d4;padding:1px 7px;border-radius:10px;font-size:10px;font-weight:700">2,500+</span></div>
+          <div class="card-desc">UK's leading game developer conference. Three days of technical talks, creative sessions, and business meetings alongside the iconic Develop Awards.</div>
+          <div class="card-actions">
+            <button class="action-btn">+ Add to Cal</button>
+            <button class="action-btn">🔖 Save</button>
+            <button class="action-btn primary">✅ I'm Going</button>
+            <span class="going-count">87 going</span>
+            <a class="action-link" href="https://www.developconference.com/" target="_blank">↗ Website</a>
+          </div>
+        </div>
+      </div>
+
+      <div class="event-card">
+        <div class="card-date">
+          <div class="card-month">MAY</div>
+          <div class="card-day">14</div>
+          <div class="card-end">–15</div>
+        </div>
+        <div class="card-body">
+          <div class="card-title-row">
+            <span class="card-title">Game Connection Asia 2026</span>
+            <span class="card-tag ct-b2b">B2B</span>
+          </div>
+          <div class="card-meta">📍 Singapore · Marina Bay Sands <span style="background:rgba(10,127,168,0.1);color:var(--teal);padding:1px 7px;border-radius:10px;font-size:10px;font-weight:700">1,500+</span></div>
+          <div class="card-desc">B2B-focused one-on-one meeting event in Singapore. Two days of structured publisher/developer meetings targeting the rapidly growing Asian games market.</div>
+          <div class="card-actions">
+            <button class="action-btn">+ Add to Cal</button>
+            <button class="action-btn">🔖 Save</button>
+            <button class="action-btn primary">✅ I'm Going</button>
+            <span class="going-count">112 going</span>
+            <a class="action-link" href="https://www.game-connection.com/" target="_blank">↗ Website</a>
+          </div>
+        </div>
+      </div>
+
+      <div style="text-align:center;padding:16px 0;font-size:12px;color:var(--text3)">Showing 10 of 48 conferences</div>
+    </div><!-- /calendar-cards -->
+
+    <!-- LIVE CARDS -->
+    <div class="elist" id="live-cards" style="display:none">
+
+      <div class="event-card" style="border-color:rgba(217,95,43,0.32)">
+        <div class="card-date">
+          <div class="card-month">MAR</div>
+          <div class="card-day">9</div>
+        </div>
+        <div class="card-body">
+          <div class="card-title-row">
+            <span class="card-title">Indie Mixer @ GDC 2026</span>
+            <span class="card-tag ct-free">FREE</span>
+          </div>
+          <div class="card-meta">
+            <span class="card-live-badge"><span class="live-dot" style="width:5px;height:5px"></span>NOW LIVE</span>
+            <span class="card-time">🕖 7:00pm – 10:00pm</span>
+            <span>📍 Monarch, 101 6th St</span>
+            <span style="background:var(--orange-dim);color:var(--orange);padding:1px 7px;border-radius:10px;font-size:10px;font-weight:600;border:1px solid var(--orange-border)">0.6 mi</span>
+          </div>
+          <div class="card-desc">The biggest indie mixer of GDC week. 400+ developers, publishers, and investors. Free drinks for the first 100 guests. No GDC pass required.</div>
+          <div class="card-actions">
+            <button class="action-btn">+ Add to Cal</button>
+            <button class="action-btn going">🔖 Save</button>
+            <button class="action-btn primary going">✓ I'm Going</button>
+            <span class="going-count">312 going</span>
+            <a class="action-link" href="#" target="_blank">↗ Website</a>
+          </div>
+        </div>
+      </div>
+
+      <div class="event-card">
+        <div class="card-date">
+          <div class="card-month">MAR</div>
+          <div class="card-day">9</div>
+        </div>
+        <div class="card-body">
+          <div class="card-title-row">
+            <span class="card-title">PG Connects Summit San Francisco 2026</span>
+            <span class="card-tag ct-net">NETWORKING</span>
+          </div>
+          <div class="card-meta">
+            <span class="card-time">🕘 9:00am – 5:30pm</span>
+            <span>📍 715 Harrison Event Space</span>
+            <span style="background:rgba(0,0,0,0.06);color:var(--text3);padding:1px 7px;border-radius:10px;font-size:10px;font-weight:600">0.3 mi</span>
+          </div>
+          <div class="card-desc">Mobile-focused B2B summit co-located with GDC. Speed networking, roundtables, and keynotes from leading mobile publishers.</div>
+          <div class="card-actions">
+            <button class="action-btn">+ Add to Cal</button>
+            <button class="action-btn">🔖 Save</button>
+            <button class="action-btn primary">✅ I'm Going</button>
+            <span class="going-count">178 going</span>
+            <a class="action-link" href="#" target="_blank">↗ Website</a>
+          </div>
+        </div>
+      </div>
+
+      <div class="event-card">
+        <div class="card-date">
+          <div class="card-month">MAR</div>
+          <div class="card-day">9</div>
+        </div>
+        <div class="card-body">
+          <div class="card-title-row">
+            <span class="card-title">Opening Night at the Ballpark</span>
+            <span class="card-tag ct-show">SHOWCASE</span>
+          </div>
+          <div class="card-meta">
+            <span class="card-time">🕕 6:00pm – 10:00pm</span>
+            <span>📍 Oracle Park</span>
+            <span style="background:rgba(0,0,0,0.06);color:var(--text3);padding:1px 7px;border-radius:10px;font-size:10px;font-weight:600">0.8 mi</span>
+          </div>
+          <div class="card-desc">Iconic outdoor showcase at Oracle Park. Game reveals, live entertainment, and networking under the stars. No GDC pass required.</div>
+          <div class="card-actions">
+            <button class="action-btn">+ Add to Cal</button>
+            <button class="action-btn">🔖 Save</button>
+            <button class="action-btn primary">✅ I'm Going</button>
+            <span class="going-count">521 going</span>
+            <a class="action-link" href="#" target="_blank">↗ Website</a>
+          </div>
+        </div>
+      </div>
+
+      <div class="event-card">
+        <div class="card-date">
+          <div class="card-month">MAR</div>
+          <div class="card-day">10</div>
+        </div>
+        <div class="card-body">
+          <div class="card-title-row">
+            <span class="card-title">Nordic Breakfast @ GDC 2026</span>
+            <span class="card-tag ct-free">FREE</span>
+          </div>
+          <div class="card-meta">
+            <span class="card-time">🕗 8:00am – 12:00pm</span>
+            <span>📍 Reed Smith LLP</span>
+            <span style="background:rgba(0,0,0,0.06);color:var(--text3);padding:1px 7px;border-radius:10px;font-size:10px;font-weight:600">0.3 mi</span>
+          </div>
+          <div class="card-desc">Annual morning gathering for Nordic developers and anyone interested in the Scandinavian game dev scene. Coffee, pastries, and valuable introductions.</div>
+          <div class="card-actions">
+            <button class="action-btn">+ Add to Cal</button>
+            <button class="action-btn">🔖 Save</button>
+            <button class="action-btn primary">✅ I'm Going</button>
+            <span class="going-count">94 going</span>
+            <a class="action-link" href="#" target="_blank">↗ Website</a>
+          </div>
+        </div>
+      </div>
+
+      <div class="event-card">
+        <div class="card-date">
+          <div class="card-month">MAR</div>
+          <div class="card-day">10</div>
+        </div>
+        <div class="card-body">
+          <div class="card-title-row">
+            <span class="card-title">VFX Mixer @ GDC</span>
+            <span class="card-tag ct-party">PARTY</span>
+          </div>
+          <div class="card-meta">
+            <span class="card-time">🕕 7:00pm – 10:00pm</span>
+            <span>📍 Monarch, 101 6th St</span>
+            <span style="background:rgba(0,0,0,0.06);color:var(--text3);padding:1px 7px;border-radius:10px;font-size:10px;font-weight:600">0.6 mi</span>
+          </div>
+          <div class="card-desc">Annual mixer for VFX artists, technical artists, and anyone interested in real-time visual effects. Hosted by the GDC VFX Summit organizers.</div>
+          <div class="card-actions">
+            <button class="action-btn">+ Add to Cal</button>
+            <button class="action-btn">🔖 Save</button>
+            <button class="action-btn primary">✅ I'm Going</button>
+            <span class="going-count">67 going</span>
+            <a class="action-link" href="#" target="_blank">↗ Website</a>
+          </div>
+        </div>
+      </div>
+
+      <div class="event-card">
+        <div class="card-date">
+          <div class="card-month">MAR</div>
+          <div class="card-day">11</div>
+        </div>
+        <div class="card-body">
+          <div class="card-title-row">
+            <span class="card-title">Developers in China &amp; IGDA SZ Meet Up</span>
+            <span class="card-tag ct-net">NETWORKING</span>
+          </div>
+          <div class="card-meta">
+            <span class="card-time">🕒 3:10pm – 4:10pm</span>
+            <span>📍 Moscone Center South</span>
+            <span style="background:rgba(0,0,0,0.06);color:var(--text3);padding:1px 7px;border-radius:10px;font-size:10px;font-weight:600">on-site</span>
+          </div>
+          <div class="card-desc">Gathering for developers working in or interested in the Chinese game market. Organized by IGDA Shenzhen chapter with insights on China market entry.</div>
+          <div class="card-actions">
+            <button class="action-btn">+ Add to Cal</button>
+            <button class="action-btn">🔖 Save</button>
+            <button class="action-btn primary">✅ I'm Going</button>
+            <span class="going-count">143 going</span>
+            <a class="action-link" href="#" target="_blank">↗ Website</a>
+          </div>
+        </div>
+      </div>
+
+      <div class="event-card">
+        <div class="card-date">
+          <div class="card-month">MAR</div>
+          <div class="card-day">12</div>
+        </div>
+        <div class="card-body">
+          <div class="card-title-row">
+            <span class="card-title">Women in Games Happy Hour @ GDC</span>
+            <span class="card-tag ct-free">FREE</span>
+          </div>
+          <div class="card-meta">
+            <span class="card-time">🕔 5:00pm – 8:00pm</span>
+            <span>📍 Bar Agricole, 355 11th St</span>
+            <span style="background:rgba(0,0,0,0.06);color:var(--text3);padding:1px 7px;border-radius:10px;font-size:10px;font-weight:600">0.5 mi</span>
+          </div>
+          <div class="card-desc">Annual celebration for women and allies in the games industry. Hosted by Women in Games International. Free entry, open bar, and inspiring conversations.</div>
+          <div class="card-actions">
+            <button class="action-btn">+ Add to Cal</button>
+            <button class="action-btn">🔖 Save</button>
+            <button class="action-btn primary">✅ I'm Going</button>
+            <span class="going-count">289 going</span>
+            <a class="action-link" href="#" target="_blank">↗ Website</a>
+          </div>
+        </div>
+      </div>
+
+      <div class="event-card">
+        <div class="card-date">
+          <div class="card-month">MAR</div>
+          <div class="card-day">13</div>
+        </div>
+        <div class="card-body">
+          <div class="card-title-row">
+            <span class="card-title">Indie Fund Pitch Night</span>
+            <span class="card-tag ct-talk">PANEL / TALK</span>
+          </div>
+          <div class="card-meta">
+            <span class="card-time">🕕 5:00pm – 9:00pm</span>
+            <span>📍 GitHub HQ, 88 Colin P Kelly Jr St</span>
+            <span style="background:rgba(0,0,0,0.06);color:var(--text3);padding:1px 7px;border-radius:10px;font-size:10px;font-weight:600">0.4 mi</span>
+          </div>
+          <div class="card-desc">Eight indie studios pitch their games to a panel of investors and publishers. Open to attend and observe. Q&A follows each pitch. Great for inspiration and networking.</div>
+          <div class="card-actions">
+            <button class="action-btn">+ Add to Cal</button>
+            <button class="action-btn">🔖 Save</button>
+            <button class="action-btn primary">✅ I'm Going</button>
+            <span class="going-count">201 going</span>
+            <a class="action-link" href="#" target="_blank">↗ Website</a>
+          </div>
+        </div>
+      </div>
+
+      <div style="text-align:center;padding:16px 0;font-size:12px;color:var(--text3)">Showing 8 of 225 sessions</div>
+    </div><!-- /live-cards -->
+
+  </div><!-- /center -->
+
+  <!-- RIGHT PANEL -->
+  <div class="right">
+
+    <!-- Calendar Right: Upcoming Events -->
+    <div id="right-calendar" style="display:flex;flex-direction:column;overflow-y:auto;padding:16px;scrollbar-width:thin">
+      <div class="right-title">📅 Upcoming Events</div>
+
+      <div class="upcoming-item">
+        <div class="upcoming-dot" style="background:#d95f2b"></div>
+        <div class="upcoming-info">
+          <div class="upcoming-name">GDC 2026</div>
+          <div class="upcoming-date">Mar 17–21 · San Francisco, USA</div>
+          <div class="upcoming-count" style="color:var(--orange)">in 3 days · 842 going</div>
+        </div>
+      </div>
+
+      <div class="upcoming-item">
+        <div class="upcoming-dot" style="background:#0a7fa8"></div>
+        <div class="upcoming-info">
+          <div class="upcoming-name">Game Connection America</div>
+          <div class="upcoming-date">Mar 17–18 · San Francisco, USA</div>
+          <div class="upcoming-count">in 3 days · 247 going</div>
+        </div>
+      </div>
+
+      <div class="upcoming-item">
+        <div class="upcoming-dot" style="background:#0d9b72"></div>
+        <div class="upcoming-info">
+          <div class="upcoming-name">Nordic Game 2026</div>
+          <div class="upcoming-date">May 20–22 · Malmö, Sweden</div>
+          <div class="upcoming-count">in 52 days · 124 going</div>
+        </div>
+      </div>
+
+      <div class="upcoming-item">
+        <div class="upcoming-dot" style="background:#7c3aed"></div>
+        <div class="upcoming-info">
+          <div class="upcoming-name">Game Connection Asia</div>
+          <div class="upcoming-date">May 14–15 · Singapore</div>
+          <div class="upcoming-count">in 46 days · 112 going</div>
+        </div>
+      </div>
+
+      <div class="upcoming-item">
+        <div class="upcoming-dot" style="background:#1d4ed8"></div>
+        <div class="upcoming-info">
+          <div class="upcoming-name">E3 2026</div>
+          <div class="upcoming-date">Jun 9–11 · Los Angeles, USA</div>
+          <div class="upcoming-count">in 72 days · 518 going</div>
+        </div>
+      </div>
+
+      <!-- Region Distribution -->
+      <div class="region-section">
+        <div class="right-title" style="margin-bottom:10px">📊 By Region</div>
+
+        <div class="region-row">
+          <div class="region-row-hdr"><span class="region-row-name">🌎 North America</span><span class="region-row-val">18</span></div>
+          <div class="region-track"><div class="region-fill" style="width:75%;background:var(--orange)"></div></div>
+        </div>
+        <div class="region-row">
+          <div class="region-row-hdr"><span class="region-row-name">🌍 Europe</span><span class="region-row-val">16</span></div>
+          <div class="region-track"><div class="region-fill" style="width:67%;background:var(--teal)"></div></div>
+        </div>
+        <div class="region-row">
+          <div class="region-row-hdr"><span class="region-row-name">🌏 Asia Pacific</span><span class="region-row-val">10</span></div>
+          <div class="region-track"><div class="region-fill" style="width:42%;background:var(--green)"></div></div>
+        </div>
+        <div class="region-row">
+          <div class="region-row-hdr"><span class="region-row-name">🌐 Online / Global</span><span class="region-row-val">4</span></div>
+          <div class="region-track"><div class="region-fill" style="width:17%;background:var(--purple)"></div></div>
+        </div>
+      </div>
+
+    </div><!-- /right-calendar -->
+
+    <!-- Live Right: Map -->
+    <div id="right-live" style="display:none;flex-direction:column;overflow:hidden;height:100%">
+      <div class="map-hdr">
+        <span class="map-ttl">📍 Map · San Francisco</span>
+        <div class="map-btns">
+          <button class="mbtn">🏠 Moscone</button>
+          <button class="mbtn">📌 My Location</button>
+        </div>
+      </div>
+
+      <div class="map-wrap">
+        <svg width="100%" height="100%" viewBox="0 0 320 480" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid slice">
+          <rect width="320" height="480" fill="#f5f3ee"/>
+          <path d="M0,0 L320,0 L320,50 Q260,68 190,60 Q130,52 60,70 Q20,78 0,72 Z" fill="#dde8f0" opacity=".9"/>
+          <rect x="0" y="78" width="320" height="402" fill="#ede8df"/>
+          <line x1="0" y1="100" x2="320" y2="100" stroke="#e2ddd5" stroke-width="1.5"/>
+          <line x1="0" y1="125" x2="320" y2="125" stroke="#e2ddd5" stroke-width="1.5"/>
+          <line x1="0" y1="150" x2="320" y2="150" stroke="#e2ddd5" stroke-width="1.5"/>
+          <line x1="0" y1="175" x2="320" y2="175" stroke="#e2ddd5" stroke-width="1.5"/>
+          <line x1="0" y1="200" x2="320" y2="200" stroke="#e2ddd5" stroke-width="1.5"/>
+          <line x1="0" y1="230" x2="320" y2="230" stroke="#e2ddd5" stroke-width="1.5"/>
+          <line x1="0" y1="260" x2="320" y2="260" stroke="#e2ddd5" stroke-width="1.5"/>
+          <line x1="0" y1="300" x2="320" y2="300" stroke="#e2ddd5" stroke-width="1.5"/>
+          <line x1="0" y1="340" x2="320" y2="340" stroke="#e2ddd5" stroke-width="1.5"/>
+          <line x1="40" y1="78" x2="40" y2="480" stroke="#e2ddd5" stroke-width="1.5"/>
+          <line x1="85" y1="78" x2="85" y2="480" stroke="#e2ddd5" stroke-width="1.5"/>
+          <line x1="130" y1="78" x2="130" y2="480" stroke="#e2ddd5" stroke-width="1.5"/>
+          <line x1="175" y1="78" x2="175" y2="480" stroke="#e2ddd5" stroke-width="1.5"/>
+          <line x1="220" y1="78" x2="220" y2="480" stroke="#e2ddd5" stroke-width="1.5"/>
+          <line x1="265" y1="78" x2="265" y2="480" stroke="#e2ddd5" stroke-width="1.5"/>
+          <rect x="0" y="155" width="320" height="5" fill="#d8d3ca" rx="1"/>
+          <rect x="0" y="215" width="320" height="5" fill="#d8d3ca" rx="1"/>
+          <rect x="120" y="78" width="5" height="402" fill="#d8d3ca" rx="1"/>
+          <rect x="200" y="78" width="5" height="402" fill="#d8d3ca" rx="1"/>
+          <rect x="44" y="130" width="38" height="22" fill="#d4e8c8" rx="3" opacity=".8"/>
+          <rect x="134" y="80" width="40" height="30" fill="#c8dfc0" rx="3" opacity=".6"/>
+          <rect x="88" y="168" width="60" height="36" fill="#e8c4a8" rx="3" stroke="#d95f2b" stroke-width="1.5"/>
+          <text x="118" y="188" text-anchor="middle" font-size="7" fill="#aa3a10" font-weight="700">MOSCONE</text>
+          <text x="118" y="197" text-anchor="middle" font-size="6" fill="#aa3a10">CENTER</text>
+          <circle cx="155" cy="240" r="8" fill="#d95f2b" opacity=".9"/>
+          <text x="155" y="243" text-anchor="middle" font-size="8" fill="white" font-weight="800">🎵</text>
+          <circle cx="60" cy="310" r="8" fill="#0a7fa8" opacity=".85"/>
+          <text x="60" y="314" text-anchor="middle" font-size="8" fill="white">🏟</text>
+          <circle cx="240" cy="185" r="7" fill="#0d9b72" opacity=".85"/>
+          <text x="240" y="189" text-anchor="middle" font-size="8" fill="white">☕</text>
+          <circle cx="175" cy="290" r="7" fill="#7c3aed" opacity=".85"/>
+          <text x="175" y="294" text-anchor="middle" font-size="8" fill="white">🍸</text>
+          <circle cx="118" cy="186" r="35" fill="none" stroke="rgba(217,95,43,0.15)" stroke-width="1" stroke-dasharray="3,3"/>
+          <circle cx="118" cy="186" r="70" fill="none" stroke="rgba(217,95,43,0.1)" stroke-width="1" stroke-dasharray="3,3"/>
+          <circle cx="118" cy="186" r="5" fill="#d95f2b"/>
+          <circle cx="118" cy="186" r="10" fill="rgba(217,95,43,0.2)"/>
+        </svg>
+      </div>
+
+      <div class="map-leg">
+        <div class="leg-i"><div class="leg-d" style="background:#d95f2b"></div><span>Going</span></div>
+        <div class="leg-i"><div class="leg-d" style="background:#0a7fa8"></div><span>Nearby</span></div>
+        <div class="leg-i"><div class="leg-d" style="background:#0d9b72"></div><span>Free</span></div>
+        <div class="leg-i"><div class="leg-d" style="background:#7c3aed"></div><span>Party</span></div>
+      </div>
+    </div><!-- /right-live -->
+
+  </div><!-- /right -->
+
+</div><!-- /layout -->
+
+<!-- PROJECTS PANEL -->
+<div id="projects-panel" style="display:none;position:fixed;top:var(--nav-h);left:0;right:0;bottom:0;background:var(--bg);z-index:100;display:none;grid-template-columns:240px 1fr 300px">
+
+  <!-- Left filter sidebar -->
+  <div style="border-right:1px solid #e0dfdc;background:#f3f2ef;overflow-y:auto;padding:16px">
+    <div class="left-title" style="margin-bottom:12px">Filter Projects</div>
+    <div class="left-title" style="margin-top:16px;margin-bottom:8px">Status</div>
+    <div style="display:flex;flex-direction:column;gap:4px" id="proj-pc-status-filters">
+      <button class="pc-proj-filter active" data-status="All" onclick="pcProjSetStatus(this)">All Projects</button>
+      <button class="pc-proj-filter" data-status="Seeking Publisher" onclick="pcProjSetStatus(this)">🎯 Seeking Publisher</button>
+      <button class="pc-proj-filter" data-status="Seeking Investment" onclick="pcProjSetStatus(this)">💰 Seeking Investment</button>
+      <button class="pc-proj-filter" data-status="In Development" onclick="pcProjSetStatus(this)">🛠️ In Development</button>
+      <button class="pc-proj-filter" data-status="Released" onclick="pcProjSetStatus(this)">✅ Released</button>
+    </div>
+    <div class="left-title" style="margin-top:20px;margin-bottom:8px">Platform</div>
+    <div style="display:flex;flex-direction:column;gap:4px">
+      <button class="pc-proj-filter" onclick="fdShowToast('Filter by PC')">PC</button>
+      <button class="pc-proj-filter" onclick="fdShowToast('Filter by Console')">Console</button>
+      <button class="pc-proj-filter" onclick="fdShowToast('Filter by Mobile')">Mobile</button>
+      <button class="pc-proj-filter" onclick="fdShowToast('Filter by Switch')">Switch</button>
+    </div>
+    <div class="left-title" style="margin-top:20px;margin-bottom:8px">Team Size</div>
+    <div style="display:flex;flex-direction:column;gap:4px">
+      <button class="pc-proj-filter" onclick="fdShowToast('Filter: 1-5')">1–5 people</button>
+      <button class="pc-proj-filter" onclick="fdShowToast('Filter: 6-15')">6–15 people</button>
+      <button class="pc-proj-filter" onclick="fdShowToast('Filter: 15+')">15+ people</button>
+    </div>
+    <div style="margin-top:20px;padding-top:16px;border-top:1px solid #e0dfdc">
+      <div class="left-title" style="margin-bottom:10px">Statistics</div>
+      <div class="stat-list">
+        <div class="stat-row"><span class="stat-key">Total Projects</span><span class="stat-val" style="color:var(--orange)">10</span></div>
+        <div class="stat-row"><span class="stat-key">Seeking Publisher</span><span class="stat-val">4</span></div>
+        <div class="stat-row"><span class="stat-key">Seeking Investment</span><span class="stat-val">2</span></div>
+        <div class="stat-row"><span class="stat-key">In Development</span><span class="stat-val">2</span></div>
+        <div class="stat-row"><span class="stat-key">Released</span><span class="stat-val" style="color:var(--green)">2</span></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Center: project grid -->
+  <div style="overflow-y:auto;padding:20px 24px">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px">
+      <div>
+        <div style="font-size:18px;font-weight:800;color:var(--text1)">Projects &amp; Games</div>
+        <div id="pc-proj-subtitle" style="font-size:12px;color:var(--text3);margin-top:2px">10 projects from worldwide studios</div>
+      </div>
+      <div style="display:flex;gap:8px;align-items:center">
+        <input id="pc-proj-search" type="text" placeholder="Search projects, studios…" style="padding:7px 12px;border:1.5px solid var(--border);border-radius:8px;font-size:13px;font-family:inherit;outline:none;background:#fff;width:220px" oninput="pcProjRender()">
+      </div>
+    </div>
+    <div id="pc-proj-cards" style="display:grid;grid-template-columns:repeat(2,1fr);gap:16px"></div>
+  </div>
+
+  <!-- Right: featured + genre stats -->
+  <div style="border-left:1px solid #e0dfdc;background:#fff;overflow-y:auto;padding:16px">
+    <div class="left-title" style="margin-bottom:12px">Featured</div>
+    <div style="display:flex;flex-direction:column;gap:10px;margin-bottom:20px">
+      <div style="padding:12px;border-radius:10px;background:linear-gradient(135deg,#1a3a6b,#4a6cf7);color:#fff;cursor:pointer" onclick="fdShowToast('Opening Echoes of Yun…')">
+        <div style="font-size:12px;font-weight:800;margin-bottom:3px">Echoes of Yun</div>
+        <div style="font-size:10px;opacity:.8">Phantom Circuit · RPG Roguelite</div>
+        <div style="font-size:10px;margin-top:6px;background:rgba(255,255,255,0.2);display:inline-block;padding:2px 8px;border-radius:10px">Seeking Publisher</div>
+      </div>
+      <div style="padding:12px;border-radius:10px;background:linear-gradient(135deg,#7a3a00,#d95f2b);color:#fff;cursor:pointer" onclick="fdShowToast('Opening Pixel Kingdoms…')">
+        <div style="font-size:12px;font-weight:800;margin-bottom:3px">Pixel Kingdoms</div>
+        <div style="font-size:10px;opacity:.8">8-Bit Empire · City Builder</div>
+        <div style="font-size:10px;margin-top:6px;background:rgba(255,255,255,0.2);display:inline-block;padding:2px 8px;border-radius:10px">Released · 500K DL</div>
+      </div>
+    </div>
+    <div class="left-title" style="margin-bottom:12px">Genre Distribution</div>
+    <div style="display:flex;flex-direction:column;gap:7px">
+      <div><div style="display:flex;justify-content:space-between;font-size:11px;margin-bottom:3px"><span style="color:var(--text2)">RPG</span><span style="font-weight:700">3</span></div><div style="height:5px;border-radius:3px;background:var(--border)"><div style="width:30%;height:100%;border-radius:3px;background:var(--orange)"></div></div></div>
+      <div><div style="display:flex;justify-content:space-between;font-size:11px;margin-bottom:3px"><span style="color:var(--text2)">Action</span><span style="font-weight:700">2</span></div><div style="height:5px;border-radius:3px;background:var(--border)"><div style="width:20%;height:100%;border-radius:3px;background:var(--teal)"></div></div></div>
+      <div><div style="display:flex;justify-content:space-between;font-size:11px;margin-bottom:3px"><span style="color:var(--text2)">Narrative</span><span style="font-weight:700">2</span></div><div style="height:5px;border-radius:3px;background:var(--border)"><div style="width:20%;height:100%;border-radius:3px;background:#7c3aed"></div></div></div>
+      <div><div style="display:flex;justify-content:space-between;font-size:11px;margin-bottom:3px"><span style="color:var(--text2)">Strategy</span><span style="font-weight:700">1</span></div><div style="height:5px;border-radius:3px;background:var(--border)"><div style="width:10%;height:100%;border-radius:3px;background:#0d9b72"></div></div></div>
+      <div><div style="display:flex;justify-content:space-between;font-size:11px;margin-bottom:3px"><span style="color:var(--text2)">Other</span><span style="font-weight:700">2</span></div><div style="height:5px;border-radius:3px;background:var(--border)"><div style="width:20%;height:100%;border-radius:3px;background:#6b7280"></div></div></div>
+    </div>
+    <div style="margin-top:20px;padding-top:16px;border-top:1px solid #e0dfdc">
+      <div class="left-title" style="margin-bottom:10px">Top Studios</div>
+      <div style="display:flex;flex-direction:column;gap:8px">
+        <div style="display:flex;align-items:center;gap:8px;cursor:pointer" onclick="fdShowToast('Opening Phantom Circuit Studio…')">
+          <div style="width:32px;height:32px;border-radius:8px;background:linear-gradient(135deg,#1a3a6b,#4a6cf7);display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:800;color:#fff">PC</div>
+          <div><div style="font-size:12px;font-weight:700;color:var(--text1)">Phantom Circuit</div><div style="font-size:10px;color:var(--text3)">RPG · Roguelite</div></div>
+        </div>
+        <div style="display:flex;align-items:center;gap:8px;cursor:pointer" onclick="fdShowToast('Opening Ironwood Games…')">
+          <div style="width:32px;height:32px;border-radius:8px;background:linear-gradient(135deg,#1a4a2e,#0d9b72);display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:800;color:#fff">IW</div>
+          <div><div style="font-size:12px;font-weight:700;color:var(--text1)">Ironwood Games</div><div style="font-size:10px;color:var(--text3)">Strategy · RTS</div></div>
+        </div>
+        <div style="display:flex;align-items:center;gap:8px;cursor:pointer" onclick="fdShowToast('Opening Nebula Labs…')">
+          <div style="width:32px;height:32px;border-radius:8px;background:linear-gradient(135deg,#0a1a3a,#1d4ed8);display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:800;color:#fff">NL</div>
+          <div><div style="font-size:12px;font-weight:700;color:var(--text1)">Nebula Labs</div><div style="font-size:10px;color:var(--text3)">Sci-Fi · Shooter</div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div><!-- /projects-panel -->
+
+<!-- COMPANIES PANEL -->
+<div id="companies-panel" style="display:none;position:fixed;top:var(--nav-h);left:0;right:0;bottom:0;background:var(--bg);z-index:100;grid-template-columns:220px 1fr 260px;overflow:hidden">
+  <!-- Left: Filters -->
+  <aside style="background:#fff;border-right:1px solid #e0dfdc;padding:20px 16px;overflow-y:auto">
+    <div style="font-size:11px;font-weight:700;color:#9ca3af;letter-spacing:.6px;margin-bottom:10px">TYPE</div>
+    <div class="cp-filter cp-type-filter active" data-val="all" onclick="cpSetFilter(this,'type')" style="display:flex;align-items:center;gap:8px;padding:7px 10px;border-radius:7px;cursor:pointer;font-size:13px;font-weight:500;color:#1a1a1a;background:#f3f4f6;margin-bottom:3px">All Companies</div>
+    <div class="cp-filter cp-type-filter" data-val="publisher" onclick="cpSetFilter(this,'type')" style="display:flex;align-items:center;gap:8px;padding:7px 10px;border-radius:7px;cursor:pointer;font-size:13px;font-weight:500;color:#6b7280;margin-bottom:3px">🏢 Publisher</div>
+    <div class="cp-filter cp-type-filter" data-val="developer" onclick="cpSetFilter(this,'type')" style="display:flex;align-items:center;gap:8px;padding:7px 10px;border-radius:7px;cursor:pointer;font-size:13px;font-weight:500;color:#6b7280;margin-bottom:3px">🎮 Developer</div>
+    <div class="cp-filter cp-type-filter" data-val="investor" onclick="cpSetFilter(this,'type')" style="display:flex;align-items:center;gap:8px;padding:7px 10px;border-radius:7px;cursor:pointer;font-size:13px;font-weight:500;color:#6b7280;margin-bottom:3px">💰 Investor</div>
+    <div class="cp-filter cp-type-filter" data-val="service" onclick="cpSetFilter(this,'type')" style="display:flex;align-items:center;gap:8px;padding:7px 10px;border-radius:7px;cursor:pointer;font-size:13px;font-weight:500;color:#6b7280;margin-bottom:3px">🔧 Service Provider</div>
+    <div class="cp-filter cp-type-filter" data-val="distributor" onclick="cpSetFilter(this,'type')" style="display:flex;align-items:center;gap:8px;padding:7px 10px;border-radius:7px;cursor:pointer;font-size:13px;font-weight:500;color:#6b7280;margin-bottom:3px">📦 Distributor</div>
+    <div style="font-size:11px;font-weight:700;color:#9ca3af;letter-spacing:.6px;margin:18px 0 10px">REGION</div>
+    <div class="cp-filter cp-region-filter active" data-val="all" onclick="cpSetFilter(this,'region')" style="display:flex;align-items:center;gap:8px;padding:7px 10px;border-radius:7px;cursor:pointer;font-size:13px;font-weight:500;color:#1a1a1a;background:#f3f4f6;margin-bottom:3px">🌍 All Regions</div>
+    <div class="cp-filter cp-region-filter" data-val="china" onclick="cpSetFilter(this,'region')" style="display:flex;align-items:center;gap:8px;padding:7px 10px;border-radius:7px;cursor:pointer;font-size:13px;font-weight:500;color:#6b7280;margin-bottom:3px">🌏 China</div>
+    <div class="cp-filter cp-region-filter" data-val="usa" onclick="cpSetFilter(this,'region')" style="display:flex;align-items:center;gap:8px;padding:7px 10px;border-radius:7px;cursor:pointer;font-size:13px;font-weight:500;color:#6b7280;margin-bottom:3px">🌎 USA</div>
+    <div class="cp-filter cp-region-filter" data-val="europe" onclick="cpSetFilter(this,'region')" style="display:flex;align-items:center;gap:8px;padding:7px 10px;border-radius:7px;cursor:pointer;font-size:13px;font-weight:500;color:#6b7280;margin-bottom:3px">🌍 Europe</div>
+  </aside>
+  <!-- Center: Company List -->
+  <main style="overflow-y:auto;padding:24px 28px">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px">
+      <div>
+        <div style="font-size:22px;font-weight:800;color:#1a1a1a">🏢 Companies</div>
+        <div style="font-size:13px;color:#6b7280;margin-top:2px">Game industry organizations at this event</div>
+      </div>
+      <input id="cp-search" type="text" placeholder="Search companies…" oninput="cpRender()" style="padding:8px 14px;border:1.5px solid var(--border);border-radius:8px;font-size:13px;font-family:inherit;outline:none;width:220px;background:#fff">
+    </div>
+    <div id="cp-list"></div>
+  </main>
+  <!-- Right: Rankings -->
+  <aside style="background:#fff;border-left:1px solid #e0dfdc;padding:20px 16px;overflow-y:auto">
+    <div style="font-size:13px;font-weight:700;color:#1a1a1a;margin-bottom:12px">🏆 Top Publishers</div>
+    <div style="display:flex;flex-direction:column;gap:8px;margin-bottom:20px">
+      <div style="display:flex;align-items:center;gap:10px"><span style="font-size:11px;font-weight:700;color:#9ca3af;width:14px">1</span><div style="width:32px;height:32px;border-radius:7px;background:linear-gradient(135deg,#c0392b,#f39c12);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:#fff;flex-shrink:0">DP</div><div style="flex:1"><div style="font-size:13px;font-weight:600;color:#1a1a1a">Dragon Phoenix</div><div style="font-size:11px;color:#9ca3af">5.2K followers</div></div><span style="font-size:11px;font-weight:600;color:var(--orange);cursor:pointer">Follow</span></div>
+      <div style="display:flex;align-items:center;gap:10px"><span style="font-size:11px;font-weight:700;color:#9ca3af;width:14px">2</span><div style="width:32px;height:32px;border-radius:7px;background:linear-gradient(135deg,#2c3e7a,#4a6cf7);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:#fff;flex-shrink:0">UB</div><div style="flex:1"><div style="font-size:13px;font-weight:600;color:#1a1a1a">Ubisoft</div><div style="font-size:11px;color:#9ca3af">4.8K followers</div></div><span style="font-size:11px;font-weight:600;color:var(--orange);cursor:pointer">Follow</span></div>
+      <div style="display:flex;align-items:center;gap:10px"><span style="font-size:11px;font-weight:700;color:#9ca3af;width:14px">3</span><div style="width:32px;height:32px;border-radius:7px;background:linear-gradient(135deg,#2d2d2d,#555);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:#fff;flex-shrink:0">DD</div><div style="flex:1"><div style="font-size:13px;font-weight:600;color:#1a1a1a">Devolver Digital</div><div style="font-size:11px;color:#9ca3af">4.1K followers</div></div><span style="font-size:11px;font-weight:600;color:var(--orange);cursor:pointer">Follow</span></div>
+      <div style="display:flex;align-items:center;gap:10px"><span style="font-size:11px;font-weight:700;color:#9ca3af;width:14px">4</span><div style="width:32px;height:32px;border-radius:7px;background:linear-gradient(135deg,#8b1a1a,#c0392b);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:#fff;flex-shrink:0">CDP</div><div style="flex:1"><div style="font-size:13px;font-weight:600;color:#1a1a1a">CD Projekt</div><div style="font-size:11px;color:#9ca3af">3.9K followers</div></div><span style="font-size:11px;font-weight:600;color:var(--orange);cursor:pointer">Follow</span></div>
+    </div>
+    <div style="font-size:13px;font-weight:700;color:#1a1a1a;margin-bottom:12px">💰 Active Investors</div>
+    <div style="display:flex;flex-direction:column;gap:8px;margin-bottom:20px">
+      <div style="display:flex;align-items:center;gap:10px"><div style="width:32px;height:32px;border-radius:7px;background:linear-gradient(135deg,#0d9b72,#064d39);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:#fff;flex-shrink:0">BV</div><div style="flex:1"><div style="font-size:13px;font-weight:600;color:#1a1a1a">Bitkraft Ventures</div><div style="font-size:11px;color:#9ca3af">$600M AUM</div></div><button style="font-size:11px;font-weight:600;padding:4px 10px;border-radius:6px;border:1.5px solid var(--border);background:#fff;cursor:pointer;color:#6b7280">Connect</button></div>
+      <div style="display:flex;align-items:center;gap:10px"><div style="width:32px;height:32px;border-radius:7px;background:linear-gradient(135deg,#7b5ea7,#9b59b6);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:#fff;flex-shrink:0">GGP</div><div style="flex:1"><div style="font-size:13px;font-weight:600;color:#1a1a1a">Griffin Gaming</div><div style="font-size:11px;color:#9ca3af">$235M Fund</div></div><button style="font-size:11px;font-weight:600;padding:4px 10px;border-radius:6px;border:1.5px solid var(--border);background:#fff;cursor:pointer;color:#6b7280">Connect</button></div>
+    </div>
+    <div style="font-size:13px;font-weight:700;color:#1a1a1a;margin-bottom:12px">✨ You May Know</div>
+    <div style="display:flex;flex-direction:column;gap:8px">
+      <div style="display:flex;align-items:center;gap:10px"><div style="width:32px;height:32px;border-radius:7px;background:linear-gradient(135deg,#1a6b8a,#22a6c8);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:#fff;flex-shrink:0">ES</div><div style="flex:1"><div style="font-size:13px;font-weight:600;color:#1a1a1a">Eastern Star Games</div><div style="font-size:11px;color:#9ca3af">3 mutual connections</div></div><button style="font-size:11px;font-weight:600;padding:4px 10px;border-radius:6px;border:1.5px solid var(--border);background:#fff;cursor:pointer;color:#6b7280">Follow</button></div>
+      <div style="display:flex;align-items:center;gap:10px"><div style="width:32px;height:32px;border-radius:7px;background:linear-gradient(135deg,#0d9b72,#0a7fa8);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:#fff;flex-shrink:0">JM</div><div style="flex:1"><div style="font-size:13px;font-weight:600;color:#1a1a1a">Jade Mountain Studios</div><div style="font-size:11px;color:#9ca3af">2 mutual connections</div></div><button style="font-size:11px;font-weight:600;padding:4px 10px;border-radius:6px;border:1.5px solid var(--border);background:#fff;cursor:pointer;color:#6b7280">Follow</button></div>
+    </div>
+  </aside>
+</div><!-- /companies-panel -->
+
+<!-- PROFILE & SETTINGS PANEL -->
+<div id="profile-panel" style="display:none;position:fixed;inset:48px 0 0 0;background:var(--bg);z-index:200;overflow-y:auto">
+
+  <!-- Guest state -->
+  <div id="pp-guest" style="display:none;flex-direction:column;align-items:center;justify-content:center;min-height:calc(100vh - 48px);text-align:center;padding:40px">
+    <div style="width:80px;height:80px;border-radius:50%;background:#f0ede8;display:flex;align-items:center;justify-content:center;font-size:36px;margin-bottom:20px">?</div>
+    <div style="font-size:22px;font-weight:800;color:var(--text1);margin-bottom:8px">Sign in to view your profile</div>
+    <div style="font-size:14px;color:var(--text2);margin-bottom:28px">Connect with publishers, investors, and developers worldwide.</div>
+    <a href="Identity_Login_v1.0_PC.html" style="padding:14px 36px;border-radius:30px;background:linear-gradient(135deg,#e8640a,#f59e0b);color:#fff;font-size:15px;font-weight:700;text-decoration:none">Sign In with Google &#8594;</a>
+  </div>
+
+  <!-- Logged-in state -->
+  <div id="pp-loggedin" style="display:none">
+
+    <!-- Page header bar -->
+    <div style="background:#fff;border-bottom:1px solid #e4e6ea;padding:14px 32px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:10">
+      <div style="font-size:18px;font-weight:800;color:var(--text1)">Profile &amp; Settings</div>
+      <div style="display:flex;gap:10px">
+        <button onclick="redoMatching()" style="padding:8px 20px;border-radius:20px;background:var(--orange);color:#fff;border:none;font-size:13px;font-weight:700;cursor:pointer">&#8634; Redo Matching</button>
+        <button onclick="signOutUser()" style="padding:8px 20px;border-radius:20px;background:#fff;color:#555;border:1.5px solid #ddd;font-size:13px;font-weight:600;cursor:pointer">Sign Out</button>
+      </div>
+    </div>
+
+    <!-- 3-column layout -->
+    <div style="display:grid;grid-template-columns:260px 1fr 300px;gap:24px;padding:28px 32px;max-width:1400px;margin:0 auto">
+
+      <!-- LEFT: User card + Stats + AI Matches -->
+      <div style="display:flex;flex-direction:column;gap:16px">
+
+        <!-- User hero card -->
+        <div style="background:#fff;border-radius:14px;overflow:hidden;box-shadow:0 1px 4px rgba(0,0,0,0.07);border:1px solid #e4e6ea">
+          <div style="height:72px;background:linear-gradient(135deg,#1a1a1a,#2d1a0a)"></div>
+          <div style="padding:0 20px 20px;margin-top:-32px">
+            <div id="pp-avatar" style="width:64px;height:64px;border-radius:50%;background:linear-gradient(135deg,#e8640a,#f59e0b);display:flex;align-items:center;justify-content:center;font-size:24px;font-weight:900;color:#fff;border:3px solid #fff;margin-bottom:12px">?</div>
+            <div id="pp-name" style="font-size:17px;font-weight:800;color:var(--text1)">&#8212;</div>
+            <div id="pp-role" style="font-size:12px;color:var(--text2);margin-top:2px">&#8212;</div>
+            <div id="pp-meta" style="font-size:11px;color:var(--text3);margin-top:4px"></div>
+            <div id="pp-role-tags" style="display:flex;flex-wrap:wrap;gap:5px;margin-top:10px"></div>
+          </div>
+        </div>
+
+        <!-- Stats bar -->
+        <div style="background:#fff;border-radius:14px;border:1px solid #e4e6ea;display:flex;overflow:hidden">
+          <div style="flex:1;text-align:center;padding:14px 6px;border-right:1px solid #e4e6ea">
+            <div style="font-size:18px;font-weight:800;color:var(--text1)">&#8212;</div>
+            <div style="font-size:9px;color:var(--text3);text-transform:uppercase;letter-spacing:.5px;margin-top:2px">Games</div>
+          </div>
+          <div style="flex:1;text-align:center;padding:14px 6px;border-right:1px solid #e4e6ea">
+            <div style="font-size:18px;font-weight:800;color:var(--text1)">&#8212;</div>
+            <div style="font-size:9px;color:var(--text3);text-transform:uppercase;letter-spacing:.5px;margin-top:2px">Connections</div>
+          </div>
+          <div style="flex:1;text-align:center;padding:14px 6px">
+            <div style="font-size:18px;font-weight:800;color:var(--text1)">&#8212;</div>
+            <div style="font-size:9px;color:var(--text3);text-transform:uppercase;letter-spacing:.5px;margin-top:2px">Events</div>
+          </div>
+        </div>
+
+        <!-- AI Matches card -->
+        <div id="pp-match-card" style="display:none;background:linear-gradient(135deg,rgba(232,100,10,0.06),rgba(245,158,11,0.03));border:1px solid rgba(232,100,10,0.2);border-radius:14px;padding:16px">
+          <div style="font-size:9px;font-weight:800;letter-spacing:1.5px;color:#e8640a;text-transform:uppercase;margin-bottom:12px">&#10022; Your AI Matches</div>
+          <div id="pp-match-stats" style="display:flex;flex-direction:column;gap:8px"></div>
+        </div>
+
+      </div>
+
+      <!-- MIDDLE: Profile content -->
+      <div style="display:flex;flex-direction:column;gap:16px">
+
+        <!-- Looking For -->
+        <div style="background:#fff;border-radius:14px;padding:20px 24px;border:1px solid #e4e6ea">
+          <div style="font-size:11px;font-weight:700;letter-spacing:1px;color:var(--text3);text-transform:uppercase;margin-bottom:14px">Looking For</div>
+          <div id="pp-looking-grid" style="display:flex;gap:8px;flex-wrap:wrap"></div>
+        </div>
+
+        <!-- Games & Projects -->
+        <div style="background:#fff;border-radius:14px;padding:20px 24px;border:1px solid #e4e6ea">
+          <div style="font-size:11px;font-weight:700;letter-spacing:1px;color:var(--text3);text-transform:uppercase;margin-bottom:14px">Games &amp; Projects</div>
+          <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px">
+            <div style="border-radius:10px;overflow:hidden;border:1px solid #e4e6ea">
+              <div style="height:70px;background:linear-gradient(135deg,#1a3a6b,#4a6cf7);display:flex;align-items:flex-end;padding:8px">
+                <span style="font-size:9px;font-weight:700;background:rgba(0,0,0,0.4);color:#fff;padding:2px 7px;border-radius:10px">Lead</span>
+              </div>
+              <div style="padding:8px 10px"><div style="font-size:12px;font-weight:700;color:var(--text1)">Project Aurora</div><div style="font-size:10px;color:var(--text2)">RPG &middot; PC</div></div>
+            </div>
+            <div style="border-radius:10px;overflow:hidden;border:1px solid #e4e6ea">
+              <div style="height:70px;background:linear-gradient(135deg,#0d2137,#0a7fa8);display:flex;align-items:flex-end;padding:8px">
+                <span style="font-size:9px;font-weight:700;background:rgba(0,0,0,0.4);color:#fff;padding:2px 7px;border-radius:10px">Designer</span>
+              </div>
+              <div style="padding:8px 10px"><div style="font-size:12px;font-weight:700;color:var(--text1)">Neon Runners</div><div style="font-size:10px;color:var(--text2)">Action &middot; Mobile</div></div>
+            </div>
+            <div style="border-radius:10px;border:1.5px dashed #ddd;background:#fafafa;display:flex;align-items:center;justify-content:center;height:110px;color:#aaa;font-size:12px;cursor:pointer">+ Add project</div>
+          </div>
+        </div>
+
+        <!-- Experience -->
+        <div style="background:#fff;border-radius:14px;padding:20px 24px;border:1px solid #e4e6ea">
+          <div style="font-size:11px;font-weight:700;letter-spacing:1px;color:var(--text3);text-transform:uppercase;margin-bottom:14px">Experience</div>
+          <div style="display:flex;align-items:flex-start;gap:12px">
+            <div style="width:36px;height:36px;border-radius:8px;background:linear-gradient(135deg,#e8640a,#f59e0b);flex-shrink:0"></div>
+            <div>
+              <div id="pp-exp-title" style="font-size:14px;font-weight:700;color:var(--text1)">Member</div>
+              <div id="pp-exp-company" style="font-size:12px;color:var(--text2);margin-top:1px">Game Connection</div>
+              <div style="font-size:11px;color:var(--text3);margin-top:1px">2024 &#8211; Present</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Skills & Interests -->
+        <div style="background:#fff;border-radius:14px;padding:20px 24px;border:1px solid #e4e6ea">
+          <div style="font-size:11px;font-weight:700;letter-spacing:1px;color:var(--text3);text-transform:uppercase;margin-bottom:14px">Skills &amp; Interests</div>
+          <div id="pp-skills-list" style="display:flex;flex-wrap:wrap;gap:7px"></div>
+        </div>
+
+        <!-- Events Attended -->
+        <div style="background:#fff;border-radius:14px;padding:20px 24px;border:1px solid #e4e6ea">
+          <div style="font-size:11px;font-weight:700;letter-spacing:1px;color:var(--text3);text-transform:uppercase;margin-bottom:14px">Events Attended</div>
+          <div style="display:flex;flex-direction:column;gap:12px">
+            <div style="display:flex;align-items:center;gap:14px">
+              <div style="width:44px;height:44px;border-radius:8px;background:linear-gradient(135deg,#1d4ed8,#0a7fa8);display:flex;align-items:center;justify-content:center;font-size:8px;font-weight:800;color:#fff;text-align:center;line-height:1.2;flex-shrink:0">GDC<br>2026</div>
+              <div><div style="font-size:13px;font-weight:600;color:var(--text1)">Game Developers Conference 2026</div><div style="font-size:11px;color:var(--text3)">San Francisco &middot; March 2026</div></div>
+            </div>
+            <div style="display:flex;align-items:center;gap:14px">
+              <div style="width:44px;height:44px;border-radius:8px;background:linear-gradient(135deg,#e8640a,#f59e0b);display:flex;align-items:center;justify-content:center;font-size:7px;font-weight:800;color:#fff;text-align:center;line-height:1.2;flex-shrink:0">GC<br>WEST</div>
+              <div><div style="font-size:13px;font-weight:600;color:var(--text1)">Game Connection West 2025</div><div style="font-size:11px;color:var(--text3)">San Francisco &middot; March 2025</div></div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- RIGHT: Settings -->
+      <div style="display:flex;flex-direction:column;gap:16px">
+
+        <!-- Account -->
+        <div style="background:#fff;border-radius:14px;padding:20px 24px;border:1px solid #e4e6ea">
+          <div style="font-size:11px;font-weight:700;letter-spacing:1px;color:var(--text3);text-transform:uppercase;margin-bottom:16px">Account</div>
+          <div style="display:flex;flex-direction:column;gap:12px">
+            <div style="display:flex;align-items:center;gap:12px">
+              <div style="width:32px;height:32px;border-radius:8px;background:#fdf0ea;display:flex;align-items:center;justify-content:center;flex-shrink:0">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#e8640a" stroke-width="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+              </div>
+              <div style="flex:1;min-width:0">
+                <div style="font-size:12px;font-weight:600;color:var(--text1)">Email Address</div>
+                <div id="pp-email" style="font-size:11px;color:var(--text2);margin-top:1px">&#8212;</div>
+              </div>
+              <button style="font-size:11px;padding:4px 10px;border-radius:8px;border:1px solid #ddd;background:#fff;color:var(--text2);cursor:pointer">Edit</button>
+            </div>
+            <div style="display:flex;align-items:center;gap:12px">
+              <div style="width:32px;height:32px;border-radius:8px;background:#e8f5e9;display:flex;align-items:center;justify-content:center;flex-shrink:0">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#188038" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+              </div>
+              <div style="flex:1;min-width:0">
+                <div style="font-size:12px;font-weight:600;color:var(--text1)">Google Account</div>
+                <div style="font-size:11px;color:#188038;margin-top:1px">Connected</div>
+              </div>
+              <span style="font-size:10px;font-weight:700;padding:3px 8px;border-radius:10px;background:#e8f5e9;color:#188038">&#10003;</span>
+            </div>
+            <div style="display:flex;align-items:center;gap:12px">
+              <div style="width:32px;height:32px;border-radius:8px;background:#f0f4ff;display:flex;align-items:center;justify-content:center;flex-shrink:0">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#2563eb" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+              </div>
+              <div style="flex:1;min-width:0">
+                <div style="font-size:12px;font-weight:600;color:var(--text1)">Password</div>
+                <div style="font-size:11px;color:var(--text2);margin-top:1px">Last changed 3 months ago</div>
+              </div>
+              <button style="font-size:11px;padding:4px 10px;border-radius:8px;border:1px solid #ddd;background:#fff;color:var(--text2);cursor:pointer">Change</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Notifications -->
+        <div style="background:#fff;border-radius:14px;padding:20px 24px;border:1px solid #e4e6ea">
+          <div style="font-size:11px;font-weight:700;letter-spacing:1px;color:var(--text3);text-transform:uppercase;margin-bottom:16px">Notifications</div>
+          <div style="display:flex;flex-direction:column;gap:14px">
+            <div style="display:flex;align-items:center;justify-content:space-between">
+              <div><div style="font-size:12px;font-weight:600;color:var(--text1)">Event Reminders</div><div style="font-size:11px;color:var(--text2);margin-top:1px">Get notified before events start</div></div>
+              <div class="pp-toggle on" onclick="this.classList.toggle('on')"><div class="pp-thumb"></div></div>
+            </div>
+            <div style="display:flex;align-items:center;justify-content:space-between">
+              <div><div style="font-size:12px;font-weight:600;color:var(--text1)">New Matches</div><div style="font-size:11px;color:var(--text2);margin-top:1px">AI found new connections for you</div></div>
+              <div class="pp-toggle on" onclick="this.classList.toggle('on')"><div class="pp-thumb"></div></div>
+            </div>
+            <div style="display:flex;align-items:center;justify-content:space-between">
+              <div><div style="font-size:12px;font-weight:600;color:var(--text1)">Messages</div><div style="font-size:11px;color:var(--text2);margin-top:1px">New message notifications</div></div>
+              <div class="pp-toggle on" onclick="this.classList.toggle('on')"><div class="pp-thumb"></div></div>
+            </div>
+            <div style="display:flex;align-items:center;justify-content:space-between">
+              <div><div style="font-size:12px;font-weight:600;color:var(--text1)">Weekly Digest</div><div style="font-size:11px;color:var(--text2);margin-top:1px">Industry news every Monday</div></div>
+              <div class="pp-toggle" onclick="this.classList.toggle('on')"><div class="pp-thumb"></div></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Privacy -->
+        <div style="background:#fff;border-radius:14px;padding:20px 24px;border:1px solid #e4e6ea">
+          <div style="font-size:11px;font-weight:700;letter-spacing:1px;color:var(--text3);text-transform:uppercase;margin-bottom:16px">Privacy</div>
+          <div style="display:flex;flex-direction:column;gap:14px">
+            <div style="display:flex;align-items:center;justify-content:space-between">
+              <div><div style="font-size:12px;font-weight:600;color:var(--text1)">Profile Visibility</div><div style="font-size:11px;color:var(--text2);margin-top:1px">Visible to all members</div></div>
+              <div class="pp-toggle on" onclick="this.classList.toggle('on')"><div class="pp-thumb"></div></div>
+            </div>
+            <div style="display:flex;align-items:center;justify-content:space-between">
+              <div><div style="font-size:12px;font-weight:600;color:var(--text1)">Show in AI Matching</div><div style="font-size:11px;color:var(--text2);margin-top:1px">Let AI suggest you to others</div></div>
+              <div class="pp-toggle on" onclick="this.classList.toggle('on')"><div class="pp-thumb"></div></div>
+            </div>
+            <div style="display:flex;align-items:center;justify-content:space-between">
+              <div><div style="font-size:12px;font-weight:600;color:var(--text1)">Contact Info Visible</div><div style="font-size:11px;color:var(--text2);margin-top:1px">Show email to connections</div></div>
+              <div class="pp-toggle" onclick="this.classList.toggle('on')"><div class="pp-thumb"></div></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Danger zone -->
+        <div style="background:#fff;border-radius:14px;padding:20px 24px;border:1px solid #e4e6ea">
+          <div style="font-size:11px;font-weight:700;letter-spacing:1px;color:#dc2626;text-transform:uppercase;margin-bottom:16px">Danger Zone</div>
+          <div style="display:flex;flex-direction:column;gap:10px">
+            <button onclick="signOutUser()" style="width:100%;padding:10px;border-radius:10px;border:1.5px solid #dc2626;background:#fff;color:#dc2626;font-size:12px;font-weight:700;cursor:pointer;text-align:left">Sign Out of All Devices</button>
+            <button style="width:100%;padding:10px;border-radius:10px;border:1.5px solid #ddd;background:#fff;color:#999;font-size:12px;font-weight:600;cursor:pointer;text-align:left">Delete Account</button>
+          </div>
+        </div>
+
+      </div>
+
+    </div>
+  </div>
+</div><!-- /profile-panel -->
+
+<script>
+let currentMode = 'home';
+
+function switchMode(mode) {
+  currentMode = mode;
+  const tabs = document.querySelectorAll('.nav-tab');
+    // tabs[0]=Home, tabs[1]=Calendar, tabs[2]=Live, tabs[3]=Projects, tabs[4]=Companies, tabs[5]=Profile
+  tabs.forEach(t => { t.classList.remove('active'); t.classList.remove('active-teal'); });
+  const homePanel = document.getElementById('home-panel');
+  const confBar = document.getElementById('conf-bar');
+  const layout = document.querySelector('.layout');
+  const projectsPanel = document.getElementById('projects-panel');
+  const companiesPanel = document.getElementById('companies-panel');
+  const profilePanel = document.getElementById('profile-panel');
+  // Hide all full-screen panels by default
+  projectsPanel.style.display = 'none';
+  companiesPanel.style.display = 'none';
+  profilePanel.style.display = 'none';
+
+  if (mode === 'home') {
+    tabs[0].classList.add('active');
+    homePanel.style.display = 'block';
+    confBar.style.display = 'none';
+    layout.style.display = 'none';
+  } else if (mode === 'projects') {
+    tabs[3].classList.add('active');
+    homePanel.style.display = 'none';
+    confBar.style.display = 'none';
+    layout.style.display = 'none';
+    projectsPanel.style.display = 'grid';
+    pcProjRender();
+  } else if (mode === 'companies') {
+    tabs[4].classList.add('active');
+    homePanel.style.display = 'none';
+    confBar.style.display = 'none';
+    layout.style.display = 'none';
+    companiesPanel.style.display = 'grid';
+    if (!window._cpInited) { window._cpInited = true; cpRender(); }
+  } else if (mode === 'profile') {
+    tabs[5].classList.add('active');
+    homePanel.style.display = 'none';
+    confBar.style.display = 'none';
+    layout.style.display = 'none';
+    profilePanel.style.display = 'block';
+    // Show guest or logged-in state
+    const hasSession = (function(){ try{ return !!sessionStorage.getItem('gc_session'); }catch(e){ return false; } })();
+    const hasData = (function(){ try{ return !!localStorage.getItem('gc_wizard'); }catch(e){ return false; } })();
+    if(hasSession && hasData){
+      document.getElementById('pp-guest').style.display = 'none';
+      document.getElementById('pp-loggedin').style.display = 'block';
+      try{
+        const data = JSON.parse(localStorage.getItem('gc_wizard'));
+        populateProfilePanel(data);
+      }catch(e){}
+    } else {
+      document.getElementById('pp-guest').style.display = 'flex';
+      document.getElementById('pp-loggedin').style.display = 'none';
+    }
+  } else {
+    homePanel.style.display = 'none';
+    confBar.style.display = 'flex';
+    layout.style.display = 'grid';
+
+    if (mode === 'calendar') {
+      tabs[1].classList.add('active');
+    } else if (mode === 'live') {
+      tabs[2].classList.add('active');
+    }
+
+    // Toggle left sidebar date sections
+    document.getElementById('calendar-dates').style.display = mode === 'calendar' ? 'block' : 'none';
+    document.getElementById('live-dates').style.display = mode === 'live' ? 'block' : 'none';
+
+    // Toggle center cards
+    document.getElementById('calendar-cards').style.display = mode === 'calendar' ? 'flex' : 'none';
+    document.getElementById('live-cards').style.display = mode === 'live' ? 'flex' : 'none';
+
+    // Toggle right panels
+    document.getElementById('right-calendar').style.display = mode === 'calendar' ? 'flex' : 'none';
+    document.getElementById('right-live').style.display = mode === 'live' ? 'flex' : 'none';
+
+    // Update stats
+    updateStats(mode);
+  }
+}
+
+function updateStats(mode) {
+  const calStats = document.getElementById('stats-calendar');
+  const liveStats = document.getElementById('stats-live');
+  if (mode === 'calendar') {
+    calStats.style.display = 'flex';
+    liveStats.style.display = 'none';
+  } else {
+    calStats.style.display = 'none';
+    liveStats.style.display = 'flex';
+  }
+}
+
+function selDate(btn) {
+  const list = btn.closest('.date-list');
+  list.querySelectorAll('.date-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+}
+
+function selYear(btn, year) {
+  btn.closest('.year-btns').querySelectorAll('.year-btn-tab').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+}
+
+function selectConf(card) {
+  document.querySelectorAll('.conf-card').forEach(c => c.classList.remove('active'));
+  card.classList.add('active');
+}
+
+function filterTag(btn, tag) {
+  document.querySelectorAll('.ctag').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+}
+
+function filterFeed(type, btn) {
+  document.querySelectorAll('.chip').forEach(c => c.classList.remove('active'));
+  btn.classList.add('active');
+  document.querySelectorAll('#feed > .card').forEach(card => {
+    if (type === 'all' || card.dataset.type === type) {
+      card.style.display = '';
+    } else {
+      card.style.display = 'none';
+    }
+  });
+}
+// Init: default to Home view on page load
+document.addEventListener('DOMContentLoaded', function() {
+  switchMode('home');
+  loadWizardData();
+});
+
+// ── Load Wizard data from localStorage ──
+function loadWizardData(){
+  try{
+    // Only activate logged-in state if user came through Login this session
+    const hasSession = sessionStorage.getItem('gc_session');
+    if(!hasSession) return;
+    const raw = localStorage.getItem('gc_wizard');
+    if(!raw) return;
+    const data = JSON.parse(raw);
+    if(!data || !data.aiResult) return;
+
+    const stats = data.aiResult.stats || [];
+    const profile = data.profile || {};
+    const firstName = (profile.name || '').split(' ')[0];
+
+    // Show welcome banner
+    const bar = document.getElementById('wizard-welcome-bar');
+    if(bar && firstName){
+      document.getElementById('wwb-name').textContent = firstName;
+      // Show match summary
+      const matchStat = stats[0];
+      if(matchStat){
+        document.getElementById('wwb-match').textContent = matchStat.num + ' ' + matchStat.label;
+      }
+      bar.style.display = 'flex';
+    }
+
+    // Calendar badge: use events stat (3rd stat usually)
+    const eventStat = stats[2] || stats[0];
+    if(eventStat){
+      const badge = document.getElementById('badge-calendar');
+      if(badge){
+        badge.textContent = eventStat.num;
+        badge.style.display = 'flex';
+      }
+    }
+
+    // Update Sign In button to show user avatar
+    if(profile.name){
+      const initials = profile.name.split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase();
+      const signinBtn = document.getElementById('nav-signin-btn');
+      const avatarBtn = document.getElementById('nav-avatar-btn');
+      if(signinBtn) signinBtn.style.display = 'none';
+      if(avatarBtn){
+        avatarBtn.style.display = 'flex';
+        avatarBtn.textContent = initials;
+      }
+      // Populate profile drawer
+      populateProfileDrawer(data);
+    }
+  } catch(e){}
+}
+
+function closeWelcomeBar(){
+  document.getElementById('wizard-welcome-bar').style.display = 'none';
+}
+
+// ── Profile Drawer ──
+function openProfileDrawer(){
+  document.getElementById('profile-drawer').classList.add('open');
+  document.getElementById('profile-drawer-overlay').classList.add('open');
+  document.body.style.overflow = 'hidden';
+}
+function closeProfileDrawer(){
+  document.getElementById('profile-drawer').classList.remove('open');
+  document.getElementById('profile-drawer-overlay').classList.remove('open');
+  document.body.style.overflow = '';
+}
+function redoMatching(){
+  closeProfileDrawer();
+  window.location.href = 'Onboarding_Wizard_v1.0_PC.html';
+}
+function signOutUser(){
+  localStorage.removeItem('gc_wizard');
+  try{ sessionStorage.removeItem('gc_session'); } catch(e){}
+  window.location.href = 'Identity_Login_v1.0_PC.html';
+}
+
+// ── Populate Profile Drawer from wizard data ──
+function populateProfileDrawer(data){
+  const profile = data.profile || {};
+  const stats = (data.aiResult && data.aiResult.stats) || [];
+  const selections = data.selections || {};
+
+  const name = profile.name || 'Your Name';
+  const company = profile.company || 'Game Connection';
+  const initials = name.split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase();
+
+  // Header
+  document.getElementById('pd-avatar-initials').textContent = initials;
+  document.getElementById('pd-name').textContent = name;
+  document.getElementById('pd-role').textContent = (profile.title || 'Member') + ' · ' + company;
+
+  // Meta info in header
+  if(profile.country) document.getElementById('pd-hero-country').textContent = '📍 ' + profile.country;
+  if(profile.website) document.getElementById('pd-hero-website').textContent = '🌐 ' + profile.website;
+
+  // Role tags row (below header, above actions)
+  const tagsRow = document.getElementById('pd-hero-tags-row');
+  tagsRow.innerHTML = '';
+  const roles = selections.roles || [];
+  const goals = selections.goals || [];
+  const allTagItems = [...roles.slice(0,3)];
+  if(goals[0]) allTagItems.push('🔍 ' + goals[0]);
+  if(allTagItems.length > 0){
+    tagsRow.style.display = 'flex';
+    allTagItems.forEach(r => {
+      const t = document.createElement('span');
+      t.className = 'pd-tag pd-tag-role';
+      t.style.cssText = 'background:rgba(255,255,255,0.12);color:rgba(255,255,255,0.85);font-size:11px;padding:2px 8px;border-radius:20px';
+      t.textContent = r;
+      tagsRow.appendChild(t);
+    });
+  }
+
+  // AI stats
+  const aiEl = document.getElementById('pd-ai-stats');
+  aiEl.innerHTML = '';
+  stats.forEach(s => {
+    const d = document.createElement('div');
+    d.className = 'pd-ai-stat';
+    d.innerHTML = '<div class="pd-ai-num">' + s.num + '</div><div class="pd-ai-label">' + s.label + '</div>';
+    aiEl.appendChild(d);
+  });
+
+  // Looking For from goals
+  const lookingEl = document.getElementById('pd-looking-grid');
+  lookingEl.innerHTML = '';
+  const lookingIcons = {'Find co-publishing deals':'🤝','Source new games':'🎮','Meet investors':'💰','Discover studios':'🏢','Hire talent':'👥','Explore events':'📅','Do market research':'📊','Pitch my game / studio':'🚀','Scout new titles':'🔍','Build partnerships':'🤝','Raise funding':'💰','Find service providers':'🛠️','Network with peers':'🌐'};
+  goals.forEach(g => {
+    const icon = lookingIcons[g] || '✦';
+    const item = document.createElement('div');
+    item.className = 'pd-looking-item';
+    item.innerHTML = '<span>' + icon + '</span> ' + g;
+    lookingEl.appendChild(item);
+  });
+
+  // Skills from focus selections
+  const skillsEl = document.getElementById('pd-skills-list');
+  skillsEl.innerHTML = '';
+  const focuses = selections.focuses || [];
+  focuses.forEach(f => {
+    const t = document.createElement('span');
+    t.className = 'pd-skill-tag highlight';
+    t.textContent = f;
+    skillsEl.appendChild(t);
+  });
+  // Add some default skills
+  ['Game Industry','Networking','Events'].forEach(s => {
+    const t = document.createElement('span');
+    t.className = 'pd-skill-tag';
+    t.textContent = s;
+    skillsEl.appendChild(t);
+  });
+
+  // Experience
+  document.getElementById('pd-exp-title').textContent = profile.title || 'Member';
+  document.getElementById('pd-exp-company').textContent = company;
+}
+
+// ── Populate Profile Panel (full-screen) ──
+function populateProfilePanel(data){
+  const profile = data.profile || {};
+  const stats = (data.aiResult && data.aiResult.stats) || [];
+  const selections = data.selections || {};
+
+  const name = profile.name || 'Your Name';
+  const company = profile.company || 'Game Connection';
+  const initials = name.split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase();
+
+  // Avatar + name + role
+  const av = document.getElementById('pp-avatar');
+  if(av) av.textContent = initials;
+  const nm = document.getElementById('pp-name');
+  if(nm) nm.textContent = name;
+  const rl = document.getElementById('pp-role');
+  if(rl) rl.textContent = (profile.title || 'Member') + ' · ' + company;
+
+  // Meta
+  const meta = document.getElementById('pp-meta');
+  if(meta){
+    var parts = [];
+    if(profile.country) parts.push('📍 ' + profile.country);
+    if(profile.website) parts.push('🌐 ' + profile.website);
+    meta.textContent = parts.join('  ');
+  }
+
+  // Role tags
+  const tagsEl = document.getElementById('pp-role-tags');
+  if(tagsEl){
+    tagsEl.innerHTML = '';
+    const roles = selections.roles || [];
+    const goals = selections.goals || [];
+    [...roles.slice(0,3)].forEach(r => {
+      const t = document.createElement('span');
+      t.style.cssText = 'font-size:11px;font-weight:600;padding:3px 9px;border-radius:20px;background:#f3f4f6;color:#374151';
+      t.textContent = r;
+      tagsEl.appendChild(t);
+    });
+  }
+
+  // AI Matches
+  const matchCard = document.getElementById('pp-match-card');
+  const matchStats = document.getElementById('pp-match-stats');
+  if(matchCard && matchStats && stats.length > 0){
+    matchCard.style.display = 'block';
+    matchStats.innerHTML = '';
+    stats.forEach(s => {
+      const row = document.createElement('div');
+      row.style.cssText = 'display:flex;align-items:center;justify-content:space-between;padding:8px 12px;background:rgba(255,255,255,0.7);border-radius:8px';
+      row.innerHTML = '<span style="font-size:12px;color:#555">' + s.label + '</span><span style="font-size:16px;font-weight:800;color:#e8640a">' + s.num + '</span>';
+      matchStats.appendChild(row);
+    });
+  }
+
+  // Email
+  const emailEl = document.getElementById('pp-email');
+  if(emailEl && profile.email) emailEl.textContent = profile.email;
+
+  // Looking For
+  const lookingEl = document.getElementById('pp-looking-grid');
+  if(lookingEl){
+    lookingEl.innerHTML = '';
+    const goals = selections.goals || [];
+    const icons = {'Find co-publishing deals':'🤝','Source new games':'🎮','Meet investors':'💰','Discover studios':'🏢','Hire talent':'👥','Explore events':'📅','Do market research':'📊','Pitch my game / studio':'🚀','Scout new titles':'🔍','Build partnerships':'🤝','Raise funding':'💰','Find service providers':'🛠️','Network with peers':'🌐'};
+    goals.forEach(g => {
+      const span = document.createElement('span');
+      span.style.cssText = 'font-size:12px;font-weight:600;padding:6px 14px;border-radius:20px;border:1.5px dashed #e8640a;color:#e8640a;background:#fdf6f0';
+      span.textContent = (icons[g] || '✦') + ' ' + g;
+      lookingEl.appendChild(span);
+    });
+  }
+
+  // Skills
+  const skillsEl = document.getElementById('pp-skills-list');
+  if(skillsEl){
+    skillsEl.innerHTML = '';
+    const focuses = selections.focuses || [];
+    [...focuses, 'Game Industry', 'Networking', 'Events'].forEach(f => {
+      const t = document.createElement('span');
+      t.style.cssText = 'font-size:12px;font-weight:600;padding:5px 13px;border-radius:20px;background:#f0f0f0;color:#555';
+      t.textContent = f;
+      skillsEl.appendChild(t);
+    });
+  }
+
+  // Experience
+  const expTitle = document.getElementById('pp-exp-title');
+  const expCo = document.getElementById('pp-exp-company');
+  if(expTitle) expTitle.textContent = profile.title || 'Member';
+  if(expCo) expCo.textContent = company;
+}
+
+// ═══ MESSAGES DRAWER CSS (injected via style) ═══
+(function(){
+  var s = document.createElement('style');
+  s.textContent = `
+    .pp-toggle{width:38px;height:22px;border-radius:11px;background:#ddd;cursor:pointer;position:relative;transition:background .2s;flex-shrink:0}
+    .pp-toggle.on{background:#e8640a}
+    .pp-thumb{position:absolute;top:3px;left:3px;width:16px;height:16px;border-radius:50%;background:#fff;transition:transform .2s;box-shadow:0 1px 3px rgba(0,0,0,0.2)}
+    .pp-toggle.on .pp-thumb{transform:translateX(16px)}
+    .nav-msg-btn{background:none;border:none;cursor:pointer;padding:6px 8px;border-radius:8px;color:var(--text2);display:flex;align-items:center;justify-content:center;position:relative;transition:background .15s;margin-right:4px}
+    .nav-msg-btn:hover{background:rgba(0,0,0,0.06);color:var(--text1)}
+    .nav-msg-badge{position:absolute;top:2px;right:2px;min-width:16px;height:16px;background:#e53e3e;color:#fff;font-size:9px;font-weight:800;border-radius:8px;display:flex;align-items:center;justify-content:center;padding:0 4px;border:1.5px solid #fff;pointer-events:none}
+    .msg-drawer-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.35);z-index:900;opacity:0;pointer-events:none;transition:opacity .25s}
+    .msg-drawer-overlay.open{opacity:1;pointer-events:all}
+    .msg-drawer{position:fixed;top:0;right:-780px;width:780px;bottom:0;background:#fff;z-index:901;box-shadow:-4px 0 24px rgba(0,0,0,0.15);transition:right .28s cubic-bezier(.4,0,.2,1);display:flex;flex-direction:column}
+    .msg-drawer.open{right:0}
+    .msg-drawer-hdr{display:flex;align-items:center;justify-content:space-between;padding:16px 18px;border-bottom:1px solid #e0dfdc;flex-shrink:0;background:#fff}
+    .msg-drawer-body{flex:1;display:flex;overflow:hidden}
+    .msg-conv-list{width:280px;flex-shrink:0;border-right:1px solid #e0dfdc;overflow-y:auto;background:var(--bg)}
+    .msg-chat-area{flex:1;display:flex;flex-direction:column;overflow:hidden}
+    .msg-icon-btn{background:none;border:none;cursor:pointer;padding:6px;border-radius:7px;color:var(--text2);display:flex;align-items:center;justify-content:center;transition:background .15s}
+    .msg-icon-btn:hover{background:rgba(0,0,0,0.06);color:var(--text1)}
+    .pc-conv-item{display:flex;align-items:center;gap:10px;padding:10px 14px;cursor:pointer;border-bottom:1px solid #e0dfdc;transition:background .15s}
+    .pc-conv-item:hover{background:rgba(0,0,0,0.03)}
+    .pc-conv-item.active{background:rgba(217,95,43,0.07)}
+    .pc-conv-av{width:40px;height:40px;border-radius:50%;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:800;color:#fff;position:relative}
+    .pc-conv-dot{position:absolute;bottom:1px;right:1px;width:9px;height:9px;border-radius:50%;border:2px solid var(--bg)}
+    .pc-conv-body{flex:1;min-width:0}
+    .pc-conv-top{display:flex;justify-content:space-between;align-items:center;margin-bottom:1px}
+    .pc-conv-name{font-size:13px;font-weight:700;color:var(--text1);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:140px}
+    .pc-conv-time{font-size:10px;color:var(--text3);flex-shrink:0}
+    .pc-conv-co{font-size:10px;color:var(--text3);margin-bottom:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+    .pc-conv-prev{font-size:11px;color:var(--text2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+    .pc-conv-prev.unread{color:var(--text1);font-weight:600}
+    .pc-conv-badge{background:#e53e3e;color:#fff;font-size:8px;font-weight:800;min-width:15px;height:15px;border-radius:8px;display:flex;align-items:center;justify-content:center;padding:0 3px;flex-shrink:0}
+    .pc-proj-filter{width:100%;text-align:left;padding:7px 10px;border-radius:8px;border:none;background:transparent;font-size:12px;font-weight:600;color:var(--text2);cursor:pointer;font-family:inherit;transition:all .15s}
+    .pc-proj-filter:hover{background:rgba(0,0,0,0.05);color:var(--text1)}
+    .pc-proj-filter.active{background:var(--orange-dim);color:var(--orange)}
+    .pc-proj-card{background:#fff;border-radius:12px;overflow:hidden;box-shadow:0 1px 4px rgba(0,0,0,0.07);border:1px solid #e0dfdc;cursor:pointer;transition:box-shadow .15s}
+    .pc-proj-card:hover{box-shadow:0 4px 16px rgba(0,0,0,0.12)}
+  `;
+  document.head.appendChild(s);
+})();
+
+// ═══ MESSAGES DRAWER JS ═══
+const pcMsgData = [
+  {name:'Sarah Chen',company:'Devolver Digital · Publisher',initials:'SC',color:'linear-gradient(135deg,#2d2d2d,#d95f2b)',online:true,unread:3,messages:[{me:false,text:"Hi! I came across your studio's profile. We've been looking for unique RPG titles. Would you be open to a chat?",time:'10:14 AM'},{me:true,text:"Hi Sarah! Absolutely, we'd love to connect. We're in the final stages of our demo build for 'Echoes of Yun'.",time:'10:32 AM'},{me:false,text:"'Echoes of Yun' sounds intriguing — the blend of Chinese mythology with roguelite mechanics is really fresh. Can you share a pitch deck?",time:'10:45 AM'},{me:true,text:'Of course! Here is our press kit link. The demo trailer is also included. We are targeting a Q3 2025 release window.',time:'11:02 AM'},{me:false,text:'Just watched the trailer — the art direction is stunning. Our team is going to do a full review this week.',time:'2:18 PM'},{me:false,text:'Looking forward to reviewing your demo build!',time:'2:20 PM'}]},
+  {name:'Marc Dubois',company:'Ubisoft · Director',initials:'MD',color:'linear-gradient(135deg,#2c3e7a,#4a6cf7)',online:false,unread:1,messages:[{me:false,text:'Bonjour! I saw you are attending GDC this year. Would you be interested in a quick coffee meeting?',time:'9:00 AM'},{me:true,text:'Hi Marc, definitely! When are you free during the week?',time:'9:45 AM'},{me:false,text:'Wednesday afternoon works best for me — say 3pm at the Yerba Buena lounge?',time:'10:15 AM'},{me:true,text:'Wednesday 3pm works perfectly. Looking forward to it!',time:'10:30 AM'},{me:false,text:'See you at the GDC booth on Wednesday then!',time:'11:00 AM'}]},
+  {name:'Jin Park',company:'Riot Games · Producer',initials:'JP',color:'linear-gradient(135deg,#c0392b,#e74c3c)',online:true,unread:0,messages:[{me:false,text:"Riot's new experimental division is exploring co-development with indie studios. Your work caught our attention.",time:'Yesterday'},{me:true,text:"That's incredible to hear! We'd absolutely love to explore that.",time:'Yesterday'},{me:false,text:"I'll share the co-dev proposal doc by EOD",time:'Today 9:30 AM'}]},
+  {name:'Emma Thompson',company:'Indie Fund · Investor',initials:'ET',color:'linear-gradient(135deg,#0d9b72,#27ae60)',online:false,unread:2,messages:[{me:false,text:'Hi! Indie Fund is interested in supporting narrative-focused indie games. Are you currently fundraising?',time:'Yesterday'},{me:true,text:"Hi Emma! Yes, we're closing our seed round. We're raising $400K to complete development.",time:'Yesterday'},{me:false,text:'Could you send over your pitch deck?',time:'Today 11:00 AM'}]},
+  {name:'Yuki Tanaka',company:'Square Enix · Licensing',initials:'YT',color:'linear-gradient(135deg,#7b5ea7,#9b59b6)',online:false,unread:0,messages:[{me:false,text:"Square Enix Licensing is exploring third-party collaborations. Your studio's aesthetic is a strong match.",time:'2 days ago'},{me:false,text:'The licensing terms look reasonable on our end',time:'Today 7:00 AM'}]},
+  {name:'Alex Rodriguez',company:'Kongregate · Publishing',initials:'AR',color:'linear-gradient(135deg,#e67e22,#f39c12)',online:false,unread:0,messages:[{me:false,text:'Hey, just following up from our meeting last week at the indie showcase.',time:'Mon'},{me:true,text:"Hi Alex! Yes, we're still in the evaluation phase.",time:'Mon'},{me:false,text:'Following up from our meeting last week',time:'Mon'}]},
+  {name:'Li Wei',company:'NetEase · BD Director',initials:'LW',color:'linear-gradient(135deg,#c0392b,#1a6b8a)',online:true,unread:1,messages:[{me:false,text:'中国市场机会不容错过，我们可以聊聊',time:'Mon'}]},
+  {name:'Anna Kowalski',company:'CD Projekt · Producer',initials:'AK',color:'linear-gradient(135deg,#8b1a1a,#c0392b)',online:false,unread:0,messages:[{me:false,text:'Joint dev agreement draft is ready for review',time:'Sun'}]},
+  {name:'David Kim',company:'Krafton · VP',initials:'DK',color:'linear-gradient(135deg,#1a3a6b,#2e6bc4)',online:false,unread:0,messages:[{me:false,text:"Krafton has been actively acquiring studios with strong creative IP.",time:'Mar 15'}]},
+  {name:'Tom Richards',company:'Team17 · Publishing',initials:'TR',color:'linear-gradient(135deg,#2d6a4f,#52b788)',online:false,unread:0,messages:[{me:false,text:"We love the concept — very on-brand for us",time:'Mar 12'}]}
+];
+
+let pcCurrentChat = null;
+
+function openMsgDrawer() {
+  document.getElementById('msg-drawer').classList.add('open');
+  document.getElementById('msg-drawer-overlay').classList.add('open');
+  // Hide badge
+  document.getElementById('nav-msg-badge').style.display = 'none';
+  renderPcMsgList();
+}
+
+function closeMsgDrawer() {
+  document.getElementById('msg-drawer').classList.remove('open');
+  document.getElementById('msg-drawer-overlay').classList.remove('open');
+}
+
+function togglePcMsgSearch() {
+  const bar = document.getElementById('pc-msg-search-bar');
+  bar.style.display = bar.style.display === 'none' ? 'block' : 'none';
+  if (bar.style.display !== 'none') bar.querySelector('input').focus();
+}
+
+function filterPcMsgList(q) {
+  q = q.toLowerCase();
+  document.querySelectorAll('.pc-conv-item').forEach(el => {
+    const name = el.dataset.name || '';
+    el.style.display = !q || name.toLowerCase().indexOf(q) >= 0 ? '' : 'none';
+  });
+}
+
+function renderPcMsgList() {
+  const list = document.getElementById('pc-msg-conv-list');
+  const groups = [
+    {label:'PINNED', items: pcMsgData.slice(0,2)},
+    {label:'TODAY', items: pcMsgData.slice(2,5)},
+    {label:'THIS WEEK', items: pcMsgData.slice(5,8)},
+    {label:'EARLIER', items: pcMsgData.slice(8)}
+  ];
+  list.innerHTML = '';
+  groups.forEach(g => {
+    const hdr = document.createElement('div');
+    hdr.style.cssText = 'font-size:9px;font-weight:800;letter-spacing:1.5px;color:var(--text3);padding:10px 14px 4px;text-transform:uppercase';
+    hdr.textContent = g.label;
+    list.appendChild(hdr);
+    g.items.forEach((d, i) => {
+      const idx = pcMsgData.indexOf(d);
+      const lastMsg = d.messages[d.messages.length - 1];
+      const el = document.createElement('div');
+      el.className = 'pc-conv-item';
+      el.dataset.name = d.name;
+      el.onclick = () => openPcChat(idx);
+      el.innerHTML = `
+        <div class="pc-conv-av" style="background:${d.color}">
+          ${d.initials}
+          <div class="pc-conv-dot" style="background:${d.online ? '#0d9b72' : '#ccc'}"></div>
+        </div>
+        <div class="pc-conv-body">
+          <div class="pc-conv-top">
+            <div class="pc-conv-name">${d.name}</div>
+            <div class="pc-conv-time">${lastMsg.time}</div>
+          </div>
+          <div class="pc-conv-co">${d.company}</div>
+          <div class="pc-conv-sub" style="display:flex;align-items:center;justify-content:space-between">
+            <div class="pc-conv-prev${d.unread ? ' unread' : ''}">${lastMsg.text}</div>
+            ${d.unread ? `<div class="pc-conv-badge">${d.unread}</div>` : ''}
+          </div>
+        </div>
+      `;
+      list.appendChild(el);
+    });
+  });
+}
+
+function openPcChat(idx) {
+  const d = pcMsgData[idx];
+  pcCurrentChat = idx;
+  // Mark active
+  document.querySelectorAll('.pc-conv-item').forEach((el, i) => {
+    el.classList.toggle('active', pcMsgData.indexOf(d) === idx);
+  });
+  // Update header
+  const hdr = document.getElementById('pc-chat-hdr');
+  const av = document.getElementById('pc-chat-av');
+  av.textContent = d.initials;
+  av.style.background = d.color;
+  document.getElementById('pc-chat-name').textContent = d.name;
+  document.getElementById('pc-chat-sub').textContent = d.company;
+  hdr.style.display = 'flex';
+  // Render messages
+  const msgs = document.getElementById('pc-chat-messages');
+  msgs.innerHTML = '<div style="text-align:center;font-size:10px;color:var(--text3);font-weight:600;padding:4px 0 8px">Today</div>';
+  d.messages.forEach(m => {
+    const div = document.createElement('div');
+    div.style.cssText = `display:flex;flex-direction:${m.me ? 'row-reverse' : 'row'};align-items:flex-end;gap:8px`;
+    const bubble = document.createElement('div');
+    bubble.style.cssText = `max-width:70%;padding:10px 14px;border-radius:${m.me ? '16px 16px 4px 16px' : '16px 16px 16px 4px'};font-size:13px;line-height:1.5;color:${m.me ? '#fff' : 'var(--text1)'};background:${m.me ? 'var(--orange)' : '#f4f2ee'}`;
+    bubble.textContent = m.text;
+    const meta = document.createElement('div');
+    meta.style.cssText = 'font-size:9px;color:var(--text3);flex-shrink:0;padding-bottom:3px';
+    meta.textContent = m.time;
+    div.appendChild(bubble);
+    div.appendChild(meta);
+    msgs.appendChild(div);
+  });
+  msgs.scrollTop = msgs.scrollHeight;
+  // Show input bar
+  document.getElementById('pc-msg-empty').style.display = 'none';
+  const inputBar = document.getElementById('pc-chat-input-bar');
+  inputBar.style.display = 'flex';
+  document.getElementById('pc-chat-input').focus();
+}
+
+function pcSendMsgKey(e) { if (e.key === 'Enter') pcSendMsgBtn(); }
+
+function pcSendMsgBtn() {
+  const inp = document.getElementById('pc-chat-input');
+  const text = inp.value.trim();
+  if (!text) return;
+  const msgs = document.getElementById('pc-chat-messages');
+  const now = new Date();
+  const time = (now.getHours()<10?'0':'')+now.getHours()+':'+(now.getMinutes()<10?'0':'')+now.getMinutes();
+  const div = document.createElement('div');
+  div.style.cssText = 'display:flex;flex-direction:row-reverse;align-items:flex-end;gap:8px';
+  const bubble = document.createElement('div');
+  bubble.style.cssText = 'max-width:70%;padding:10px 14px;border-radius:16px 16px 4px 16px;font-size:13px;line-height:1.5;color:#fff;background:var(--orange)';
+  bubble.textContent = text;
+  const meta = document.createElement('div');
+  meta.style.cssText = 'font-size:9px;color:var(--text3);flex-shrink:0;padding-bottom:3px';
+  meta.textContent = time;
+  div.appendChild(bubble);
+  div.appendChild(meta);
+  msgs.appendChild(div);
+  msgs.scrollTop = msgs.scrollHeight;
+  inp.value = '';
+}
+
+// Show messages badge on load (simulated unread)
+document.addEventListener('DOMContentLoaded', function() {
+  document.getElementById('nav-msg-badge').style.display = 'flex';
+});
+
+// ═══ PROJECTS PANEL JS ═══
+const pcProjData = [
+  {title:'Echoes of Yun',studio:'Phantom Circuit Studio',genre:'RPG · Roguelite',status:'Seeking Publisher',platform:['PC','Console'],cover:'linear-gradient(135deg,#1a3a6b,#4a6cf7)',desc:'A mythological roguelite RPG set in ancient China. 12K Steam wishlists. Best Narrative at ChinaJoy 2025.',tags:['Narrative','Roguelite','Chinese Mythology'],team:8,stage:'Vertical Slice'},
+  {title:'Neon Fracture',studio:'Glitch Works',genre:'Action · Platformer',status:'Seeking Investment',platform:['PC','Mobile'],cover:'linear-gradient(135deg,#0d2137,#0a7fa8)',desc:'Cyberpunk precision platformer with procedural level generation. $200K raised. Seeking $300K seed.',tags:['Cyberpunk','Procedural','Platformer'],team:4,stage:'Alpha'},
+  {title:'Verdant Siege',studio:'Ironwood Games',genre:'Strategy · RTS',status:'In Development',platform:['PC'],cover:'linear-gradient(135deg,#1a4a2e,#0d9b72)',desc:'Real-time strategy with ecological simulation. Inspired by Starcraft and Eco. Demo available.',tags:['RTS','Ecology','Simulation'],team:12,stage:'Beta'},
+  {title:'Hollow Tide',studio:'Driftwood Interactive',genre:'Horror · Adventure',status:'Seeking Publisher',platform:['PC','Console'],cover:'linear-gradient(135deg,#2d1a4a,#7c3aed)',desc:'Psychological horror adventure set on a haunted lighthouse island. Unreal Engine 5.',tags:['Horror','Narrative','UE5'],team:6,stage:'Demo'},
+  {title:'Pixel Kingdoms',studio:'8-Bit Empire',genre:'Simulation · Builder',status:'Released',platform:['Mobile','PC'],cover:'linear-gradient(135deg,#7a3a00,#d95f2b)',desc:'Retro city-builder with modern meta-progression. 500K downloads. 4.7 stars on App Store.',tags:['City Builder','Retro','Mobile-first'],team:3,stage:'Live'},
+  {title:'Starfall Protocol',studio:'Nebula Labs',genre:'Sci-Fi · Shooter',status:'Seeking Publisher',platform:['PC','Console'],cover:'linear-gradient(135deg,#0a1a3a,#1d4ed8)',desc:'Tactical sci-fi shooter with asymmetric multiplayer. Inspired by XCOM and Halo.',tags:['Tactical','Multiplayer','Sci-Fi'],team:15,stage:'Vertical Slice'},
+  {title:'Mossy Path',studio:'Fernwood Studio',genre:'Puzzle · Adventure',status:'In Development',platform:['PC','Switch'],cover:'linear-gradient(135deg,#1a3a1a,#52b788)',desc:'Cozy nature puzzle game about restoring a forest ecosystem. Hand-painted art style.',tags:['Cozy','Puzzle','Nature'],team:2,stage:'Prototype'},
+  {title:'Iron Covenant',studio:'Forge & Flame',genre:'RPG · CRPG',status:'Seeking Investment',platform:['PC'],cover:'linear-gradient(135deg,#3a1a00,#be123c)',desc:"Classic CRPG with modern UI/UX. Inspired by Baldur's Gate. Kickstarter funded.",tags:['CRPG','Fantasy','Kickstarter'],team:7,stage:'Alpha'},
+  {title:'Drift Circuit',studio:'Apex Motion',genre:'Racing · Arcade',status:'Released',platform:['Mobile'],cover:'linear-gradient(135deg,#1a1a3a,#f59e0b)',desc:'Arcade drift racing with hand-drawn tracks. 2M downloads. Featured by Apple.',tags:['Racing','Arcade','Apple Featured'],team:5,stage:'Live'},
+  {title:'Whisper Network',studio:'Signal & Noise',genre:'Thriller · Narrative',status:'Seeking Publisher',platform:['PC','Console'],cover:'linear-gradient(135deg,#2d2d2d,#6b7280)',desc:'Branching narrative thriller about a whistleblower journalist. 95% positive on itch.io.',tags:['Narrative','Thriller','Branching'],team:4,stage:'Demo'}
+];
+
+let pcProjStatusFilter = 'All';
+
+function pcProjSetStatus(btn) {
+  document.querySelectorAll('.pc-proj-filter').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  pcProjStatusFilter = btn.getAttribute('data-status') || 'All';
+  pcProjRender();
+}
+
+function pcProjRender() {
+  const q = (document.getElementById('pc-proj-search') || {}).value || '';
+  const filtered = pcProjData.filter(p => {
+    const matchStatus = pcProjStatusFilter === 'All' || p.status === pcProjStatusFilter;
+    const matchQ = !q || p.title.toLowerCase().includes(q.toLowerCase()) || p.studio.toLowerCase().includes(q.toLowerCase());
+    return matchStatus && matchQ;
+  });
+  const sub = document.getElementById('pc-proj-subtitle');
+  if (sub) sub.textContent = filtered.length + ' project' + (filtered.length !== 1 ? 's' : '') + ' from worldwide studios';
+  const statusColors = {'Seeking Publisher':'background:rgba(37,99,235,0.1);color:#2563eb','Seeking Investment':'background:rgba(13,155,114,0.1);color:#0d9b72','In Development':'background:rgba(245,158,11,0.1);color:#d97706','Released':'background:rgba(124,58,237,0.1);color:#7c3aed'};
+  const grid = document.getElementById('pc-proj-cards');
+  if (!grid) return;
+  grid.innerHTML = filtered.map(p => {
+    const tags = p.tags.map(t => `<span style="font-size:10px;font-weight:600;padding:2px 8px;border-radius:10px;background:var(--bg);color:var(--text2)">${t}</span>`).join('');
+    const plat = p.platform.map(pl => `<span style="font-size:9px;font-weight:700;padding:1px 7px;border-radius:6px;background:rgba(28,26,23,0.06);color:var(--text2)">${pl}</span>`).join('');
+    return `<div class="pc-proj-card" onclick="fdShowToast('\u2197 Opening ${p.title.replace(/'/g,"\\'")}&hellip;')">
+      <div style="height:90px;${p.cover};position:relative;display:flex;align-items:flex-end;padding:10px 14px">
+        <span style="font-size:10px;font-weight:800;padding:3px 10px;border-radius:20px;${statusColors[p.status]}">${p.status}</span>
+      </div>
+      <div style="padding:14px">
+        <div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:5px">
+          <div>
+            <div style="font-size:15px;font-weight:800;color:var(--text1)">${p.title}</div>
+            <div style="font-size:11px;color:var(--text2);margin-top:2px">${p.studio} &middot; ${p.genre}</div>
+          </div>
+          <div style="text-align:right;flex-shrink:0">
+            <div style="font-size:10px;font-weight:700;color:var(--text3)">${p.stage}</div>
+            <div style="font-size:10px;color:var(--text3)">${p.team} people</div>
+          </div>
+        </div>
+        <div style="font-size:12px;color:var(--text2);line-height:1.5;margin-bottom:8px">${p.desc}</div>
+        <div style="display:flex;gap:5px;flex-wrap:wrap;margin-bottom:8px">${tags}</div>
+        <div style="display:flex;align-items:center;justify-content:space-between">
+          <div style="display:flex;gap:4px">${plat}</div>
+          <button style="font-size:11px;font-weight:700;padding:5px 14px;border-radius:20px;background:var(--orange);color:#fff;border:none;cursor:pointer" onclick="event.stopPropagation();fdShowToast('\u2197 Opening ${p.title.replace(/'/g,"\\'")}&hellip;')">View &rarr;</button>
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+// ── COMPANIES DATA & RENDER ──
+var cpData = [
+  {id:1,name:'Dragon Phoenix Publishing',initials:'DP',cover:'linear-gradient(135deg,#c0392b,#f39c12)',type:'publisher',region:'china',size:'large',desc:'One of China\'s leading mobile game publishers with a strong portfolio across casual, mid-core, and MMORPG titles.',tags:['Mobile RPG','Casual Games','MMORPG','Global Distribution'],about:'Founded in 2012 in Shanghai. Over 30 mobile titles published globally, generating over $2B in cumulative revenue.',team:[{i:'LW',c:'#c0392b',n:'Li Wenxuan',r:'CEO'},{i:'ZY',c:'#e67e22',n:'Zhang Yue',r:'VP Publishing'},{i:'MC',c:'#27ae60',n:'Mike Chen',r:'Head of BD'}],web:'dragonphoenix.com',email:'bd@dragonphoenix.com',loc:'Shanghai, China'},
+  {id:2,name:'Eastern Star Games',initials:'ES',cover:'linear-gradient(135deg,#1a6b8a,#22a6c8)',type:'developer',region:'china',size:'mid',desc:'A versatile game studio and publisher based in Beijing, specializing in strategy and simulation games.',tags:['Strategy','Simulation','Co-development','PC & Mobile'],about:'Active in China\'s PC gaming market since 2009. 8 original titles shipped, 20+ third-party games published.',team:[{i:'WJ',c:'#1a6b8a',n:'Wang Jingkai',r:'Co-founder & CEO'},{i:'SL',c:'#22a6c8',n:'Sun Ling',r:'CTO'}],web:'easternstargames.cn',email:'partner@easternstar.cn',loc:'Beijing, China'},
+  {id:3,name:'Jade Mountain Studios',initials:'JM',cover:'linear-gradient(135deg,#0d9b72,#0a7fa8)',type:'developer',region:'china',size:'small',desc:'An indie-spirited studio from Chengdu creating artisan narrative games infused with Chinese mythology.',tags:['Narrative','Mythology','Indie','Awarded'],about:'Founded in 2019 by Tencent/NetEase veterans. Currently seeking a global publishing partner.',team:[],web:'jademountain.studio',email:'hello@jademountain.studio',loc:'Chengdu, China'},
+  {id:4,name:'Ubisoft',initials:'UB',cover:'linear-gradient(135deg,#2c3e7a,#4a6cf7)',type:'publisher',region:'europe',size:'large',desc:'One of the world\'s largest video game companies with studios across 5 continents.',tags:['AAA','Assassin\'s Creed','Far Cry','Open World'],about:'Founded 1986 in France. 20,000+ employees. Major studios in Montreal, Paris, Singapore, and Kyiv.',team:[],web:'ubisoft.com',email:'',loc:'Paris, France'},
+  {id:5,name:'CD Projekt',initials:'CDP',cover:'linear-gradient(135deg,#8b1a1a,#c0392b)',type:'publisher',region:'europe',size:'large',desc:'The Polish developer behind The Witcher series and Cyberpunk 2077.',tags:['The Witcher','Cyberpunk 2077','AAA RPG','Open World'],about:'Headquartered in Warsaw. Known for deep RPG mechanics and anti-DRM stance. 800+ awards combined.',team:[],web:'cdprojekt.com',email:'',loc:'Warsaw, Poland'},
+  {id:6,name:'Devolver Digital',initials:'DD',cover:'linear-gradient(135deg,#2d2d2d,#555)',type:'publisher',region:'usa',size:'small',desc:'The beloved indie publisher known for championing bold, unconventional game experiences.',tags:['Hotline Miami','Fall Guys','Indie','Action'],about:'Founded 2009 in Austin, TX. Developer-first contracts, minimal creative interference.',team:[],web:'devolverdigital.com',email:'submissions@devolverdigital.com',loc:'Austin, TX'},
+  {id:7,name:'Take-Two Interactive',initials:'T2',cover:'linear-gradient(135deg,#1a3a6b,#2e6bc4)',type:'publisher',region:'usa',size:'large',desc:'Parent company of Rockstar Games, 2K Games, and Private Division.',tags:['GTA','NBA 2K','BioShock','AAA'],about:'Headquartered in New York. Private Division label actively acquires premium indie and AA titles.',team:[],web:'take2games.com',email:'',loc:'New York, NY'},
+  {id:8,name:'Bitkraft Ventures',initials:'BV',cover:'linear-gradient(135deg,#0d9b72,#064d39)',type:'investor',region:'usa',size:'small',desc:'A specialist gaming-focused VC firm investing across the entire gaming ecosystem.',tags:['VC','Early Stage','Esports','Gaming Infrastructure'],about:'$600M+ committed capital. 70+ portfolio companies. Typical investment: $500K–$15M.',team:[],web:'bitkraft.vc',email:'ventures@bitkraft.vc',loc:'New York / Berlin'},
+  {id:9,name:'Griffin Gaming Partners',initials:'GGP',cover:'linear-gradient(135deg,#7b5ea7,#9b59b6)',type:'investor',region:'usa',size:'small',desc:'A dedicated gaming venture fund backing exceptional founders building next-gen gaming companies.',tags:['Gaming VC','Seed','Series A','Founder-focused'],about:'$235M fund raised in 2021. Active in North America, Europe, and Southeast Asia.',team:[],web:'griffingaming.com',email:'pitch@griffingaming.com',loc:'USA'},
+  {id:10,name:'Keywords Studios',initials:'KW',cover:'linear-gradient(135deg,#0a7fa8,#0d9b72)',type:'service',region:'europe',size:'large',desc:'The world\'s leading provider of technical and creative services to the global video games industry.',tags:['Localization','QA Testing','Art Services','Audio'],about:'70+ studios globally. Served 23 of the top 25 games publishers.',team:[],web:'keywordsstudios.com',email:'',loc:'Dublin, Ireland'},
+  {id:11,name:'PTW',initials:'PTW',cover:'linear-gradient(135deg,#6b3a2a,#c0724a)',type:'service',region:'europe',size:'large',desc:'A global video game services company providing QA, player support, and localization testing.',tags:['QA Testing','Customer Service','Localization','Outsourcing'],about:'Providing games services since 1994. 24/7 player support and multi-language QA.',team:[],web:'ptw.com',email:'',loc:'London, UK'},
+  {id:12,name:'Steam / Valve',initials:'ST',cover:'linear-gradient(135deg,#1b4a2a,#21a156)',type:'distributor',region:'usa',size:'mid',desc:'The world\'s dominant PC game distribution platform with 132 million active users.',tags:['PC Distribution','Steam','Digital Store','132M Users'],about:'Valve Corporation, Bellevue WA. 50,000+ titles. Also develops Half-Life, Portal, Dota 2, CS.',team:[],web:'store.steampowered.com',email:'',loc:'Bellevue, WA'}
+];
+var cpTypeFilter = 'all', cpRegionFilter = 'all';
+function cpSetFilter(el, group) {
+  var cls = group === 'type' ? '.cp-type-filter' : '.cp-region-filter';
+  document.querySelectorAll(cls).forEach(function(f){
+    f.classList.remove('active');
+    f.style.background = '';
+    f.style.color = '#6b7280';
+  });
+  el.classList.add('active');
+  el.style.background = '#f3f4f6';
+  el.style.color = '#1a1a1a';
+  if (group === 'type') cpTypeFilter = el.dataset.val;
+  else cpRegionFilter = el.dataset.val;
+  cpRender();
+}
+function cpRender() {
+  var q = (document.getElementById('cp-search') ? document.getElementById('cp-search').value : '').toLowerCase();
+  var list = cpData.filter(function(c){
+    if (cpTypeFilter !== 'all' && c.type !== cpTypeFilter) return false;
+    if (cpRegionFilter !== 'all' && c.region !== cpRegionFilter) return false;
+    if (q && c.name.toLowerCase().indexOf(q) < 0 && c.desc.toLowerCase().indexOf(q) < 0) return false;
+    return true;
+  });
+  var typeColors = {publisher:'#fff3ee;color:#d95f2b',developer:'#e6f4f1;color:#0d9b72',investor:'#e6f3f8;color:#0a7fa8',service:'#f3f0fa;color:#7b5ea7',distributor:'#fef9e7;color:#c7a200'};
+  var typeLabels = {publisher:'Publisher',developer:'Developer',investor:'Investor',service:'Service Provider',distributor:'Distributor'};
+  document.getElementById('cp-list').innerHTML = list.length === 0 ? '<div style="text-align:center;padding:60px;color:#9ca3af">No companies found</div>' : list.map(function(c){
+    var tags = c.tags.map(function(t){ return '<span style="font-size:11px;font-weight:500;padding:3px 9px;border-radius:20px;background:#f3f4f6;color:#6b7280;border:1px solid #e4e6ea">' + t + '</span>'; }).join('');
+    var teamHtml = c.team.length ? c.team.map(function(m){ return '<div style="display:flex;align-items:center;gap:8px;margin-bottom:6px"><div style="width:28px;height:28px;border-radius:50%;background:' + m.c + ';display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;color:#fff;flex-shrink:0">' + m.i + '</div><div><div style="font-size:12px;font-weight:600;color:#1a1a1a">' + m.n + '</div><div style="font-size:11px;color:#9ca3af">' + m.r + '</div></div></div>'; }).join('') : '';
+    var tcol = typeColors[c.type] || ''; var tlab = typeLabels[c.type] || c.type;
+    return '<div style="background:#fff;border-radius:12px;border:1px solid #e4e6ea;padding:18px 20px;margin-bottom:12px;transition:.15s" onmouseover="this.style.boxShadow=\'0 2px 12px rgba(0,0,0,.08)\'" onmouseout="this.style.boxShadow=\'none\'">' +
+      '<div style="display:flex;gap:14px;align-items:flex-start">' +
+        '<div style="width:48px;height:48px;border-radius:10px;background:' + c.cover + ';display:flex;align-items:center;justify-content:center;font-size:15px;font-weight:700;color:#fff;flex-shrink:0">' + c.initials + '</div>' +
+        '<div style="flex:1;min-width:0">' +
+          '<div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:4px">' +
+            '<span style="font-size:15px;font-weight:700;color:#1a1a1a">' + c.name + '</span>' +
+            '<span style="font-size:11px;font-weight:600;padding:2px 8px;border-radius:6px;background:' + tcol + '">' + tlab + '</span>' +
+          '</div>' +
+          '<div style="font-size:13px;color:#6b7280;line-height:1.5;margin-bottom:8px">' + c.desc + '</div>' +
+          '<div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:10px">' + tags + '</div>' +
+          (c.about ? '<details style="font-size:12px;color:#6b7280"><summary style="cursor:pointer;font-weight:600;color:#1a1a1a;margin-bottom:6px">Details ▾</summary><p style="margin-bottom:8px;line-height:1.6">' + c.about + '</p>' + (teamHtml ? '<div style="margin-bottom:8px">' + teamHtml + '</div>' : '') + (c.web ? '<div style="display:flex;gap:12px;flex-wrap:wrap"><span style="font-size:12px;color:#6b7280">🌐 ' + c.web + '</span>' + (c.email ? '<span style="font-size:12px;color:#6b7280">✉️ ' + c.email + '</span>' : '') + '<span style="font-size:12px;color:#6b7280">📍 ' + c.loc + '</span></div>' : '') + '</details>' : '') +
+        '</div>' +
+        '<div style="display:flex;flex-direction:column;gap:6px;flex-shrink:0">' +
+          '<button style="font-size:12px;font-weight:600;padding:6px 14px;border-radius:7px;background:var(--orange);color:#fff;border:none;cursor:pointer">Connect</button>' +
+          '<button style="font-size:12px;font-weight:600;padding:6px 14px;border-radius:7px;background:#fff;color:#6b7280;border:1.5px solid #e4e6ea;cursor:pointer">+ Follow</button>' +
+        '</div>' +
+      '</div>' +
+    '</div>';
+  }).join('');
+}
+</script>
+</body>
+</html>

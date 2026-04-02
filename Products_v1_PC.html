@@ -1,0 +1,707 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Products — Event HQ</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --bg: #f3f2ef;
+    --orange: #d95f2b;
+    --teal: #0a7fa8;
+    --green: #0d9b72;
+    --white: #fff;
+    --text: #000000;
+    --muted: #666666;
+    --faint: #999999;
+    --border: #e0dfdc;
+    --radius: 8px;
+    --topbar-h: 58px;
+  }
+  body { font-family: 'DM Sans', sans-serif;line-height: 1.5; background: var(--bg); color: var(--text); min-height: 100vh; }
+
+  /* ── TOPBAR ── */
+  .topbar {
+    position: sticky; top: 0; z-index: 100;
+    height: var(--topbar-h); background: var(--white);
+    border-bottom: 1px solid var(--border);
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 0 28px;
+  }
+  .topbar-logo { font-weight: 700; font-size: 15px; letter-spacing: .04em; }
+  .topbar-logo span { color: var(--orange); }
+  .topbar-right { display: flex; align-items: center; gap: 12px; }
+  .btn-primary{
+    background: var(--orange); color: #fff; border: none;
+    padding: 7px 18px; border-radius: 24px; font-size: 13px;
+    font-weight: 600; cursor: pointer; font-family: inherit;
+    display: flex; align-items: center; gap: 6px;
+  }
+  .btn-primary:hover { background: #c2521f; }
+  .btn-secondary {
+    background: none; color: var(--muted); border: 1px solid var(--border);
+    padding: 7px 14px; border-radius: 7px; font-size: 13px;
+    font-weight: 500; cursor: pointer; font-family: inherit;
+    display: flex; align-items: center; gap: 6px;
+  }
+  .btn-secondary:hover { background: var(--bg); }
+
+  /* ── TAB BAR ── */
+  .tab-bar {
+    background: var(--white); border-bottom: 1px solid var(--border);
+    display: flex; align-items: center; padding: 0 28px; gap: 4px;
+  }
+  .tab-btn {
+    padding: 14px 20px; font-size: 14px; font-weight: 500;
+    color: var(--muted); border: none; background: none;
+    cursor: pointer; font-family: inherit; border-bottom: 2px solid transparent;
+    margin-bottom: -1px; transition: color .15s;
+  }
+  .tab-btn:hover { color: var(--text); }
+  .tab-btn.active { color: var(--orange); border-bottom-color: var(--orange); font-weight: 600; }
+
+  /* ── PANELS ── */
+  .tab-panel { display: none; padding: 28px; }
+  .tab-panel.active { display: block; }
+
+  /* ── CARDS ── */
+  .card {
+    background: var(--white); border-radius: var(--radius);
+    border: 1px solid var(--border); padding: 22px; margin-bottom: 18px;
+  }
+  .card-header {
+    display: flex; align-items: center; justify-content: space-between;
+    margin-bottom: 18px;
+  }
+  .card-title { font-size: 15px; font-weight: 700; display: flex; align-items: center; gap: 8px; }
+  .card-actions { display: flex; gap: 8px; }
+
+  /* ── STATS ROW ── */
+  .stats-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; margin-bottom: 22px; }
+  .stat-card {
+    background: var(--white); border: 1px solid var(--border);
+    border-radius: var(--radius); padding: 16px 18px;
+  }
+  .stat-label { font-size: 12px; color: var(--muted); font-weight: 500; margin-bottom: 6px; }
+  .stat-value { font-size: 22px; font-weight: 700; }
+  .stat-sub { font-size: 12px; color: var(--muted); margin-top: 3px; }
+
+  /* ── TICKET CARDS ── */
+  .ticket-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 14px; }
+  .ticket-card {
+    border: 1.5px solid var(--border); border-radius: var(--radius);
+    padding: 18px; position: relative; background: var(--white);
+  }
+  .ticket-card.free-type { border-left: 4px solid var(--green); }
+  .ticket-card.paid-type { border-left: 4px solid var(--orange); }
+  .ticket-card.vip-type { border-left: 4px solid #7c3aed; }
+  .ticket-badge {
+    display: inline-block; padding: 2px 8px; border-radius: 8px;
+    font-size: 11px; font-weight: 700; margin-bottom: 10px;
+  }
+  .badge-free { background: #e0f5ee; color: var(--green); }
+  .badge-paid { background: #fff3ec; color: var(--orange); }
+  .badge-vip { background: #f3e8ff; color: #7c3aed; }
+  .ticket-name { font-size: 15px; font-weight: 700; margin-bottom: 4px; }
+  .ticket-price { font-size: 20px; font-weight: 700; color: var(--orange); margin-bottom: 8px; }
+  .ticket-price.free { color: var(--green); }
+  .ticket-meta { font-size: 12px; color: var(--muted); margin-bottom: 12px; line-height: 1.6; }
+  .ticket-progress { margin-bottom: 12px; }
+  .progress-label { display: flex; justify-content: space-between; font-size: 12px; color: var(--muted); margin-bottom: 4px; }
+  .progress-bar { height: 6px; background: var(--bg); border-radius: 3px; overflow: hidden; }
+  .progress-fill { height: 100%; border-radius: 3px; background: var(--teal); }
+  .ticket-actions { display: flex; gap: 8px; }
+  .btn-sm {
+    padding: 5px 12px; border-radius: 6px; font-size: 12px;
+    font-weight: 600; cursor: pointer; font-family: inherit; border: 1px solid var(--border);
+    background: none; color: var(--muted);
+  }
+  .btn-sm:hover { background: var(--bg); }
+  .btn-sm.primary { background: var(--orange); color: #fff; border-color: var(--orange); }
+  .btn-sm.primary:hover { background: #c2521f; }
+
+  /* ── ADD TICKET CARD ── */
+  .add-ticket-card {
+    border: 2px dashed var(--border); border-radius: var(--radius);
+    padding: 28px; text-align: center; cursor: pointer;
+    color: var(--muted); transition: all .15s;
+  }
+  .add-ticket-card:hover { border-color: var(--orange); color: var(--orange); }
+  .add-ticket-card .add-icon { font-size: 28px; margin-bottom: 8px; }
+  .add-ticket-card .add-label { font-size: 14px; font-weight: 600; }
+
+  /* ── BOOTH GRID ── */
+  .booth-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 14px; }
+  .booth-card {
+    border: 1.5px solid var(--border); border-radius: var(--radius);
+    padding: 18px; background: var(--white);
+  }
+  .booth-type-badge {
+    display: inline-block; padding: 3px 10px; border-radius: 8px;
+    font-size: 11px; font-weight: 700; margin-bottom: 10px;
+  }
+  .badge-pod { background: #e0f5ee; color: var(--green); }
+  .badge-standard { background: #e0f3fa; color: var(--teal); }
+  .badge-premium { background: #fff3ec; color: var(--orange); }
+  .booth-name { font-size: 15px; font-weight: 700; margin-bottom: 4px; }
+  .booth-price { font-size: 18px; font-weight: 700; margin-bottom: 8px; }
+  .booth-price .free { color: var(--green); }
+  .booth-price .paid { color: var(--orange); }
+  .booth-meta { font-size: 12px; color: var(--muted); margin-bottom: 12px; line-height: 1.6; }
+  .booth-features { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 12px; }
+  .feature-tag {
+    padding: 2px 8px; border-radius: 6px; font-size: 11px; font-weight: 500;
+    background: var(--bg); color: var(--muted);
+  }
+
+  /* ── SPONSORSHIP ── */
+  .sponsor-stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; margin-bottom: 22px; }
+  .package-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 14px; }
+  .package-card {
+    border: 1.5px solid var(--border); border-radius: var(--radius);
+    padding: 20px; background: var(--white); position: relative;
+  }
+  .package-card.gold { border-top: 4px solid #f59e0b; }
+  .package-card.silver { border-top: 4px solid #9ca3af; }
+  .package-card.bronze { border-top: 4px solid #cd7c3a; }
+  .package-tier {
+    font-size: 12px; font-weight: 700; text-transform: uppercase;
+    letter-spacing: .06em; margin-bottom: 8px;
+  }
+  .tier-gold { color: #f59e0b; }
+  .tier-silver { color: #999999; }
+  .tier-bronze { color: #cd7c3a; }
+  .package-name { font-size: 16px; font-weight: 700; margin-bottom: 6px; }
+  .package-price { font-size: 22px; font-weight: 700; color: var(--text); margin-bottom: 12px; }
+  .package-price span { font-size: 14px; color: var(--muted); font-weight: 400; }
+  .package-perks { list-style: none; margin-bottom: 14px; }
+  .package-perks li { font-size: 13px; color: var(--muted); padding: 3px 0; display: flex; gap: 6px; }
+  .package-perks li::before { content: '✓'; color: var(--green); font-weight: 700; }
+  .package-progress { margin-bottom: 12px; }
+  .sponsor-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  .sponsor-table th { text-align: left; padding: 10px 12px; font-size: 12px; font-weight: 600; color: var(--muted); border-bottom: 1px solid var(--border); }
+  .sponsor-table td { padding: 12px; border-bottom: 1px solid var(--border); }
+  .sponsor-table tr:last-child td { border-bottom: none; }
+  .sponsor-table tr:hover td { background: #fafaf8; }
+  .tier-badge {
+    padding: 2px 8px; border-radius: 8px; font-size: 11px; font-weight: 700;
+  }
+  .tier-badge.gold { background: #fef3c7; color: #d97706; }
+  .tier-badge.silver { background: #f3f4f6; color: #666666; }
+  .tier-badge.bronze { background: #fef0e6; color: #cd7c3a; }
+  .status-badge {
+    padding: 2px 8px; border-radius: 8px; font-size: 11px; font-weight: 700;
+  }
+  .status-confirmed { background: #e0f5ee; color: var(--green); }
+  .status-pending { background: #fff3ec; color: var(--orange); }
+
+  /* ── MODAL ── */
+  .modal-overlay {
+    display: none; position: fixed; inset: 0;
+    background: rgba(0,0,0,.4); z-index: 200;
+    align-items: center; justify-content: center;
+  }
+  .modal-overlay.open { display: flex; }
+  .modal {
+    background: var(--white); border-radius: 12px;
+    width: 480px; max-width: 95vw; max-height: 85vh;
+    overflow-y: auto; padding: 28px;
+    box-shadow: none;
+  }
+  .modal-title { font-size: 17px; font-weight: 700; margin-bottom: 20px; }
+  .form-field { margin-bottom: 14px; }
+  .form-label { font-size: 13px; font-weight: 600; margin-bottom: 5px; display: block; }
+  .form-input, .form-select, .form-textarea {
+    width: 100%; border: 1px solid var(--border); border-radius: 7px;
+    padding: 9px 12px; font-size: 14px; font-family: inherit;
+    color: var(--text); outline: none;
+  }
+  .form-input:focus, .form-select:focus { border-color: var(--orange); }
+  .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  .modal-actions { display: flex; justify-content: flex-end; gap: 10px; margin-top: 20px; }
+
+  /* ── TOAST ── */
+  .toast {
+    position: fixed; bottom: 28px; left: 50%; transform: translateX(-50%);
+    background: #1a1a1a; color: #fff; padding: 10px 20px;
+    border-radius: 8px; font-size: 13px; font-weight: 600;
+    z-index: 9999; box-shadow: none; transition: opacity .3s;
+  }
+
+  /* ── EMBED MODE ── */
+  body.embed-mode .topbar { display: none !important; }
+  body.embed-mode .tab-bar { top: 0; }
+</style>
+</head>
+<body>
+
+<!-- TOPBAR -->
+<div class="topbar">
+  <div class="topbar-logo">GAME <span>CONNECTION</span> · Event HQ</div>
+  <div class="topbar-right">
+    <button class="btn-primary" onclick="openAddModal()">＋ Add Product</button>
+  </div>
+</div>
+
+<!-- TAB BAR -->
+<div class="tab-bar">
+  <button class="tab-btn active" id="tab-tickets" onclick="switchTab('tickets')">🎟️ Tickets</button>
+  <button class="tab-btn" id="tab-booths" onclick="switchTab('booths')">🏛️ Pods & Booths</button>
+  <button class="tab-btn" id="tab-sponsorship" onclick="switchTab('sponsorship')">💼 Sponsorship</button>
+</div>
+
+<!-- ══════════════════════════════════════
+     TAB 1: TICKETS
+     ══════════════════════════════════════ -->
+<div class="tab-panel active" id="panel-tickets">
+
+  <div class="stats-row">
+    <div class="stat-card">
+      <div class="stat-label">Total Tickets Sold</div>
+      <div class="stat-value">847</div>
+      <div class="stat-sub">of 1,200 capacity</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">Ticket Revenue</div>
+      <div class="stat-value" style="color:var(--green);">€24,350</div>
+      <div class="stat-sub">+12% vs last event</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">Free Registrations</div>
+      <div class="stat-value">412</div>
+      <div class="stat-sub">48.6% of total</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">Ticket Types</div>
+      <div class="stat-value">4</div>
+      <div class="stat-sub">3 active · 1 sold out</div>
+    </div>
+  </div>
+
+  <div class="ticket-grid">
+    <!-- Free Ticket -->
+    <div class="ticket-card free-type">
+      <div class="ticket-badge badge-free">FREE</div>
+      <div class="ticket-name">General Admission</div>
+      <div class="ticket-price free">Free</div>
+      <div class="ticket-meta">
+        Open to all attendees · No approval required<br>
+        Includes: Event access, networking, sessions
+      </div>
+      <div class="ticket-progress">
+        <div class="progress-label"><span>412 registered</span><span>Unlimited</span></div>
+        <div class="progress-bar"><div class="progress-fill" style="width:40%;background:var(--green);"></div></div>
+      </div>
+      <div class="ticket-actions">
+        <button class="btn-sm primary" onclick="showToast('Editing General Admission…')">Edit</button>
+        <button class="btn-sm" onclick="showToast('Registration form link copied!')">Share Link</button>
+        <button class="btn-sm" onclick="showToast('Paused General Admission')">Pause</button>
+      </div>
+    </div>
+
+    <!-- Professional Ticket -->
+    <div class="ticket-card paid-type">
+      <div class="ticket-badge badge-paid">PAID</div>
+      <div class="ticket-name">Professional Pass</div>
+      <div class="ticket-price">€149</div>
+      <div class="ticket-meta">
+        Full access pass · Priority seating<br>
+        Includes: All sessions, networking dinner, badge
+      </div>
+      <div class="ticket-progress">
+        <div class="progress-label"><span>285 sold</span><span>500 max</span></div>
+        <div class="progress-bar"><div class="progress-fill" style="width:57%;"></div></div>
+      </div>
+      <div class="ticket-actions">
+        <button class="btn-sm primary" onclick="showToast('Editing Professional Pass…')">Edit</button>
+        <button class="btn-sm" onclick="showToast('Link copied!')">Share Link</button>
+        <button class="btn-sm" onclick="showToast('Paused')">Pause</button>
+      </div>
+    </div>
+
+    <!-- VIP Ticket -->
+    <div class="ticket-card vip-type">
+      <div class="ticket-badge badge-vip">VIP</div>
+      <div class="ticket-name">VIP All-Access</div>
+      <div class="ticket-price">€349</div>
+      <div class="ticket-meta">
+        Premium experience · Lounge access<br>
+        Includes: All sessions, VIP dinner, speaker meet & greet
+      </div>
+      <div class="ticket-progress">
+        <div class="progress-label"><span>98 sold</span><span>100 max</span></div>
+        <div class="progress-bar"><div class="progress-fill" style="width:98%;background:#7c3aed;"></div></div>
+      </div>
+      <div class="ticket-actions">
+        <button class="btn-sm primary" onclick="showToast('Editing VIP…')">Edit</button>
+        <button class="btn-sm" onclick="showToast('Link copied!')">Share Link</button>
+        <button class="btn-sm" style="color:#ef4444;border-color:#ef4444;" onclick="showToast('VIP sold out!')">Sold Out</button>
+      </div>
+    </div>
+
+    <!-- Add New -->
+    <div class="add-ticket-card" onclick="openAddModal('ticket')">
+      <div class="add-icon">＋</div>
+      <div class="add-label">Add Ticket Type</div>
+      <div style="font-size:12px;margin-top:4px;">Free, paid, or VIP</div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════
+     TAB 2: PODS & BOOTHS
+     ══════════════════════════════════════ -->
+<div class="tab-panel" id="panel-booths">
+
+  <div class="stats-row">
+    <div class="stat-card">
+      <div class="stat-label">Total Spaces</div>
+      <div class="stat-value">64</div>
+      <div class="stat-sub">across 3 types</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">Booked</div>
+      <div class="stat-value">47</div>
+      <div class="stat-sub">73% occupancy</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">Exhibition Revenue</div>
+      <div class="stat-value" style="color:var(--green);">€38,500</div>
+      <div class="stat-sub">from paid booths</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">Free Pods Allocated</div>
+      <div class="stat-value">18</div>
+      <div class="stat-sub">indie & student track</div>
+    </div>
+  </div>
+
+  <div class="booth-grid">
+    <!-- Free Pod -->
+    <div class="booth-card">
+      <div class="booth-type-badge badge-pod">🎯 Pod — FREE</div>
+      <div class="booth-name">Indie Dev Pod</div>
+      <div class="booth-price"><span class="free">Free</span></div>
+      <div class="booth-meta">
+        For independent developers & student projects<br>
+        Application required · Curated selection
+      </div>
+      <div class="booth-features">
+        <span class="feature-tag">1.5m × 1.5m</span>
+        <span class="feature-tag">1 table + 2 chairs</span>
+        <span class="feature-tag">Power outlet</span>
+        <span class="feature-tag">WiFi</span>
+      </div>
+      <div class="ticket-progress">
+        <div class="progress-label"><span>18 allocated</span><span>20 total</span></div>
+        <div class="progress-bar"><div class="progress-fill" style="width:90%;background:var(--green);"></div></div>
+      </div>
+      <div class="ticket-actions">
+        <button class="btn-sm primary" onclick="showToast('Editing Indie Dev Pod…')">Edit</button>
+        <button class="btn-sm" onclick="showToast('Applications: 34 pending review')">Applications</button>
+      </div>
+    </div>
+
+    <!-- Standard Booth -->
+    <div class="booth-card">
+      <div class="booth-type-badge badge-standard">🏢 Standard Booth</div>
+      <div class="booth-name">Standard Exhibitor Booth</div>
+      <div class="booth-price"><span class="paid">€1,200</span></div>
+      <div class="booth-meta">
+        For studios and publishers · First-come first-served<br>
+        Includes setup support and exhibitor badge
+      </div>
+      <div class="booth-features">
+        <span class="feature-tag">3m × 3m</span>
+        <span class="feature-tag">Back wall panel</span>
+        <span class="feature-tag">2 tables</span>
+        <span class="feature-tag">4 chairs</span>
+        <span class="feature-tag">Power × 2</span>
+      </div>
+      <div class="ticket-progress">
+        <div class="progress-label"><span>22 booked</span><span>30 total</span></div>
+        <div class="progress-bar"><div class="progress-fill" style="width:73%;"></div></div>
+      </div>
+      <div class="ticket-actions">
+        <button class="btn-sm primary" onclick="showToast('Editing Standard Booth…')">Edit</button>
+        <button class="btn-sm" onclick="showToast('Bookings list opened')">Bookings</button>
+      </div>
+    </div>
+
+    <!-- Premium Booth -->
+    <div class="booth-card">
+      <div class="booth-type-badge badge-premium">⭐ Premium Booth</div>
+      <div class="booth-name">Premium Corner Booth</div>
+      <div class="booth-price"><span class="paid">€2,800</span></div>
+      <div class="booth-meta">
+        Corner position · Maximum visibility<br>
+        Includes dedicated meeting area and branding
+      </div>
+      <div class="booth-features">
+        <span class="feature-tag">6m × 4m</span>
+        <span class="feature-tag">Corner position</span>
+        <span class="feature-tag">Custom branding</span>
+        <span class="feature-tag">Meeting pod</span>
+      </div>
+      <div class="ticket-progress">
+        <div class="progress-label"><span>7 booked</span><span>14 total</span></div>
+        <div class="progress-bar"><div class="progress-fill" style="width:50%;background:var(--orange);"></div></div>
+      </div>
+      <div class="ticket-actions">
+        <button class="btn-sm primary" onclick="showToast('Editing Premium Booth…')">Edit</button>
+        <button class="btn-sm" onclick="showToast('Bookings list opened')">Bookings</button>
+      </div>
+    </div>
+
+    <!-- Add New -->
+    <div class="add-ticket-card" onclick="openAddModal('booth')">
+      <div class="add-icon">＋</div>
+      <div class="add-label">Add Booth / Pod Type</div>
+      <div style="font-size:12px;margin-top:4px;">Free pod or paid booth</div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════
+     TAB 3: SPONSORSHIP
+     ══════════════════════════════════════ -->
+<div class="tab-panel" id="panel-sponsorship">
+
+  <div class="stats-row">
+    <div class="stat-card">
+      <div class="stat-label">Total Sponsorship Revenue</div>
+      <div class="stat-value" style="color:var(--green);">€52,000</div>
+      <div class="stat-sub">of €80,000 target</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">Active Sponsors</div>
+      <div class="stat-value">11</div>
+      <div class="stat-sub">3 Gold · 4 Silver · 4 Bronze</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">Packages Available</div>
+      <div class="stat-value">3</div>
+      <div class="stat-sub">Gold · Silver · Bronze</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">Conversion Rate</div>
+      <div class="stat-value">68%</div>
+      <div class="stat-sub">from outreach to confirmed</div>
+    </div>
+  </div>
+
+  <!-- Packages -->
+  <div class="card">
+    <div class="card-header">
+      <div class="card-title">📦 Sponsorship Packages</div>
+      <div class="card-actions">
+        <button class="btn-secondary" onclick="showToast('Revenue forecast opened')">📊 Forecast</button>
+        <button class="btn-primary" onclick="openAddModal('package')">＋ New Package</button>
+      </div>
+    </div>
+    <div class="package-grid">
+      <!-- Gold -->
+      <div class="package-card gold">
+        <div class="package-tier tier-gold">⭐ Gold</div>
+        <div class="package-name">Gold Sponsor</div>
+        <div class="package-price">€5,000 <span>/ package</span></div>
+        <ul class="package-perks">
+          <li>Logo on all event materials</li>
+          <li>Premium booth (6m × 4m)</li>
+          <li>10 VIP passes</li>
+          <li>Speaking slot (30 min)</li>
+          <li>Dedicated social media post</li>
+        </ul>
+        <div class="package-progress">
+          <div class="progress-label"><span>3 sold</span><span>5 max</span></div>
+          <div class="progress-bar"><div class="progress-fill" style="width:60%;background:#f59e0b;"></div></div>
+        </div>
+        <div class="ticket-actions">
+          <button class="btn-sm primary" onclick="showToast('Editing Gold package…')">Edit</button>
+          <button class="btn-sm" onclick="showToast('Gold package duplicated')">Duplicate</button>
+        </div>
+      </div>
+      <!-- Silver -->
+      <div class="package-card silver">
+        <div class="package-tier tier-silver">🥈 Silver</div>
+        <div class="package-name">Silver Sponsor</div>
+        <div class="package-price">€2,500 <span>/ package</span></div>
+        <ul class="package-perks">
+          <li>Logo on event website</li>
+          <li>Standard booth (3m × 3m)</li>
+          <li>5 Professional passes</li>
+          <li>Panel participation</li>
+        </ul>
+        <div class="package-progress">
+          <div class="progress-label"><span>4 sold</span><span>8 max</span></div>
+          <div class="progress-bar"><div class="progress-fill" style="width:50%;background:#9ca3af;"></div></div>
+        </div>
+        <div class="ticket-actions">
+          <button class="btn-sm primary" onclick="showToast('Editing Silver package…')">Edit</button>
+          <button class="btn-sm" onclick="showToast('Silver package duplicated')">Duplicate</button>
+        </div>
+      </div>
+      <!-- Bronze -->
+      <div class="package-card bronze">
+        <div class="package-tier tier-bronze">🥉 Bronze</div>
+        <div class="package-name">Bronze Sponsor</div>
+        <div class="package-price">€1,000 <span>/ package</span></div>
+        <ul class="package-perks">
+          <li>Logo on event website</li>
+          <li>2 Professional passes</li>
+          <li>Listing in program guide</li>
+        </ul>
+        <div class="package-progress">
+          <div class="progress-label"><span>4 sold</span><span>12 max</span></div>
+          <div class="progress-bar"><div class="progress-fill" style="width:33%;background:#cd7c3a;"></div></div>
+        </div>
+        <div class="ticket-actions">
+          <button class="btn-sm primary" onclick="showToast('Editing Bronze package…')">Edit</button>
+          <button class="btn-sm" onclick="showToast('Bronze package duplicated')">Duplicate</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Confirmed Sponsors Table -->
+  <div class="card">
+    <div class="card-header">
+      <div class="card-title">🤝 Confirmed Sponsors</div>
+      <div class="card-actions">
+        <button class="btn-secondary" onclick="showToast('Exporting sponsor list…')">📤 Export</button>
+        <button class="btn-primary" onclick="showToast('Add sponsor form opened')">＋ Add Sponsor</button>
+      </div>
+    </div>
+    <table class="sponsor-table">
+      <thead>
+        <tr>
+          <th>Company</th>
+          <th>Package</th>
+          <th>Amount</th>
+          <th>Status</th>
+          <th>Contact</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><strong>Epic Games</strong></td>
+          <td><span class="tier-badge gold">⭐ Gold</span></td>
+          <td>€5,000</td>
+          <td><span class="status-badge status-confirmed">Confirmed</span></td>
+          <td style="color:var(--muted);">partnerships@epic.com</td>
+          <td><button class="btn-sm" onclick="showToast('Epic Games details')">View</button></td>
+        </tr>
+        <tr>
+          <td><strong>Unity Technologies</strong></td>
+          <td><span class="tier-badge gold">⭐ Gold</span></td>
+          <td>€5,000</td>
+          <td><span class="status-badge status-confirmed">Confirmed</span></td>
+          <td style="color:var(--muted);">events@unity.com</td>
+          <td><button class="btn-sm" onclick="showToast('Unity details')">View</button></td>
+        </tr>
+        <tr>
+          <td><strong>Devolver Digital</strong></td>
+          <td><span class="tier-badge silver">🥈 Silver</span></td>
+          <td>€2,500</td>
+          <td><span class="status-badge status-confirmed">Confirmed</span></td>
+          <td style="color:var(--muted);">press@devolverdigital.com</td>
+          <td><button class="btn-sm" onclick="showToast('Devolver details')">View</button></td>
+        </tr>
+        <tr>
+          <td><strong>Bandai Namco</strong></td>
+          <td><span class="tier-badge silver">🥈 Silver</span></td>
+          <td>€2,500</td>
+          <td><span class="status-badge status-pending">Pending</span></td>
+          <td style="color:var(--muted);">events@bandainamco.eu</td>
+          <td><button class="btn-sm" onclick="showToast('Bandai Namco details')">View</button></td>
+        </tr>
+        <tr>
+          <td><strong>Humble Bundle</strong></td>
+          <td><span class="tier-badge bronze">🥉 Bronze</span></td>
+          <td>€1,000</td>
+          <td><span class="status-badge status-confirmed">Confirmed</span></td>
+          <td style="color:var(--muted);">partnerships@humble.com</td>
+          <td><button class="btn-sm" onclick="showToast('Humble Bundle details')">View</button></td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<!-- ADD MODAL -->
+<div class="modal-overlay" id="addModal">
+  <div class="modal">
+    <div class="modal-title" id="modalTitle">Add Ticket Type</div>
+    <div class="form-field">
+      <label class="form-label">Name</label>
+      <input type="text" class="form-input" placeholder="e.g. Early Bird Pass">
+    </div>
+    <div class="form-row">
+      <div class="form-field">
+        <label class="form-label">Type</label>
+        <select class="form-select">
+          <option>Free</option>
+          <option>Paid</option>
+          <option>VIP</option>
+        </select>
+      </div>
+      <div class="form-field">
+        <label class="form-label">Price (€)</label>
+        <input type="number" class="form-input" placeholder="0">
+      </div>
+    </div>
+    <div class="form-field">
+      <label class="form-label">Capacity (leave blank for unlimited)</label>
+      <input type="number" class="form-input" placeholder="e.g. 200">
+    </div>
+    <div class="form-field">
+      <label class="form-label">Description</label>
+      <textarea class="form-input" style="min-height:70px;resize:vertical;" placeholder="What's included…"></textarea>
+    </div>
+    <div class="modal-actions">
+      <button class="btn-secondary" onclick="closeModal()">Cancel</button>
+      <button class="btn-primary" onclick="saveModal()">Create</button>
+    </div>
+  </div>
+</div>
+
+<script>
+  // ── EMBED MODE ──
+  (function() {
+    var p = new URLSearchParams(window.location.search);
+    if (p.get('embed') === '1') document.body.classList.add('embed-mode');
+  })();
+
+  // ── TAB SWITCHING ──
+  function switchTab(name) {
+    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+    document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+    document.getElementById('tab-' + name).classList.add('active');
+    document.getElementById('panel-' + name).classList.add('active');
+  }
+
+  // ── MODAL ──
+  function openAddModal(type) {
+    var titles = { ticket: 'Add Ticket Type', booth: 'Add Booth / Pod Type', package: 'Add Sponsorship Package' };
+    document.getElementById('modalTitle').textContent = titles[type] || 'Add Product';
+    document.getElementById('addModal').classList.add('open');
+  }
+  function closeModal() { document.getElementById('addModal').classList.remove('open'); }
+  function saveModal() { closeModal(); showToast('✅ Created successfully!'); }
+  document.getElementById('addModal').addEventListener('click', function(e) {
+    if (e.target === this) closeModal();
+  });
+
+  // ── TOAST ──
+  function showToast(msg) {
+    var t = document.createElement('div');
+    t.className = 'toast'; t.textContent = msg;
+    document.body.appendChild(t);
+    setTimeout(() => { t.style.opacity = '0'; setTimeout(() => t.remove(), 300); }, 2500);
+  }
+</script>
+</body>
+</html>

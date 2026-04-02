@@ -1,0 +1,624 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Awards & Jury — Event HQ</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --bg: #f3f2ef;
+    --orange: #d95f2b;
+    --teal: #0a7fa8;
+    --green: #0d9b72;
+    --gold: #f59e0b;
+    --white: #fff;
+    --text: #000000;
+    --muted: #666666;
+    --faint: #999999;
+    --border: #e0dfdc;
+    --radius: 8px;
+  }
+  body { font-family: 'DM Sans', sans-serif;line-height: 1.5; background: var(--bg); color: var(--text); min-height: 100vh; }
+
+  /* ── TOPBAR ── */
+  .topbar {
+    position: sticky; top: 0; z-index: 100;
+    height: 58px; background: var(--white);
+    border-bottom: 1px solid var(--border);
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 0 28px;
+  }
+  .topbar-logo { font-weight: 700; font-size: 15px; letter-spacing: .04em; }
+  .topbar-logo span { color: var(--orange); }
+  .topbar-right { display: flex; align-items: center; gap: 10px; }
+  .btn-primary{
+    background: var(--orange); color: #fff; border: none;
+    padding: 7px 16px; border-radius: 24px; font-size: 13px;
+    font-weight: 600; cursor: pointer; font-family: inherit;
+  }
+  .btn-primary:hover { background: #c2521f; }
+  .btn-secondary {
+    background: none; color: var(--muted); border: 1px solid var(--border);
+    padding: 7px 14px; border-radius: 7px; font-size: 13px;
+    font-weight: 500; cursor: pointer; font-family: inherit;
+  }
+  .btn-secondary:hover { background: var(--bg); }
+
+  /* ── TAB BAR ── */
+  .tab-bar {
+    background: var(--white); border-bottom: 1px solid var(--border);
+    display: flex; align-items: center; padding: 0 28px; gap: 4px;
+  }
+  .tab-btn {
+    padding: 14px 20px; font-size: 14px; font-weight: 500;
+    color: var(--muted); border: none; background: none;
+    cursor: pointer; font-family: inherit; border-bottom: 2px solid transparent;
+    margin-bottom: -1px; transition: color .15s;
+  }
+  .tab-btn:hover { color: var(--text); }
+  .tab-btn.active { color: var(--orange); border-bottom-color: var(--orange); font-weight: 600; }
+
+  /* ── PANELS ── */
+  .tab-panel { display: none; padding: 28px; }
+  .tab-panel.active { display: block; }
+
+  /* ── STATS ROW ── */
+  .stats-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; margin-bottom: 22px; }
+  .stat-card {
+    background: var(--white); border: 1px solid var(--border);
+    border-radius: var(--radius); padding: 16px 18px;
+  }
+  .stat-label { font-size: 12px; color: var(--muted); font-weight: 500; margin-bottom: 6px; }
+  .stat-value { font-size: 22px; font-weight: 700; }
+  .stat-sub { font-size: 12px; color: var(--muted); margin-top: 3px; }
+
+  /* ── CARD ── */
+  .card {
+    background: var(--white); border-radius: var(--radius);
+    border: 1px solid var(--border); margin-bottom: 18px; overflow: hidden;
+  }
+  .card-header {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 16px 20px; border-bottom: 1px solid var(--border);
+  }
+  .card-title { font-size: 15px; font-weight: 700; display: flex; align-items: center; gap: 8px; }
+  .card-body { padding: 20px; }
+  .card-actions { display: flex; gap: 8px; }
+
+  /* ── AWARD CATEGORIES ── */
+  .award-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 14px; }
+  .award-card {
+    border: 1.5px solid var(--border); border-radius: var(--radius);
+    padding: 18px; background: var(--white); position: relative;
+  }
+  .award-card.active-award { border-top: 4px solid var(--gold); }
+  .award-icon { font-size: 28px; margin-bottom: 10px; }
+  .award-name { font-size: 15px; font-weight: 700; margin-bottom: 4px; }
+  .award-desc { font-size: 12px; color: var(--muted); margin-bottom: 12px; line-height: 1.5; }
+  .award-meta { display: flex; gap: 12px; margin-bottom: 12px; }
+  .award-meta-item { font-size: 12px; color: var(--muted); }
+  .award-meta-item strong { color: var(--text); font-weight: 700; }
+  .award-status {
+    position: absolute; top: 14px; right: 14px;
+    padding: 2px 8px; border-radius: 8px; font-size: 11px; font-weight: 700;
+  }
+  .status-open { background: #e0f5ee; color: var(--green); }
+  .status-voting { background: #e0f3fa; color: var(--teal); }
+  .status-closed { background: var(--bg); color: var(--faint); }
+  .btn-sm {
+    padding: 5px 12px; border-radius: 6px; font-size: 12px;
+    font-weight: 600; cursor: pointer; font-family: inherit;
+    border: 1px solid var(--border); background: none; color: var(--muted);
+  }
+  .btn-sm:hover { background: var(--bg); }
+  .btn-sm.primary { background: var(--orange); color: #fff; border-color: var(--orange); }
+  .award-actions { display: flex; gap: 8px; }
+
+  /* ── NOMINEES TABLE ── */
+  .data-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  .data-table th {
+    text-align: left; padding: 10px 16px; font-size: 12px;
+    font-weight: 600; color: var(--muted); background: var(--bg);
+    border-bottom: 1px solid var(--border);
+  }
+  .data-table td { padding: 12px 16px; border-bottom: 1px solid var(--border); }
+  .data-table tr:last-child td { border-bottom: none; }
+  .data-table tr:hover td { background: #fafaf8; }
+  .score-bar { display: flex; align-items: center; gap: 8px; }
+  .score-track { flex: 1; height: 6px; background: var(--bg); border-radius: 3px; overflow: hidden; }
+  .score-fill { height: 100%; border-radius: 3px; background: var(--gold); }
+  .score-num { font-size: 12px; font-weight: 700; width: 30px; }
+
+  /* ── JURY GRID ── */
+  .jury-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 14px; }
+  .jury-card {
+    background: var(--white); border: 1.5px solid var(--border);
+    border-radius: var(--radius); padding: 18px; text-align: center;
+  }
+  .jury-avatar {
+    width: 56px; height: 56px; border-radius: 50%;
+    display: inline-flex; align-items: center; justify-content: center;
+    font-size: 20px; font-weight: 700; color: #fff;
+    margin-bottom: 10px;
+  }
+  .jury-name { font-size: 14px; font-weight: 700; margin-bottom: 3px; }
+  .jury-role { font-size: 12px; color: var(--muted); margin-bottom: 10px; }
+  .jury-progress { margin-bottom: 10px; }
+  .jury-progress-label { display: flex; justify-content: space-between; font-size: 11px; color: var(--muted); margin-bottom: 4px; }
+  .jury-progress-bar { height: 5px; background: var(--bg); border-radius: 3px; overflow: hidden; }
+  .jury-progress-fill { height: 100%; border-radius: 3px; }
+  .jury-status { font-size: 11px; font-weight: 700; }
+  .jury-actions { display: flex; gap: 6px; justify-content: center; margin-top: 10px; }
+
+  /* ── VOTING RESULTS ── */
+  .results-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; }
+  .result-card {
+    background: var(--white); border: 1px solid var(--border);
+    border-radius: var(--radius); padding: 20px;
+  }
+  .result-title { font-size: 14px; font-weight: 700; margin-bottom: 14px; }
+  .result-item {
+    display: flex; align-items: center; gap: 10px;
+    padding: 8px 0; border-bottom: 1px solid var(--border);
+  }
+  .result-item:last-child { border-bottom: none; }
+  .result-rank { font-size: 16px; font-weight: 700; width: 28px; flex-shrink: 0; }
+  .result-game { flex: 1; }
+  .result-game-name { font-size: 13px; font-weight: 700; }
+  .result-game-dev { font-size: 11px; color: var(--muted); }
+  .result-score { font-size: 14px; font-weight: 700; color: var(--gold); }
+
+  /* ── TOAST ── */
+  .toast {
+    position: fixed; bottom: 28px; left: 50%; transform: translateX(-50%);
+    background: #1a1a1a; color: #fff; padding: 10px 20px;
+    border-radius: 8px; font-size: 13px; font-weight: 600;
+    z-index: 9999; box-shadow: none; transition: opacity .3s;
+  }
+
+  /* ── EMBED MODE ── */
+  body.embed-mode .topbar { display: none !important; }
+  body.embed-mode .tab-bar { top: 0; }
+</style>
+</head>
+<body>
+
+<!-- TOPBAR -->
+<div class="topbar">
+  <div class="topbar-logo">GAME <span>CONNECTION</span> · Event HQ</div>
+  <div class="topbar-right">
+    <button class="btn-secondary" onclick="showToast('Exporting awards report…')">📤 Export</button>
+    <button class="btn-primary" onclick="showToast('Create award category form opened')">＋ New Award Category</button>
+  </div>
+</div>
+
+<!-- TAB BAR -->
+<div class="tab-bar">
+  <button class="tab-btn active" id="tab-awards" onclick="switchTab('awards')">🏆 Award Categories</button>
+  <button class="tab-btn" id="tab-jury" onclick="switchTab('jury')">👨‍⚖️ Jury Management</button>
+  <button class="tab-btn" id="tab-results" onclick="switchTab('results')">📊 Results & Voting</button>
+</div>
+
+<!-- ══════════════════════════════════════
+     TAB 1: AWARD CATEGORIES
+     ══════════════════════════════════════ -->
+<div class="tab-panel active" id="panel-awards">
+
+  <div class="stats-row">
+    <div class="stat-card">
+      <div class="stat-label">Award Categories</div>
+      <div class="stat-value">6</div>
+      <div class="stat-sub">4 open · 2 in voting</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">Total Nominations</div>
+      <div class="stat-value">84</div>
+      <div class="stat-sub">across all categories</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">Community Votes</div>
+      <div class="stat-value" style="color:var(--teal);">2,341</div>
+      <div class="stat-sub">public voting active</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">Jury Members</div>
+      <div class="stat-value">12</div>
+      <div class="stat-sub">8 completed scoring</div>
+    </div>
+  </div>
+
+  <div class="award-grid">
+    <div class="award-card active-award">
+      <div class="award-status status-voting">Voting Open</div>
+      <div class="award-icon">🎮</div>
+      <div class="award-name">Best Indie Game</div>
+      <div class="award-desc">Recognizing outstanding independent game development with innovation and creativity</div>
+      <div class="award-meta">
+        <div class="award-meta-item"><strong>18</strong> nominees</div>
+        <div class="award-meta-item"><strong>Apr 17</strong> deadline</div>
+      </div>
+      <div class="award-actions">
+        <button class="btn-sm primary" onclick="showToast('Best Indie Game nominees')">Nominees</button>
+        <button class="btn-sm" onclick="showToast('Editing Best Indie Game…')">Edit</button>
+      </div>
+    </div>
+
+    <div class="award-card active-award">
+      <div class="award-status status-voting">Voting Open</div>
+      <div class="award-icon">🌟</div>
+      <div class="award-name">Best Narrative</div>
+      <div class="award-desc">Excellence in storytelling, world-building and character development</div>
+      <div class="award-meta">
+        <div class="award-meta-item"><strong>12</strong> nominees</div>
+        <div class="award-meta-item"><strong>Apr 17</strong> deadline</div>
+      </div>
+      <div class="award-actions">
+        <button class="btn-sm primary" onclick="showToast('Best Narrative nominees')">Nominees</button>
+        <button class="btn-sm" onclick="showToast('Editing Best Narrative…')">Edit</button>
+      </div>
+    </div>
+
+    <div class="award-card">
+      <div class="award-status status-open">Nominations Open</div>
+      <div class="award-icon">🎨</div>
+      <div class="award-name">Best Visual Art</div>
+      <div class="award-desc">Outstanding artistic direction, visual style and aesthetic achievement</div>
+      <div class="award-meta">
+        <div class="award-meta-item"><strong>9</strong> nominees</div>
+        <div class="award-meta-item"><strong>Apr 10</strong> deadline</div>
+      </div>
+      <div class="award-actions">
+        <button class="btn-sm primary" onclick="showToast('Best Visual Art nominees')">Nominees</button>
+        <button class="btn-sm" onclick="showToast('Editing Best Visual Art…')">Edit</button>
+      </div>
+    </div>
+
+    <div class="award-card">
+      <div class="award-status status-open">Nominations Open</div>
+      <div class="award-icon">🔊</div>
+      <div class="award-name">Best Audio Design</div>
+      <div class="award-desc">Excellence in sound design, music composition and audio experience</div>
+      <div class="award-meta">
+        <div class="award-meta-item"><strong>8</strong> nominees</div>
+        <div class="award-meta-item"><strong>Apr 10</strong> deadline</div>
+      </div>
+      <div class="award-actions">
+        <button class="btn-sm primary" onclick="showToast('Best Audio nominees')">Nominees</button>
+        <button class="btn-sm" onclick="showToast('Editing Best Audio…')">Edit</button>
+      </div>
+    </div>
+
+    <div class="award-card">
+      <div class="award-status status-open">Nominations Open</div>
+      <div class="award-icon">🚀</div>
+      <div class="award-name">Most Innovative</div>
+      <div class="award-desc">Pushing the boundaries of game design, mechanics or technology</div>
+      <div class="award-meta">
+        <div class="award-meta-item"><strong>15</strong> nominees</div>
+        <div class="award-meta-item"><strong>Apr 12</strong> deadline</div>
+      </div>
+      <div class="award-actions">
+        <button class="btn-sm primary" onclick="showToast('Most Innovative nominees')">Nominees</button>
+        <button class="btn-sm" onclick="showToast('Editing Most Innovative…')">Edit</button>
+      </div>
+    </div>
+
+    <!-- Add New -->
+    <div style="border:2px dashed var(--border);border-radius:var(--radius);padding:28px;text-align:center;cursor:pointer;color:var(--muted);" onclick="showToast('Create award category form opened')">
+      <div style="font-size:28px;margin-bottom:8px;">🏅</div>
+      <div style="font-size:14px;font-weight:600;">Add Award Category</div>
+      <div style="font-size:12px;margin-top:4px;">Define criteria, eligibility and voting method</div>
+    </div>
+  </div>
+
+  <!-- Nominees Table -->
+  <div class="card">
+    <div class="card-header">
+      <div class="card-title">🎮 Best Indie Game — Nominees</div>
+      <div class="card-actions">
+        <button class="btn-secondary" onclick="showToast('Adding nominee…')">＋ Add Nominee</button>
+      </div>
+    </div>
+    <table class="data-table">
+      <thead>
+        <tr>
+          <th>Game</th>
+          <th>Developer</th>
+          <th>Submitted</th>
+          <th>Jury Score</th>
+          <th>Community</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><strong>Hollow Depths</strong></td>
+          <td style="color:var(--muted);">Moonlit Games</td>
+          <td style="color:var(--muted);">Mar 5, 2026</td>
+          <td>
+            <div class="score-bar">
+              <div class="score-track"><div class="score-fill" style="width:88%;"></div></div>
+              <div class="score-num">8.8</div>
+            </div>
+          </td>
+          <td style="color:var(--teal);font-weight:700;">1,204 votes</td>
+          <td><button class="btn-sm" onclick="showToast('Hollow Depths details')">View</button></td>
+        </tr>
+        <tr>
+          <td><strong>Starfall Chronicles</strong></td>
+          <td style="color:var(--muted);">Nova Interactive</td>
+          <td style="color:var(--muted);">Mar 8, 2026</td>
+          <td>
+            <div class="score-bar">
+              <div class="score-track"><div class="score-fill" style="width:82%;"></div></div>
+              <div class="score-num">8.2</div>
+            </div>
+          </td>
+          <td style="color:var(--teal);font-weight:700;">987 votes</td>
+          <td><button class="btn-sm" onclick="showToast('Starfall details')">View</button></td>
+        </tr>
+        <tr>
+          <td><strong>Pixel Odyssey</strong></td>
+          <td style="color:var(--muted);">RetroForge Studio</td>
+          <td style="color:var(--muted);">Mar 12, 2026</td>
+          <td>
+            <div class="score-bar">
+              <div class="score-track"><div class="score-fill" style="width:76%;"></div></div>
+              <div class="score-num">7.6</div>
+            </div>
+          </td>
+          <td style="color:var(--teal);font-weight:700;">743 votes</td>
+          <td><button class="btn-sm" onclick="showToast('Pixel Odyssey details')">View</button></td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════
+     TAB 2: JURY MANAGEMENT
+     ══════════════════════════════════════ -->
+<div class="tab-panel" id="panel-jury">
+
+  <div class="stats-row">
+    <div class="stat-card">
+      <div class="stat-label">Total Jury Members</div>
+      <div class="stat-value">12</div>
+      <div class="stat-sub">across all categories</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">Scoring Complete</div>
+      <div class="stat-value" style="color:var(--green);">8</div>
+      <div class="stat-sub">67% completion rate</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">In Progress</div>
+      <div class="stat-value" style="color:var(--orange);">3</div>
+      <div class="stat-sub">deadline: Apr 16</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">Not Started</div>
+      <div class="stat-value">1</div>
+      <div class="stat-sub">reminder sent</div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-header">
+      <div class="card-title">👨‍⚖️ Jury Members</div>
+      <div class="card-actions">
+        <button class="btn-secondary" onclick="showToast('Sending reminder to all pending jurors…')">📧 Send Reminder</button>
+        <button class="btn-primary" onclick="showToast('Invite jury member form opened')">＋ Invite Juror</button>
+      </div>
+    </div>
+    <div class="card-body">
+      <div class="jury-grid">
+        <div class="jury-card">
+          <div class="jury-avatar" style="background:var(--orange);">MC</div>
+          <div class="jury-name">Marie Chen</div>
+          <div class="jury-role">Senior Producer · Devolver Digital</div>
+          <div class="jury-progress">
+            <div class="jury-progress-label"><span>Scoring progress</span><span>18/18</span></div>
+            <div class="jury-progress-bar"><div class="jury-progress-fill" style="width:100%;background:var(--green);"></div></div>
+          </div>
+          <div class="jury-status" style="color:var(--green);">✅ Complete</div>
+          <div class="jury-actions">
+            <button class="btn-sm" onclick="showToast('Marie Chen jury profile')">View Scores</button>
+          </div>
+        </div>
+
+        <div class="jury-card">
+          <div class="jury-avatar" style="background:var(--teal);">JP</div>
+          <div class="jury-name">James Park</div>
+          <div class="jury-role">Investment Director · Konvoy Ventures</div>
+          <div class="jury-progress">
+            <div class="jury-progress-label"><span>Scoring progress</span><span>14/18</span></div>
+            <div class="jury-progress-bar"><div class="jury-progress-fill" style="width:78%;background:var(--orange);"></div></div>
+          </div>
+          <div class="jury-status" style="color:var(--orange);">⏳ In Progress</div>
+          <div class="jury-actions">
+            <button class="btn-sm" onclick="showToast('Reminder sent to James')">Remind</button>
+            <button class="btn-sm" onclick="showToast('James Park scores')">View</button>
+          </div>
+        </div>
+
+        <div class="jury-card">
+          <div class="jury-avatar" style="background:var(--green);">TK</div>
+          <div class="jury-name">Takeshi Kimura</div>
+          <div class="jury-role">Director · Sony Interactive</div>
+          <div class="jury-progress">
+            <div class="jury-progress-label"><span>Scoring progress</span><span>18/18</span></div>
+            <div class="jury-progress-bar"><div class="jury-progress-fill" style="width:100%;background:var(--green);"></div></div>
+          </div>
+          <div class="jury-status" style="color:var(--green);">✅ Complete</div>
+          <div class="jury-actions">
+            <button class="btn-sm" onclick="showToast('Takeshi Kimura scores')">View Scores</button>
+          </div>
+        </div>
+
+        <div class="jury-card">
+          <div class="jury-avatar" style="background:#7c3aed;">AL</div>
+          <div class="jury-name">Anna Larsson</div>
+          <div class="jury-role">Producer · Paradox Interactive</div>
+          <div class="jury-progress">
+            <div class="jury-progress-label"><span>Scoring progress</span><span>0/18</span></div>
+            <div class="jury-progress-bar"><div class="jury-progress-fill" style="width:0%;background:var(--faint);"></div></div>
+          </div>
+          <div class="jury-status" style="color:var(--faint);">⚠️ Not Started</div>
+          <div class="jury-actions">
+            <button class="btn-sm primary" onclick="showToast('Urgent reminder sent to Anna')">Send Reminder</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════
+     TAB 3: RESULTS & VOTING
+     ══════════════════════════════════════ -->
+<div class="tab-panel" id="panel-results">
+
+  <div class="stats-row">
+    <div class="stat-card">
+      <div class="stat-label">Community Votes Cast</div>
+      <div class="stat-value" style="color:var(--teal);">2,341</div>
+      <div class="stat-sub">from 847 attendees</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">Jury Scores Submitted</div>
+      <div class="stat-value">8/12</div>
+      <div class="stat-sub">67% complete</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">Categories Finalized</div>
+      <div class="stat-value">0/6</div>
+      <div class="stat-sub">Voting still open</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">Ceremony Date</div>
+      <div class="stat-value" style="font-size:16px;">Apr 17</div>
+      <div class="stat-sub">14:00 · Main Stage</div>
+    </div>
+  </div>
+
+  <div class="results-grid">
+    <div class="result-card">
+      <div class="result-title">🎮 Best Indie Game — Current Standing</div>
+      <div class="result-item">
+        <div class="result-rank">🥇</div>
+        <div class="result-game">
+          <div class="result-game-name">Hollow Depths</div>
+          <div class="result-game-dev">Moonlit Games</div>
+        </div>
+        <div class="result-score">8.8</div>
+      </div>
+      <div class="result-item">
+        <div class="result-rank">🥈</div>
+        <div class="result-game">
+          <div class="result-game-name">Starfall Chronicles</div>
+          <div class="result-game-dev">Nova Interactive</div>
+        </div>
+        <div class="result-score">8.2</div>
+      </div>
+      <div class="result-item">
+        <div class="result-rank">🥉</div>
+        <div class="result-game">
+          <div class="result-game-name">Pixel Odyssey</div>
+          <div class="result-game-dev">RetroForge Studio</div>
+        </div>
+        <div class="result-score">7.6</div>
+      </div>
+    </div>
+
+    <div class="result-card">
+      <div class="result-title">🌟 Best Narrative — Current Standing</div>
+      <div class="result-item">
+        <div class="result-rank">🥇</div>
+        <div class="result-game">
+          <div class="result-game-name">Echoes of Tomorrow</div>
+          <div class="result-game-dev">Dreamweave Games</div>
+        </div>
+        <div class="result-score">9.1</div>
+      </div>
+      <div class="result-item">
+        <div class="result-rank">🥈</div>
+        <div class="result-game">
+          <div class="result-game-name">The Last Signal</div>
+          <div class="result-game-dev">Cipher Studios</div>
+        </div>
+        <div class="result-score">8.7</div>
+      </div>
+      <div class="result-item">
+        <div class="result-rank">🥉</div>
+        <div class="result-game">
+          <div class="result-game-name">Verdant Shores</div>
+          <div class="result-game-dev">Tidal Wave Interactive</div>
+        </div>
+        <div class="result-score">8.3</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-header">
+      <div class="card-title">🎬 Ceremony Settings</div>
+    </div>
+    <div class="card-body">
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;">
+        <div>
+          <label style="font-size:13px;font-weight:600;display:block;margin-bottom:5px;">Ceremony Date & Time</label>
+          <input type="datetime-local" style="width:100%;border:1px solid var(--border);border-radius:7px;padding:9px 12px;font-size:14px;font-family:inherit;" value="2026-04-17T14:00">
+        </div>
+        <div>
+          <label style="font-size:13px;font-weight:600;display:block;margin-bottom:5px;">Venue / Room</label>
+          <input type="text" style="width:100%;border:1px solid var(--border);border-radius:7px;padding:9px 12px;font-size:14px;font-family:inherit;" value="Main Stage">
+        </div>
+        <div>
+          <label style="font-size:13px;font-weight:600;display:block;margin-bottom:5px;">Voting Closes</label>
+          <input type="datetime-local" style="width:100%;border:1px solid var(--border);border-radius:7px;padding:9px 12px;font-size:14px;font-family:inherit;" value="2026-04-17T12:00">
+        </div>
+        <div>
+          <label style="font-size:13px;font-weight:600;display:block;margin-bottom:5px;">Results Visibility</label>
+          <select style="width:100%;border:1px solid var(--border);border-radius:7px;padding:9px 12px;font-size:14px;font-family:inherit;">
+            <option>Reveal at ceremony</option>
+            <option>Publish immediately after voting</option>
+            <option>Manual publish</option>
+          </select>
+        </div>
+      </div>
+      <div style="margin-top:16px;display:flex;justify-content:flex-end;gap:10px;">
+        <button class="btn-secondary" onclick="showToast('Settings saved')">Save Settings</button>
+        <button class="btn-primary" onclick="showToast('🏆 Awards ceremony page published!')">Publish Ceremony Page</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  // ── EMBED MODE ──
+  (function() {
+    var p = new URLSearchParams(window.location.search);
+    if (p.get('embed') === '1') document.body.classList.add('embed-mode');
+  })();
+
+  // ── TAB SWITCHING ──
+  function switchTab(name) {
+    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+    document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+    document.getElementById('tab-' + name).classList.add('active');
+    document.getElementById('panel-' + name).classList.add('active');
+  }
+
+  // ── TOAST ──
+  function showToast(msg) {
+    var t = document.createElement('div');
+    t.className = 'toast'; t.textContent = msg;
+    document.body.appendChild(t);
+    setTimeout(() => { t.style.opacity = '0'; setTimeout(() => t.remove(), 300); }, 2500);
+  }
+</script>
+</body>
+</html>
