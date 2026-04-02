@@ -1,0 +1,288 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Game Showcase – Event HQ</title>
+<style>
+:root {
+  --bg: #f3f2ef; --surface: #ffffff; --border: #e0dfdc;
+  --text1: #000000; --text2: #666666; --text3: #999999;
+  --orange: #e8650a; --orange-light: #fdf0e9; --radius: 8px;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: var(--bg); color: var(--text1); font-size: 14px; line-height: 1.6; }
+body.embed-mode nav, body.embed-mode header, body.embed-mode aside { display: none !important; }
+body.embed-mode .page-wrap { padding: 20px !important; }
+.page-wrap { padding: 28px 32px; max-width: 1100px; }
+.page-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 24px; }
+.page-title { font-size: 22px; font-weight: 800; }
+.page-subtitle { font-size: 13px; color: var(--text2); margin-top: 2px; }
+.tabs { display: flex; border-bottom: 2px solid var(--border); margin-bottom: 24px; }
+.tab { padding: 10px 20px; font-size: 13px; font-weight: 600; color: var(--text2); cursor: pointer; border-bottom: 2px solid transparent; margin-bottom: -2px; }
+.tab:hover { color: var(--text1); }
+.tab.active { color: var(--orange); border-bottom-color: var(--orange); }
+.card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 24px; margin-bottom: 20px; }
+.card-title { font-size: 15px; font-weight: 700; margin-bottom: 4px; }
+.card-subtitle { font-size: 13px; color: var(--text2); margin-bottom: 20px; }
+.btn { display: inline-flex; align-items: center; gap: 6px; padding: 8px 18px; border-radius: 24px; font-size: 13px; font-weight: 600; cursor: pointer; border: none; transition: opacity 0.15s; }
+.btn:hover { opacity: 0.85; }
+.btn-primary { background: var(--orange); color: white; }
+.btn-outline { background: transparent; border: 1.5px solid var(--border); color: var(--text1); }
+.btn-group { display: flex; gap: 10px; margin-top: 20px; }
+.stats-grid { display: grid; grid-template-columns: repeat(4,1fr); gap: 16px; margin-bottom: 24px; }
+.stat-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 20px; text-align: center; }
+.stat-num { font-size: 28px; font-weight: 800; color: var(--orange); }
+.stat-label { font-size: 12px; color: var(--text2); margin-top: 4px; }
+table { width: 100%; border-collapse: collapse; }
+th { text-align: left; padding: 10px 12px; font-size: 11px; color: var(--text3); text-transform: uppercase; letter-spacing: 0.05em; border-bottom: 1px solid var(--border); background: var(--bg); }
+td { padding: 12px 12px; border-bottom: 1px solid var(--border); font-size: 13px; vertical-align: middle; }
+tr:last-child td { border-bottom: none; }
+tr:hover td { background: #fafaf9; }
+.badge { display: inline-block; padding: 2px 8px; border-radius: 12px; font-size: 11px; font-weight: 700; }
+.badge-green { background: #e8f5e9; color: #2e7d32; }
+.badge-orange { background: #fff3e0; color: #e65100; }
+.badge-blue { background: #e3f2fd; color: #1565c0; }
+.badge-gray { background: #f5f5f5; color: #666; }
+.badge-purple { background: #f3e5f5; color: #6a1b9a; }
+.badge-red { background: #fce4ec; color: #b71c1c; }
+.form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 16px; }
+.form-group { display: flex; flex-direction: column; gap: 6px; }
+label { font-size: 11px; font-weight: 700; color: var(--text2); text-transform: uppercase; letter-spacing: 0.06em; }
+input, select { border: 1px solid var(--border); border-radius: 6px; padding: 9px 12px; font-size: 14px; color: var(--text1); background: var(--surface); font-family: inherit; }
+input:focus, select:focus { outline: none; border-color: var(--orange); }
+.game-thumb { width: 48px; height: 36px; border-radius: 4px; background: var(--bg); border: 1px solid var(--border); display: flex; align-items: center; justify-content: center; font-size: 18px; flex-shrink: 0; }
+.game-info { display: flex; align-items: center; gap: 12px; }
+.game-name { font-weight: 700; font-size: 13px; }
+.game-meta { font-size: 11px; color: var(--text2); }
+.filter-bar { display: flex; gap: 10px; align-items: center; padding: 16px 20px; border-bottom: 1px solid var(--border); flex-wrap: wrap; }
+.toggle-row { display: flex; align-items: center; justify-content: space-between; padding: 12px 0; border-bottom: 1px solid var(--border); }
+.toggle-row:last-child { border-bottom: none; }
+.toggle-label { font-size: 14px; font-weight: 600; }
+.toggle-desc { font-size: 12px; color: var(--text2); margin-top: 2px; }
+.toggle { position: relative; width: 40px; height: 22px; flex-shrink: 0; margin-left: 16px; }
+.toggle input { opacity: 0; width: 0; height: 0; }
+.toggle-slider { position: absolute; inset: 0; background: #ccc; border-radius: 22px; cursor: pointer; transition: background 0.2s; }
+.toggle-slider::before { content: ''; position: absolute; width: 16px; height: 16px; left: 3px; top: 3px; background: white; border-radius: 50%; transition: transform 0.2s; }
+.toggle input:checked + .toggle-slider { background: var(--orange); }
+.toggle input:checked + .toggle-slider::before { transform: translateX(18px); }
+.bar-item { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }
+.bar-label { font-size: 12px; color: var(--text2); width: 130px; flex-shrink: 0; }
+.bar-track { flex: 1; height: 8px; background: var(--bg); border-radius: 4px; overflow: hidden; }
+.bar-fill { height: 100%; border-radius: 4px; background: var(--orange); }
+.bar-val { font-size: 12px; font-weight: 700; width: 36px; text-align: right; }
+.chart-row { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+.chart-box { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 20px; }
+.chart-title { font-size: 14px; font-weight: 700; margin-bottom: 16px; }
+</style>
+</head>
+<body>
+<div class="page-wrap">
+  <div class="page-header">
+    <div>
+      <div class="page-title">Game Showcase</div>
+      <div class="page-subtitle">Manage game project submissions and exhibition booths</div>
+    </div>
+    <button class="btn btn-primary">+ Invite Developers</button>
+  </div>
+  <div class="tabs">
+    <div class="tab active" onclick="switchTab('projects',this)">Projects</div>
+    <div class="tab" onclick="switchTab('review',this)">Review Queue</div>
+    <div class="tab" onclick="switchTab('settings',this)">Showcase Settings</div>
+    <div class="tab" onclick="switchTab('analytics',this)">Analytics</div>
+  </div>
+
+  <div id="tab-projects">
+    <div class="stats-grid">
+      <div class="stat-card"><div class="stat-num">148</div><div class="stat-label">Total Submissions</div></div>
+      <div class="stat-card"><div class="stat-num">112</div><div class="stat-label">Approved</div></div>
+      <div class="stat-card"><div class="stat-num">24</div><div class="stat-label">Pending Review</div></div>
+      <div class="stat-card"><div class="stat-num">12</div><div class="stat-label">Rejected</div></div>
+    </div>
+    <div class="card" style="padding:0;overflow:hidden">
+      <div class="filter-bar">
+        <input type="text" placeholder="Search projects..." style="flex:1;max-width:260px">
+        <select style="width:140px"><option>All Status</option><option>Approved</option><option>Pending</option><option>Rejected</option></select>
+        <select style="width:140px"><option>All Genres</option><option>Action</option><option>RPG</option><option>Strategy</option><option>Puzzle</option></select>
+        <select style="width:140px"><option>All Platforms</option><option>PC</option><option>Console</option><option>Mobile</option><option>VR/AR</option></select>
+        <button class="btn btn-outline" style="margin-left:auto">Export CSV</button>
+      </div>
+      <table>
+        <thead><tr><th>Game</th><th>Developer</th><th>Genre</th><th>Platform</th><th>Stage</th><th>Status</th><th>Submitted</th><th></th></tr></thead>
+        <tbody>
+          <tr>
+            <td><div class="game-info"><div class="game-thumb">🎮</div><div><div class="game-name">Neon Drift</div><div class="game-meta">Racing / Arcade</div></div></div></td>
+            <td style="color:var(--text2)">Neon Pixel Studios</td>
+            <td><span class="badge badge-blue">Racing</span></td>
+            <td>PC, Console</td><td style="color:var(--text2)">Beta</td>
+            <td><span class="badge badge-green">Approved</span></td>
+            <td style="color:var(--text3)">Mar 12</td>
+            <td><button class="btn btn-outline" style="padding:4px 10px;font-size:12px">View</button></td>
+          </tr>
+          <tr>
+            <td><div class="game-info"><div class="game-thumb">⚔️</div><div><div class="game-name">Shadow Realm</div><div class="game-meta">Action RPG</div></div></div></td>
+            <td style="color:var(--text2)">IndieLab</td>
+            <td><span class="badge badge-orange">RPG</span></td>
+            <td>PC</td><td style="color:var(--text2)">Alpha</td>
+            <td><span class="badge badge-green">Approved</span></td>
+            <td style="color:var(--text3)">Mar 14</td>
+            <td><button class="btn btn-outline" style="padding:4px 10px;font-size:12px">View</button></td>
+          </tr>
+          <tr>
+            <td><div class="game-info"><div class="game-thumb">🌌</div><div><div class="game-name">Cosmos Builder</div><div class="game-meta">Strategy / Sim</div></div></div></td>
+            <td style="color:var(--text2)">StarForge Games</td>
+            <td><span class="badge badge-purple">Strategy</span></td>
+            <td>PC, Mobile</td><td style="color:var(--text2)">Prototype</td>
+            <td><span class="badge badge-orange">Pending</span></td>
+            <td style="color:var(--text3)">Mar 18</td>
+            <td><button class="btn btn-outline" style="padding:4px 10px;font-size:12px">Review</button></td>
+          </tr>
+          <tr>
+            <td><div class="game-info"><div class="game-thumb">🧩</div><div><div class="game-name">Puzzle Worlds</div><div class="game-meta">Casual Puzzle</div></div></div></td>
+            <td style="color:var(--text2)">BrainBox Studio</td>
+            <td><span class="badge badge-green">Puzzle</span></td>
+            <td>Mobile</td><td style="color:var(--text2)">Released</td>
+            <td><span class="badge badge-green">Approved</span></td>
+            <td style="color:var(--text3)">Mar 10</td>
+            <td><button class="btn btn-outline" style="padding:4px 10px;font-size:12px">View</button></td>
+          </tr>
+          <tr>
+            <td><div class="game-info"><div class="game-thumb">🚀</div><div><div class="game-name">Void Runner</div><div class="game-meta">Sci-Fi Shooter</div></div></div></td>
+            <td style="color:var(--text2)">Apex Interactive</td>
+            <td><span class="badge badge-blue">Shooter</span></td>
+            <td>PC, VR</td><td style="color:var(--text2)">Concept</td>
+            <td><span class="badge badge-red">Rejected</span></td>
+            <td style="color:var(--text3)">Mar 20</td>
+            <td><button class="btn btn-outline" style="padding:4px 10px;font-size:12px">View</button></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <div id="tab-review" style="display:none">
+    <div class="card" style="padding:0;overflow:hidden">
+      <div class="filter-bar">
+        <span style="font-weight:700;font-size:14px">24 projects awaiting review</span>
+        <button class="btn btn-outline" style="margin-left:auto">Bulk Approve</button>
+      </div>
+      <table>
+        <thead><tr><th>Game</th><th>Developer</th><th>Submitted</th><th>Materials</th><th>Notes</th><th>Action</th></tr></thead>
+        <tbody>
+          <tr>
+            <td><div class="game-info"><div class="game-thumb">🌌</div><div><div class="game-name">Cosmos Builder</div><div class="game-meta">Strategy / Simulation</div></div></div></td>
+            <td style="color:var(--text2)">StarForge Games</td><td style="color:var(--text3)">Mar 18, 2026</td>
+            <td><span class="badge badge-green">Complete</span></td>
+            <td style="color:var(--text2);font-size:12px">Needs genre clarification</td>
+            <td><div style="display:flex;gap:6px"><button class="btn btn-primary" style="padding:4px 12px;font-size:12px;border-radius:12px">Approve</button><button class="btn btn-outline" style="padding:4px 10px;font-size:12px">Reject</button></div></td>
+          </tr>
+          <tr>
+            <td><div class="game-info"><div class="game-thumb">🏰</div><div><div class="game-name">Kingdom Fall</div><div class="game-meta">Tower Defense</div></div></div></td>
+            <td style="color:var(--text2)">CastleCode</td><td style="color:var(--text3)">Mar 19, 2026</td>
+            <td><span class="badge badge-orange">Incomplete</span></td>
+            <td style="color:var(--text2);font-size:12px">Missing trailer video</td>
+            <td><div style="display:flex;gap:6px"><button class="btn btn-primary" style="padding:4px 12px;font-size:12px;border-radius:12px">Approve</button><button class="btn btn-outline" style="padding:4px 10px;font-size:12px">Reject</button></div></td>
+          </tr>
+          <tr>
+            <td><div class="game-info"><div class="game-thumb">🌊</div><div><div class="game-name">Deep Blue</div><div class="game-meta">Adventure</div></div></div></td>
+            <td style="color:var(--text2)">Ocean Dev</td><td style="color:var(--text3)">Mar 20, 2026</td>
+            <td><span class="badge badge-green">Complete</span></td>
+            <td style="color:var(--text2);font-size:12px">—</td>
+            <td><div style="display:flex;gap:6px"><button class="btn btn-primary" style="padding:4px 12px;font-size:12px;border-radius:12px">Approve</button><button class="btn btn-outline" style="padding:4px 10px;font-size:12px">Reject</button></div></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <div id="tab-settings" style="display:none">
+    <div class="card">
+      <div class="card-title">Submission Requirements</div>
+      <div class="card-subtitle">Define what developers must provide when submitting their game.</div>
+      <div class="toggle-row"><div><div class="toggle-label">Game trailer video (required)</div><div class="toggle-desc">Developers must upload a trailer or gameplay video.</div></div><label class="toggle"><input type="checkbox" checked><span class="toggle-slider"></span></label></div>
+      <div class="toggle-row"><div><div class="toggle-label">Screenshots (minimum 3)</div><div class="toggle-desc">At least 3 high-quality screenshots of the game.</div></div><label class="toggle"><input type="checkbox" checked><span class="toggle-slider"></span></label></div>
+      <div class="toggle-row"><div><div class="toggle-label">Press kit / one-sheet</div><div class="toggle-desc">A downloadable press kit or one-page summary document.</div></div><label class="toggle"><input type="checkbox"><span class="toggle-slider"></span></label></div>
+      <div class="toggle-row"><div><div class="toggle-label">Playable demo or build</div><div class="toggle-desc">Developers can optionally provide a playable demo.</div></div><label class="toggle"><input type="checkbox"><span class="toggle-slider"></span></label></div>
+    </div>
+    <div class="card">
+      <div class="card-title">Submission Window</div>
+      <div class="card-subtitle">Control when developers can submit or edit their projects.</div>
+      <div class="form-grid">
+        <div class="form-group"><label>Submissions Open</label><input type="date" value="2026-01-15"></div>
+        <div class="form-group"><label>Submissions Close</label><input type="date" value="2026-03-20"></div>
+      </div>
+      <div class="toggle-row"><div><div class="toggle-label">Allow edits after submission deadline</div><div class="toggle-desc">Developers can still update their project info after the deadline.</div></div><label class="toggle"><input type="checkbox"><span class="toggle-slider"></span></label></div>
+      <div class="toggle-row"><div><div class="toggle-label">Auto-approve submissions</div><div class="toggle-desc">Skip manual review and approve all submissions automatically.</div></div><label class="toggle"><input type="checkbox"><span class="toggle-slider"></span></label></div>
+      <div class="btn-group"><button class="btn btn-primary">Save Settings</button></div>
+    </div>
+    <div class="card">
+      <div class="card-title">Eligible Game Categories</div>
+      <div class="card-subtitle">Define which genres and development stages are eligible for showcase.</div>
+      <div class="form-grid">
+        <div class="form-group"><label>Eligible Genres</label>
+          <select multiple style="height:120px"><option selected>Action</option><option selected>RPG</option><option selected>Strategy</option><option selected>Puzzle</option><option selected>Simulation</option><option selected>Sports</option><option selected>Adventure</option><option>Other</option></select>
+        </div>
+        <div class="form-group"><label>Eligible Development Stages</label>
+          <select multiple style="height:120px"><option selected>Concept</option><option selected>Prototype</option><option selected>Alpha</option><option selected>Beta</option><option selected>Released</option></select>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div id="tab-analytics" style="display:none">
+    <div class="stats-grid">
+      <div class="stat-card"><div class="stat-num">148</div><div class="stat-label">Total Submissions</div></div>
+      <div class="stat-card"><div class="stat-num">38</div><div class="stat-label">Countries Represented</div></div>
+      <div class="stat-card"><div class="stat-num">2,840</div><div class="stat-label">Profile Views</div></div>
+      <div class="stat-card"><div class="stat-num">412</div><div class="stat-label">Meeting Requests</div></div>
+    </div>
+    <div class="chart-row">
+      <div class="chart-box">
+        <div class="chart-title">Submissions by Genre</div>
+        <div class="bar-item"><div class="bar-label">Action / Shooter</div><div class="bar-track"><div class="bar-fill" style="width:72%"></div></div><div class="bar-val">72%</div></div>
+        <div class="bar-item"><div class="bar-label">RPG</div><div class="bar-track"><div class="bar-fill" style="width:58%;background:#8b5cf6"></div></div><div class="bar-val">58%</div></div>
+        <div class="bar-item"><div class="bar-label">Strategy</div><div class="bar-track"><div class="bar-fill" style="width:44%;background:#3b82f6"></div></div><div class="bar-val">44%</div></div>
+        <div class="bar-item"><div class="bar-label">Puzzle / Casual</div><div class="bar-track"><div class="bar-fill" style="width:30%;background:#10b981"></div></div><div class="bar-val">30%</div></div>
+        <div class="bar-item"><div class="bar-label">Simulation</div><div class="bar-track"><div class="bar-fill" style="width:22%;background:#f59e0b"></div></div><div class="bar-val">22%</div></div>
+      </div>
+      <div class="chart-box">
+        <div class="chart-title">Submissions by Development Stage</div>
+        <div class="bar-item"><div class="bar-label">Beta</div><div class="bar-track"><div class="bar-fill" style="width:35%"></div></div><div class="bar-val">35%</div></div>
+        <div class="bar-item"><div class="bar-label">Alpha</div><div class="bar-track"><div class="bar-fill" style="width:28%;background:#3b82f6"></div></div><div class="bar-val">28%</div></div>
+        <div class="bar-item"><div class="bar-label">Prototype</div><div class="bar-track"><div class="bar-fill" style="width:20%;background:#8b5cf6"></div></div><div class="bar-val">20%</div></div>
+        <div class="bar-item"><div class="bar-label">Released</div><div class="bar-track"><div class="bar-fill" style="width:12%;background:#10b981"></div></div><div class="bar-val">12%</div></div>
+        <div class="bar-item"><div class="bar-label">Concept</div><div class="bar-track"><div class="bar-fill" style="width:5%;background:#f59e0b"></div></div><div class="bar-val">5%</div></div>
+      </div>
+    </div>
+    <div class="card" style="margin-top:20px">
+      <div class="card-title">Most Viewed Projects</div>
+      <div class="card-subtitle">Projects with the highest profile views during the event.</div>
+      <table>
+        <thead><tr><th>Game</th><th>Developer</th><th>Genre</th><th>Profile Views</th><th>Meeting Requests</th></tr></thead>
+        <tbody>
+          <tr><td><strong>Neon Drift</strong></td><td style="color:var(--text2)">Neon Pixel Studios</td><td><span class="badge badge-blue">Racing</span></td><td>342</td><td>28</td></tr>
+          <tr><td><strong>Shadow Realm</strong></td><td style="color:var(--text2)">IndieLab</td><td><span class="badge badge-orange">RPG</span></td><td>289</td><td>22</td></tr>
+          <tr><td><strong>Puzzle Worlds</strong></td><td style="color:var(--text2)">BrainBox Studio</td><td><span class="badge badge-green">Puzzle</span></td><td>201</td><td>15</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+<script>
+if (new URLSearchParams(window.location.search).get('embed') === '1') {
+  document.body.classList.add('embed-mode');
+}
+function switchTab(id, el) {
+  document.querySelectorAll('[id^="tab-"]').forEach(t => t.style.display = 'none');
+  document.getElementById('tab-' + id).style.display = 'block';
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  el.classList.add('active');
+}
+</script>
+</body>
+</html>
+"""
+with open('/home/ubuntu/gc-platform/GameShowcase_v1_PC.html', 'w', encoding='utf-8') as f:
+    f.write(html)
+print('Written')
+"

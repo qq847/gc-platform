@@ -1,0 +1,281 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Settings – Event HQ</title>
+<style>
+:root {
+  --bg: #f3f2ef; --surface: #ffffff; --border: #e0dfdc;
+  --text1: #000000; --text2: #666666; --text3: #999999;
+  --orange: #e8650a; --orange-light: #fdf0e9; --radius: 8px;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: var(--bg); color: var(--text1); font-size: 14px; line-height: 1.6; }
+body.embed-mode aside, body.embed-mode nav, body.embed-mode header { display: none !important; }
+body.embed-mode .main-content { margin-left: 0 !important; padding: 20px !important; }
+.app-layout { display: flex; min-height: 100vh; }
+aside { width: 200px; background: var(--surface); border-right: 1px solid var(--border); padding: 20px 0; flex-shrink: 0; }
+.sidebar-title { font-size: 11px; font-weight: 700; color: var(--text3); text-transform: uppercase; letter-spacing: 0.08em; padding: 0 16px 8px; }
+.sidebar-item { display: block; padding: 8px 16px; color: var(--text2); text-decoration: none; font-size: 13px; border-left: 3px solid transparent; cursor: pointer; }
+.sidebar-item:hover { background: var(--bg); color: var(--text1); }
+.sidebar-item.active { color: var(--orange); border-left-color: var(--orange); background: var(--orange-light); font-weight: 600; }
+.main-content { flex: 1; padding: 32px; max-width: 800px; }
+.card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 24px; margin-bottom: 20px; }
+.card-title { font-size: 16px; font-weight: 700; margin-bottom: 4px; }
+.card-subtitle { font-size: 13px; color: var(--text2); margin-bottom: 20px; }
+.form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 16px; }
+.form-row.full { grid-template-columns: 1fr; }
+.form-group { display: flex; flex-direction: column; gap: 6px; }
+label { font-size: 12px; font-weight: 600; color: var(--text2); text-transform: uppercase; letter-spacing: 0.05em; }
+input, select, textarea { border: 1px solid var(--border); border-radius: 6px; padding: 9px 12px; font-size: 14px; color: var(--text1); background: var(--surface); font-family: inherit; }
+input:focus, select:focus, textarea:focus { outline: none; border-color: var(--orange); }
+textarea { resize: vertical; min-height: 80px; }
+.toggle-row { display: flex; align-items: center; justify-content: space-between; padding: 12px 0; border-bottom: 1px solid var(--border); }
+.toggle-row:last-child { border-bottom: none; }
+.toggle-info .toggle-label { font-size: 14px; font-weight: 600; }
+.toggle-info .toggle-desc { font-size: 12px; color: var(--text2); margin-top: 2px; }
+.toggle { position: relative; width: 40px; height: 22px; flex-shrink: 0; margin-left: 16px; }
+.toggle input { opacity: 0; width: 0; height: 0; }
+.toggle-slider { position: absolute; inset: 0; background: #ccc; border-radius: 22px; cursor: pointer; transition: background 0.2s; }
+.toggle-slider::before { content: ''; position: absolute; width: 16px; height: 16px; left: 3px; top: 3px; background: white; border-radius: 50%; transition: transform 0.2s; }
+.toggle input:checked + .toggle-slider { background: var(--orange); }
+.toggle input:checked + .toggle-slider::before { transform: translateX(18px); }
+.btn { display: inline-flex; align-items: center; gap: 6px; padding: 8px 18px; border-radius: 24px; font-size: 13px; font-weight: 600; cursor: pointer; border: none; transition: opacity 0.15s; }
+.btn:hover { opacity: 0.85; }
+.btn-primary { background: var(--orange); color: white; }
+.btn-outline { background: transparent; border: 1.5px solid var(--border); color: var(--text1); }
+.btn-danger { background: transparent; border: 1.5px solid #e74c3c; color: #e74c3c; }
+.btn-group { display: flex; gap: 10px; margin-top: 20px; }
+.danger-card { border-color: #fcc; background: #fff8f8; }
+.danger-title { color: #c0392b; }
+table { width: 100%; border-collapse: collapse; }
+th { text-align: left; padding: 8px 0; font-size: 11px; color: var(--text3); text-transform: uppercase; letter-spacing: 0.05em; border-bottom: 1px solid var(--border); }
+td { padding: 12px 0; border-bottom: 1px solid var(--border); font-size: 13px; }
+tr:last-child td { border-bottom: none; }
+.badge { display: inline-block; padding: 2px 8px; border-radius: 12px; font-size: 12px; font-weight: 600; }
+.badge-green { background: #e8f5e9; color: #2e7d32; }
+.badge-orange { background: #fff3e0; color: #e65100; }
+</style>
+</head>
+<body>
+<div class="app-layout">
+  <aside>
+    <div class="sidebar-title">Settings</div>
+    <a class="sidebar-item active" onclick="showSection('account',this)">Account</a>
+    <a class="sidebar-item" onclick="showSection('event',this)">Event Defaults</a>
+    <a class="sidebar-item" onclick="showSection('notifications',this)">Notifications</a>
+    <a class="sidebar-item" onclick="showSection('team',this)">Team &amp; Access</a>
+    <a class="sidebar-item" onclick="showSection('integrations',this)">Integrations</a>
+    <a class="sidebar-item" onclick="showSection('billing',this)">Billing</a>
+    <a class="sidebar-item" onclick="showSection('danger',this)">Danger Zone</a>
+  </aside>
+  <div class="main-content">
+
+    <div id="s-account">
+      <div class="card">
+        <div class="card-title">Account Information</div>
+        <div class="card-subtitle">Your organizer profile visible to attendees and buyers.</div>
+        <div class="form-row">
+          <div class="form-group"><label>First Name</label><input type="text" value="Alex"></div>
+          <div class="form-group"><label>Last Name</label><input type="text" value="Dupont"></div>
+        </div>
+        <div class="form-row">
+          <div class="form-group"><label>Email</label><input type="email" value="alex@gameconnection.com"></div>
+          <div class="form-group"><label>Phone</label><input type="text" value="+33 1 23 45 67 89"></div>
+        </div>
+        <div class="form-row full">
+          <div class="form-group"><label>Organization</label><input type="text" value="Game Connection Inc."></div>
+        </div>
+        <div class="form-row full">
+          <div class="form-group"><label>Bio</label><textarea>Game industry event organizer with 10+ years of experience connecting developers and publishers worldwide.</textarea></div>
+        </div>
+        <div class="btn-group">
+          <button class="btn btn-primary">Save Changes</button>
+          <button class="btn btn-outline">Cancel</button>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-title">Password &amp; Security</div>
+        <div class="card-subtitle">Keep your account secure.</div>
+        <div class="form-row">
+          <div class="form-group"><label>Current Password</label><input type="password" placeholder="••••••••"></div>
+          <div class="form-group"><label>New Password</label><input type="password" placeholder="••••••••"></div>
+        </div>
+        <div class="toggle-row">
+          <div class="toggle-info">
+            <div class="toggle-label">Two-Factor Authentication</div>
+            <div class="toggle-desc">Add an extra layer of security to your account.</div>
+          </div>
+          <label class="toggle"><input type="checkbox" checked><span class="toggle-slider"></span></label>
+        </div>
+        <div class="btn-group"><button class="btn btn-primary">Update Password</button></div>
+      </div>
+    </div>
+
+    <div id="s-event" style="display:none">
+      <div class="card">
+        <div class="card-title">Event Defaults</div>
+        <div class="card-subtitle">Default settings applied to all new events you create.</div>
+        <div class="form-row">
+          <div class="form-group"><label>Default Currency</label>
+            <select><option>EUR – Euro</option><option>USD – US Dollar</option><option>GBP – British Pound</option></select>
+          </div>
+          <div class="form-group"><label>Default Timezone</label>
+            <select><option>Europe/Paris (CET)</option><option>America/New_York (EST)</option><option>Asia/Tokyo (JST)</option></select>
+          </div>
+        </div>
+        <div class="toggle-row">
+          <div class="toggle-info">
+            <div class="toggle-label">Auto-approve registrations</div>
+            <div class="toggle-desc">Automatically approve all registration requests without manual review.</div>
+          </div>
+          <label class="toggle"><input type="checkbox"><span class="toggle-slider"></span></label>
+        </div>
+        <div class="toggle-row">
+          <div class="toggle-info">
+            <div class="toggle-label">Enable waitlist by default</div>
+            <div class="toggle-desc">When capacity is reached, automatically enable a waitlist.</div>
+          </div>
+          <label class="toggle"><input type="checkbox" checked><span class="toggle-slider"></span></label>
+        </div>
+        <div class="btn-group"><button class="btn btn-primary">Save Defaults</button></div>
+      </div>
+    </div>
+
+    <div id="s-notifications" style="display:none">
+      <div class="card">
+        <div class="card-title">Email Notifications</div>
+        <div class="card-subtitle">Choose which emails you receive from Event HQ.</div>
+        <div class="toggle-row">
+          <div class="toggle-info"><div class="toggle-label">New registration</div><div class="toggle-desc">Get notified when someone registers for your event.</div></div>
+          <label class="toggle"><input type="checkbox" checked><span class="toggle-slider"></span></label>
+        </div>
+        <div class="toggle-row">
+          <div class="toggle-info"><div class="toggle-label">Buyer invitation response</div><div class="toggle-desc">Get notified when a buyer accepts or declines your invitation.</div></div>
+          <label class="toggle"><input type="checkbox" checked><span class="toggle-slider"></span></label>
+        </div>
+        <div class="toggle-row">
+          <div class="toggle-info"><div class="toggle-label">New project submission</div><div class="toggle-desc">Get notified when a studio submits a project for review.</div></div>
+          <label class="toggle"><input type="checkbox" checked><span class="toggle-slider"></span></label>
+        </div>
+        <div class="toggle-row">
+          <div class="toggle-info"><div class="toggle-label">Weekly summary report</div><div class="toggle-desc">Receive a weekly digest of your event's key metrics.</div></div>
+          <label class="toggle"><input type="checkbox"><span class="toggle-slider"></span></label>
+        </div>
+        <div class="toggle-row">
+          <div class="toggle-info"><div class="toggle-label">Platform announcements</div><div class="toggle-desc">News and updates about Event HQ features.</div></div>
+          <label class="toggle"><input type="checkbox" checked><span class="toggle-slider"></span></label>
+        </div>
+        <div class="btn-group"><button class="btn btn-primary">Save Preferences</button></div>
+      </div>
+    </div>
+
+    <div id="s-team" style="display:none">
+      <div class="card">
+        <div class="card-title">Team Members</div>
+        <div class="card-subtitle">Manage who has access to your Event HQ account.</div>
+        <table>
+          <thead><tr><th>Member</th><th>Role</th><th>Status</th><th></th></tr></thead>
+          <tbody>
+            <tr>
+              <td><strong>Alex Dupont</strong><br><span style="color:var(--text2);font-size:12px;">alex@gameconnection.com</span></td>
+              <td style="color:var(--text2);">Owner</td>
+              <td><span class="badge badge-green">Active</span></td>
+              <td></td>
+            </tr>
+            <tr>
+              <td><strong>Marie Leclerc</strong><br><span style="color:var(--text2);font-size:12px;">marie@gameconnection.com</span></td>
+              <td style="color:var(--text2);">Admin</td>
+              <td><span class="badge badge-green">Active</span></td>
+              <td style="text-align:right;"><button class="btn btn-outline" style="padding:4px 12px;font-size:12px;">Remove</button></td>
+            </tr>
+            <tr>
+              <td><strong>Tom Nakamura</strong><br><span style="color:var(--text2);font-size:12px;">tom@gameconnection.com</span></td>
+              <td style="color:var(--text2);">Viewer</td>
+              <td><span class="badge badge-orange">Pending</span></td>
+              <td style="text-align:right;"><button class="btn btn-outline" style="padding:4px 12px;font-size:12px;">Revoke</button></td>
+            </tr>
+          </tbody>
+        </table>
+        <div class="btn-group"><button class="btn btn-primary">+ Invite Team Member</button></div>
+      </div>
+    </div>
+
+    <div id="s-integrations" style="display:none">
+      <div class="card">
+        <div class="card-title">Integrations</div>
+        <div class="card-subtitle">Connect Event HQ with your existing tools.</div>
+        <div class="toggle-row">
+          <div class="toggle-info"><div class="toggle-label">Stripe — Payments</div><div class="toggle-desc">Process paid ticket and booth payments via Stripe.</div></div>
+          <label class="toggle"><input type="checkbox" checked><span class="toggle-slider"></span></label>
+        </div>
+        <div class="toggle-row">
+          <div class="toggle-info"><div class="toggle-label">Mailchimp — Email Marketing</div><div class="toggle-desc">Sync attendee lists with your Mailchimp audience.</div></div>
+          <label class="toggle"><input type="checkbox"><span class="toggle-slider"></span></label>
+        </div>
+        <div class="toggle-row">
+          <div class="toggle-info"><div class="toggle-label">Zoom — Virtual Sessions</div><div class="toggle-desc">Auto-generate Zoom links for online conference sessions.</div></div>
+          <label class="toggle"><input type="checkbox" checked><span class="toggle-slider"></span></label>
+        </div>
+        <div class="toggle-row">
+          <div class="toggle-info"><div class="toggle-label">Salesforce — CRM</div><div class="toggle-desc">Push buyer and attendee data to your Salesforce CRM.</div></div>
+          <label class="toggle"><input type="checkbox"><span class="toggle-slider"></span></label>
+        </div>
+      </div>
+    </div>
+
+    <div id="s-billing" style="display:none">
+      <div class="card">
+        <div class="card-title">Current Plan</div>
+        <div class="card-subtitle">You are on the <strong>Professional</strong> plan.</div>
+        <div style="display:flex;gap:24px;margin-bottom:20px;">
+          <div><div style="font-size:28px;font-weight:800;color:var(--orange);">€299</div><div style="font-size:12px;color:var(--text2);">per month</div></div>
+          <div style="flex:1;font-size:13px;color:var(--text2);line-height:2;">
+            ✓ Up to 5 events per year &nbsp; ✓ Up to 2,000 attendees per event<br>
+            ✓ Buyer invitation module &nbsp; ✓ Awards &amp; jury management &nbsp; ✓ Priority support
+          </div>
+        </div>
+        <div class="btn-group">
+          <button class="btn btn-primary">Upgrade to Enterprise</button>
+          <button class="btn btn-outline">Manage Billing</button>
+        </div>
+      </div>
+    </div>
+
+    <div id="s-danger" style="display:none">
+      <div class="card danger-card">
+        <div class="card-title danger-title">Danger Zone</div>
+        <div class="card-subtitle">These actions are irreversible. Please proceed with caution.</div>
+        <div class="toggle-row">
+          <div class="toggle-info">
+            <div class="toggle-label">Delete all event data</div>
+            <div class="toggle-desc">Permanently delete all attendee, submission, and schedule data for this event.</div>
+          </div>
+          <button class="btn btn-danger" style="padding:6px 14px;font-size:12px;margin-left:16px;">Delete Data</button>
+        </div>
+        <div class="toggle-row">
+          <div class="toggle-info">
+            <div class="toggle-label">Close account</div>
+            <div class="toggle-desc">Permanently close your Event HQ account. All data will be lost.</div>
+          </div>
+          <button class="btn btn-danger" style="padding:6px 14px;font-size:12px;margin-left:16px;">Close Account</button>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+<script>
+if (new URLSearchParams(window.location.search).get('embed') === '1') {
+  document.body.classList.add('embed-mode');
+}
+function showSection(id, el) {
+  document.querySelectorAll('[id^="s-"]').forEach(s => s.style.display = 'none');
+  document.getElementById('s-' + id).style.display = 'block';
+  document.querySelectorAll('.sidebar-item').forEach(i => i.classList.remove('active'));
+  el.classList.add('active');
+}
+</script>
+</body>
+</html>

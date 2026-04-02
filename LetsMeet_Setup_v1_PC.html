@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Let's Meet – Event HQ</title>
+<style>
+:root {
+  --bg: #f3f2ef; --surface: #ffffff; --border: #e0dfdc;
+  --text1: #000000; --text2: #666666; --text3: #999999;
+  --orange: #e8650a; --orange-light: #fdf0e9; --radius: 8px;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: var(--bg); color: var(--text1); font-size: 14px; line-height: 1.6; }
+body.embed-mode nav, body.embed-mode header, body.embed-mode aside { display: none !important; }
+body.embed-mode .page-wrap { padding: 20px !important; }
+.page-wrap { padding: 28px 32px; max-width: 1100px; }
+.page-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 24px; }
+.page-title { font-size: 22px; font-weight: 800; }
+.page-subtitle { font-size: 13px; color: var(--text2); margin-top: 2px; }
+.tabs { display: flex; border-bottom: 2px solid var(--border); margin-bottom: 24px; }
+.tab { padding: 10px 20px; font-size: 13px; font-weight: 600; color: var(--text2); cursor: pointer; border-bottom: 2px solid transparent; margin-bottom: -2px; }
+.tab:hover { color: var(--text1); }
+.tab.active { color: var(--orange); border-bottom-color: var(--orange); }
+.card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 24px; margin-bottom: 20px; }
+.card-title { font-size: 15px; font-weight: 700; margin-bottom: 4px; }
+.card-subtitle { font-size: 13px; color: var(--text2); margin-bottom: 20px; }
+.form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 16px; }
+.form-grid.three { grid-template-columns: 1fr 1fr 1fr; }
+.form-group { display: flex; flex-direction: column; gap: 6px; }
+label { font-size: 11px; font-weight: 700; color: var(--text2); text-transform: uppercase; letter-spacing: 0.06em; }
+input, select { border: 1px solid var(--border); border-radius: 6px; padding: 9px 12px; font-size: 14px; color: var(--text1); background: var(--surface); font-family: inherit; }
+input:focus, select:focus { outline: none; border-color: var(--orange); }
+.toggle-row { display: flex; align-items: center; justify-content: space-between; padding: 12px 0; border-bottom: 1px solid var(--border); }
+.toggle-row:last-child { border-bottom: none; }
+.toggle-label { font-size: 14px; font-weight: 600; }
+.toggle-desc { font-size: 12px; color: var(--text2); margin-top: 2px; }
+.toggle { position: relative; width: 40px; height: 22px; flex-shrink: 0; margin-left: 16px; }
+.toggle input { opacity: 0; width: 0; height: 0; }
+.toggle-slider { position: absolute; inset: 0; background: #ccc; border-radius: 22px; cursor: pointer; transition: background 0.2s; }
+.toggle-slider::before { content: ''; position: absolute; width: 16px; height: 16px; left: 3px; top: 3px; background: white; border-radius: 50%; transition: transform 0.2s; }
+.toggle input:checked + .toggle-slider { background: var(--orange); }
+.toggle input:checked + .toggle-slider::before { transform: translateX(18px); }
+.btn { display: inline-flex; align-items: center; gap: 6px; padding: 8px 18px; border-radius: 24px; font-size: 13px; font-weight: 600; cursor: pointer; border: none; transition: opacity 0.15s; }
+.btn:hover { opacity: 0.85; }
+.btn-primary { background: var(--orange); color: white; }
+.btn-outline { background: transparent; border: 1.5px solid var(--border); color: var(--text1); }
+.btn-group { display: flex; gap: 10px; margin-top: 20px; }
+.stats-grid { display: grid; grid-template-columns: repeat(4,1fr); gap: 16px; margin-bottom: 24px; }
+.stat-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 20px; text-align: center; }
+.stat-num { font-size: 28px; font-weight: 800; color: var(--orange); }
+.stat-label { font-size: 12px; color: var(--text2); margin-top: 4px; }
+table { width: 100%; border-collapse: collapse; }
+th { text-align: left; padding: 10px 12px; font-size: 11px; color: var(--text3); text-transform: uppercase; letter-spacing: 0.05em; border-bottom: 1px solid var(--border); background: var(--bg); }
+td { padding: 12px 12px; border-bottom: 1px solid var(--border); font-size: 13px; }
+tr:last-child td { border-bottom: none; }
+.badge { display: inline-block; padding: 2px 8px; border-radius: 12px; font-size: 11px; font-weight: 700; }
+.badge-green { background: #e8f5e9; color: #2e7d32; }
+.badge-orange { background: #fff3e0; color: #e65100; }
+.badge-blue { background: #e3f2fd; color: #1565c0; }
+.badge-gray { background: #f5f5f5; color: #666; }
+.schedule-header { display: grid; grid-template-columns: 80px repeat(3,1fr); gap: 8px; margin-bottom: 8px; }
+.schedule-header div { font-size: 12px; font-weight: 700; color: var(--text2); text-align: center; padding: 8px; background: var(--bg); border-radius: 6px; }
+.schedule-row { display: grid; grid-template-columns: 80px repeat(3,1fr); gap: 8px; margin-bottom: 8px; }
+.schedule-time { font-size: 12px; color: var(--text3); display: flex; align-items: center; justify-content: flex-end; padding-right: 8px; }
+.schedule-slot { border: 1px solid var(--border); border-radius: 6px; padding: 8px 10px; font-size: 12px; min-height: 52px; }
+.slot-booked { background: var(--orange-light); border-color: var(--orange); }
+.slot-available { background: #f0fdf4; border-color: #86efac; color: #166534; font-size: 11px; display: flex; align-items: center; justify-content: center; }
+.slot-break { background: var(--bg); display: flex; align-items: center; justify-content: center; color: var(--text3); font-size: 11px; }
+.slot-name { font-weight: 600; }
+.slot-company { color: var(--text2); font-size: 11px; }
+.chart-row { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+.chart-box { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 20px; }
+.chart-title { font-size: 14px; font-weight: 700; margin-bottom: 16px; }
+.bar-item { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }
+.bar-label { font-size: 12px; color: var(--text2); width: 130px; flex-shrink: 0; }
+.bar-track { flex: 1; height: 8px; background: var(--bg); border-radius: 4px; overflow: hidden; }
+.bar-fill { height: 100%; border-radius: 4px; background: var(--orange); }
+.bar-val { font-size: 12px; font-weight: 700; width: 36px; text-align: right; }
+</style>
+</head>
+<body>
+<div class="page-wrap">
+  <div class="page-header">
+    <div>
+      <div class="page-title">Let's Meet</div>
+      <div class="page-subtitle">Manage 1-on-1 business meetings between attendees</div>
+    </div>
+    <button class="btn btn-primary">+ Add Time Slot</button>
+  </div>
+  <div class="tabs">
+    <div class="tab active" onclick="switchTab('config',this)">Configuration</div>
+    <div class="tab" onclick="switchTab('participants',this)">Participants</div>
+    <div class="tab" onclick="switchTab('schedule',this)">Meeting Schedule</div>
+    <div class="tab" onclick="switchTab('analytics',this)">Analytics</div>
+  </div>
+
+  <!-- Configuration -->
+  <div id="tab-config">
+    <div class="card">
+      <div class="card-title">Meeting Format</div>
+      <div class="card-subtitle">Define the structure of your 1-on-1 meeting program.</div>
+      <div class="form-grid three">
+        <div class="form-group"><label>Meeting Duration</label>
+          <select><option>20 minutes</option><option selected>30 minutes</option><option>45 minutes</option><option>60 minutes</option></select>
+        </div>
+        <div class="form-group"><label>Buffer Between Meetings</label>
+          <select><option>0 minutes</option><option selected>5 minutes</option><option>10 minutes</option></select>
+        </div>
+        <div class="form-group"><label>Max Meetings / Participant</label>
+          <select><option>5</option><option>8</option><option selected>10</option><option>15</option><option>Unlimited</option></select>
+        </div>
+      </div>
+      <div class="form-grid">
+        <div class="form-group"><label>Meeting Start Date</label><input type="date" value="2026-03-29"></div>
+        <div class="form-group"><label>Meeting End Date</label><input type="date" value="2026-03-31"></div>
+      </div>
+      <div class="form-grid">
+        <div class="form-group"><label>Daily Start Time</label><input type="time" value="09:00"></div>
+        <div class="form-group"><label>Daily End Time</label><input type="time" value="18:00"></div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-title">Meeting Rooms</div>
+      <div class="card-subtitle">Define the physical or virtual spaces where meetings take place.</div>
+      <table>
+        <thead><tr><th>Room Name</th><th>Type</th><th>Capacity</th><th>Status</th><th></th></tr></thead>
+        <tbody>
+          <tr><td><strong>Room A</strong></td><td style="color:var(--text2)">Physical</td><td>2</td><td><span class="badge badge-green">Active</span></td><td style="text-align:right"><button class="btn btn-outline" style="padding:4px 10px;font-size:12px">Edit</button></td></tr>
+          <tr><td><strong>Room B</strong></td><td style="color:var(--text2)">Physical</td><td>2</td><td><span class="badge badge-green">Active</span></td><td style="text-align:right"><button class="btn btn-outline" style="padding:4px 10px;font-size:12px">Edit</button></td></tr>
+          <tr><td><strong>Room C</strong></td><td style="color:var(--text2)">Physical</td><td>2</td><td><span class="badge badge-green">Active</span></td><td style="text-align:right"><button class="btn btn-outline" style="padding:4px 10px;font-size:12px">Edit</button></td></tr>
+          <tr><td><strong>Zoom Link 1</strong></td><td style="color:var(--text2)">Virtual</td><td>2</td><td><span class="badge badge-blue">Virtual</span></td><td style="text-align:right"><button class="btn btn-outline" style="padding:4px 10px;font-size:12px">Edit</button></td></tr>
+        </tbody>
+      </table>
+      <div class="btn-group"><button class="btn btn-outline">+ Add Room</button></div>
+    </div>
+    <div class="card">
+      <div class="card-title">Matching Rules</div>
+      <div class="card-subtitle">Control how participants are matched and who can request meetings with whom.</div>
+      <div class="toggle-row">
+        <div><div class="toggle-label">Allow self-scheduling</div><div class="toggle-desc">Participants can request meetings directly without organizer approval.</div></div>
+        <label class="toggle"><input type="checkbox" checked><span class="toggle-slider"></span></label>
+      </div>
+      <div class="toggle-row">
+        <div><div class="toggle-label">AI-powered matching suggestions</div><div class="toggle-desc">Suggest relevant meeting partners based on profile and interests.</div></div>
+        <label class="toggle"><input type="checkbox" checked><span class="toggle-slider"></span></label>
+      </div>
+      <div class="toggle-row">
+        <div><div class="toggle-label">Restrict buyer-to-buyer meetings</div><div class="toggle-desc">Buyers can only meet with developers/publishers, not other buyers.</div></div>
+        <label class="toggle"><input type="checkbox"><span class="toggle-slider"></span></label>
+      </div>
+      <div class="toggle-row">
+        <div><div class="toggle-label">Require meeting agenda</div><div class="toggle-desc">Participants must fill in an agenda before confirming a meeting.</div></div>
+        <label class="toggle"><input type="checkbox"><span class="toggle-slider"></span></label>
+      </div>
+      <div class="btn-group"><button class="btn btn-primary">Save Configuration</button></div>
+    </div>
+  </div>
+
+  <!-- Participants -->
+  <div id="tab-participants" style="display:none">
+    <div class="stats-grid">
+      <div class="stat-card"><div class="stat-num">342</div><div class="stat-label">Total Participants</div></div>
+      <div class="stat-card"><div class="stat-num">287</div><div class="stat-label">Meetings Scheduled</div></div>
+      <div class="stat-card"><div class="stat-num">94%</div><div class="stat-label">Acceptance Rate</div></div>
+      <div class="stat-card"><div class="stat-num">8.4</div><div class="stat-label">Avg Meetings / Person</div></div>
+    </div>
+    <div class="card" style="padding:0;overflow:hidden">
+      <div style="padding:16px 20px;border-bottom:1px solid var(--border);display:flex;gap:10px">
+        <input type="text" placeholder="Search participants..." style="flex:1;max-width:280px">
+        <select style="width:160px"><option>All Roles</option><option>Developer</option><option>Publisher</option><option>Buyer</option><option>Investor</option></select>
+      </div>
+      <table>
+        <thead><tr><th>Name</th><th>Company</th><th>Role</th><th>Meetings</th><th>Status</th><th></th></tr></thead>
+        <tbody>
+          <tr><td><strong>Sarah Chen</strong><br><span style="font-size:11px;color:var(--text2)">sarah@neonpixel.com</span></td><td style="color:var(--text2)">Neon Pixel Studios</td><td><span class="badge badge-blue">Developer</span></td><td>8 / 10</td><td><span class="badge badge-green">Active</span></td><td><button class="btn btn-outline" style="padding:4px 10px;font-size:12px">View</button></td></tr>
+          <tr><td><strong>Marcus Weber</strong><br><span style="font-size:11px;color:var(--text2)">m.weber@bigpub.com</span></td><td style="color:var(--text2)">Big Publisher GmbH</td><td><span class="badge badge-orange">Publisher</span></td><td>10 / 10</td><td><span class="badge badge-green">Active</span></td><td><button class="btn btn-outline" style="padding:4px 10px;font-size:12px">View</button></td></tr>
+          <tr><td><strong>Yuki Tanaka</strong><br><span style="font-size:11px;color:var(--text2)">y.tanaka@gamefund.jp</span></td><td style="color:var(--text2)">GameFund Japan</td><td><span class="badge badge-green">Buyer</span></td><td>6 / 10</td><td><span class="badge badge-green">Active</span></td><td><button class="btn btn-outline" style="padding:4px 10px;font-size:12px">View</button></td></tr>
+          <tr><td><strong>Elena Rossi</strong><br><span style="font-size:11px;color:var(--text2)">e.rossi@indielab.it</span></td><td style="color:var(--text2)">IndieLab</td><td><span class="badge badge-blue">Developer</span></td><td>3 / 10</td><td><span class="badge badge-orange">Pending</span></td><td><button class="btn btn-outline" style="padding:4px 10px;font-size:12px">View</button></td></tr>
+          <tr><td><strong>James O'Brien</strong><br><span style="font-size:11px;color:var(--text2)">james@venturegames.ie</span></td><td style="color:var(--text2)">Venture Games</td><td><span class="badge badge-gray">Investor</span></td><td>9 / 10</td><td><span class="badge badge-green">Active</span></td><td><button class="btn btn-outline" style="padding:4px 10px;font-size:12px">View</button></td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- Schedule -->
+  <div id="tab-schedule" style="display:none">
+    <div style="display:flex;gap:10px;margin-bottom:20px;align-items:center">
+      <select style="width:160px"><option>Day 1 – Mar 29</option><option>Day 2 – Mar 30</option><option>Day 3 – Mar 31</option></select>
+      <select style="width:180px"><option>All Rooms</option><option>Room A</option><option>Room B</option><option>Room C</option></select>
+      <button class="btn btn-outline" style="margin-left:auto">Export Schedule</button>
+    </div>
+    <div class="card" style="padding:20px;overflow-x:auto">
+      <div class="schedule-header">
+        <div></div><div>Room A</div><div>Room B</div><div>Room C</div>
+      </div>
+      <div class="schedule-row">
+        <div class="schedule-time">09:00</div>
+        <div class="schedule-slot slot-booked"><div class="slot-name">Sarah Chen</div><div class="slot-company">↔ Marcus Weber</div></div>
+        <div class="schedule-slot slot-booked"><div class="slot-name">Yuki Tanaka</div><div class="slot-company">↔ Elena Rossi</div></div>
+        <div class="schedule-slot slot-available">Available</div>
+      </div>
+      <div class="schedule-row">
+        <div class="schedule-time">09:35</div>
+        <div class="schedule-slot slot-available">Available</div>
+        <div class="schedule-slot slot-booked"><div class="slot-name">James O'Brien</div><div class="slot-company">↔ Sarah Chen</div></div>
+        <div class="schedule-slot slot-booked"><div class="slot-name">Marcus Weber</div><div class="slot-company">↔ Yuki Tanaka</div></div>
+      </div>
+      <div class="schedule-row">
+        <div class="schedule-time">10:10</div>
+        <div class="schedule-slot slot-booked"><div class="slot-name">Elena Rossi</div><div class="slot-company">↔ James O'Brien</div></div>
+        <div class="schedule-slot slot-available">Available</div>
+        <div class="schedule-slot slot-booked"><div class="slot-name">Sarah Chen</div><div class="slot-company">↔ Yuki Tanaka</div></div>
+      </div>
+      <div class="schedule-row">
+        <div class="schedule-time">10:45</div>
+        <div class="schedule-slot slot-break" style="grid-column:span 3">☕ Break (15 min)</div>
+      </div>
+      <div class="schedule-row">
+        <div class="schedule-time">11:00</div>
+        <div class="schedule-slot slot-booked"><div class="slot-name">Marcus Weber</div><div class="slot-company">↔ Elena Rossi</div></div>
+        <div class="schedule-slot slot-booked"><div class="slot-name">Yuki Tanaka</div><div class="slot-company">↔ James O'Brien</div></div>
+        <div class="schedule-slot slot-available">Available</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Analytics -->
+  <div id="tab-analytics" style="display:none">
+    <div class="stats-grid">
+      <div class="stat-card"><div class="stat-num">287</div><div class="stat-label">Meetings Confirmed</div></div>
+      <div class="stat-card"><div class="stat-num">23</div><div class="stat-label">Meetings Pending</div></div>
+      <div class="stat-card"><div class="stat-num">12</div><div class="stat-label">Meetings Cancelled</div></div>
+      <div class="stat-card"><div class="stat-num">4.8★</div><div class="stat-label">Avg Satisfaction</div></div>
+    </div>
+    <div class="chart-row">
+      <div class="chart-box">
+        <div class="chart-title">Meetings by Role Combination</div>
+        <div class="bar-item"><div class="bar-label">Dev ↔ Publisher</div><div class="bar-track"><div class="bar-fill" style="width:78%"></div></div><div class="bar-val">78%</div></div>
+        <div class="bar-item"><div class="bar-label">Dev ↔ Buyer</div><div class="bar-track"><div class="bar-fill" style="width:55%;background:#3b82f6"></div></div><div class="bar-val">55%</div></div>
+        <div class="bar-item"><div class="bar-label">Dev ↔ Investor</div><div class="bar-track"><div class="bar-fill" style="width:32%;background:#8b5cf6"></div></div><div class="bar-val">32%</div></div>
+        <div class="bar-item"><div class="bar-label">Publisher ↔ Buyer</div><div class="bar-track"><div class="bar-fill" style="width:20%;background:#10b981"></div></div><div class="bar-val">20%</div></div>
+      </div>
+      <div class="chart-box">
+        <div class="chart-title">Meeting Status</div>
+        <div class="bar-item"><div class="bar-label">Confirmed</div><div class="bar-track"><div class="bar-fill" style="width:88%;background:#10b981"></div></div><div class="bar-val">88%</div></div>
+        <div class="bar-item"><div class="bar-label">Pending</div><div class="bar-track"><div class="bar-fill" style="width:7%;background:#f59e0b"></div></div><div class="bar-val">7%</div></div>
+        <div class="bar-item"><div class="bar-label">Cancelled</div><div class="bar-track"><div class="bar-fill" style="width:5%;background:#ef4444"></div></div><div class="bar-val">5%</div></div>
+      </div>
+    </div>
+  </div>
+
+</div>
+<script>
+if (new URLSearchParams(window.location.search).get('embed') === '1') {
+  document.body.classList.add('embed-mode');
+}
+function switchTab(id, el) {
+  document.querySelectorAll('[id^="tab-"]').forEach(t => t.style.display = 'none');
+  document.getElementById('tab-' + id).style.display = 'block';
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  el.classList.add('active');
+}
+</script>
+</body>
+</html>
