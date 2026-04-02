@@ -1,0 +1,458 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Deal Flow – Game Connection</title>
+<style>
+:root {
+  --bg:#f3f2ef;--white:#fff;--border:#e0dfdc;
+  --text:#1a1a1a;--muted:#666;--dim:#999;
+  --teal:#0d9488;--teal-light:#f0fdfa;
+  --orange:#e8650a;--orange-light:#fdf0e9;
+  --green:#16a34a;--green-light:#f0fdf4;
+  --red:#dc2626;--yellow:#d97706;
+  --blue:#1d4ed8;--blue-light:#eff6ff;
+  --purple:#7c3aed;--purple-light:#f5f3ff;
+  --topbar-h:48px;--sidebar-w:220px;--radius:8px;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;background:var(--bg);color:var(--text);font-size:14px;line-height:1.5;height:100vh;overflow:hidden}
+.topbar{height:var(--topbar-h);background:var(--white);border-bottom:1px solid var(--border);display:flex;align-items:center;padding:0 20px;gap:14px;position:fixed;top:0;left:0;right:0;z-index:100}
+.topbar-logo{font-size:13px;font-weight:900;letter-spacing:-.3px}
+.topbar-logo span{color:var(--orange)}
+.topbar-sep{width:1px;height:20px;background:var(--border)}
+.topbar-context{font-size:12px;color:var(--muted);font-weight:600}
+.topbar-context strong{color:var(--text)}
+.topbar-gap{flex:1}
+.topbar-badge{display:inline-flex;align-items:center;gap:5px;padding:3px 10px;border-radius:20px;font-size:11px;font-weight:700;background:var(--teal-light);color:var(--teal);border:1px solid rgba(13,148,136,0.2)}
+.topbar-back{font-size:12px;font-weight:600;color:var(--muted);text-decoration:none;padding:5px 12px;border-radius:20px;border:1px solid var(--border);transition:all .15s}
+.topbar-back:hover{background:var(--teal-light);color:var(--teal);border-color:var(--teal)}
+.topbar-avatar{width:30px;height:30px;border-radius:50%;background:linear-gradient(135deg,#0a4a44,var(--teal));display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:800;color:#fff}
+.app-body{display:flex;margin-top:var(--topbar-h);height:calc(100vh - var(--topbar-h))}
+.sidebar{width:var(--sidebar-w);flex-shrink:0;background:var(--white);border-right:1px solid var(--border);padding:16px 0;position:sticky;top:var(--topbar-h);height:calc(100vh - var(--topbar-h));overflow-y:auto;display:flex;flex-direction:column}
+.sidebar-section{padding:4px 8px;margin-bottom:4px}
+.sidebar-label{font-size:10px;font-weight:700;color:var(--dim);letter-spacing:.6px;padding:4px 8px 6px;text-transform:uppercase}
+.nav-item{display:flex;align-items:center;gap:10px;padding:9px 12px;border-radius:8px;font-size:13px;font-weight:500;color:var(--muted);cursor:pointer;transition:background .15s,color .15s;text-decoration:none}
+.nav-item:hover{background:var(--bg);color:var(--text)}
+.nav-item.active{background:var(--teal-light);color:var(--teal);font-weight:600}
+.nav-item .icon{font-size:15px;width:20px;text-align:center}
+.nav-count{margin-left:auto;background:var(--teal);color:#fff;font-size:10px;font-weight:800;padding:1px 7px;border-radius:10px}
+.sidebar-bottom{margin-top:auto;padding:4px 8px;border-top:1px solid var(--border)}
+.main{flex:1;overflow-y:auto;padding:28px 32px}
+.panel{display:none}
+.panel.active{display:block}
+.page-header{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:24px}
+.page-title{font-size:20px;font-weight:800}
+.page-subtitle{font-size:13px;color:var(--muted);margin-top:3px}
+.stats-row{display:grid;grid-template-columns:repeat(5,1fr);gap:12px;margin-bottom:24px}
+.stat-card{background:var(--white);border:1px solid var(--border);border-radius:var(--radius);padding:14px 16px}
+.stat-val{font-size:22px;font-weight:800;color:var(--teal);line-height:1}
+.stat-label{font-size:10px;color:var(--muted);margin-top:4px;font-weight:700;text-transform:uppercase;letter-spacing:.4px}
+.stat-sub{font-size:11px;color:var(--dim);margin-top:2px}
+.card{background:var(--white);border:1px solid var(--border);border-radius:var(--radius);padding:22px;margin-bottom:18px}
+.card-title{font-size:14px;font-weight:700;margin-bottom:4px}
+.card-subtitle{font-size:12px;color:var(--muted);margin-bottom:18px}
+.card-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:18px}
+.kanban{display:grid;grid-template-columns:repeat(5,1fr);gap:14px;align-items:start}
+.kanban-col{background:#f9f8f6;border:1px solid var(--border);border-radius:10px;padding:12px}
+.kanban-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px}
+.kanban-title{font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:.6px}
+.kanban-count{background:var(--white);border:1px solid var(--border);font-size:11px;font-weight:700;padding:1px 8px;border-radius:10px;color:var(--muted)}
+.deal-card{background:var(--white);border:1px solid var(--border);border-radius:var(--radius);padding:12px;margin-bottom:8px;cursor:pointer;transition:all .15s}
+.deal-card:hover{border-color:var(--teal);box-shadow:0 2px 8px rgba(13,148,136,0.12)}
+.deal-card:last-child{margin-bottom:0}
+.deal-title{font-size:12px;font-weight:700;margin-bottom:3px}
+.deal-studio{font-size:11px;color:var(--muted)}
+.deal-tags{display:flex;gap:4px;margin-top:6px;flex-wrap:wrap}
+.deal-tag{font-size:10px;font-weight:600;padding:1px 7px;border-radius:8px}
+.tag-pc{background:#eff6ff;color:var(--blue)}
+.tag-mobile{background:#f0fdf4;color:var(--green)}
+.tag-console{background:var(--purple-light);color:var(--purple)}
+.tag-rpg{background:#fef9c3;color:#854d0e}
+.tag-action{background:var(--orange-light);color:var(--orange)}
+.tag-indie{background:var(--teal-light);color:var(--teal)}
+.deal-meta{display:flex;align-items:center;justify-content:space-between;margin-top:8px}
+.deal-ask{font-size:11px;font-weight:700;color:var(--teal)}
+.deal-date{font-size:10px;color:var(--dim)}
+.kanban-add{width:100%;padding:8px;border-radius:var(--radius);border:1.5px dashed var(--border);background:transparent;font-size:12px;color:var(--dim);cursor:pointer;transition:all .15s;font-family:inherit;margin-top:4px}
+.kanban-add:hover{border-color:var(--teal);color:var(--teal)}
+.stage-shortlist .kanban-title{color:var(--muted)}
+.stage-nda .kanban-title{color:var(--blue)}
+.stage-term .kanban-title{color:var(--orange)}
+.stage-negotiation .kanban-title{color:var(--purple)}
+.stage-closed .kanban-title{color:var(--green)}
+.drawer{position:fixed;top:var(--topbar-h);right:0;width:380px;height:calc(100vh - var(--topbar-h));background:var(--white);border-left:1px solid var(--border);z-index:200;transform:translateX(100%);transition:transform .25s;overflow-y:auto;padding:24px}
+.drawer.open{transform:translateX(0)}
+.drawer-close{position:absolute;top:16px;right:16px;width:28px;height:28px;border-radius:50%;background:var(--bg);border:none;cursor:pointer;font-size:14px;display:flex;align-items:center;justify-content:center}
+.game-row{display:flex;align-items:flex-start;gap:12px;padding:14px 0;border-bottom:1px solid var(--border);cursor:pointer;transition:background .12s}
+.game-row:hover{background:#f9f8f6;margin:0 -22px;padding:14px 22px}
+.game-row:last-child{border-bottom:none}
+.game-thumb{width:48px;height:48px;border-radius:8px;background:linear-gradient(135deg,#1a3a6b,#4a6cf7);display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0}
+.game-info{flex:1}
+.game-title{font-size:13px;font-weight:700;margin-bottom:2px}
+.game-studio{font-size:11px;color:var(--muted)}
+.game-tags{display:flex;gap:4px;margin-top:5px;flex-wrap:wrap}
+.game-ask{font-size:12px;font-weight:700;color:var(--teal);margin-top:4px}
+.game-actions{display:flex;gap:6px;flex-shrink:0;align-items:flex-start}
+.badge{display:inline-flex;align-items:center;gap:4px;padding:3px 10px;border-radius:20px;font-size:11px;font-weight:700}
+.badge-done{background:#dcfce7;color:#166534}
+.badge-pending{background:#fef9c3;color:#854d0e}
+.badge-active{background:var(--teal-light);color:var(--teal)}
+.badge-signed{background:var(--blue-light);color:var(--blue)}
+.badge-closed{background:#dcfce7;color:#166534}
+.data-table{width:100%;border-collapse:collapse;font-size:13px}
+.data-table th{text-align:left;padding:10px 14px;font-size:11px;font-weight:700;color:var(--muted);border-bottom:1px solid var(--border);background:#f9f8f6;text-transform:uppercase;letter-spacing:.4px}
+.data-table td{padding:12px 14px;border-bottom:1px solid var(--border);vertical-align:middle}
+.data-table tr:last-child td{border-bottom:none}
+.data-table tr:hover td{background:#fafaf8}
+.btn{display:inline-flex;align-items:center;gap:6px;padding:8px 18px;border-radius:24px;font-size:13px;font-weight:600;cursor:pointer;border:none;transition:opacity .15s;font-family:inherit}
+.btn:hover{opacity:.85}
+.btn-primary{background:var(--teal);color:#fff}
+.btn-outline{background:var(--white);color:var(--text);border:1.5px solid var(--border)}
+.btn-sm{padding:5px 12px;border-radius:16px;font-size:12px;font-weight:600;cursor:pointer;border:1.5px solid var(--border);background:var(--white);color:var(--text);transition:all .15s;font-family:inherit}
+.btn-sm:hover{border-color:var(--teal);color:var(--teal)}
+.btn-sm-primary{background:var(--teal);color:#fff;border-color:var(--teal)}
+.btn-sm-primary:hover{opacity:.85;color:#fff}
+.form-group{margin-bottom:16px}
+.form-label{font-size:12px;font-weight:700;margin-bottom:6px;display:block}
+.form-input{width:100%;padding:9px 14px;border:1.5px solid var(--border);border-radius:var(--radius);font-size:13px;font-family:inherit;outline:none;transition:border-color .15s}
+.form-input:focus{border-color:var(--teal)}
+.form-row{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+textarea.form-input{resize:vertical;min-height:80px}
+select.form-input{cursor:pointer}
+.filter-chip{padding:5px 14px;border-radius:20px;font-size:12px;font-weight:600;cursor:pointer;border:1.5px solid var(--border);background:var(--white);color:var(--muted);transition:all .15s;display:inline-block;margin:0 4px 8px 0}
+.filter-chip:hover,.filter-chip.active{background:var(--teal-light);color:var(--teal);border-color:rgba(13,148,136,0.3)}
+</style>
+</head>
+<body>
+<div class="topbar">
+  <div class="topbar-logo">GAME<span>CONNECTION</span></div>
+  <div class="topbar-sep"></div>
+  <div class="topbar-context">Indie Game Fest 2026 &middot; <strong>Deal Flow</strong></div>
+  <div class="topbar-gap"></div>
+  <span class="topbar-badge">&#129309; Publisher &middot; Devolver Digital</span>
+  <a class="topbar-back" href="EventHub_v2_PC.html">&larr; Hub</a>
+  <div class="topbar-avatar">DD</div>
+</div>
+<div class="app-body">
+  <nav class="sidebar">
+    <div class="sidebar-section">
+      <div class="sidebar-label">Overview</div>
+      <a class="nav-item active" onclick="showPanel('dashboard',this)"><span class="icon">&#128202;</span> Dashboard</a>
+    </div>
+    <div class="sidebar-section">
+      <div class="sidebar-label">Pipeline</div>
+      <a class="nav-item" onclick="showPanel('pipeline',this)"><span class="icon">&#128193;</span> Pipeline <span class="nav-count">14</span></a>
+      <a class="nav-item" onclick="showPanel('discover',this)"><span class="icon">&#128269;</span> Discover Games</a>
+      <a class="nav-item" onclick="showPanel('shortlist',this)"><span class="icon">&#11088;</span> Shortlist <span class="nav-count">6</span></a>
+    </div>
+    <div class="sidebar-section">
+      <div class="sidebar-label">Deals</div>
+      <a class="nav-item" onclick="showPanel('active',this)"><span class="icon">&#9889;</span> Active Deals <span class="nav-count">5</span></a>
+      <a class="nav-item" onclick="showPanel('closed',this)"><span class="icon">&#9989;</span> Closed Deals</a>
+    </div>
+    <div class="sidebar-section">
+      <div class="sidebar-label">Workflow</div>
+      <a class="nav-item" onclick="showPanel('meetings',this)"><span class="icon">&#129309;</span> Meetings</a>
+      <a class="nav-item" onclick="showPanel('documents',this)"><span class="icon">&#128203;</span> Documents</a>
+      <a class="nav-item" onclick="showPanel('notes',this)"><span class="icon">&#128221;</span> Notes &amp; CRM</a>
+    </div>
+    <div class="sidebar-bottom">
+      <a class="nav-item" onclick="showPanel('settings',this)"><span class="icon">&#9881;</span> Settings</a>
+    </div>
+  </nav>
+  <div class="main">
+
+    <div class="panel active" id="panel-dashboard">
+      <div class="page-header">
+        <div><div class="page-title">&#129309; Deal Flow Dashboard</div><div class="page-subtitle">Devolver Digital &middot; Indie Game Fest 2026 &middot; Publisher &amp; Investor View</div></div>
+        <button class="btn btn-primary" onclick="showPanel('discover',document.querySelectorAll('.nav-item')[3])">&#128269; Discover Games</button>
+      </div>
+      <div class="stats-row">
+        <div class="stat-card"><div class="stat-val">47</div><div class="stat-label">Games Reviewed</div><div class="stat-sub">This event</div></div>
+        <div class="stat-card"><div class="stat-val">14</div><div class="stat-label">In Pipeline</div><div class="stat-sub">Across all stages</div></div>
+        <div class="stat-card"><div class="stat-val">5</div><div class="stat-label">Active Deals</div><div class="stat-sub">NDA + Term Sheet</div></div>
+        <div class="stat-card"><div class="stat-val">3</div><div class="stat-label">Closed</div><div class="stat-sub">This event cycle</div></div>
+        <div class="stat-card"><div class="stat-val">28</div><div class="stat-label">Meetings</div><div class="stat-sub">Scheduled</div></div>
+      </div>
+      <div style="display:grid;grid-template-columns:2fr 1fr;gap:18px">
+        <div class="card">
+          <div class="card-header"><div class="card-title">&#128193; Pipeline Summary</div><button class="btn-sm" onclick="showPanel('pipeline',document.querySelectorAll('.nav-item')[2])">View Kanban &rarr;</button></div>
+          <div style="display:flex;flex-direction:column;gap:8px">
+            <div style="display:flex;align-items:center;gap:12px;padding:10px;background:#f9f8f6;border-radius:var(--radius)"><div style="width:10px;height:10px;border-radius:50%;background:var(--muted);flex-shrink:0"></div><div style="flex:1;font-size:13px;font-weight:600">Shortlist</div><div style="font-size:12px;color:var(--muted)">6 games</div><div style="width:80px;height:5px;background:#e5e7eb;border-radius:3px"><div style="width:43%;height:100%;background:var(--muted);border-radius:3px"></div></div></div>
+            <div style="display:flex;align-items:center;gap:12px;padding:10px;background:#f9f8f6;border-radius:var(--radius)"><div style="width:10px;height:10px;border-radius:50%;background:var(--blue);flex-shrink:0"></div><div style="flex:1;font-size:13px;font-weight:600">NDA Signed</div><div style="font-size:12px;color:var(--muted)">4 games</div><div style="width:80px;height:5px;background:#e5e7eb;border-radius:3px"><div style="width:29%;height:100%;background:var(--blue);border-radius:3px"></div></div></div>
+            <div style="display:flex;align-items:center;gap:12px;padding:10px;background:#f9f8f6;border-radius:var(--radius)"><div style="width:10px;height:10px;border-radius:50%;background:var(--orange);flex-shrink:0"></div><div style="flex:1;font-size:13px;font-weight:600">Term Sheet</div><div style="font-size:12px;color:var(--muted)">2 games</div><div style="width:80px;height:5px;background:#e5e7eb;border-radius:3px"><div style="width:14%;height:100%;background:var(--orange);border-radius:3px"></div></div></div>
+            <div style="display:flex;align-items:center;gap:12px;padding:10px;background:#f9f8f6;border-radius:var(--radius)"><div style="width:10px;height:10px;border-radius:50%;background:var(--purple);flex-shrink:0"></div><div style="flex:1;font-size:13px;font-weight:600">Negotiation</div><div style="font-size:12px;color:var(--muted)">2 games</div><div style="width:80px;height:5px;background:#e5e7eb;border-radius:3px"><div style="width:14%;height:100%;background:var(--purple);border-radius:3px"></div></div></div>
+            <div style="display:flex;align-items:center;gap:12px;padding:10px;background:var(--green-light);border-radius:var(--radius)"><div style="width:10px;height:10px;border-radius:50%;background:var(--green);flex-shrink:0"></div><div style="flex:1;font-size:13px;font-weight:600">Closed</div><div style="font-size:12px;color:var(--muted)">3 games</div><div style="width:80px;height:5px;background:#e5e7eb;border-radius:3px"><div style="width:21%;height:100%;background:var(--green);border-radius:3px"></div></div></div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-header"><div class="card-title">&#128197; Today's Meetings</div><button class="btn-sm" onclick="showPanel('meetings',document.querySelectorAll('.nav-item')[8])">All &rarr;</button></div>
+          <div style="display:flex;flex-direction:column;gap:10px">
+            <div style="padding:10px;background:#f9f8f6;border-radius:var(--radius);border-left:3px solid var(--teal)"><div style="font-size:12px;font-weight:700">Phantom Circuit</div><div style="font-size:11px;color:var(--muted)">10:00 &middot; Echoes of Yun &middot; Pitch</div></div>
+            <div style="padding:10px;background:#f9f8f6;border-radius:var(--radius);border-left:3px solid var(--orange)"><div style="font-size:12px;font-weight:700">Ironwood Games</div><div style="font-size:11px;color:var(--muted)">14:00 &middot; Iron Frontier &middot; Term Sheet</div></div>
+            <div style="padding:10px;background:#f9f8f6;border-radius:var(--radius);border-left:3px solid var(--blue)"><div style="font-size:12px;font-weight:700">Nebula Labs</div><div style="font-size:11px;color:var(--muted)">16:30 &middot; Stellar Drift &middot; NDA Review</div></div>
+          </div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-header"><div class="card-title">&#128293; Hot Deals</div></div>
+        <table class="data-table">
+          <thead><tr><th>Game</th><th>Studio</th><th>Stage</th><th>Ask</th><th>Next Action</th><th>Due</th><th></th></tr></thead>
+          <tbody>
+            <tr><td><strong>Iron Frontier</strong></td><td>Ironwood Games</td><td><span class="badge" style="background:var(--orange-light);color:var(--orange)">Term Sheet</span></td><td style="font-weight:700;color:var(--teal)">&#8364;400K</td><td>Review term sheet</td><td style="color:var(--red);font-weight:700">Mar 5</td><td><button class="btn-sm btn-sm-primary" onclick="openDrawer('Iron Frontier')">Open</button></td></tr>
+            <tr><td><strong>Stellar Drift</strong></td><td>Nebula Labs</td><td><span class="badge badge-signed">NDA Signed</span></td><td style="font-weight:700;color:var(--teal)">&#8364;250K</td><td>Send term sheet</td><td style="color:var(--yellow);font-weight:700">Mar 10</td><td><button class="btn-sm btn-sm-primary" onclick="openDrawer('Stellar Drift')">Open</button></td></tr>
+            <tr><td><strong>Echoes of Yun</strong></td><td>Phantom Circuit</td><td><span class="badge" style="background:var(--purple-light);color:var(--purple)">Negotiation</span></td><td style="font-weight:700;color:var(--teal)">&#8364;600K</td><td>Final contract</td><td style="color:var(--red);font-weight:700">Mar 3</td><td><button class="btn-sm btn-sm-primary" onclick="openDrawer('Echoes of Yun')">Open</button></td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="panel" id="panel-pipeline">
+      <div class="page-header">
+        <div><div class="page-title">&#128193; Deal Pipeline</div><div class="page-subtitle">14 games across 5 stages</div></div>
+        <button class="btn btn-primary" onclick="showPanel('discover',document.querySelectorAll('.nav-item')[3])">+ Add Game</button>
+      </div>
+      <div class="kanban">
+        <div class="kanban-col stage-shortlist">
+          <div class="kanban-header"><span class="kanban-title">&#11088; Shortlist</span><span class="kanban-count">6</span></div>
+          <div class="deal-card" onclick="openDrawer('Neon Runners')"><div class="deal-title">Neon Runners</div><div class="deal-studio">Velocity Games</div><div class="deal-tags"><span class="deal-tag tag-action">Action</span><span class="deal-tag tag-mobile">Mobile</span></div><div class="deal-meta"><span class="deal-ask">&#8364;120K</span><span class="deal-date">Added Mar 1</span></div></div>
+          <div class="deal-card" onclick="openDrawer('Frostfall')"><div class="deal-title">Frostfall Chronicles</div><div class="deal-studio">Glacier Dev</div><div class="deal-tags"><span class="deal-tag tag-rpg">RPG</span><span class="deal-tag tag-pc">PC</span></div><div class="deal-meta"><span class="deal-ask">&#8364;180K</span><span class="deal-date">Added Mar 2</span></div></div>
+          <div class="deal-card" onclick="openDrawer('Pixel Odyssey')"><div class="deal-title">Pixel Odyssey</div><div class="deal-studio">Retro Spark</div><div class="deal-tags"><span class="deal-tag tag-indie">Indie</span><span class="deal-tag tag-pc">PC</span></div><div class="deal-meta"><span class="deal-ask">&#8364;80K</span><span class="deal-date">Added Mar 2</span></div></div>
+          <button class="kanban-add" onclick="showToast('Opening game search...')">+ Add to shortlist</button>
+        </div>
+        <div class="kanban-col stage-nda">
+          <div class="kanban-header"><span class="kanban-title">&#128203; NDA</span><span class="kanban-count">4</span></div>
+          <div class="deal-card" onclick="openDrawer('Stellar Drift')"><div class="deal-title">Stellar Drift</div><div class="deal-studio">Nebula Labs</div><div class="deal-tags"><span class="deal-tag tag-pc">PC</span></div><div class="deal-meta"><span class="deal-ask">&#8364;250K</span><span class="deal-date">NDA: Feb 28</span></div></div>
+          <div class="deal-card" onclick="openDrawer('Shadow Protocol')"><div class="deal-title">Shadow Protocol</div><div class="deal-studio">Dark Matter</div><div class="deal-tags"><span class="deal-tag tag-action">Action</span><span class="deal-tag tag-console">Console</span></div><div class="deal-meta"><span class="deal-ask">&#8364;320K</span><span class="deal-date">NDA: Mar 1</span></div></div>
+          <button class="kanban-add" onclick="showToast('Moving game to NDA...')">+ Move here</button>
+        </div>
+        <div class="kanban-col stage-term">
+          <div class="kanban-header"><span class="kanban-title">&#128196; Term Sheet</span><span class="kanban-count">2</span></div>
+          <div class="deal-card" onclick="openDrawer('Iron Frontier')"><div class="deal-title">Iron Frontier</div><div class="deal-studio">Ironwood Games</div><div class="deal-tags"><span class="deal-tag tag-rpg">Action RPG</span><span class="deal-tag tag-pc">PC</span></div><div class="deal-meta"><span class="deal-ask">&#8364;400K</span><span class="deal-date">&#9888; Due Mar 5</span></div></div>
+          <button class="kanban-add" onclick="showToast('Moving game to Term Sheet...')">+ Move here</button>
+        </div>
+        <div class="kanban-col stage-negotiation">
+          <div class="kanban-header"><span class="kanban-title">&#9878; Negotiation</span><span class="kanban-count">2</span></div>
+          <div class="deal-card" onclick="openDrawer('Echoes of Yun')"><div class="deal-title">Echoes of Yun</div><div class="deal-studio">Phantom Circuit</div><div class="deal-tags"><span class="deal-tag tag-rpg">Narrative RPG</span></div><div class="deal-meta"><span class="deal-ask">&#8364;600K</span><span class="deal-date">&#128308; Due Mar 3</span></div></div>
+          <div class="deal-card" onclick="openDrawer('Void Walker')"><div class="deal-title">Void Walker</div><div class="deal-studio">Abyss Studio</div><div class="deal-tags"><span class="deal-tag tag-action">Roguelike</span></div><div class="deal-meta"><span class="deal-ask">&#8364;200K</span><span class="deal-date">Mar 15</span></div></div>
+          <button class="kanban-add" onclick="showToast('Moving game to Negotiation...')">+ Move here</button>
+        </div>
+        <div class="kanban-col stage-closed">
+          <div class="kanban-header"><span class="kanban-title">&#9989; Closed</span><span class="kanban-count">3</span></div>
+          <div class="deal-card" onclick="openDrawer('Hollow Realm')"><div class="deal-title">Hollow Realm</div><div class="deal-studio">Cavern Games</div><div class="deal-tags"><span class="deal-tag tag-indie">Indie</span><span class="deal-tag tag-pc">PC</span></div><div class="deal-meta"><span class="deal-ask" style="color:var(--green)">&#8364;150K &#10003;</span><span class="deal-date">Closed Feb 20</span></div></div>
+          <div class="deal-card" onclick="openDrawer('Crimson Tide')"><div class="deal-title">Crimson Tide</div><div class="deal-studio">Wave Studio</div><div class="deal-tags"><span class="deal-tag tag-action">Action</span><span class="deal-tag tag-console">Console</span></div><div class="deal-meta"><span class="deal-ask" style="color:var(--green)">&#8364;280K &#10003;</span><span class="deal-date">Closed Feb 25</span></div></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="panel" id="panel-discover">
+      <div class="page-header"><div><div class="page-title">&#128269; Discover Games</div><div class="page-subtitle">Browse all games at Indie Game Fest 2026</div></div></div>
+      <div style="margin-bottom:16px">
+        <span class="filter-chip active" onclick="this.classList.toggle('active')">All Genres</span>
+        <span class="filter-chip" onclick="this.classList.toggle('active')">RPG</span>
+        <span class="filter-chip" onclick="this.classList.toggle('active')">Action</span>
+        <span class="filter-chip" onclick="this.classList.toggle('active')">Strategy</span>
+        <span class="filter-chip" onclick="this.classList.toggle('active')">Indie</span>
+        <span class="filter-chip" onclick="this.classList.toggle('active')">PC</span>
+        <span class="filter-chip" onclick="this.classList.toggle('active')">Console</span>
+        <span class="filter-chip" onclick="this.classList.toggle('active')">Not in Pipeline</span>
+      </div>
+      <div class="card" style="padding:0;overflow:hidden">
+        <div style="padding:12px 16px;background:#f9f8f6;border-bottom:1px solid var(--border);display:flex;gap:10px">
+          <input type="text" placeholder="&#128269; Search games, studios..." style="flex:1;padding:7px 14px;border:1.5px solid var(--border);border-radius:20px;font-size:13px;font-family:inherit;outline:none">
+          <select style="padding:7px 14px;border:1.5px solid var(--border);border-radius:20px;font-size:13px;font-family:inherit;outline:none;background:#fff;cursor:pointer"><option>Sort: Newest</option><option>Sort: Ask (High)</option><option>Sort: Alphabetical</option></select>
+        </div>
+        <div style="padding:0 22px">
+          <div class="game-row" onclick="openDrawer('Echoes of Yun')"><div class="game-thumb">&#127769;</div><div class="game-info"><div class="game-title">Echoes of Yun</div><div class="game-studio">Phantom Circuit &middot; Marcus Chen</div><div class="game-tags"><span class="deal-tag tag-rpg">Narrative RPG</span><span class="deal-tag tag-pc">PC</span></div><div class="game-ask">Seeking: &#8364;600K &middot; Publishing deal</div></div><div class="game-actions"><span class="badge" style="background:var(--purple-light);color:var(--purple)">Negotiation</span></div></div>
+          <div class="game-row" onclick="openDrawer('Iron Frontier')"><div class="game-thumb" style="background:linear-gradient(135deg,#1a3a1a,#16a34a)">&#9876;</div><div class="game-info"><div class="game-title">Iron Frontier</div><div class="game-studio">Ironwood Games &middot; Elena Vasquez</div><div class="game-tags"><span class="deal-tag tag-rpg">Action RPG</span><span class="deal-tag tag-pc">PC</span><span class="deal-tag tag-console">Console</span></div><div class="game-ask">Seeking: &#8364;400K &middot; Publishing + marketing</div></div><div class="game-actions"><span class="badge" style="background:var(--orange-light);color:var(--orange)">Term Sheet</span></div></div>
+          <div class="game-row" onclick="openDrawer('Stellar Drift')"><div class="game-thumb" style="background:linear-gradient(135deg,#0a1a3a,#1d4ed8)">&#127756;</div><div class="game-info"><div class="game-title">Stellar Drift</div><div class="game-studio">Nebula Labs &middot; Yuki Tanaka</div><div class="game-tags"><span class="deal-tag tag-pc">PC</span></div><div class="game-ask">Seeking: &#8364;250K &middot; Co-development</div></div><div class="game-actions"><span class="badge badge-signed">NDA Signed</span></div></div>
+          <div class="game-row" onclick="openDrawer('Neon Runners')"><div class="game-thumb" style="background:linear-gradient(135deg,#3a0a5a,#7c3aed)">&#127939;</div><div class="game-info"><div class="game-title">Neon Runners</div><div class="game-studio">Velocity Games &middot; Sam Park</div><div class="game-tags"><span class="deal-tag tag-action">Action</span><span class="deal-tag tag-mobile">Mobile</span></div><div class="game-ask">Seeking: &#8364;120K &middot; Distribution</div></div><div class="game-actions"><span class="badge badge-active">Shortlisted</span><button class="btn-sm btn-sm-primary" onclick="event.stopPropagation();showToast('Moved to NDA!')">&#8594; NDA</button></div></div>
+          <div class="game-row" onclick="openDrawer('Void Walker')"><div class="game-thumb" style="background:linear-gradient(135deg,#0a0a2a,#4a4af7)">&#127744;</div><div class="game-info"><div class="game-title">Void Walker</div><div class="game-studio">Abyss Studio &middot; Kai Zhang</div><div class="game-tags"><span class="deal-tag tag-action">Roguelike</span><span class="deal-tag tag-pc">PC</span></div><div class="game-ask">Seeking: &#8364;200K &middot; Full publishing</div></div><div class="game-actions"><button class="btn-sm btn-sm-primary" onclick="event.stopPropagation();showToast('Added to shortlist!')">+ Shortlist</button></div></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="panel" id="panel-shortlist">
+      <div class="page-header"><div><div class="page-title">&#11088; Shortlist</div><div class="page-subtitle">6 games you are tracking</div></div></div>
+      <div class="card">
+        <table class="data-table">
+          <thead><tr><th>Game</th><th>Studio</th><th>Genre</th><th>Ask</th><th>Added</th><th></th></tr></thead>
+          <tbody>
+            <tr><td><strong>Neon Runners</strong></td><td>Velocity Games</td><td>Action &middot; Mobile</td><td>&#8364;120K</td><td>Mar 1</td><td><button class="btn-sm btn-sm-primary" onclick="showToast('Moving to NDA...')">&#8594; NDA</button></td></tr>
+            <tr><td><strong>Frostfall Chronicles</strong></td><td>Glacier Dev</td><td>RPG &middot; PC</td><td>&#8364;180K</td><td>Mar 2</td><td><button class="btn-sm btn-sm-primary" onclick="showToast('Moving to NDA...')">&#8594; NDA</button></td></tr>
+            <tr><td><strong>Pixel Odyssey</strong></td><td>Retro Spark</td><td>Indie &middot; PC</td><td>&#8364;80K</td><td>Mar 2</td><td><button class="btn-sm btn-sm-primary" onclick="showToast('Moving to NDA...')">&#8594; NDA</button></td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="panel" id="panel-active">
+      <div class="page-header"><div><div class="page-title">&#9889; Active Deals</div><div class="page-subtitle">5 deals in progress</div></div></div>
+      <div class="card">
+        <table class="data-table">
+          <thead><tr><th>Game</th><th>Studio</th><th>Stage</th><th>Ask</th><th>Next Action</th><th>Due</th><th></th></tr></thead>
+          <tbody>
+            <tr><td><strong>Echoes of Yun</strong></td><td>Phantom Circuit</td><td><span class="badge" style="background:var(--purple-light);color:var(--purple)">Negotiation</span></td><td>&#8364;600K</td><td>Final contract</td><td style="color:var(--red);font-weight:700">Mar 3</td><td><button class="btn-sm btn-sm-primary" onclick="openDrawer('Echoes of Yun')">Open</button></td></tr>
+            <tr><td><strong>Iron Frontier</strong></td><td>Ironwood Games</td><td><span class="badge" style="background:var(--orange-light);color:var(--orange)">Term Sheet</span></td><td>&#8364;400K</td><td>Review term sheet</td><td style="color:var(--red);font-weight:700">Mar 5</td><td><button class="btn-sm btn-sm-primary" onclick="openDrawer('Iron Frontier')">Open</button></td></tr>
+            <tr><td><strong>Stellar Drift</strong></td><td>Nebula Labs</td><td><span class="badge badge-signed">NDA Signed</span></td><td>&#8364;250K</td><td>Send term sheet</td><td style="color:var(--yellow);font-weight:700">Mar 10</td><td><button class="btn-sm btn-sm-primary" onclick="openDrawer('Stellar Drift')">Open</button></td></tr>
+            <tr><td><strong>Shadow Protocol</strong></td><td>Dark Matter</td><td><span class="badge badge-signed">NDA Signed</span></td><td>&#8364;320K</td><td>Schedule deep dive</td><td>Mar 15</td><td><button class="btn-sm btn-sm-primary" onclick="openDrawer('Shadow Protocol')">Open</button></td></tr>
+            <tr><td><strong>Void Walker</strong></td><td>Abyss Studio</td><td><span class="badge" style="background:var(--purple-light);color:var(--purple)">Negotiation</span></td><td>&#8364;200K</td><td>Counter-offer</td><td>Mar 15</td><td><button class="btn-sm btn-sm-primary" onclick="openDrawer('Void Walker')">Open</button></td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="panel" id="panel-closed">
+      <div class="page-header"><div><div class="page-title">&#9989; Closed Deals</div><div class="page-subtitle">3 deals closed at Indie Game Fest 2026</div></div></div>
+      <div class="card">
+        <table class="data-table">
+          <thead><tr><th>Game</th><th>Studio</th><th>Deal Value</th><th>Type</th><th>Closed</th><th>Status</th></tr></thead>
+          <tbody>
+            <tr><td><strong>Hollow Realm</strong></td><td>Cavern Games</td><td style="font-weight:700;color:var(--green)">&#8364;150K</td><td>Publishing</td><td>Feb 20, 2026</td><td><span class="badge badge-closed">&#10003; Signed</span></td></tr>
+            <tr><td><strong>Crimson Tide</strong></td><td>Wave Studio</td><td style="font-weight:700;color:var(--green)">&#8364;280K</td><td>Co-development</td><td>Feb 25, 2026</td><td><span class="badge badge-closed">&#10003; Signed</span></td></tr>
+            <tr><td><strong>Aurora Quest</strong></td><td>Polar Dev</td><td style="font-weight:700;color:var(--green)">&#8364;95K</td><td>Distribution</td><td>Mar 1, 2026</td><td><span class="badge badge-closed">&#10003; Signed</span></td></tr>
+          </tbody>
+        </table>
+        <div style="margin-top:16px;padding:14px;background:var(--green-light);border-radius:var(--radius);border:1px solid #bbf7d0;display:flex;justify-content:space-between;align-items:center"><div style="font-size:13px;font-weight:700;color:var(--green)">Total Closed: &#8364;525,000</div><div style="font-size:12px;color:var(--muted)">3 deals &middot; Avg: &#8364;175K</div></div>
+      </div>
+    </div>
+
+    <div class="panel" id="panel-meetings">
+      <div class="page-header"><div><div class="page-title">&#129309; Meetings</div><div class="page-subtitle">28 meetings scheduled</div></div><button class="btn btn-primary" onclick="showToast('Opening Let's Meet...')">+ Schedule</button></div>
+      <div class="card">
+        <table class="data-table">
+          <thead><tr><th>Studio</th><th>Game</th><th>Date &amp; Time</th><th>Type</th><th>Stage</th><th>Status</th></tr></thead>
+          <tbody>
+            <tr><td><strong>Phantom Circuit</strong></td><td>Echoes of Yun</td><td>Mar 29 &middot; 10:00</td><td>Pitch</td><td><span class="badge" style="background:var(--purple-light);color:var(--purple)">Negotiation</span></td><td><span class="badge badge-done">&#10003; Confirmed</span></td></tr>
+            <tr><td><strong>Ironwood Games</strong></td><td>Iron Frontier</td><td>Mar 29 &middot; 14:00</td><td>Term Sheet</td><td><span class="badge" style="background:var(--orange-light);color:var(--orange)">Term Sheet</span></td><td><span class="badge badge-done">&#10003; Confirmed</span></td></tr>
+            <tr><td><strong>Nebula Labs</strong></td><td>Stellar Drift</td><td>Mar 29 &middot; 16:30</td><td>NDA Review</td><td><span class="badge badge-signed">NDA</span></td><td><span class="badge badge-done">&#10003; Confirmed</span></td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="panel" id="panel-documents">
+      <div class="page-header"><div><div class="page-title">&#128203; Documents</div><div class="page-subtitle">NDAs, term sheets, contracts</div></div><button class="btn btn-primary" onclick="showToast('Upload document...')">+ Upload</button></div>
+      <div class="card">
+        <table class="data-table">
+          <thead><tr><th>Document</th><th>Game</th><th>Type</th><th>Status</th><th>Date</th><th></th></tr></thead>
+          <tbody>
+            <tr><td><strong>NDA &mdash; Nebula Labs</strong></td><td>Stellar Drift</td><td>NDA</td><td><span class="badge badge-done">&#10003; Signed</span></td><td>Feb 28</td><td><button class="btn-sm btn-sm-primary" onclick="showToast('Downloading...')">&#128229;</button></td></tr>
+            <tr><td><strong>Term Sheet v1 &mdash; Ironwood</strong></td><td>Iron Frontier</td><td>Term Sheet</td><td><span class="badge badge-pending">&#9203; Under Review</span></td><td>Mar 2</td><td><div style="display:flex;gap:6px"><button class="btn-sm btn-sm-primary" onclick="showToast('Downloading...')">&#128229;</button><button class="btn-sm" onclick="showToast('Sending revision...')">Revise</button></div></td></tr>
+            <tr><td><strong>Contract &mdash; Hollow Realm</strong></td><td>Hollow Realm</td><td>Contract</td><td><span class="badge badge-closed">&#10003; Executed</span></td><td>Feb 20</td><td><button class="btn-sm btn-sm-primary" onclick="showToast('Downloading...')">&#128229;</button></td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="panel" id="panel-notes">
+      <div class="page-header"><div><div class="page-title">&#128221; Notes &amp; CRM</div><div class="page-subtitle">Internal notes and relationship history</div></div><button class="btn btn-primary" onclick="showToast('Adding note...')">+ Add Note</button></div>
+      <div class="card">
+        <div style="display:flex;flex-direction:column;gap:14px">
+          <div style="padding:16px;background:#f9f8f6;border-radius:var(--radius);border:1px solid var(--border)"><div style="display:flex;justify-content:space-between;margin-bottom:8px"><div style="font-size:13px;font-weight:700">Phantom Circuit &mdash; Echoes of Yun</div><span style="font-size:11px;color:var(--dim)">Mar 2 &middot; 15:30</span></div><div style="font-size:12px;color:var(--muted)">Met Marcus at booth. Strong narrative. Team of 4. Looking for &#8364;600K but may accept &#8364;500K + royalty split. Follow up by Mar 3.</div></div>
+          <div style="padding:16px;background:#f9f8f6;border-radius:var(--radius);border:1px solid var(--border)"><div style="display:flex;justify-content:space-between;margin-bottom:8px"><div style="font-size:13px;font-weight:700">Ironwood Games &mdash; Iron Frontier</div><span style="font-size:11px;color:var(--dim)">Mar 1 &middot; 11:00</span></div><div style="font-size:12px;color:var(--muted)">Elena is a tough negotiator. Interest from 2 other publishers. Need to move fast. Key concern: marketing budget allocation.</div></div>
+        </div>
+        <div style="margin-top:18px">
+          <div class="form-group"><label class="form-label">New Note</label><textarea class="form-input" placeholder="Add internal note about a studio or deal..." style="min-height:100px"></textarea></div>
+          <div class="form-row">
+            <div class="form-group"><label class="form-label">Related Game</label><select class="form-input"><option>Select game...</option><option>Echoes of Yun</option><option>Iron Frontier</option><option>Stellar Drift</option></select></div>
+            <div class="form-group"><label class="form-label">Priority</label><select class="form-input"><option>Normal</option><option>High</option><option>Urgent</option></select></div>
+          </div>
+          <button class="btn btn-primary" onclick="showToast('Note saved!')">Save Note</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="panel" id="panel-settings">
+      <div class="page-header"><div><div class="page-title">&#9881; Settings</div><div class="page-subtitle">Deal Flow account preferences</div></div></div>
+      <div class="card">
+        <div class="card-title">Company Profile</div>
+        <div class="form-row">
+          <div class="form-group"><label class="form-label">Company Name</label><input class="form-input" type="text" value="Devolver Digital"></div>
+          <div class="form-group"><label class="form-label">Role</label><select class="form-input"><option selected>Publisher</option><option>Investor</option><option>Both</option></select></div>
+        </div>
+        <div class="form-row">
+          <div class="form-group"><label class="form-label">Contact Email</label><input class="form-input" type="email" value="deals@devolver.com"></div>
+          <div class="form-group"><label class="form-label">Budget Range</label><select class="form-input"><option>&#8364;50K &ndash; &#8364;200K</option><option selected>&#8364;200K &ndash; &#8364;500K</option><option>&#8364;500K+</option></select></div>
+        </div>
+        <div class="form-group"><label class="form-label">Preferred Genres</label><input class="form-input" type="text" value="Indie, Action, Narrative RPG, Roguelike"></div>
+        <button class="btn btn-primary" onclick="showToast('Settings saved!')">Save Changes</button>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<div class="drawer" id="deal-drawer">
+  <button class="drawer-close" onclick="closeDrawer()">&#10005;</button>
+  <div style="font-size:16px;font-weight:800;margin-bottom:4px" id="drawer-title">Echoes of Yun</div>
+  <div style="font-size:12px;color:var(--muted);margin-bottom:16px">Phantom Circuit &middot; Narrative RPG &middot; PC</div>
+  <div style="display:flex;gap:8px;margin-bottom:18px"><span class="badge" style="background:var(--purple-light);color:var(--purple)">Negotiation</span><span class="badge" style="background:var(--teal-light);color:var(--teal)">&#8364;600K Ask</span></div>
+  <div style="display:flex;flex-direction:column;gap:8px;margin-bottom:18px">
+    <div style="display:flex;justify-content:space-between;font-size:12px"><span style="color:var(--muted)">Studio</span><span style="font-weight:700">Phantom Circuit</span></div>
+    <div style="display:flex;justify-content:space-between;font-size:12px"><span style="color:var(--muted)">Lead</span><span style="font-weight:700">Marcus Chen</span></div>
+    <div style="display:flex;justify-content:space-between;font-size:12px"><span style="color:var(--muted)">Team Size</span><span style="font-weight:700">4 people</span></div>
+    <div style="display:flex;justify-content:space-between;font-size:12px"><span style="color:var(--muted)">Platform</span><span style="font-weight:700">PC (Steam)</span></div>
+    <div style="display:flex;justify-content:space-between;font-size:12px"><span style="color:var(--muted)">Launch</span><span style="font-weight:700">Q4 2026</span></div>
+  </div>
+  <div style="margin-bottom:18px">
+    <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--dim);margin-bottom:8px">Advance Stage</div>
+    <div style="display:flex;gap:6px;flex-wrap:wrap">
+      <button class="btn-sm" onclick="showToast('Moved to Shortlist')">&#11088; Shortlist</button>
+      <button class="btn-sm" onclick="showToast('Sending NDA...')">&#128203; Send NDA</button>
+      <button class="btn-sm" onclick="showToast('Sending Term Sheet...')">&#128196; Term Sheet</button>
+      <button class="btn-sm btn-sm-primary" onclick="showToast('Marked as Closed!')">&#9989; Close Deal</button>
+    </div>
+  </div>
+  <div style="margin-bottom:18px">
+    <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--dim);margin-bottom:8px">Quick Actions</div>
+    <div style="display:flex;gap:6px;flex-wrap:wrap">
+      <button class="btn-sm" onclick="showToast('Opening Let's Meet...')">&#129309; Schedule Meeting</button>
+      <button class="btn-sm" onclick="showToast('Upload doc...')">&#128203; Upload Doc</button>
+      <button class="btn-sm" onclick="showToast('Adding note...')">&#128221; Add Note</button>
+    </div>
+  </div>
+  <div>
+    <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--dim);margin-bottom:8px">Activity Log</div>
+    <div style="display:flex;flex-direction:column;gap:8px">
+      <div style="display:flex;gap:8px;font-size:12px"><span style="color:var(--dim);white-space:nowrap">Mar 2</span><span>Contract draft sent for review</span></div>
+      <div style="display:flex;gap:8px;font-size:12px"><span style="color:var(--dim);white-space:nowrap">Mar 1</span><span>Counter-offer received: &#8364;550K</span></div>
+      <div style="display:flex;gap:8px;font-size:12px"><span style="color:var(--dim);white-space:nowrap">Feb 28</span><span>Term sheet sent</span></div>
+      <div style="display:flex;gap:8px;font-size:12px"><span style="color:var(--dim);white-space:nowrap">Feb 25</span><span>NDA signed by both parties</span></div>
+      <div style="display:flex;gap:8px;font-size:12px"><span style="color:var(--dim);white-space:nowrap">Feb 20</span><span>Added to shortlist after pitch</span></div>
+    </div>
+  </div>
+</div>
+
+<script>
+function showPanel(id, el) {
+  document.querySelectorAll(".panel").forEach(p => p.classList.remove("active"));
+  document.getElementById("panel-" + id).classList.add("active");
+  document.querySelectorAll(".nav-item").forEach(n => n.classList.remove("active"));
+  if (el) el.classList.add("active");
+}
+function openDrawer(title) {
+  document.getElementById("drawer-title").textContent = title;
+  document.getElementById("deal-drawer").classList.add("open");
+}
+function closeDrawer() {
+  document.getElementById("deal-drawer").classList.remove("open");
+}
+function showToast(msg) {
+  const t = document.createElement("div");
+  t.textContent = msg;
+  Object.assign(t.style, {position:"fixed",bottom:"24px",left:"50%",transform:"translateX(-50%)",background:"#0d9488",color:"#fff",padding:"10px 20px",borderRadius:"24px",fontSize:"13px",fontWeight:"600",zIndex:"9999",boxShadow:"0 4px 12px rgba(0,0,0,0.2)",transition:"opacity .3s"});
+  document.body.appendChild(t);
+  setTimeout(() => { t.style.opacity = "0"; setTimeout(() => t.remove(), 300); }, 2200);
+}
+document.addEventListener("click", function(e) {
+  const drawer = document.getElementById("deal-drawer");
+  if (drawer.classList.contains("open") && !drawer.contains(e.target) && !e.target.closest(".deal-card") && !e.target.closest(".game-row") && !e.target.closest("[onclick*=openDrawer]")) {
+    closeDrawer();
+  }
+});
+</script>
+</body>
+</html>
