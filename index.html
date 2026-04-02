@@ -1,0 +1,312 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Game Connection Platform</title>
+<style>
+:root {
+  --bg:#f3f2ef;--white:#fff;--border:#e0dfdc;
+  --text:#1a1a1a;--muted:#666;--dim:#999;
+  --orange:#e8650a;--orange-light:#fdf0e9;
+  --green:#16a34a;--green-light:#f0fdf4;
+  --blue:#1d4ed8;--blue-light:#eff6ff;
+  --purple:#7c3aed;--purple-light:#f5f3ff;
+  --teal:#0d9488;--teal-light:#f0fdfa;
+  --radius:10px;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:var(--bg);color:var(--text);font-size:14px;line-height:1.5;min-height:100vh}
+.topbar{height:52px;background:var(--white);border-bottom:1px solid var(--border);display:flex;align-items:center;padding:0 32px;gap:16px;position:sticky;top:0;z-index:100}
+.logo{font-size:16px;font-weight:900;letter-spacing:-.4px}
+.logo span{color:var(--orange)}
+.logo-sub{font-size:11px;color:var(--muted);font-weight:500;margin-left:2px}
+.topbar-gap{flex:1}
+.topbar-link{font-size:12px;font-weight:600;color:var(--muted);text-decoration:none;padding:5px 12px;border-radius:20px;border:1px solid var(--border);transition:all .15s}
+.topbar-link:hover{background:var(--orange-light);color:var(--orange);border-color:var(--orange)}
+
+.hero{text-align:center;padding:56px 32px 40px;max-width:680px;margin:0 auto}
+.hero-badge{display:inline-flex;align-items:center;gap:6px;padding:4px 14px;border-radius:20px;font-size:11px;font-weight:700;background:var(--orange-light);color:var(--orange);border:1px solid rgba(232,101,10,0.2);margin-bottom:18px}
+.hero-title{font-size:34px;font-weight:900;letter-spacing:-.6px;line-height:1.2;margin-bottom:14px}
+.hero-title span{color:var(--orange)}
+.hero-desc{font-size:15px;color:var(--muted);line-height:1.7;max-width:520px;margin:0 auto 28px}
+.hero-btns{display:flex;gap:12px;justify-content:center;flex-wrap:wrap}
+.btn-hero{display:inline-flex;align-items:center;gap:8px;padding:11px 24px;border-radius:24px;font-size:14px;font-weight:700;cursor:pointer;border:none;text-decoration:none;transition:opacity .15s;font-family:inherit}
+.btn-hero:hover{opacity:.85}
+.btn-hero-primary{background:var(--orange);color:#fff}
+.btn-hero-outline{background:var(--white);color:var(--text);border:1.5px solid var(--border)}
+
+.section{max-width:1100px;margin:0 auto;padding:0 32px 48px}
+.section-header{display:flex;align-items:baseline;gap:12px;margin-bottom:20px}
+.section-title{font-size:17px;font-weight:800}
+.section-desc{font-size:12px;color:var(--muted)}
+.section-sep{flex:1;height:1px;background:var(--border)}
+
+/* Grid layouts */
+.grid-2{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.grid-3{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
+.grid-4{display:grid;grid-template-columns:repeat(4,1fr);gap:14px}
+
+/* Portal card */
+.portal-card{background:var(--white);border:1px solid var(--border);border-radius:var(--radius);padding:22px;text-decoration:none;color:var(--text);display:flex;flex-direction:column;gap:12px;transition:all .18s;cursor:pointer}
+.portal-card:hover{border-color:#c4c3c0;box-shadow:0 4px 16px rgba(0,0,0,0.07);transform:translateY(-2px)}
+.portal-icon{width:44px;height:44px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0}
+.portal-name{font-size:15px;font-weight:800}
+.portal-desc{font-size:12px;color:var(--muted);line-height:1.6}
+.portal-features{display:flex;flex-direction:column;gap:4px;margin-top:4px}
+.portal-feature{font-size:11px;color:var(--muted);display:flex;align-items:center;gap:6px}
+.portal-feature::before{content:'';width:4px;height:4px;border-radius:50%;background:var(--dim);flex-shrink:0}
+.portal-footer{display:flex;align-items:center;justify-content:space-between;padding-top:10px;border-top:1px solid var(--border);margin-top:auto}
+.portal-tag{font-size:10px;font-weight:700;padding:2px 8px;border-radius:8px}
+.portal-arrow{font-size:14px;color:var(--dim);transition:transform .15s}
+.portal-card:hover .portal-arrow{transform:translateX(3px)}
+
+/* Page card (smaller) */
+.page-card{background:var(--white);border:1px solid var(--border);border-radius:var(--radius);padding:16px 18px;text-decoration:none;color:var(--text);display:flex;align-items:center;gap:12px;transition:all .15s}
+.page-card:hover{border-color:#c4c3c0;box-shadow:0 2px 8px rgba(0,0,0,0.06)}
+.page-card-icon{font-size:18px;width:36px;height:36px;border-radius:8px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.page-card-info{flex:1}
+.page-card-name{font-size:13px;font-weight:700}
+.page-card-desc{font-size:11px;color:var(--muted);margin-top:1px}
+.page-card-arrow{font-size:12px;color:var(--dim)}
+
+/* Stats bar */
+.stats-bar{background:var(--white);border:1px solid var(--border);border-radius:var(--radius);padding:20px 28px;display:grid;grid-template-columns:repeat(5,1fr);gap:0;margin-bottom:40px}
+.stat-item{text-align:center;padding:0 16px;border-right:1px solid var(--border)}
+.stat-item:last-child{border-right:none}
+.stat-num{font-size:22px;font-weight:900;color:var(--orange)}
+.stat-lbl{font-size:11px;color:var(--muted);margin-top:2px;font-weight:600}
+
+footer{text-align:center;padding:32px;border-top:1px solid var(--border);font-size:12px;color:var(--dim)}
+footer strong{color:var(--orange)}
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="logo">GAME<span>CONNECTION</span><span class="logo-sub">Platform</span></div>
+  <div class="topbar-gap"></div>
+  <a class="topbar-link" href="EventHub_v2_PC.html">🌐 EventHub</a>
+  <a class="topbar-link" href="EventHQ_Dashboard_v1_PC.html">⚡ EventHQ</a>
+</div>
+
+<div class="hero">
+  <div class="hero-badge">🎮 Indie Game Fest 2026 · Paris, Mar 29–31</div>
+  <div class="hero-title">The Game Industry<br><span>Event Platform</span></div>
+  <div class="hero-desc">One platform connecting game developers, publishers, investors, sponsors, media, and associations — from discovery to deal close.</div>
+  <div class="hero-btns">
+    <a class="btn-hero btn-hero-primary" href="EventHub_v2_PC.html">🌐 Browse Events</a>
+    <a class="btn-hero btn-hero-outline" href="EventHQ_Dashboard_v1_PC.html">⚡ Organizer Dashboard</a>
+  </div>
+</div>
+
+<div class="section">
+  <div class="stats-bar">
+    <div class="stat-item"><div class="stat-num">14</div><div class="stat-lbl">Pages Built</div></div>
+    <div class="stat-item"><div class="stat-num">6</div><div class="stat-lbl">User Roles</div></div>
+    <div class="stat-item"><div class="stat-num">60+</div><div class="stat-lbl">UI Panels</div></div>
+    <div class="stat-item"><div class="stat-num">2</div><div class="stat-lbl">Products</div></div>
+    <div class="stat-item"><div class="stat-num">100%</div><div class="stat-lbl">PC-First Design</div></div>
+  </div>
+</div>
+
+<!-- B2C Platform -->
+<div class="section">
+  <div class="section-header">
+    <div class="section-title">🌐 EventHub — B2C Discovery Platform</div>
+    <div class="section-desc">For attendees, developers, and buyers</div>
+    <div class="section-sep"></div>
+  </div>
+  <div class="grid-2">
+    <a class="portal-card" href="EventHub_v2_PC.html">
+      <div style="display:flex;align-items:center;gap:12px">
+        <div class="portal-icon" style="background:#fdf0e9">🌐</div>
+        <div><div class="portal-name">EventHub</div><div style="font-size:11px;color:var(--muted)">Main discovery platform</div></div>
+      </div>
+      <div class="portal-desc">Browse events, discover games, connect with companies, manage your profile and schedule. The primary C-end experience.</div>
+      <div class="portal-features">
+        <div class="portal-feature">Home feed · Calendar · Live · Projects</div>
+        <div class="portal-feature">Companies directory · Personal profile</div>
+        <div class="portal-feature">For Business dropdown (all B2B portals)</div>
+      </div>
+      <div class="portal-footer">
+        <span class="portal-tag" style="background:var(--orange-light);color:var(--orange)">B2C · Main Entry</span>
+        <span class="portal-arrow">→</span>
+      </div>
+    </a>
+    <div style="display:flex;flex-direction:column;gap:14px">
+      <div class="section-desc" style="font-size:12px;color:var(--muted);padding:4px 0">EventHub contains 6 built-in views accessible from the top navigation:</div>
+      <a class="page-card" href="EventHub_v2_PC.html">
+        <div class="page-card-icon" style="background:#fdf0e9">🏠</div>
+        <div class="page-card-info"><div class="page-card-name">Home Feed</div><div class="page-card-desc">Event discovery · Right sidebar · For Business menu</div></div>
+        <span class="page-card-arrow">→</span>
+      </a>
+      <a class="page-card" href="EventHub_v2_PC.html">
+        <div class="page-card-icon" style="background:#eff6ff">📅</div>
+        <div class="page-card-info"><div class="page-card-name">Calendar View</div><div class="page-card-desc">Monthly calendar · Session scheduling</div></div>
+        <span class="page-card-arrow">→</span>
+      </a>
+      <a class="page-card" href="EventHub_v2_PC.html">
+        <div class="page-card-icon" style="background:#fee2e2">🔴</div>
+        <div class="page-card-info"><div class="page-card-name">Live Sessions</div><div class="page-card-desc">Ongoing sessions · Live stream integration</div></div>
+        <span class="page-card-arrow">→</span>
+      </a>
+      <a class="page-card" href="EventHub_v2_PC.html">
+        <div class="page-card-icon" style="background:var(--purple-light)">🎮</div>
+        <div class="page-card-info"><div class="page-card-name">Projects</div><div class="page-card-desc">Game showcase · Filter by genre/platform</div></div>
+        <span class="page-card-arrow">→</span>
+      </a>
+    </div>
+  </div>
+</div>
+
+<!-- B2B Organizer -->
+<div class="section">
+  <div class="section-header">
+    <div class="section-title">⚡ EventHQ — Organizer Dashboard</div>
+    <div class="section-desc">For event organizers and operations teams</div>
+    <div class="section-sep"></div>
+  </div>
+  <div class="grid-2" style="margin-bottom:14px">
+    <a class="portal-card" href="EventHQ_Dashboard_v1_PC.html">
+      <div style="display:flex;align-items:center;gap:12px">
+        <div class="portal-icon" style="background:#fdf0e9">⚡</div>
+        <div><div class="portal-name">EventHQ Dashboard</div><div style="font-size:11px;color:var(--muted)">Main organizer hub</div></div>
+      </div>
+      <div class="portal-desc">Central command for event organizers. Overview metrics, task management, health score, and quick access to all 8 operational modules.</div>
+      <div class="portal-features">
+        <div class="portal-feature">KPI cards · Module status · Activity log</div>
+        <div class="portal-feature">iframe navigation to all sub-pages</div>
+        <div class="portal-feature">Quick actions · Task checklist</div>
+      </div>
+      <div class="portal-footer">
+        <span class="portal-tag" style="background:var(--orange-light);color:var(--orange)">B2B · Organizer</span>
+        <span class="portal-arrow">→</span>
+      </div>
+    </a>
+    <div style="display:flex;flex-direction:column;gap:10px">
+      <a class="page-card" href="EventSetup_v1_PC.html">
+        <div class="page-card-icon" style="background:#fdf0e9">🛠️</div>
+        <div class="page-card-info"><div class="page-card-name">Event Setup</div><div class="page-card-desc">Event info · Module selection · Page preview</div></div>
+        <span class="page-card-arrow">→</span>
+      </a>
+      <a class="page-card" href="Products_v1_PC.html">
+        <div class="page-card-icon" style="background:var(--green-light)">🎫</div>
+        <div class="page-card-info"><div class="page-card-name">Products</div><div class="page-card-desc">Tickets · Booths · Sponsorship packages</div></div>
+        <span class="page-card-arrow">→</span>
+      </a>
+      <a class="page-card" href="Attendees_v1_PC.html">
+        <div class="page-card-icon" style="background:var(--blue-light)">👥</div>
+        <div class="page-card-info"><div class="page-card-name">Attendees</div><div class="page-card-desc">Registration · Buyers · Press management</div></div>
+        <span class="page-card-arrow">→</span>
+      </a>
+      <a class="page-card" href="GameShowcase_v1_PC.html">
+        <div class="page-card-icon" style="background:var(--purple-light)">🎮</div>
+        <div class="page-card-info"><div class="page-card-name">Game Showcase</div><div class="page-card-desc">Project submissions · Review queue · Analytics</div></div>
+        <span class="page-card-arrow">→</span>
+      </a>
+      <a class="page-card" href="Conference_v1_PC.html">
+        <div class="page-card-icon" style="background:#eff6ff">🎤</div>
+        <div class="page-card-info"><div class="page-card-name">Conference</div><div class="page-card-desc">Sessions · Speakers · Schedule management</div></div>
+        <span class="page-card-arrow">→</span>
+      </a>
+      <a class="page-card" href="Awards_v2_PC.html">
+        <div class="page-card-icon" style="background:#fef9c3">🏆</div>
+        <div class="page-card-info"><div class="page-card-name">Awards</div><div class="page-card-desc">Categories · Nominations · Jury management</div></div>
+        <span class="page-card-arrow">→</span>
+      </a>
+      <a class="page-card" href="LetsMeet_Setup_v1_PC.html">
+        <div class="page-card-icon" style="background:var(--teal-light)">🤝</div>
+        <div class="page-card-info"><div class="page-card-name">Let's Meet</div><div class="page-card-desc">1-on-1 meeting configuration · Scheduling</div></div>
+        <span class="page-card-arrow">→</span>
+      </a>
+      <a class="page-card" href="Settings_v1_PC.html">
+        <div class="page-card-icon" style="background:#f9f8f6">⚙️</div>
+        <div class="page-card-info"><div class="page-card-name">Settings</div><div class="page-card-desc">Account · Team · Integrations · Billing</div></div>
+        <span class="page-card-arrow">→</span>
+      </a>
+    </div>
+  </div>
+</div>
+
+<!-- B2B Portals -->
+<div class="section">
+  <div class="section-header">
+    <div class="section-title">🏢 Business Portals — Role-Specific Dashboards</div>
+    <div class="section-desc">Dedicated workspaces for each stakeholder type</div>
+    <div class="section-sep"></div>
+  </div>
+  <div class="grid-4">
+    <a class="portal-card" href="Sponsor_Portal_v1_PC.html">
+      <div style="display:flex;align-items:center;gap:10px">
+        <div class="portal-icon" style="background:#fef9c3">💼</div>
+        <div><div class="portal-name">Sponsor Portal</div></div>
+      </div>
+      <div class="portal-desc">Browse and purchase sponsorship packages, track benefit fulfillment, manage contracts and invoices.</div>
+      <div class="portal-features">
+        <div class="portal-feature">Dashboard · Browse Packages</div>
+        <div class="portal-feature">Benefits · Brand Assets · Booth</div>
+        <div class="portal-feature">Speaking · Meetings · Contracts</div>
+      </div>
+      <div class="portal-footer">
+        <span class="portal-tag" style="background:#fef9c3;color:#854d0e">Sponsor</span>
+        <span class="portal-arrow">→</span>
+      </div>
+    </a>
+    <a class="portal-card" href="Media_Portal_v1_PC.html">
+      <div style="display:flex;align-items:center;gap:10px">
+        <div class="portal-icon" style="background:var(--blue-light)">📰</div>
+        <div><div class="portal-name">Media Center</div></div>
+      </div>
+      <div class="portal-desc">Apply for press passes, manage personal schedule, book interviews, and download official press kits.</div>
+      <div class="portal-features">
+        <div class="portal-feature">Press Pass · My Schedule</div>
+        <div class="portal-feature">Interview Requests · Press Kit</div>
+        <div class="portal-feature">Accreditation · Media Contacts</div>
+      </div>
+      <div class="portal-footer">
+        <span class="portal-tag" style="background:var(--blue-light);color:var(--blue)">Media</span>
+        <span class="portal-arrow">→</span>
+      </div>
+    </a>
+    <a class="portal-card" href="Association_Portal_v1_PC.html">
+      <div style="display:flex;align-items:center;gap:10px">
+        <div class="portal-icon" style="background:var(--purple-light)">🏛️</div>
+        <div><div class="portal-name">Association Hub</div></div>
+      </div>
+      <div class="portal-desc">Manage your delegation — invite members, allocate passes and booths, track participation, handle group billing.</div>
+      <div class="portal-features">
+        <div class="portal-feature">Members · Invite · Participation</div>
+        <div class="portal-feature">Group Passes · Booth Allocation</div>
+        <div class="portal-feature">Billing · Invoices · Settings</div>
+      </div>
+      <div class="portal-footer">
+        <span class="portal-tag" style="background:var(--purple-light);color:var(--purple)">Association</span>
+        <span class="portal-arrow">→</span>
+      </div>
+    </a>
+    <a class="portal-card" href="DealFlow_v1_PC.html">
+      <div style="display:flex;align-items:center;gap:10px">
+        <div class="portal-icon" style="background:var(--teal-light)">🤝</div>
+        <div><div class="portal-name">Deal Flow</div></div>
+      </div>
+      <div class="portal-desc">Publisher and investor pipeline management — discover games, track deals from shortlist to close, manage NDAs and term sheets.</div>
+      <div class="portal-features">
+        <div class="portal-feature">Pipeline Kanban · Discover Games</div>
+        <div class="portal-feature">Active Deals · Closed Deals</div>
+        <div class="portal-feature">Meetings · Documents · Notes/CRM</div>
+      </div>
+      <div class="portal-footer">
+        <span class="portal-tag" style="background:var(--teal-light);color:var(--teal)">Publisher / Investor</span>
+        <span class="portal-arrow">→</span>
+      </div>
+    </a>
+  </div>
+</div>
+
+<footer>
+  Built with <strong>Game Connection</strong> Platform &nbsp;·&nbsp; Indie Game Fest 2026 &nbsp;·&nbsp; Paris, Mar 29–31 &nbsp;·&nbsp; 14 pages &nbsp;·&nbsp; 6 user roles
+</footer>
+
+</body>
+</html>
