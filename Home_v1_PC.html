@@ -1,0 +1,866 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Game Connection Platform — Home</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'DM Sans',sans-serif;background:#f5f3ef;color:#1c1a17;min-height:100vh}
+
+/* ── Sidebar ── */
+.sidebar{position:fixed;top:0;left:0;width:200px;height:100vh;background:#1c1a17;z-index:99;overflow-y:auto;display:flex;flex-direction:column}
+.sidebar-brand{padding:0 16px;height:56px;display:flex;align-items:center;border-bottom:1px solid #2a2825;flex-shrink:0}
+.sidebar-brand-text{font-weight:700;font-size:14px;color:#fff}
+.sidebar-brand-text span{color:#d95f2b}
+.sidebar-nav{padding:12px 0;flex:1}
+.nav-section{padding:10px 16px 4px;font-size:10px;font-weight:700;color:#4a4540;letter-spacing:.8px;text-transform:uppercase}
+.nav-item{display:flex;align-items:center;gap:10px;padding:10px 16px;font-size:13.5px;font-weight:500;color:#a09890;cursor:pointer;transition:all .15s;text-decoration:none}
+.nav-item:hover{color:#fff;background:rgba(255,255,255,.06)}
+.nav-item.active{color:#fff;background:rgba(217,95,43,.2);border-right:3px solid #d95f2b}
+.nav-item .icon{font-size:15px;width:20px;text-align:center;flex-shrink:0}
+
+/* ── Top Nav ── */
+.topnav{position:fixed;top:0;left:200px;right:0;height:56px;background:#fff;border-bottom:1px solid #e0dbd0;display:flex;align-items:center;justify-content:space-between;padding:0 24px;z-index:98}
+.topnav-greeting{font-size:14px;color:#6b6660}
+.topnav-greeting strong{color:#1c1a17}
+.topnav-right{display:flex;align-items:center;gap:12px}
+.topnav-btn{padding:8px 16px;border-radius:8px;font-size:13px;font-weight:600;font-family:'DM Sans',sans-serif;cursor:pointer;border:none;transition:all .15s}
+.btn-login{background:#f5f3ef;color:#1c1a17;border:1.5px solid #e0dbd0}
+.btn-login:hover{border-color:#d95f2b;color:#d95f2b}
+.btn-primary{background:#d95f2b;color:#fff}
+.btn-primary:hover{background:#c04e20}
+.user-chip{display:flex;align-items:center;gap:8px;padding:6px 12px;background:#f5f3ef;border-radius:20px;cursor:pointer}
+.user-avatar{width:28px;height:28px;border-radius:50%;background:linear-gradient(135deg,#d95f2b,#f08040);display:flex;align-items:center;justify-content:center;color:#fff;font-weight:700;font-size:12px;flex-shrink:0;overflow:hidden}
+.user-avatar img{width:100%;height:100%;object-fit:cover}
+.user-name{font-size:13px;font-weight:600;color:#1c1a17}
+
+/* ── Main ── */
+.main{margin-left:200px;padding-top:56px;min-height:100vh}
+
+/* ── Hero ── */
+.hero{background:linear-gradient(135deg,#1c1a17 0%,#2d2a25 60%,#3d3530 100%);padding:40px 40px 36px;position:relative;overflow:hidden}
+.hero::before{content:'';position:absolute;top:-60px;right:-60px;width:300px;height:300px;background:radial-gradient(circle,rgba(217,95,43,.15) 0%,transparent 70%);pointer-events:none}
+.hero::after{content:'';position:absolute;bottom:-40px;left:20%;width:200px;height:200px;background:radial-gradient(circle,rgba(217,95,43,.08) 0%,transparent 70%);pointer-events:none}
+.hero-inner{max-width:1200px;margin:0 auto;position:relative;z-index:1}
+.hero-eyebrow{font-size:11px;font-weight:700;color:#d95f2b;text-transform:uppercase;letter-spacing:1px;margin-bottom:10px}
+.hero-title{font-size:32px;font-weight:700;color:#fff;line-height:1.2;margin-bottom:10px}
+.hero-title em{color:#d95f2b;font-style:normal}
+.hero-sub{font-size:15px;color:#a09890;margin-bottom:28px;max-width:560px;line-height:1.6}
+.hero-cta{display:flex;gap:12px;flex-wrap:wrap;margin-bottom:32px}
+.hero-btn{padding:11px 22px;border-radius:9px;font-size:14px;font-weight:600;font-family:'DM Sans',sans-serif;cursor:pointer;border:none;transition:all .15s;text-decoration:none;display:inline-flex;align-items:center;gap:6px}
+.hero-btn-primary{background:#d95f2b;color:#fff}
+.hero-btn-primary:hover{background:#c04e20;transform:translateY(-1px)}
+.hero-btn-secondary{background:rgba(255,255,255,.1);color:#fff;border:1.5px solid rgba(255,255,255,.2)}
+.hero-btn-secondary:hover{background:rgba(255,255,255,.15)}
+.hero-stats{display:flex;gap:32px}
+.hero-stat-num{font-size:26px;font-weight:700;color:#fff}
+.hero-stat-label{font-size:11px;color:#6b6660;margin-top:2px;text-transform:uppercase;letter-spacing:.4px}
+
+/* ── Profile Nudge (for users without profile) ── */
+.nudge-bar{background:linear-gradient(90deg,#d95f2b,#f08040);padding:14px 40px;display:flex;align-items:center;justify-content:space-between}
+.nudge-text{color:#fff;font-size:14px;font-weight:500}
+.nudge-text strong{font-weight:700}
+.nudge-btn{padding:8px 18px;background:#fff;color:#d95f2b;border:none;border-radius:7px;font-size:13px;font-weight:700;font-family:'DM Sans',sans-serif;cursor:pointer;white-space:nowrap}
+
+/* ── Section ── */
+.section{max-width:1200px;margin:0 auto;padding:32px 40px 0}
+.section-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:18px}
+.section-title{font-size:18px;font-weight:700;color:#1c1a17;display:flex;align-items:center;gap:8px}
+.section-title .dot{width:8px;height:8px;border-radius:50%;background:#d95f2b;flex-shrink:0}
+.section-subtitle{font-size:13px;color:#a09890;margin-top:2px}
+.section-link{font-size:13px;font-weight:600;color:#d95f2b;text-decoration:none;display:flex;align-items:center;gap:4px}
+.section-link:hover{text-decoration:underline}
+.refresh-btn{width:32px;height:32px;border:1.5px solid #e0dbd0;border-radius:8px;background:#fff;cursor:pointer;font-size:14px;display:flex;align-items:center;justify-content:center;transition:all .15s;margin-left:8px}
+.refresh-btn:hover{border-color:#d95f2b;color:#d95f2b;transform:rotate(90deg)}
+
+/* ── Project Cards ── */
+.cards-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:14px}
+.card{background:#fff;border-radius:12px;overflow:hidden;border:1px solid #e8e4da;cursor:pointer;transition:transform .15s,box-shadow .15s}
+.card:hover{transform:translateY(-3px);box-shadow:0 8px 24px rgba(0,0,0,.1)}
+.card-cover{width:100%;height:130px;background:linear-gradient(135deg,#2d2a25,#4a4540);display:flex;align-items:center;justify-content:center;font-size:36px;position:relative;overflow:hidden}
+.card-cover img{width:100%;height:100%;object-fit:cover}
+.card-cover-emoji{font-size:36px}
+.card-badge{position:absolute;top:8px;left:8px;padding:3px 8px;border-radius:5px;font-size:10px;font-weight:700;backdrop-filter:blur(4px)}
+.badge-steam{background:rgba(26,159,255,.85);color:#fff}
+.badge-gc{background:rgba(217,95,43,.85);color:#fff}
+.badge-archive{background:rgba(0,0,0,.6);color:#fff}
+.card-body{padding:13px}
+.card-title{font-size:13.5px;font-weight:700;color:#1c1a17;margin-bottom:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.card-company{font-size:12px;color:#a09890;margin-bottom:7px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.card-desc{font-size:12px;color:#6b6660;line-height:1.5;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;margin-bottom:9px;min-height:36px}
+.card-tags{display:flex;flex-wrap:wrap;gap:4px}
+.tag{padding:2px 7px;border-radius:4px;font-size:11px;font-weight:500}
+.tag-genre{background:#fde8dc;color:#d95f2b}
+.tag-platform{background:#f5f3ef;color:#6b6660;border:1px solid #e0dbd0}
+
+/* ── Quick Actions ── */
+.quick-actions{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:0}
+.qa-card{background:#fff;border-radius:12px;padding:20px;border:1px solid #e8e4da;cursor:pointer;transition:all .15s;text-decoration:none;display:flex;flex-direction:column;align-items:flex-start;gap:10px}
+.qa-card:hover{border-color:#d95f2b;box-shadow:0 4px 16px rgba(217,95,43,.12);transform:translateY(-2px)}
+.qa-icon{font-size:24px;width:44px;height:44px;border-radius:10px;display:flex;align-items:center;justify-content:center}
+.qa-icon-orange{background:#fde8dc}
+.qa-icon-blue{background:#e8f0fd}
+.qa-icon-green{background:#e8fdf0}
+.qa-icon-purple{background:#f0e8fd}
+.qa-label{font-size:14px;font-weight:700;color:#1c1a17}
+.qa-desc{font-size:12px;color:#a09890;line-height:1.4}
+
+/* ── Genre Explorer ── */
+.genre-grid{display:flex;flex-wrap:wrap;gap:8px}
+.genre-chip{padding:9px 16px;border-radius:20px;font-size:13px;font-weight:600;cursor:pointer;transition:all .15s;border:1.5px solid #e0dbd0;background:#fff;color:#6b6660;text-decoration:none;display:inline-flex;align-items:center;gap:6px}
+.genre-chip:hover{border-color:#d95f2b;color:#d95f2b;background:#fde8dc}
+.genre-chip .count{font-size:11px;font-weight:400;color:#a09890}
+
+/* ── History Strip ── */
+.history-strip{display:flex;gap:10px;overflow-x:auto;padding-bottom:4px;scrollbar-width:none}
+.history-strip::-webkit-scrollbar{display:none}
+.history-card{flex-shrink:0;width:180px;background:#fff;border-radius:10px;border:1px solid #e8e4da;cursor:pointer;overflow:hidden;transition:all .15s}
+.history-card:hover{border-color:#d95f2b;transform:translateY(-2px)}
+.history-cover{width:100%;height:90px;background:linear-gradient(135deg,#2d2a25,#4a4540);display:flex;align-items:center;justify-content:center;font-size:24px;overflow:hidden}
+.history-cover img{width:100%;height:100%;object-fit:cover}
+.history-body{padding:9px}
+.history-title{font-size:12px;font-weight:600;color:#1c1a17;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.history-time{font-size:10px;color:#a09890;margin-top:2px}
+
+/* ── Loading skeleton ── */
+.skeleton{background:linear-gradient(90deg,#f0ece6 25%,#e8e4da 50%,#f0ece6 75%);background-size:200% 100%;animation:shimmer 1.5s infinite}
+@keyframes shimmer{0%{background-position:200% 0}100%{background-position:-200% 0}}
+.skel-card{background:#fff;border-radius:12px;overflow:hidden;border:1px solid #e8e4da}
+.skel-cover{height:130px}
+.skel-body{padding:13px;display:flex;flex-direction:column;gap:8px}
+.skel-line{height:12px;border-radius:4px}
+.skel-line.w80{width:80%}
+.skel-line.w60{width:60%}
+.skel-line.w40{width:40%}
+
+/* ── Modal ── */
+.modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:200;backdrop-filter:blur(4px);align-items:center;justify-content:center;padding:24px}
+.modal-overlay.open{display:flex}
+.modal{background:#fff;border-radius:16px;width:100%;max-width:600px;max-height:82vh;overflow-y:auto;box-shadow:0 20px 60px rgba(0,0,0,.2)}
+.modal-header{padding:24px 24px 0;display:flex;align-items:flex-start;justify-content:space-between;gap:16px;position:sticky;top:0;background:#fff;z-index:1;padding-bottom:16px;border-bottom:1px solid #f0ece6}
+.modal-title{font-size:20px;font-weight:700;color:#1c1a17;flex:1;line-height:1.3}
+.modal-close{width:32px;height:32px;border:none;background:#f5f3ef;border-radius:8px;cursor:pointer;font-size:16px;display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:background .15s}
+.modal-close:hover{background:#fde8dc;color:#d95f2b}
+.modal-body{padding:20px 24px 28px}
+.modal-company{font-size:13px;color:#a09890;margin-bottom:14px}
+.modal-desc{font-size:14px;color:#3a3835;line-height:1.7;margin-bottom:18px}
+.modal-row{display:flex;flex-direction:column;gap:14px}
+.modal-field{display:flex;flex-direction:column;gap:6px}
+.modal-field-label{font-size:11px;font-weight:700;color:#a09890;text-transform:uppercase;letter-spacing:.6px}
+.modal-tags{display:flex;flex-wrap:wrap;gap:6px}
+.modal-tag{padding:4px 10px;border-radius:6px;font-size:12px;font-weight:500;background:#f5f3ef;color:#6b6660;border:1px solid #e0dbd0}
+.modal-tag.genre{background:#fde8dc;color:#d95f2b;border-color:#fac8b0}
+.modal-actions{display:flex;gap:10px;margin-top:20px;padding-top:16px;border-top:1px solid #f0ece6}
+.modal-btn{padding:10px 20px;border-radius:8px;font-size:13px;font-weight:600;font-family:'DM Sans',sans-serif;cursor:pointer;border:none;transition:all .15s;text-decoration:none;display:inline-flex;align-items:center;gap:6px}
+.modal-btn-primary{background:#d95f2b;color:#fff}
+.modal-btn-primary:hover{background:#c04e20}
+.modal-btn-secondary{background:#f5f3ef;color:#1c1a17;border:1.5px solid #e0dbd0}
+.modal-btn-secondary:hover{border-color:#d95f2b;color:#d95f2b}
+.modal-source{font-size:11px;color:#c0bbb5;margin-top:12px}
+
+/* ── Spacer ── */
+.page-bottom{height:48px}
+</style>
+</head>
+<body>
+
+<!-- Sidebar -->
+<div class="sidebar">
+  <div class="sidebar-brand">
+    <div class="sidebar-brand-text">Game<span>Connect</span></div>
+  </div>
+  <nav class="sidebar-nav">
+    <div class="nav-section">Discover</div>
+    <a class="nav-item active" href="Home_v1_PC.html"><span class="icon">🏠</span> Home</a>
+    <a class="nav-item" href="EventHub_v2_PC.html"><span class="icon">📅</span> Events</a>
+    <a class="nav-item" href="ProjectDatabase_v1_PC.html"><span class="icon">🎮</span> Projects</a>
+    <a class="nav-item" href="ExhibitorBrowse_v1_PC.html"><span class="icon">🏢</span> Companies</a>
+    <div class="nav-section">Connect</div>
+    <a class="nav-item" href="BuyerZone_v1_PC.html"><span class="icon">🤝</span> Buyer Zone</a>
+    <a class="nav-item" href="LetsMeet_Browse_v1_Mobile.html"><span class="icon">📆</span> Meetings</a>
+    <div class="nav-section">My Space</div>
+    <a class="nav-item" href="Profile_v2_PC.html"><span class="icon">👤</span> Profile</a>
+    <a class="nav-item" href="MySchedule_v1_PC.html"><span class="icon">🗓</span> My Schedule</a>
+  </nav>
+</div>
+
+<!-- Top Nav -->
+<div class="topnav">
+  <div class="topnav-greeting" id="topGreeting">
+    Welcome to <strong>GameConnect</strong>
+  </div>
+  <div class="topnav-right" id="topNavRight">
+    <button class="topnav-btn btn-login" onclick="window.location.href='Identity_Login_v1.0_PC.html'">Sign In</button>
+    <button class="topnav-btn btn-primary" onclick="window.location.href='Identity_Login_v1.0_PC.html'">Join Free</button>
+  </div>
+</div>
+
+<!-- Main -->
+<div class="main">
+
+  <!-- Hero -->
+  <div class="hero">
+    <div class="hero-inner">
+      <div class="hero-eyebrow" id="heroEyebrow">Game Industry B2B Platform</div>
+      <h1 class="hero-title" id="heroTitle">
+        Find your next<br><em>publishing deal.</em>
+      </h1>
+      <p class="hero-sub" id="heroSub">
+        Browse <strong id="heroProjectCount" style="color:#fff">9,780</strong> game projects from developers worldwide. Connect with publishers, investors, and co-dev partners — all in one place.
+      </p>
+      <div class="hero-cta" id="heroCta">
+        <a class="hero-btn hero-btn-primary" href="ProjectDatabase_v1_PC.html">🎮 Browse Projects</a>
+        <a class="hero-btn hero-btn-secondary" href="EventHub_v2_PC.html">📅 Upcoming Events</a>
+      </div>
+      <div class="hero-stats">
+        <div>
+          <div class="hero-stat-num" id="statProjects">9,780</div>
+          <div class="hero-stat-label">Game Projects</div>
+        </div>
+        <div>
+          <div class="hero-stat-num" id="statEvents">200+</div>
+          <div class="hero-stat-label">Events Covered</div>
+        </div>
+        <div>
+          <div class="hero-stat-num" id="statSources">15+</div>
+          <div class="hero-stat-label">Conventions</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Profile nudge (shown for logged-in users without profile) -->
+  <div class="nudge-bar" id="nudgeBar" style="display:none">
+    <div class="nudge-text">
+      👋 <strong>Complete your profile</strong> — tell us who you are and we'll show you projects that match your needs.
+    </div>
+    <button class="nudge-btn" onclick="window.location.href='Onboarding_Wizard_v1_PC.html'">Complete Profile →</button>
+  </div>
+
+  <!-- Quick Actions -->
+  <div class="section">
+    <div class="section-header">
+      <div>
+        <div class="section-title"><span class="dot"></span> Quick Access</div>
+      </div>
+    </div>
+    <div class="quick-actions">
+      <a class="qa-card" href="ProjectDatabase_v1_PC.html">
+        <div class="qa-icon qa-icon-orange">🎮</div>
+        <div class="qa-label">Browse Projects</div>
+        <div class="qa-desc">9,780 game projects from 15+ conventions</div>
+      </a>
+      <a class="qa-card" href="EventHub_v2_PC.html">
+        <div class="qa-icon qa-icon-blue">📅</div>
+        <div class="qa-label">Events Calendar</div>
+        <div class="qa-desc">Upcoming industry events and deadlines</div>
+      </a>
+      <a class="qa-card" href="BuyerZone_v1_PC.html">
+        <div class="qa-icon qa-icon-green">🤝</div>
+        <div class="qa-label">Buyer Zone</div>
+        <div class="qa-desc">Connect with publishers and investors</div>
+      </a>
+      <a class="qa-card" href="Profile_v2_PC.html" id="qaProfile">
+        <div class="qa-icon qa-icon-purple">👤</div>
+        <div class="qa-label">My Profile</div>
+        <div class="qa-desc">Manage your presence on the platform</div>
+      </a>
+    </div>
+  </div>
+
+  <!-- Today's Picks (random, refreshable) -->
+  <div class="section" style="margin-top:32px">
+    <div class="section-header">
+      <div>
+        <div class="section-title">
+          <span class="dot"></span>
+          <span id="picksTitle">Today's Picks</span>
+        </div>
+        <div class="section-subtitle" id="picksSubtitle">Refreshes every visit — click 🔄 to discover more</div>
+      </div>
+      <div style="display:flex;align-items:center;gap:8px">
+        <a class="section-link" href="ProjectDatabase_v1_PC.html">View all →</a>
+        <button class="refresh-btn" onclick="loadPicks(true)" title="Shuffle">🔄</button>
+      </div>
+    </div>
+    <div class="cards-grid" id="picksGrid">
+      <!-- Skeleton loading -->
+      <div class="skel-card"><div class="skel-cover skeleton"></div><div class="skel-body"><div class="skel-line w80 skeleton"></div><div class="skel-line w60 skeleton"></div><div class="skel-line w40 skeleton"></div></div></div>
+      <div class="skel-card"><div class="skel-cover skeleton"></div><div class="skel-body"><div class="skel-line w80 skeleton"></div><div class="skel-line w60 skeleton"></div><div class="skel-line w40 skeleton"></div></div></div>
+      <div class="skel-card"><div class="skel-cover skeleton"></div><div class="skel-body"><div class="skel-line w80 skeleton"></div><div class="skel-line w60 skeleton"></div><div class="skel-line w40 skeleton"></div></div></div>
+      <div class="skel-card"><div class="skel-cover skeleton"></div><div class="skel-body"><div class="skel-line w80 skeleton"></div><div class="skel-line w60 skeleton"></div><div class="skel-line w40 skeleton"></div></div></div>
+    </div>
+  </div>
+
+  <!-- Recently Added -->
+  <div class="section" style="margin-top:32px">
+    <div class="section-header">
+      <div>
+        <div class="section-title"><span class="dot"></span> Recently Added</div>
+        <div class="section-subtitle">Latest projects in the database</div>
+      </div>
+      <a class="section-link" href="ProjectDatabase_v1_PC.html">View all →</a>
+    </div>
+    <div class="cards-grid" id="recentGrid">
+      <div class="skel-card"><div class="skel-cover skeleton"></div><div class="skel-body"><div class="skel-line w80 skeleton"></div><div class="skel-line w60 skeleton"></div></div></div>
+      <div class="skel-card"><div class="skel-cover skeleton"></div><div class="skel-body"><div class="skel-line w80 skeleton"></div><div class="skel-line w60 skeleton"></div></div></div>
+      <div class="skel-card"><div class="skel-cover skeleton"></div><div class="skel-body"><div class="skel-line w80 skeleton"></div><div class="skel-line w60 skeleton"></div></div></div>
+      <div class="skel-card"><div class="skel-cover skeleton"></div><div class="skel-body"><div class="skel-line w80 skeleton"></div><div class="skel-line w60 skeleton"></div></div></div>
+    </div>
+  </div>
+
+  <!-- Explore by Genre -->
+  <div class="section" style="margin-top:32px">
+    <div class="section-header">
+      <div>
+        <div class="section-title"><span class="dot"></span> Explore by Genre</div>
+        <div class="section-subtitle">Find games in your area of interest</div>
+      </div>
+    </div>
+    <div class="genre-grid">
+      <a class="genre-chip" href="ProjectDatabase_v1_PC.html?genre=Action">⚔️ Action</a>
+      <a class="genre-chip" href="ProjectDatabase_v1_PC.html?genre=RPG">🗡️ RPG</a>
+      <a class="genre-chip" href="ProjectDatabase_v1_PC.html?genre=Strategy">♟️ Strategy</a>
+      <a class="genre-chip" href="ProjectDatabase_v1_PC.html?genre=Simulation">🏗️ Simulation</a>
+      <a class="genre-chip" href="ProjectDatabase_v1_PC.html?genre=Adventure">🗺️ Adventure</a>
+      <a class="genre-chip" href="ProjectDatabase_v1_PC.html?genre=Puzzle">🧩 Puzzle</a>
+      <a class="genre-chip" href="ProjectDatabase_v1_PC.html?genre=Horror">👻 Horror</a>
+      <a class="genre-chip" href="ProjectDatabase_v1_PC.html?genre=Casual">🎈 Casual</a>
+      <a class="genre-chip" href="ProjectDatabase_v1_PC.html?genre=Roguelike">🎲 Roguelike</a>
+      <a class="genre-chip" href="ProjectDatabase_v1_PC.html?genre=Shooter">🎯 Shooter</a>
+      <a class="genre-chip" href="ProjectDatabase_v1_PC.html?genre=Platformer">🏃 Platformer</a>
+      <a class="genre-chip" href="ProjectDatabase_v1_PC.html?genre=Sports">⚽ Sports</a>
+    </div>
+  </div>
+
+  <!-- Recently Viewed (shown only if history exists) -->
+  <div class="section" style="margin-top:32px" id="historySection" style="display:none">
+    <div class="section-header">
+      <div>
+        <div class="section-title"><span class="dot"></span> Recently Viewed</div>
+        <div class="section-subtitle">Pick up where you left off</div>
+      </div>
+      <button class="section-link" style="background:none;border:none;cursor:pointer;font-family:'DM Sans',sans-serif" onclick="clearHistory()">Clear history</button>
+    </div>
+    <div class="history-strip" id="historyStrip"></div>
+  </div>
+
+  <!-- From Steam Festival -->
+  <div class="section" style="margin-top:32px">
+    <div class="section-header">
+      <div>
+        <div class="section-title"><span class="dot"></span> Steam Festival 2026</div>
+        <div class="section-subtitle">Games entering Steam Next Fest this year</div>
+      </div>
+      <a class="section-link" href="ProjectDatabase_v1_PC.html?source=Steam+Festival+2026">View all →</a>
+    </div>
+    <div class="cards-grid" id="steamGrid">
+      <div class="skel-card"><div class="skel-cover skeleton"></div><div class="skel-body"><div class="skel-line w80 skeleton"></div><div class="skel-line w60 skeleton"></div></div></div>
+      <div class="skel-card"><div class="skel-cover skeleton"></div><div class="skel-body"><div class="skel-line w80 skeleton"></div><div class="skel-line w60 skeleton"></div></div></div>
+      <div class="skel-card"><div class="skel-cover skeleton"></div><div class="skel-body"><div class="skel-line w80 skeleton"></div><div class="skel-line w60 skeleton"></div></div></div>
+      <div class="skel-card"><div class="skel-cover skeleton"></div><div class="skel-body"><div class="skel-line w80 skeleton"></div><div class="skel-line w60 skeleton"></div></div></div>
+    </div>
+  </div>
+
+  <div class="page-bottom"></div>
+</div>
+
+<!-- Detail Modal -->
+<div class="modal-overlay" id="modalOverlay" onclick="handleModalClick(event)">
+  <div class="modal" id="modal">
+    <div class="modal-header">
+      <div class="modal-title" id="modalTitle">—</div>
+      <button class="modal-close" onclick="closeModal()">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="modal-company" id="modalCompany"></div>
+      <div class="modal-desc" id="modalDesc"></div>
+      <div class="modal-row">
+        <div class="modal-field" id="modalGenreField" style="display:none">
+          <div class="modal-field-label">Genre</div>
+          <div class="modal-tags" id="modalGenre"></div>
+        </div>
+        <div class="modal-field" id="modalPlatField" style="display:none">
+          <div class="modal-field-label">Platforms</div>
+          <div class="modal-tags" id="modalPlatforms"></div>
+        </div>
+        <div class="modal-field" id="modalLookField" style="display:none">
+          <div class="modal-field-label">Looking For</div>
+          <div class="modal-tags" id="modalLooking"></div>
+        </div>
+        <div class="modal-field" id="modalStatusField" style="display:none">
+          <div class="modal-field-label">Development Status</div>
+          <div id="modalStatus" style="font-size:13px;color:#3a3835;font-weight:500"></div>
+        </div>
+      </div>
+      <div class="modal-actions">
+        <a class="modal-btn modal-btn-primary" id="modalLink" href="#" target="_blank" rel="noopener" style="display:none">🔗 View Trailer / Steam Page</a>
+        <a class="modal-btn modal-btn-secondary" href="ProjectDatabase_v1_PC.html">Browse All Projects</a>
+      </div>
+      <div class="modal-source" id="modalSource"></div>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+// ── Config ──
+const SUPABASE_URL = 'https://gucqyrorgtsukqgnfjor.supabase.co';
+const SUPABASE_KEY = 'sb_publishable_-BkWoyQCBVhagJQIgR_zdw_qHvhYZpG';
+const _sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+// ── State ──
+let currentUser = null;
+let userProfile = null;
+let viewHistory = [];
+
+// ── Helpers ──
+function esc(s) {
+  if (!s) return '';
+  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+function timeAgo(dateStr) {
+  if (!dateStr) return '';
+  const d = new Date(dateStr);
+  const now = new Date();
+  const mins = Math.floor((now - d) / 60000);
+  if (mins < 60) return `${mins}m ago`;
+  const hrs = Math.floor(mins / 60);
+  if (hrs < 24) return `${hrs}h ago`;
+  const days = Math.floor(hrs / 24);
+  return `${days}d ago`;
+}
+
+const EMOJI_MAP = {
+  'action': '⚔️', 'rpg': '🗡️', 'strategy': '♟️', 'simulation': '🏗️',
+  'adventure': '🗺️', 'puzzle': '🧩', 'horror': '👻', 'sports': '⚽',
+  'casual': '🎈', 'indie': '🎮', 'racing': '🏎️', 'fighting': '🥊',
+  'shooter': '🎯', 'platformer': '🏃', 'survival': '🏕️', 'music': '🎵',
+  'roguelike': '🎲', 'visual novel': '📖', 'vr': '🥽', 'mobile': '📱'
+};
+
+function getEmoji(title, genre) {
+  if (genre && genre.length > 0) {
+    const g = (genre[0] || '').toLowerCase();
+    for (const [k, e] of Object.entries(EMOJI_MAP)) {
+      if (g.includes(k)) return e;
+    }
+  }
+  const t = (title || '').toLowerCase();
+  for (const [k, e] of Object.entries(EMOJI_MAP)) {
+    if (t.includes(k)) return e;
+  }
+  return '🎮';
+}
+
+function getBadge(source) {
+  if (!source) return '';
+  if (source.includes('Steam')) return '<span class="card-badge badge-steam">Steam</span>';
+  if (source.includes('Project Database')) return '<span class="card-badge badge-archive">Archive</span>';
+  return `<span class="card-badge badge-gc">GC</span>`;
+}
+
+// ── Create card ──
+function createCard(p, size = 'normal') {
+  const div = document.createElement('div');
+  div.className = 'card';
+  div.onclick = () => openModal(p);
+
+  const emoji = getEmoji(p.title, p.genre);
+  const badge = getBadge(p.source);
+  const genreTags = (p.genre || []).slice(0, 2).map(g =>
+    `<span class="tag tag-genre">${esc(g.length > 20 ? g.slice(0,20)+'…' : g)}</span>`).join('');
+  const platTags = (p.platforms || []).slice(0, 1).map(pl =>
+    `<span class="tag tag-platform">${esc(pl)}</span>`).join('');
+
+  const coverHtml = p.cover_image_url
+    ? `<img src="${esc(p.cover_image_url)}" alt="" loading="lazy" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">`
+    : '';
+
+  div.innerHTML = `
+    <div class="card-cover">
+      ${coverHtml}
+      <div class="card-cover-emoji" style="${p.cover_image_url ? 'display:none' : ''}">${emoji}</div>
+      ${badge}
+    </div>
+    <div class="card-body">
+      <div class="card-title" title="${esc(p.title)}">${esc(p.title)}</div>
+      <div class="card-company">${esc(p.tagline || '—')}</div>
+      <div class="card-desc">${esc(p.description || 'No description available.')}</div>
+      <div class="card-tags">${genreTags}${platTags}</div>
+    </div>`;
+
+  return div;
+}
+
+// ── Random offset for variety ──
+function randomOffset(total, count) {
+  const max = Math.max(0, total - count);
+  return Math.floor(Math.random() * max);
+}
+
+// ── Load picks (personalized or random) ──
+async function loadPicks(shuffle = false) {
+  const grid = document.getElementById('picksGrid');
+  grid.innerHTML = `
+    <div class="skel-card"><div class="skel-cover skeleton"></div><div class="skel-body"><div class="skel-line w80 skeleton"></div><div class="skel-line w60 skeleton"></div></div></div>
+    <div class="skel-card"><div class="skel-cover skeleton"></div><div class="skel-body"><div class="skel-line w80 skeleton"></div><div class="skel-line w60 skeleton"></div></div></div>
+    <div class="skel-card"><div class="skel-cover skeleton"></div><div class="skel-body"><div class="skel-line w80 skeleton"></div><div class="skel-line w60 skeleton"></div></div></div>
+    <div class="skel-card"><div class="skel-cover skeleton"></div><div class="skel-body"><div class="skel-line w80 skeleton"></div><div class="skel-line w60 skeleton"></div></div></div>`;
+
+  try {
+    // Determine preferred genre from history or user profile
+    let preferredGenre = null;
+    if (viewHistory.length > 0) {
+      // Count genres in history
+      const genreCount = {};
+      viewHistory.forEach(h => {
+        (h.genre || []).forEach(g => {
+          genreCount[g] = (genreCount[g] || 0) + 1;
+        });
+      });
+      const sorted = Object.entries(genreCount).sort((a,b) => b[1]-a[1]);
+      if (sorted.length > 0) preferredGenre = sorted[0][0];
+    } else if (userProfile && userProfile.interests) {
+      // Map interests to genres
+      const interestGenreMap = {
+        developer: 'Indie', publisher: 'Action', investor: 'RPG'
+      };
+      preferredGenre = interestGenreMap[userProfile.role?.toLowerCase()] || null;
+    }
+
+    // Build query
+    let url = `${SUPABASE_URL}/rest/v1/game_projects?select=id,title,tagline,description,genre,platforms,status,looking_for,cover_image_url,trailer_url,source&limit=8`;
+
+    if (preferredGenre && !shuffle) {
+      // Try genre-filtered first
+      const r = await fetch(`${url}&genre=cs.{${encodeURIComponent(preferredGenre)}}`, {
+        headers: { apikey: SUPABASE_KEY, Prefer: 'count=exact' }
+      });
+      const data = await r.json();
+      const total = parseInt(r.headers.get('content-range')?.split('/')[1] || '0');
+      if (data.length >= 4) {
+        const offset = randomOffset(total, 8);
+        const r2 = await fetch(`${url}&genre=cs.{${encodeURIComponent(preferredGenre)}}&offset=${offset}`, {
+          headers: { apikey: SUPABASE_KEY }
+        });
+        const picks = await r2.json();
+        renderPicks(picks, preferredGenre);
+        return;
+      }
+    }
+
+    // Random picks with random offset
+    const countR = await fetch(`${SUPABASE_URL}/rest/v1/game_projects?select=id&description=not.is.null`, {
+      headers: { apikey: SUPABASE_KEY, Prefer: 'count=exact', Range: '0-0' }
+    });
+    const total = parseInt(countR.headers.get('content-range')?.split('/')[1] || '9780');
+    const offset = randomOffset(total, 8);
+
+    const r = await fetch(`${url}&description=not.is.null&offset=${offset}`, {
+      headers: { apikey: SUPABASE_KEY }
+    });
+    const picks = await r.json();
+    renderPicks(picks, null);
+
+  } catch(e) {
+    console.error('loadPicks error:', e);
+    grid.innerHTML = '<div style="grid-column:1/-1;padding:32px;text-align:center;color:#a09890">Failed to load. Please refresh.</div>';
+  }
+}
+
+function renderPicks(picks, genre) {
+  const grid = document.getElementById('picksGrid');
+  const title = document.getElementById('picksTitle');
+  const sub = document.getElementById('picksSubtitle');
+
+  if (genre && viewHistory.length > 0) {
+    title.textContent = `Recommended for You`;
+    sub.textContent = `Based on your browsing — ${genre} games you might like`;
+  } else {
+    const phrases = [
+      "Today's Picks", "Discover Something New", "Fresh Finds",
+      "Hand-Picked for You", "Explore These Projects"
+    ];
+    title.textContent = phrases[Math.floor(Math.random() * phrases.length)];
+    sub.textContent = 'Refreshes every visit — click 🔄 to discover more';
+  }
+
+  grid.innerHTML = '';
+  picks.forEach(p => grid.appendChild(createCard(p)));
+}
+
+// ── Load recent ──
+async function loadRecent() {
+  try {
+    const r = await fetch(
+      `${SUPABASE_URL}/rest/v1/game_projects?select=id,title,tagline,description,genre,platforms,status,looking_for,cover_image_url,trailer_url,source,created_at&order=created_at.desc&limit=4`,
+      { headers: { apikey: SUPABASE_KEY } }
+    );
+    const data = await r.json();
+    const grid = document.getElementById('recentGrid');
+    grid.innerHTML = '';
+    data.forEach(p => grid.appendChild(createCard(p)));
+  } catch(e) {
+    document.getElementById('recentGrid').innerHTML = '';
+  }
+}
+
+// ── Load Steam Festival picks ──
+async function loadSteam() {
+  try {
+    const countR = await fetch(
+      `${SUPABASE_URL}/rest/v1/game_projects?select=id&source=eq.Steam Festival 2026`,
+      { headers: { apikey: SUPABASE_KEY, Prefer: 'count=exact', Range: '0-0' } }
+    );
+    const total = parseInt(countR.headers.get('content-range')?.split('/')[1] || '1000');
+    const offset = randomOffset(total, 4);
+
+    const r = await fetch(
+      `${SUPABASE_URL}/rest/v1/game_projects?select=id,title,tagline,description,genre,platforms,status,looking_for,cover_image_url,trailer_url,source&source=eq.Steam Festival 2026&offset=${offset}&limit=4`,
+      { headers: { apikey: SUPABASE_KEY } }
+    );
+    const data = await r.json();
+    const grid = document.getElementById('steamGrid');
+    grid.innerHTML = '';
+    data.forEach(p => grid.appendChild(createCard(p)));
+  } catch(e) {
+    document.getElementById('steamGrid').innerHTML = '';
+  }
+}
+
+// ── History ──
+function loadHistory() {
+  try {
+    viewHistory = JSON.parse(localStorage.getItem('gc_view_history') || '[]');
+  } catch(e) { viewHistory = []; }
+
+  const section = document.getElementById('historySection');
+  const strip = document.getElementById('historyStrip');
+
+  if (viewHistory.length === 0) {
+    section.style.display = 'none';
+    return;
+  }
+
+  section.style.display = 'block';
+  strip.innerHTML = '';
+
+  viewHistory.slice(0, 10).forEach(p => {
+    const div = document.createElement('div');
+    div.className = 'history-card';
+    div.onclick = () => openModal(p);
+
+    const emoji = getEmoji(p.title, p.genre);
+    const coverHtml = p.cover_image_url
+      ? `<img src="${esc(p.cover_image_url)}" alt="" loading="lazy" onerror="this.style.display='none'">`
+      : '';
+
+    div.innerHTML = `
+      <div class="history-cover">
+        ${coverHtml}
+        ${!p.cover_image_url ? emoji : ''}
+      </div>
+      <div class="history-body">
+        <div class="history-title" title="${esc(p.title)}">${esc(p.title)}</div>
+        <div class="history-time">${timeAgo(p._viewedAt)}</div>
+      </div>`;
+
+    strip.appendChild(div);
+  });
+}
+
+function addToHistory(p) {
+  try {
+    let history = JSON.parse(localStorage.getItem('gc_view_history') || '[]');
+    // Remove if already exists
+    history = history.filter(h => h.id !== p.id);
+    // Add to front with timestamp
+    history.unshift({ ...p, _viewedAt: new Date().toISOString() });
+    // Keep max 20
+    history = history.slice(0, 20);
+    localStorage.setItem('gc_view_history', JSON.stringify(history));
+    viewHistory = history;
+  } catch(e) {}
+}
+
+function clearHistory() {
+  localStorage.removeItem('gc_view_history');
+  viewHistory = [];
+  document.getElementById('historySection').style.display = 'none';
+}
+
+// ── Modal ──
+function openModal(p) {
+  addToHistory(p);
+
+  document.getElementById('modalTitle').textContent = p.title || '—';
+  document.getElementById('modalCompany').textContent = p.tagline ? `by ${p.tagline}` : '';
+  document.getElementById('modalDesc').textContent = p.description || 'No description available.';
+
+  // Genre
+  const genreField = document.getElementById('modalGenreField');
+  const genreEl = document.getElementById('modalGenre');
+  if (p.genre && p.genre.length > 0) {
+    genreEl.innerHTML = p.genre.map(g => `<span class="modal-tag genre">${esc(g)}</span>`).join('');
+    genreField.style.display = 'flex';
+  } else { genreField.style.display = 'none'; }
+
+  // Platforms
+  const platField = document.getElementById('modalPlatField');
+  const platEl = document.getElementById('modalPlatforms');
+  if (p.platforms && p.platforms.length > 0) {
+    platEl.innerHTML = p.platforms.map(pl => `<span class="modal-tag">${esc(pl)}</span>`).join('');
+    platField.style.display = 'flex';
+  } else { platField.style.display = 'none'; }
+
+  // Looking For
+  const lookField = document.getElementById('modalLookField');
+  const lookEl = document.getElementById('modalLooking');
+  if (p.looking_for && p.looking_for.length > 0) {
+    lookEl.innerHTML = p.looking_for.map(l => `<span class="modal-tag">${esc(l)}</span>`).join('');
+    lookField.style.display = 'flex';
+  } else { lookField.style.display = 'none'; }
+
+  // Status
+  const statusField = document.getElementById('modalStatusField');
+  if (p.status) {
+    document.getElementById('modalStatus').textContent = p.status;
+    statusField.style.display = 'flex';
+  } else { statusField.style.display = 'none'; }
+
+  // Link
+  const linkEl = document.getElementById('modalLink');
+  if (p.trailer_url) {
+    linkEl.href = p.trailer_url;
+    linkEl.style.display = 'inline-flex';
+  } else { linkEl.style.display = 'none'; }
+
+  document.getElementById('modalSource').textContent = `Source: ${p.source || 'Unknown'}`;
+  document.getElementById('modalOverlay').classList.add('open');
+}
+
+function handleModalClick(e) {
+  if (e.target === document.getElementById('modalOverlay')) closeModal();
+}
+
+function closeModal() {
+  document.getElementById('modalOverlay').classList.remove('open');
+  // Refresh history strip after viewing
+  loadHistory();
+}
+
+// ── Auth state ──
+async function initAuth() {
+  // Check localStorage first (fast)
+  const userStr = localStorage.getItem('gc_auth_user');
+  const wizardStr = localStorage.getItem('gc_wizard');
+
+  if (userStr) {
+    try {
+      currentUser = JSON.parse(userStr);
+      userProfile = wizardStr ? JSON.parse(wizardStr).profile : null;
+      updateUIForUser(currentUser, userProfile);
+    } catch(e) {}
+  }
+
+  // Also verify with Supabase session (async)
+  try {
+    const { data } = await _sb.auth.getSession();
+    if (data?.session?.user) {
+      const u = data.session.user;
+      currentUser = {
+        id: u.id,
+        email: u.email,
+        name: u.user_metadata?.full_name || u.email,
+        avatar: u.user_metadata?.avatar_url || null
+      };
+      localStorage.setItem('gc_auth_user', JSON.stringify(currentUser));
+      updateUIForUser(currentUser, userProfile);
+    }
+  } catch(e) {}
+}
+
+function updateUIForUser(user, profile) {
+  // Top nav
+  const greeting = document.getElementById('topGreeting');
+  const navRight = document.getElementById('topNavRight');
+  const firstName = (user.name || user.email || '').split(' ')[0];
+  const hour = new Date().getHours();
+  const timeGreet = hour < 12 ? 'Good morning' : hour < 17 ? 'Good afternoon' : 'Good evening';
+
+  greeting.innerHTML = `${timeGreet}, <strong>${esc(firstName)}</strong> 👋`;
+
+  const avatarHtml = user.avatar
+    ? `<div class="user-avatar"><img src="${esc(user.avatar)}" alt=""></div>`
+    : `<div class="user-avatar">${(firstName[0] || 'U').toUpperCase()}</div>`;
+
+  navRight.innerHTML = `
+    <div class="user-chip" onclick="window.location.href='Profile_v2_PC.html'">
+      ${avatarHtml}
+      <span class="user-name">${esc(firstName)}</span>
+    </div>`;
+
+  // Hero personalization
+  if (profile && profile.role) {
+    const heroMap = {
+      'Game Developer': {
+        eyebrow: 'For Game Developers',
+        title: 'Find your next<br><em>publishing deal.</em>',
+        sub: `Browse publishers actively looking for games like yours. ${profile.company ? `Welcome, ${profile.company}!` : ''}`
+      },
+      'Publisher': {
+        eyebrow: 'For Publishers',
+        title: 'Discover your next<br><em>breakout title.</em>',
+        sub: `Browse ${9780} game projects from developers worldwide. Find your next signing.`
+      },
+      'Investor / VC': {
+        eyebrow: 'For Investors',
+        title: 'Find your next<br><em>portfolio game.</em>',
+        sub: `Explore early-stage game projects seeking investment. ${9780} projects in the database.`
+      }
+    };
+    const h = heroMap[profile.role] || heroMap['Game Developer'];
+    document.getElementById('heroEyebrow').textContent = h.eyebrow;
+    document.getElementById('heroTitle').innerHTML = h.title;
+    document.getElementById('heroSub').innerHTML = h.sub;
+  }
+
+  // Nudge bar
+  if (!profile) {
+    document.getElementById('nudgeBar').style.display = 'flex';
+  }
+}
+
+// ── Stats ──
+async function loadStats() {
+  try {
+    const r = await fetch(`${SUPABASE_URL}/rest/v1/game_projects?select=id`, {
+      headers: { apikey: SUPABASE_KEY, Prefer: 'count=exact', Range: '0-0' }
+    });
+    const total = parseInt(r.headers.get('content-range')?.split('/')[1] || '9780');
+    document.getElementById('statProjects').textContent = total.toLocaleString();
+    document.getElementById('heroProjectCount').textContent = total.toLocaleString();
+  } catch(e) {}
+}
+
+// ── Init ──
+(async function init() {
+  // Load history first (synchronous)
+  loadHistory();
+
+  // Auth check
+  await initAuth();
+
+  // Load content in parallel
+  loadStats();
+  loadPicks();
+  loadRecent();
+  loadSteam();
+})();
+</script>
+</body>
+</html>
