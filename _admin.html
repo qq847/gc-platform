@@ -307,6 +307,15 @@ html,body{height:100%;font-family:"DM Sans","PingFang SC",sans-serif;color:#111;
       </div>
     </div>
     <div class="sidebar-section">
+      <div class="sidebar-label">Data</div>
+      <div class="sidebar-item" onclick="showPanel('database')">
+        <span class="icon">🗄️</span> Database Overview
+        <span class="sidebar-cnt" id="cnt-db">3</span>
+      </div>
+      <div class="sidebar-item" onclick="showPanel('pages')">
+        <span class="icon">📄</span> All Pages
+        <span class="sidebar-cnt">207</span>
+      </div>
       <div class="sidebar-label">System</div>
       <div class="sidebar-item" onclick="showPanel('health')">
         <span class="icon">🩺</span> Data Health
@@ -634,6 +643,67 @@ html,body{height:100%;font-family:"DM Sans","PingFang SC",sans-serif;color:#111;
       </div>
     </div>
 
+    <!-- DATABASE OVERVIEW PANEL -->
+    <div class="panel" id="panel-database">
+      <div class="page-hdr">
+        <div>
+          <div class="page-title">🗄️ Database Overview</div>
+          <div class="page-sub">Real-time data from Supabase — Game Connection Platform</div>
+        </div>
+        <button class="btn btn-ghost" onclick="dbLoad()">↻ Refresh</button>
+      </div>
+      <div class="stat-grid">
+        <div class="stat-card">
+          <div class="stat-card-val" id="db-projects" style="color:var(--orange)">—</div>
+          <div class="stat-card-label">Game Projects</div>
+          <div class="stat-card-delta" style="color:var(--text3)">Steam Festival + All Entries + Archive</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-card-val" id="db-events" style="color:var(--blue)">—</div>
+          <div class="stat-card-label">Events & Conventions</div>
+          <div class="stat-card-delta" style="color:var(--text3)">GC, Gamescom, TGS, GDC, PAX…</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-card-val" id="db-companies" style="color:var(--green)">—</div>
+          <div class="stat-card-label">Companies & Contacts</div>
+          <div class="stat-card-delta" style="color:var(--text3)">Publishers, Developers, Investors, Associations</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-card-val" style="color:var(--purple)">207</div>
+          <div class="stat-card-label">Platform Pages</div>
+          <div class="stat-card-delta" style="color:var(--text3)">All versions, all features</div>
+        </div>
+      </div>
+      <div class="section-card">
+        <div class="section-card-hdr"><div class="section-card-title">Companies by Type</div></div>
+        <div id="db-company-breakdown" style="padding:14px 16px"><div class="loading-state">Loading...</div></div>
+      </div>
+      <div class="section-card">
+        <div class="section-card-hdr"><div class="section-card-title">Quick Links</div></div>
+        <div style="display:flex;gap:10px;padding:14px 16px;flex-wrap:wrap">
+          <a href="ProjectDatabase_v1_PC.html" target="_blank" class="btn btn-primary" style="text-decoration:none">🎮 Browse Projects</a>
+          <a href="EventHub_v2_PC.html" target="_blank" class="btn btn-ghost" style="text-decoration:none">🏠 Homepage</a>
+          <a href="_all_pages.html" target="_blank" class="btn btn-ghost" style="text-decoration:none">📄 All Pages Index</a>
+        </div>
+      </div>
+    </div>
+
+    <!-- ALL PAGES PANEL -->
+    <div class="panel" id="panel-pages">
+      <div class="page-hdr">
+        <div>
+          <div class="page-title">📄 All Platform Pages</div>
+          <div class="page-sub">207 HTML files — all versions, all features</div>
+        </div>
+        <a href="_all_pages.html" target="_blank" class="btn btn-primary" style="text-decoration:none">Open Full Index ↗</a>
+      </div>
+      <div class="search-bar" style="margin-bottom:16px">
+        <span style="color:var(--text3)">🔍</span>
+        <input type="text" id="pages-search" placeholder="Search pages... (e.g. Login, Mobile, Event, v1)" oninput="pagesFilter()">
+      </div>
+      <div id="pages-container"></div>
+    </div>
+
   </div><!-- /main -->
 </div><!-- /layout -->
 
@@ -700,6 +770,195 @@ var featuredEvents = [
   { code:'GDC', name:'GDC 2027', meta:'🇺🇸 San Francisco · Mar 2027', color:'linear-gradient(135deg,#1d4ed8,#0a66c2)', search:'GDC 2027' },
 ];
 
+// ── SUPABASE CONFIG ──
+const SB_URL = 'https://gucqyrorgtsukqgnfjor.supabase.co';
+const SB_KEY = 'sb_publishable_-BkWoyQCBVhagJQIgR_zdw_qHvhYZpG';
+const SB_HEADERS = { 'apikey': SB_KEY, 'Authorization': 'Bearer ' + SB_KEY, 'Prefer': 'count=exact' };
+
+// ── DATABASE OVERVIEW ──
+async function dbLoad() {
+  try {
+    const [pr, ev, co] = await Promise.all([
+      fetch(SB_URL+'/rest/v1/game_projects?select=*&limit=0', {headers:SB_HEADERS}).then(r=>r.headers.get('content-range')),
+      fetch(SB_URL+'/rest/v1/events?select=*&limit=0', {headers:SB_HEADERS}).then(r=>r.headers.get('content-range')),
+      fetch(SB_URL+'/rest/v1/companies?select=*&limit=0', {headers:SB_HEADERS}).then(r=>r.headers.get('content-range')),
+    ]);
+    const n = cr => cr ? parseInt(cr.split('/')[1]).toLocaleString() : '—';
+    document.getElementById('db-projects').textContent = n(pr);
+    document.getElementById('db-events').textContent = n(ev);
+    document.getElementById('db-companies').textContent = n(co);
+    // breakdown
+    const rd = await fetch(SB_URL+'/rest/v1/companies?select=type&limit=3000', {headers:{'apikey':SB_KEY,'Authorization':'Bearer '+SB_KEY}});
+    const data = await rd.json();
+    const counts = {};
+    data.forEach(d => { const t=d.type||'other'; counts[t]=(counts[t]||0)+1; });
+    const total = data.length;
+    const labels = {publisher:'Publishers',developer:'Developers',buyer:'Buyers',association:'Associations',investor:'Investors',sponsor:'Sponsors',event_org:'Event Orgs',other:'Other',platform:'Platforms',distributor:'Distributors'};
+    const colors = {publisher:'#e8461e',developer:'#0A66C2',buyer:'#f59e0b',association:'#22c55e',investor:'#a855f7',sponsor:'#06b6d4',event_org:'#ec4899',other:'#64748b',platform:'#8b5cf6',distributor:'#14b8a6'};
+    const sorted = Object.entries(counts).sort((a,b)=>b[1]-a[1]);
+    document.getElementById('db-company-breakdown').innerHTML = sorted.map(([t,c])=>`
+      <div style="display:flex;align-items:center;gap:12px;margin-bottom:10px">
+        <span style="font-size:12px;color:var(--text2);width:110px;flex-shrink:0">${labels[t]||t}</span>
+        <div style="flex:1;background:rgba(0,0,0,0.06);border-radius:4px;height:6px;overflow:hidden">
+          <div style="width:${Math.round(c/total*100)}%;height:100%;background:${colors[t]||'#64748b'};border-radius:4px"></div>
+        </div>
+        <span style="font-size:12px;color:var(--text3);width:40px;text-align:right">${c}</span>
+      </div>
+    `).join('');
+  } catch(e) { console.error(e); }
+}
+
+// ── ALL PAGES ──
+const ALL_PAGES = [
+  {n:'EventHub_v2_PC.html',cat:'Homepage',tags:'current pc',desc:'Main homepage — live'},
+  {n:'EventHub_v1_PC.html',cat:'Homepage',tags:'old pc',desc:'EventHub v1'},
+  {n:'Homepage_Feed_v1_PC.html',cat:'Homepage',tags:'old pc',desc:'Feed homepage v1'},
+  {n:'Homepage_Feed_v1_Mobile.html',cat:'Homepage',tags:'old mobile',desc:'Feed homepage mobile'},
+  {n:'Homepage_Feed_v2_PC.html',cat:'Homepage',tags:'old pc',desc:'Feed homepage v2'},
+  {n:'GC_Platform_PC.html',cat:'Homepage',tags:'old pc',desc:'Earliest prototype'},
+  {n:'Home_v1_PC.html',cat:'Homepage',tags:'old pc',desc:'Home v1 experimental'},
+  {n:'gc-prototype-hub.html',cat:'Homepage',tags:'old pc',desc:'Very first prototype hub'},
+  {n:'Homepage_V7.html',cat:'Homepage',tags:'old pc',desc:'Homepage V7'},
+  {n:'Homepage_V7_Mobile.html',cat:'Homepage',tags:'old mobile',desc:'Homepage V7 Mobile'},
+  {n:'Homepage_v1_PC.html',cat:'Homepage',tags:'old pc',desc:'Homepage v1 PC'},
+  {n:'Homepage_v1_openclaw.html',cat:'Homepage',tags:'old pc',desc:'Openclaw era homepage'},
+  {n:'gc-platform-feed.html',cat:'Homepage',tags:'old pc',desc:'Feed prototype'},
+  {n:'Login_v2_PC.html',cat:'Auth',tags:'current pc',desc:'Login page — live'},
+  {n:'Login_v1_PC.html',cat:'Auth',tags:'old pc',desc:'Login v1'},
+  {n:'Login_v1_openclaw.html',cat:'Auth',tags:'old pc',desc:'Login openclaw'},
+  {n:'Onboarding_Wizard_v1_PC.html',cat:'Auth',tags:'current pc',desc:'Onboarding Wizard — live'},
+  {n:'Onboarding_v1_openclaw.html',cat:'Auth',tags:'old pc',desc:'Onboarding openclaw'},
+  {n:'Profile_v1_PC.html',cat:'Profile',tags:'current pc',desc:'Profile page PC'},
+  {n:'Profile_v1_Mobile.html',cat:'Profile',tags:'current mobile',desc:'Profile page Mobile'},
+  {n:'Profile_V1.html',cat:'Profile',tags:'old pc',desc:'Profile V1'},
+  {n:'Profile_v1_openclaw.html',cat:'Profile',tags:'old pc',desc:'Profile openclaw'},
+  {n:'Settings_v1_PC.html',cat:'Profile',tags:'current pc',desc:'Settings PC'},
+  {n:'Settings_v1_Mobile.html',cat:'Profile',tags:'current mobile',desc:'Settings Mobile'},
+  {n:'EventCreation_v1_PC.html',cat:'Events',tags:'current pc',desc:'Event creation'},
+  {n:'EventPublish_v1_PC.html',cat:'Events',tags:'current pc',desc:'Event publish'},
+  {n:'EventPublicPage_v1_PC.html',cat:'Events',tags:'current pc',desc:'Event public page'},
+  {n:'EventDashboard_v1_PC.html',cat:'Events',tags:'current pc',desc:'Event dashboard'},
+  {n:'EventSetup_v1_PC.html',cat:'Events',tags:'current pc',desc:'Event setup'},
+  {n:'EventModule_v1_PC.html',cat:'Events',tags:'current pc',desc:'Event module'},
+  {n:'Live_v44_PC.html',cat:'Live',tags:'current pc',desc:'Live v44 PC'},
+  {n:'Live_v44_Mobile.html',cat:'Live',tags:'current mobile',desc:'Live v44 Mobile'},
+  {n:'Live_v43_PC.html',cat:'Live',tags:'old pc',desc:'Live v43 PC'},
+  {n:'Live_v43_Mobile.html',cat:'Live',tags:'old mobile',desc:'Live v43 Mobile'},
+  {n:'Live_v42_PC.html',cat:'Live',tags:'old pc',desc:'Live v42 PC'},
+  {n:'Live_v42_openclaw_PC.html',cat:'Live',tags:'old pc',desc:'Live v42 openclaw'},
+  {n:'Live_v41_PC.html',cat:'Live',tags:'old pc',desc:'Live v41 PC'},
+  {n:'Live_v41_Mobile.html',cat:'Live',tags:'old mobile',desc:'Live v41 Mobile'},
+  {n:'Live_v40_Mobile.html',cat:'Live',tags:'old mobile',desc:'Live v40 Mobile'},
+  {n:'Live_v3_openclaw.html',cat:'Live',tags:'old pc',desc:'Live v3 openclaw'},
+  {n:'Live_v2_openclaw.html',cat:'Live',tags:'old pc',desc:'Live v2 openclaw'},
+  {n:'Live_v1_openclaw.html',cat:'Live',tags:'old pc',desc:'Live v1 openclaw'},
+  {n:'MobileHub_v13-3.html',cat:'MobileHub',tags:'current mobile',desc:'MobileHub v13-3 latest'},
+  {n:'MobileHub_v13-2.html',cat:'MobileHub',tags:'old mobile',desc:'MobileHub v13-2'},
+  {n:'MobileHub_v13.html',cat:'MobileHub',tags:'old mobile',desc:'MobileHub v13'},
+  {n:'MobileHub_v12-2.html',cat:'MobileHub',tags:'old mobile',desc:'MobileHub v12-2'},
+  {n:'MobileHub_v12.html',cat:'MobileHub',tags:'old mobile',desc:'MobileHub v12'},
+  {n:'MobileHub_v11_with_homepage_tab_fixed.html',cat:'MobileHub',tags:'old mobile',desc:'v11 homepage tab fixed'},
+  {n:'MobileHub_v11_with_homepage_tab.html',cat:'MobileHub',tags:'old mobile',desc:'v11 with homepage tab'},
+  {n:'MobileHub_v11_merged_feed.html',cat:'MobileHub',tags:'old mobile',desc:'v11 merged feed'},
+  {n:'MobileHub_v11.html',cat:'MobileHub',tags:'old mobile',desc:'MobileHub v11'},
+  {n:'MobileHub_v10-2.html',cat:'MobileHub',tags:'old mobile',desc:'MobileHub v10-2'},
+  {n:'MobileHub_v10.html',cat:'MobileHub',tags:'old mobile',desc:'MobileHub v10'},
+  {n:'MobileHub_v9.html',cat:'MobileHub',tags:'old mobile',desc:'MobileHub v9'},
+  {n:'MobileHub_v7.html',cat:'MobileHub',tags:'old mobile',desc:'MobileHub v7'},
+  {n:'MobileHub_v6.html',cat:'MobileHub',tags:'old mobile',desc:'MobileHub v6'},
+  {n:'MobileHub_v3.html',cat:'MobileHub',tags:'old mobile',desc:'MobileHub v3'},
+  {n:'MobileHub_v2.html',cat:'MobileHub',tags:'old mobile',desc:'MobileHub v2'},
+  {n:'Calendar_v1_PC.html',cat:'Calendar',tags:'current pc',desc:'Calendar PC'},
+  {n:'Calendar_v1_Mobile.html',cat:'Calendar',tags:'current mobile',desc:'Calendar Mobile'},
+  {n:'ScheduleBuilder_v1_PC.html',cat:'Calendar',tags:'current pc',desc:'Schedule Builder'},
+  {n:'Registration_Free_v1_PC.html',cat:'Registration',tags:'current pc',desc:'Free registration'},
+  {n:'Registration_Free_v1_Mobile.html',cat:'Registration',tags:'current mobile',desc:'Free registration Mobile'},
+  {n:'Ticketing_Paid_v1_PC.html',cat:'Registration',tags:'current pc',desc:'Paid ticketing'},
+  {n:'Ticketing_Paid_v1_Mobile.html',cat:'Registration',tags:'current mobile',desc:'Paid ticketing Mobile'},
+  {n:'BoothPod_v1_PC.html',cat:'Registration',tags:'current pc',desc:'Booth/Pod setup'},
+  {n:'SponsorBuilder_v1_PC.html',cat:'Registration',tags:'current pc',desc:'Sponsor builder'},
+  {n:'ExhibitorBrowse_v1_PC.html',cat:'Exhibitors',tags:'current pc',desc:'Browse exhibitors'},
+  {n:'ExhibitorBrowse_v1_Mobile.html',cat:'Exhibitors',tags:'current mobile',desc:'Browse exhibitors Mobile'},
+  {n:'ExhibitorProfile_v1_PC.html',cat:'Exhibitors',tags:'current pc',desc:'Exhibitor profile'},
+  {n:'ExhibitorProfile_v1_Mobile.html',cat:'Exhibitors',tags:'current mobile',desc:'Exhibitor profile Mobile'},
+  {n:'ProjectDatabase_v1_PC.html',cat:'Projects',tags:'current pc',desc:'Project database live data'},
+  {n:'Projects_v1_PC.html',cat:'Projects',tags:'current pc',desc:'Projects page PC'},
+  {n:'Projects_v1_Mobile.html',cat:'Projects',tags:'current mobile',desc:'Projects page Mobile'},
+  {n:'GameShowcaseBrowse_v1_PC.html',cat:'Projects',tags:'current pc',desc:'Game showcase browse'},
+  {n:'GameShowcaseBrowse_v1_Mobile.html',cat:'Projects',tags:'current mobile',desc:'Game showcase Mobile'},
+  {n:'ProjectBiz_v1_PC.html',cat:'Projects',tags:'current pc',desc:'Project biz page'},
+  {n:'BuyerZone_v1_PC.html',cat:'Deals',tags:'current pc',desc:'Buyer zone'},
+  {n:'BuyerZone_v1_Mobile.html',cat:'Deals',tags:'current mobile',desc:'Buyer zone Mobile'},
+  {n:'BuyerDashboard_v1_PC.html',cat:'Deals',tags:'current pc',desc:'Buyer dashboard'},
+  {n:'DealFlow_v1_PC.html',cat:'Deals',tags:'current pc',desc:'Deal flow'},
+  {n:'DealFlow_v1_Mobile.html',cat:'Deals',tags:'current mobile',desc:'Deal flow Mobile'},
+  {n:'DealRoom_v1_PC.html',cat:'Deals',tags:'current pc',desc:'Deal room'},
+  {n:'LetsMeet_v1_PC.html',cat:'Deals',tags:'current pc',desc:"Let's Meet"},
+  {n:'LetsMeet_v1_Mobile.html',cat:'Deals',tags:'current mobile',desc:"Let's Meet Mobile"},
+  {n:'Organizations_v1_PC.html',cat:'Organizations',tags:'current pc',desc:'Organizations PC'},
+  {n:'Organizations_v1_Mobile.html',cat:'Organizations',tags:'current mobile',desc:'Organizations Mobile'},
+  {n:'OrganizationProfile_v1_PC.html',cat:'Organizations',tags:'current pc',desc:'Organization profile'},
+  {n:'Awards_v1_PC.html',cat:'Awards',tags:'current pc',desc:'Awards page'},
+  {n:'Awards_v1_Mobile.html',cat:'Awards',tags:'current mobile',desc:'Awards Mobile'},
+  {n:'Conference_v1_PC.html',cat:'Awards',tags:'current pc',desc:'Conference page'},
+  {n:'Speaker_v1_PC.html',cat:'Awards',tags:'current pc',desc:'Speaker page'},
+  {n:'Session_v1_PC.html',cat:'Awards',tags:'current pc',desc:'Session page'},
+  {n:'AttendeeManagement_v1_PC.html',cat:'Attendees',tags:'current pc',desc:'Attendee management'},
+  {n:'AttendeeProfile_v1_PC.html',cat:'Attendees',tags:'current pc',desc:'Attendee profile'},
+  {n:'AttendeeProfile_v1_Mobile.html',cat:'Attendees',tags:'current mobile',desc:'Attendee profile Mobile'},
+  {n:'Messages_v1_PC.html',cat:'Attendees',tags:'current pc',desc:'Messages'},
+  {n:'Messages_v1_Mobile.html',cat:'Attendees',tags:'current mobile',desc:'Messages Mobile'},
+  {n:'SponsorPortal_v1_PC.html',cat:'Portals',tags:'current pc',desc:'Sponsor portal'},
+  {n:'MediaPortal_v1_PC.html',cat:'Portals',tags:'current pc',desc:'Media portal'},
+  {n:'InvestorPortal_v1_PC.html',cat:'Portals',tags:'current pc',desc:'Investor portal'},
+  {n:'Market_v1_PC.html',cat:'Portals',tags:'current pc',desc:'Market page'},
+  {n:'Market_v1_Mobile.html',cat:'Portals',tags:'current mobile',desc:'Market Mobile'},
+  {n:'_admin.html',cat:'Admin',tags:'current pc',desc:'This admin dashboard'},
+  {n:'_all_pages.html',cat:'Admin',tags:'current pc',desc:'All pages index'},
+  {n:'PlatformMap_v1_PC.html',cat:'Admin',tags:'current pc',desc:'Platform map'},
+  {n:'AdminDashboard_v1_PC.html',cat:'Admin',tags:'current pc',desc:'Admin dashboard old'},
+  {n:'GC_Platform_Structure.html',cat:'Admin',tags:'current pc',desc:'Platform structure doc'},
+  {n:'DesignSystem_v1_PC.html',cat:'Admin',tags:'current pc',desc:'Design system'},
+  {n:'Privacy_v1_PC.html',cat:'Admin',tags:'current pc',desc:'Privacy policy'},
+  {n:'About_v1_PC.html',cat:'Admin',tags:'current pc',desc:'About page'},
+  {n:'index_v_3353244.html',cat:'Snapshots',tags:'old pc',desc:'Index snapshot 1'},
+  {n:'index_v_48102c3.html',cat:'Snapshots',tags:'old pc',desc:'Index snapshot 2'},
+  {n:'index_v_b7fd939.html',cat:'Snapshots',tags:'old pc',desc:'Index snapshot 3'},
+  {n:'index_v_c89604b.html',cat:'Snapshots',tags:'old pc',desc:'Index snapshot 4'},
+];
+
+function pagesRender() {
+  pagesFilter();
+}
+
+function pagesFilter() {
+  const q = (document.getElementById('pages-search').value||'').toLowerCase();
+  const filtered = q ? ALL_PAGES.filter(p => p.n.toLowerCase().includes(q)||p.cat.toLowerCase().includes(q)||p.desc.toLowerCase().includes(q)||p.tags.includes(q)) : ALL_PAGES;
+  const cats = {};
+  filtered.forEach(p => { if(!cats[p.cat]) cats[p.cat]=[]; cats[p.cat].push(p); });
+  const html = Object.entries(cats).map(([cat,items])=>`
+    <div class="section-card" style="margin-bottom:12px">
+      <div class="section-card-hdr">
+        <div class="section-card-title">${cat}</div>
+        <span style="font-size:11px;color:var(--text3)">${items.length} pages</span>
+      </div>
+      <div style="padding:10px 16px;display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:6px">
+        ${items.map(p=>`
+          <div style="display:flex;align-items:center;justify-content:space-between;padding:7px 10px;background:#f9f9f8;border:1px solid var(--border);border-radius:7px;gap:8px">
+            <span style="font-size:12px;color:var(--text2);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1" title="${p.desc}">${p.n}</span>
+            <div style="display:flex;gap:4px;flex-shrink:0">
+              ${p.tags.includes('current')?'<span style="font-size:9px;padding:1px 5px;border-radius:3px;background:rgba(13,155,114,0.1);color:var(--green);font-weight:700">LIVE</span>':'<span style="font-size:9px;padding:1px 5px;border-radius:3px;background:rgba(0,0,0,0.06);color:var(--text3);font-weight:700">OLD</span>'}
+              ${p.tags.includes('mobile')?'<span style="font-size:9px;padding:1px 5px;border-radius:3px;background:rgba(124,58,237,0.1);color:var(--purple);font-weight:700">MOB</span>':''}
+            </div>
+            <a href="${p.n}" target="_blank" style="font-size:10px;padding:3px 8px;border-radius:5px;border:1px solid var(--border);background:transparent;color:var(--text2);text-decoration:none;white-space:nowrap;flex-shrink:0">Open ↗</a>
+          </div>
+        `).join('')}
+      </div>
+    </div>
+  `).join('');
+  document.getElementById('pages-container').innerHTML = html || '<div class="loading-state">No pages found.</div>';
+}
+
 // ── PANEL NAVIGATION ──
 function showPanel(id) {
   document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
@@ -718,6 +977,8 @@ function showPanel(id) {
   if (id === 'regions') regionsLoad();
   if (id === 'health') healthLoad();
   if (id === 'status') statusLoad();
+  if (id === 'database') dbLoad();
+  if (id === 'pages') pagesRender();
 }
 
 // ── TOAST ──
