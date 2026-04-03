@@ -1,0 +1,561 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=no">
+<title>Game Connection — Event Hub</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;0,9..40,800;0,9..40,900&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+html{height:100%;overflow:hidden}
+body{height:100%;overflow:hidden;font-family:"DM Sans","PingFang SC",-apple-system,sans-serif;color:#1c1a17;-webkit-font-smoothing:antialiased}
+
+:root{
+  --orange:#d95f2b;--og08:rgba(217,95,43,0.08);--og18:rgba(217,95,43,0.18);--og-bdr:rgba(217,95,43,0.22);
+  --teal:#0a7fa8;--tl08:rgba(10,127,168,0.08);--tl-bdr:rgba(10,127,168,0.18);
+  --green:#0d9b72;--gn08:rgba(13,155,114,0.08);--gn-bdr:rgba(13,155,114,0.2);
+  --purple:#7c3aed;--pu08:rgba(124,58,237,0.08);--pu-bdr:rgba(124,58,237,0.2);
+  --blue:#2563eb;--bl08:rgba(37,99,235,0.08);--bl-bdr:rgba(37,99,235,0.2);
+  --amber:#f59e0b;--pink:#ec4899;--red:#dc2626;
+  --card:#fff;--bg:#f0ece4;--bg2:#e8e4da;
+  --bdr:rgba(28,26,23,0.07);--bdr2:rgba(28,26,23,0.04);
+  --t1:#1c1a17;--t2:#6b6660;--t3:#a09890;--t4:#c4bdb5;
+  --s1:0 1px 3px rgba(0,0,0,0.05);--s2:0 3px 12px rgba(0,0,0,0.08);--s3:0 6px 24px rgba(0,0,0,0.1);
+  --r:12px;--r2:10px;--r3:8px;
+}
+
+.app{max-width:430px;margin:0 auto;height:100%;display:flex;flex-direction:column;overflow:hidden;background:var(--bg);position:relative}
+
+/* ══════════════════════════════════════════
+   ROW 1 — HEADER
+   ══════════════════════════════════════════ */
+.row1{
+  flex-shrink:0;
+  background:rgba(255,255,255,0.88);
+  backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);
+  border-bottom:1px solid var(--bdr);
+  padding:10px 14px;
+  display:flex;align-items:center;gap:8px;
+  z-index:100;
+}
+.r1-logo{
+  width:30px;height:30px;border-radius:8px;flex-shrink:0;
+  background:linear-gradient(140deg,#d95f2b,#b84a1e);
+  display:flex;align-items:center;justify-content:center;
+  font-size:9px;font-weight:900;color:#fff;letter-spacing:-.2px;
+  box-shadow:0 2px 8px rgba(217,95,43,0.3);
+}
+.r1-name{font-size:13px;font-weight:900;color:var(--t1);letter-spacing:-.3px;white-space:nowrap}
+.r1-name span{color:var(--orange)}
+.r1-gap{flex:1}
+/* Capsule toggle */
+.capsule{
+  display:flex;align-items:center;
+  background:var(--bg2);border-radius:20px;padding:2.5px;
+  position:relative;height:32px;flex-shrink:0;
+}
+.cap-slider{
+  position:absolute;top:2.5px;left:2.5px;
+  height:27px;width:calc(50% - 2.5px);border-radius:18px;
+  background:var(--card);box-shadow:0 1px 4px rgba(0,0,0,0.1);
+  transition:transform .3s cubic-bezier(.4,0,.2,1);
+}
+.cap-slider.pos-r{transform:translateX(100%)}
+.cap-btn{
+  flex:1;height:27px;border-radius:18px;border:none;padding:0 14px;
+  background:transparent;font-family:inherit;font-size:11px;font-weight:600;
+  color:var(--t3);cursor:pointer;z-index:1;
+  display:flex;align-items:center;justify-content:center;gap:4px;
+  transition:color .25s;white-space:nowrap;
+}
+.cap-btn.on{color:var(--t1);font-weight:700}
+.pulse-sm{width:5px;height:5px;border-radius:50%;background:var(--orange);animation:pulse 1.6s ease-in-out infinite}
+@keyframes pulse{0%,100%{box-shadow:0 0 0 0 rgba(217,95,43,0.5)}60%{box-shadow:0 0 0 4px rgba(217,95,43,0)}}
+.r1-bell{width:30px;height:30px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:15px;cursor:pointer;position:relative;flex-shrink:0}
+.r1-bell-dot{position:absolute;top:3px;right:4px;width:5px;height:5px;border-radius:50%;background:var(--orange);border:1.5px solid #fff}
+.r1-av{
+  width:30px;height:30px;border-radius:50%;flex-shrink:0;cursor:pointer;
+  background:linear-gradient(135deg,#e8f5fa,#bae6f8);
+  border:1.5px solid var(--bdr);overflow:hidden;
+}
+.r1-av svg{width:30px;height:30px;display:block}
+
+/* ══════════════════════════════════════════
+   SCROLL BODY
+   ══════════════════════════════════════════ */
+.body{flex:1;overflow-y:auto;overflow-x:hidden;-webkit-overflow-scrolling:touch}
+
+/* ══════════════════════════════════════════
+   ROW 2 — FEATURED (shared horizontal scroll)
+   ══════════════════════════════════════════ */
+.row2{padding:10px 0 6px;background:var(--card);border-bottom:1px solid var(--bdr)}
+.r2-scroll{display:flex;gap:8px;padding:0 14px;overflow-x:auto;scrollbar-width:none}
+.r2-scroll::-webkit-scrollbar{display:none}
+/* Conference chip */
+.fc{
+  flex-shrink:0;display:flex;align-items:center;gap:7px;
+  padding:7px 11px 7px 7px;border-radius:var(--r2);
+  border:1.5px solid var(--bdr);background:var(--card);
+  cursor:pointer;transition:all .2s;box-shadow:var(--s1);
+}
+.fc:active{transform:scale(.97)}
+.fc.on{border-color:var(--orange);box-shadow:0 2px 10px rgba(217,95,43,0.12)}
+.fc-ico{width:28px;height:28px;border-radius:7px;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:900;color:#fff;letter-spacing:-.2px}
+.fc-name{font-size:11px;font-weight:700;color:var(--t1);white-space:nowrap}
+.fc-meta{font-size:9px;color:var(--t3);white-space:nowrap}
+.fc-badge{font-size:7px;font-weight:800;padding:2px 5px;border-radius:20px;letter-spacing:.4px;flex-shrink:0}
+.fcb-live{background:rgba(217,95,43,0.1);color:var(--orange)}
+.fcb-soon{background:var(--tl08);color:var(--teal)}
+/* Live featured activity chip */
+.fa{
+  flex-shrink:0;display:flex;align-items:center;gap:8px;
+  padding:8px 12px;border-radius:var(--r2);min-width:160px;
+  border:1.5px solid var(--bdr);background:var(--card);
+  cursor:pointer;transition:all .2s;box-shadow:var(--s1);
+}
+.fa:active{transform:scale(.97)}
+.fa.on{border-color:var(--orange);box-shadow:0 2px 10px rgba(217,95,43,0.12)}
+.fa-left{display:flex;flex-direction:column;gap:1px;flex:1;min-width:0}
+.fa-name{font-size:11px;font-weight:700;color:var(--t1);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.fa-sub{font-size:9px;color:var(--t3);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.fa-badge{font-size:8px;font-weight:800;padding:2px 6px;border-radius:10px;flex-shrink:0;white-space:nowrap}
+.fab-now{background:rgba(217,95,43,0.1);color:var(--orange)}
+.fab-hot{background:rgba(236,72,153,0.08);color:#ec4899}
+.fab-free{background:var(--gn08);color:var(--green)}
+
+/* ══════════════════════════════════════════
+   ROW 3 — DATE
+   ══════════════════════════════════════════ */
+.row3{display:flex;align-items:center;gap:4px;padding:8px 14px;overflow-x:auto;scrollbar-width:none;background:var(--bg)}
+.row3::-webkit-scrollbar{display:none}
+.pill{
+  flex-shrink:0;padding:5px 12px;border-radius:20px;border:1px solid var(--bdr);
+  background:var(--card);font-size:11px;font-weight:600;color:var(--t2);
+  cursor:pointer;font-family:inherit;transition:all .15s;box-shadow:var(--s1);
+  white-space:nowrap;
+}
+.pill.on{background:var(--orange);color:#fff;border-color:var(--orange);box-shadow:0 2px 8px rgba(217,95,43,0.25)}
+.pill-sep{width:1px;height:14px;background:var(--bdr);flex-shrink:0}
+.pill-yr{
+  flex-shrink:0;padding:4px 10px;border-radius:7px;border:1px solid var(--bdr);
+  background:transparent;font-size:10px;font-weight:700;color:var(--t3);
+  cursor:pointer;font-family:inherit;transition:all .15s;
+}
+.pill-yr.on{background:var(--orange);color:#fff;border-color:var(--orange)}
+/* Live date pill with count */
+.pill .pill-cnt{font-size:9px;opacity:.6;margin-left:2px}
+.pill.on .pill-cnt{opacity:.8}
+
+/* ══════════════════════════════════════════
+   ROW 4 — TAGS + STATS
+   ══════════════════════════════════════════ */
+.row4{display:flex;align-items:center;padding:0 14px 8px;gap:6px;overflow-x:auto;scrollbar-width:none;background:var(--bg)}
+.row4::-webkit-scrollbar{display:none}
+.tag{
+  flex-shrink:0;padding:5px 11px;border-radius:20px;border:1px solid var(--bdr);
+  background:var(--card);font-size:11px;font-weight:600;color:var(--t2);
+  cursor:pointer;font-family:inherit;transition:all .15s;box-shadow:var(--s1);
+}
+.tag.on{color:#fff}
+.tag[data-c="def"].on{background:var(--t1);border-color:var(--t1)}
+.tag[data-c="teal"].on{background:var(--teal);border-color:var(--teal)}
+.tag[data-c="purple"].on{background:var(--purple);border-color:var(--purple)}
+.tag[data-c="green"].on{background:var(--green);border-color:var(--green)}
+.tag[data-c="orange"].on{background:var(--orange);border-color:var(--orange)}
+.tag[data-c="blue"].on{background:var(--blue);border-color:var(--blue)}
+.tag[data-c="amber"].on{background:var(--amber);border-color:var(--amber)}
+.tag[data-c="pink"].on{background:var(--pink);border-color:var(--pink)}
+.r4-stats{
+  flex-shrink:0;margin-left:auto;
+  font-size:10px;color:var(--t3);font-weight:600;white-space:nowrap;
+  padding-left:8px;
+}
+.r4-stats b{color:var(--t2);font-weight:800}
+
+/* ══════════════════════════════════════════
+   ROW 5 — COLLAPSIBLE (Territory / Map)
+   ══════════════════════════════════════════ */
+.row5{margin:0 14px 8px;border-radius:var(--r2);background:var(--card);border:1px solid var(--bdr);overflow:hidden;box-shadow:var(--s1)}
+.r5-toggle{display:flex;align-items:center;justify-content:space-between;padding:9px 12px;cursor:pointer}
+.r5-left{display:flex;align-items:center;gap:6px}
+.r5-icon{font-size:14px}
+.r5-label{font-size:12px;font-weight:600;color:var(--t1)}
+.r5-sub{font-size:10px;color:var(--t3)}
+.r5-arrow{font-size:12px;color:var(--t3);transition:transform .2s}
+.row5.open .r5-arrow{transform:rotate(180deg)}
+.r5-body{max-height:0;overflow:hidden;transition:max-height .3s ease}
+.row5.open .r5-body{max-height:300px}
+/* Territory pills */
+.r5-pills{display:flex;flex-wrap:wrap;gap:5px;padding:0 12px 10px}
+.r5-pill{padding:4px 10px;border-radius:20px;border:1px solid var(--bdr);background:transparent;font-size:10px;font-weight:600;color:var(--t2);cursor:pointer;font-family:inherit;transition:all .15s}
+.r5-pill.on{background:var(--t1);color:#fff;border-color:var(--t1)}
+/* Map */
+.r5-map svg{width:100%;display:block}
+.r5-legend{display:flex;gap:10px;padding:6px 12px;border-top:1px solid var(--bdr2)}
+.r5-leg{display:flex;align-items:center;gap:3px;font-size:9px;color:var(--t2)}
+.r5-dot{width:6px;height:6px;border-radius:50%}
+
+/* ══════════════════════════════════════════
+   SEARCH
+   ══════════════════════════════════════════ */
+.searchbox{
+  margin:0 14px 8px;display:flex;align-items:center;gap:8px;
+  background:var(--card);border:1px solid var(--bdr);border-radius:var(--r2);
+  padding:8px 12px;box-shadow:var(--s1);transition:border-color .2s;
+}
+.searchbox:focus-within{border-color:rgba(217,95,43,0.3)}
+.searchbox svg{opacity:.3;flex-shrink:0}
+.searchbox input{flex:1;background:none;border:none;outline:none;font-size:12px;font-family:inherit;color:var(--t1)}
+.searchbox input::placeholder{color:var(--t4)}
+
+/* ══════════════════════════════════════════
+   EVENT CARDS — SHARED BASE
+   ══════════════════════════════════════════ */
+.card{
+  background:var(--card);margin:0 14px 8px;border-radius:var(--r);
+  border:1px solid var(--bdr);box-shadow:var(--s1);
+  overflow:hidden;cursor:pointer;transition:all .2s;
+}
+.card:active{transform:scale(.985)}
+.card.is-platform{border-left:3px solid var(--blue)}
+.card.has-live{border-left:3px solid var(--red)}
+.card.is-now{border:1.5px solid var(--og-bdr);box-shadow:0 2px 12px rgba(217,95,43,0.1)}
+.card.open{background:#faf9f6}
+
+.c-top{display:flex;gap:0}
+/* Date column */
+.c-date{
+  width:48px;flex-shrink:0;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  padding:8px 4px;
+}
+/* Calendar style: orange header + white body */
+.c-date.cal .cd-mon{background:var(--orange);color:rgba(255,255,255,0.85);padding:2px 0;width:100%;text-align:center;font-size:7px;font-weight:800;letter-spacing:.5px;text-transform:uppercase;border-radius:var(--r3) var(--r3) 0 0}
+.c-date.cal .cd-day{flex:1;display:flex;align-items:center;justify-content:center;width:100%;background:var(--card);border:1px solid var(--bdr);border-top:none;border-radius:0 0 var(--r3) var(--r3);font-size:18px;font-weight:900;color:var(--t1);padding:4px 0}
+/* Live style: colored fill */
+.c-date.live{color:#fff;border-radius:0}
+.c-date.live .cd-mon{font-size:8px;font-weight:800;letter-spacing:.5px;text-transform:uppercase;opacity:.85}
+.c-date.live .cd-day{font-size:20px;font-weight:900;line-height:1}
+.cdl-og{background:linear-gradient(180deg,#d95f2b,#c04e22)}
+.cdl-tl{background:linear-gradient(180deg,#0a7fa8,#077a9e)}
+.cdl-gn{background:linear-gradient(180deg,#0d9b72,#0a8a64)}
+.cdl-pu{background:linear-gradient(180deg,#7c3aed,#6d2de0)}
+
+/* Body */
+.c-body{flex:1;min-width:0;padding:10px 0 10px 10px}
+.c-badges{display:flex;gap:3px;flex-wrap:wrap;margin-bottom:3px}
+.c-badge{font-size:8px;font-weight:800;padding:1.5px 6px;border-radius:20px;letter-spacing:.3px}
+.cb-b2b{background:var(--tl08);color:var(--teal)}
+.cb-dev{background:var(--gn08);color:var(--green)}
+.cb-con{background:var(--pu08);color:var(--purple)}
+.cb-live{background:rgba(220,38,38,0.08);color:var(--red);animation:blink 1.5s infinite}
+.cb-plat{background:var(--bl08);color:var(--blue)}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:.5}}
+.c-name{font-size:13px;font-weight:700;color:var(--t1);line-height:1.35;margin-bottom:2px}
+.c-meta{font-size:10px;color:var(--t2);display:flex;align-items:center;gap:5px;flex-wrap:wrap}
+.c-venue{font-size:10px;color:var(--t2);margin-bottom:2px}
+.c-time{font-size:10px;color:var(--t3)}
+.c-tags{display:flex;gap:3px;flex-wrap:wrap;margin-top:3px}
+.c-tag{font-size:8px;font-weight:700;padding:2px 6px;border-radius:10px}
+.ct-free{background:var(--gn08);color:var(--green)}
+.ct-net{background:var(--tl08);color:var(--teal)}
+.ct-show{background:var(--og08);color:var(--orange)}
+.ct-party{background:var(--pu08);color:var(--purple)}
+.ct-talk{background:rgba(6,182,212,0.06);color:#0891b2}
+.ct-b2b{background:var(--bl08);color:var(--blue)}
+.c-dist{font-size:9px;font-weight:700;padding:2px 6px;border-radius:10px;background:var(--og08);color:var(--orange);border:1px solid var(--og-bdr)}
+.c-onsite{font-size:9px;font-weight:600;color:var(--t3);background:rgba(0,0,0,0.04);padding:2px 6px;border-radius:10px}
+
+/* Right column (star + going + chevron) */
+.c-right{display:flex;flex-direction:column;align-items:center;gap:3px;padding:8px 8px 8px 2px;flex-shrink:0}
+.c-star{
+  width:28px;height:28px;border-radius:var(--r3);
+  border:1px solid var(--bdr);background:transparent;
+  display:flex;align-items:center;justify-content:center;
+  font-size:14px;color:var(--t4);cursor:pointer;transition:all .15s;
+}
+.c-star:active{transform:scale(1.3)}
+.c-star.on{background:var(--og08);border-color:var(--og-bdr);color:var(--orange)}
+.c-going{
+  width:28px;height:28px;border-radius:var(--r3);
+  border:1px solid var(--bdr);background:transparent;
+  display:flex;align-items:center;justify-content:center;
+  font-size:11px;color:var(--t4);cursor:pointer;transition:all .15s;
+}
+.c-going.on{background:var(--gn08);border-color:var(--gn-bdr);color:var(--green)}
+.c-gcnt{font-size:8px;color:var(--green);font-weight:700}
+.c-chev{font-size:9px;color:var(--t4);transition:transform .2s;margin-top:1px}
+.card.open .c-chev{transform:rotate(180deg)}
+/* Calendar card: simpler right */
+.c-right-cal{display:flex;flex-direction:column;align-items:flex-end;gap:4px;padding:10px 10px 10px 4px;flex-shrink:0}
+.c-save{width:26px;height:26px;border-radius:7px;border:1px solid var(--bdr);background:transparent;display:flex;align-items:center;justify-content:center;font-size:12px;cursor:pointer;color:var(--t4);transition:all .15s}
+.c-save.on{background:var(--og08);border-color:var(--og-bdr);color:var(--orange)}
+.c-dur{font-size:9px;color:var(--t4);white-space:nowrap}
+
+/* ── EXPANDABLE DETAIL ── */
+.c-detail{max-height:0;overflow:hidden;transition:max-height .3s ease}
+.card.open .c-detail{max-height:500px}
+.c-detail-inner{padding:0 12px 12px;border-top:1px solid var(--bdr2)}
+.cd-sponsor{font-size:10px;color:var(--t3);margin-top:8px;margin-bottom:4px}
+.cd-sponsor span{color:var(--t2);font-weight:600}
+.cd-desc{font-size:12px;color:var(--t2);line-height:1.65;margin-bottom:6px}
+.cd-note{font-size:10px;color:#d97706;background:rgba(245,158,11,0.06);border:1px solid rgba(245,158,11,0.15);border-radius:var(--r3);padding:5px 9px;margin-bottom:8px}
+.cd-reg{display:block;width:100%;padding:10px;border-radius:var(--r2);border:none;background:linear-gradient(135deg,var(--orange),#c04e22);color:#fff;font-size:12px;font-weight:700;cursor:pointer;font-family:inherit;text-align:center;text-decoration:none;margin-bottom:8px;box-shadow:0 2px 8px rgba(217,95,43,0.25)}
+.cd-reg:active{opacity:.85}
+.cd-tools{display:flex;gap:5px;flex-wrap:wrap}
+.cd-tool{
+  display:inline-flex;align-items:center;gap:3px;
+  padding:6px 10px;border-radius:var(--r3);
+  border:1px solid var(--bdr);background:transparent;
+  font-size:10px;font-weight:600;color:var(--t2);cursor:pointer;font-family:inherit;text-decoration:none;
+}
+.cd-tool:active{background:rgba(0,0,0,0.02)}
+.cdt-nav{background:var(--gn08);border-color:var(--gn-bdr);color:var(--green)}
+.cdt-cal{background:rgba(99,102,241,0.06);border-color:rgba(99,102,241,0.18);color:#6366f1}
+.cdt-link{background:var(--og08);border-color:var(--og-bdr);color:var(--orange)}
+
+/* Calendar detail (simpler) */
+.cd-tags{display:flex;gap:4px;flex-wrap:wrap;margin:8px 0 8px}
+.cd-dtag{font-size:10px;padding:3px 8px;border-radius:20px;background:rgba(0,0,0,0.04);color:var(--t2)}
+
+.show-more{text-align:center;padding:14px;font-size:11px;color:var(--t3)}
+
+/* ══════════════════════════════════════════
+   BOTTOM NAV
+   ══════════════════════════════════════════ */
+.bnav{
+  position:absolute;bottom:0;left:0;right:0;height:68px;
+  background:rgba(255,255,255,0.88);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);
+  border-top:1px solid var(--bdr);
+  display:flex;align-items:flex-start;padding-top:8px;z-index:200;
+}
+.bn{flex:1;display:flex;flex-direction:column;align-items:center;gap:2px;cursor:pointer;padding:2px 0}
+.bn-ico{width:22px;height:22px;display:flex;align-items:center;justify-content:center}
+.bn-lbl{font-size:8px;font-weight:700;color:var(--t3);letter-spacing:.2px;text-transform:uppercase}
+.bn.on .bn-lbl{color:var(--teal)}
+
+/* ══════════════════════════════════════════
+   UTILITIES
+   ══════════════════════════════════════════ */
+.hidden{display:none!important}
+</style>
+</head>
+<body>
+<div class="app">
+
+<!-- ═══ ROW 1: HEADER ═══ -->
+<div class="row1">
+  <div class="r1-logo">GC</div>
+  <div class="r1-name">GAME<span>CONNECTION</span></div>
+  <div class="r1-gap"></div>
+  <div class="capsule">
+    <div class="cap-slider" id="capSlider"></div>
+    <button class="cap-btn on" id="capCal" onclick="switchMode('cal')">📅 Calendar</button>
+    <button class="cap-btn" id="capLive" onclick="switchMode('live')"><span class="pulse-sm"></span> Live</button>
+  </div>
+  <div class="r1-bell">🔔<span class="r1-bell-dot"></span></div>
+  <div class="r1-av"><svg viewBox="0 0 30 30"><rect width="30" height="30" fill="#e8f5fa"/><circle cx="15" cy="11" r="5.5" fill="#7dd3f0"/><ellipse cx="15" cy="26" rx="9.5" ry="6" fill="#7dd3f0"/><circle cx="15" cy="11" r="4" fill="#bae6f8"/><circle cx="13" cy="10.5" r=".9" fill="#0a5a7a"/><circle cx="17" cy="10.5" r=".9" fill="#0a5a7a"/></svg></div>
+</div>
+
+<!-- ═══ SCROLL BODY ═══ -->
+<div class="body" id="body" style="padding-bottom:76px">
+
+<!-- ═══ ROW 2: FEATURED ═══ -->
+<!-- Calendar: Featured Conferences -->
+<div class="row2" id="r2-cal">
+  <div class="r2-scroll">
+    <div class="fc on" onclick="selFC(this)"><div class="fc-ico" style="background:linear-gradient(135deg,#d95f2b,#aa3a10)">GDC</div><div><div class="fc-name">GDC 2026</div><div class="fc-meta">🇺🇸 SF · Mar 7–14</div></div><span class="fc-badge fcb-live">LIVE</span></div>
+    <div class="fc" onclick="selFC(this)"><div class="fc-ico" style="background:linear-gradient(135deg,#0a7fa8,#055a7a)">GCA</div><div><div class="fc-name">GC America</div><div class="fc-meta">🇺🇸 SF · Mar 17–18</div></div><span class="fc-badge fcb-soon">SOON</span></div>
+    <div class="fc" onclick="selFC(this)"><div class="fc-ico" style="background:linear-gradient(135deg,#0d9b72,#076644)">NG</div><div><div class="fc-name">Nordic Game</div><div class="fc-meta">🇸🇪 May 20–22</div></div><span class="fc-badge fcb-soon">SOON</span></div>
+    <div class="fc" onclick="selFC(this)"><div class="fc-ico" style="background:linear-gradient(135deg,#7c3aed,#5b21b6)">GCA</div><div><div class="fc-name">Gamescom Asia</div><div class="fc-meta">🇸🇬 Oct 16–19</div></div><span class="fc-badge fcb-soon">SOON</span></div>
+    <div class="fc" onclick="selFC(this)"><div class="fc-ico" style="background:linear-gradient(135deg,#1d4ed8,#0a7fa8)">GCE</div><div><div class="fc-name">GC Europe</div><div class="fc-meta">🇫🇷 Dec 3–4</div></div><span class="fc-badge fcb-soon">SOON</span></div>
+    <div class="fc" onclick="selFC(this)"><div class="fc-ico" style="background:linear-gradient(135deg,#be123c,#9f1239)">TGS</div><div><div class="fc-name">TGS 2026</div><div class="fc-meta">🇯🇵 Sep 24–27</div></div><span class="fc-badge fcb-soon">SOON</span></div>
+  </div>
+</div>
+<!-- Live: Featured Activities -->
+<div class="row2 hidden" id="r2-live">
+  <div class="r2-scroll">
+    <div class="fa on" onclick="selFA(this)"><div class="fa-left"><div class="fa-name">🔥 Indie Mixer @ GDC</div><div class="fa-sub">Monarch · 7pm · 312 going</div></div><span class="fa-badge fab-now">NOW</span></div>
+    <div class="fa" onclick="selFA(this)"><div class="fa-left"><div class="fa-name">🏟 Opening Night Ballpark</div><div class="fa-sub">Oracle Park · 6pm · 521 going</div></div><span class="fa-badge fab-hot">HOT</span></div>
+    <div class="fa" onclick="selFA(this)"><div class="fa-left"><div class="fa-name">🎯 PG Connects Summit</div><div class="fa-sub">715 Harrison · 9am · B2B</div></div><span class="fa-badge fab-free">FREE</span></div>
+    <div class="fa" onclick="selFA(this)"><div class="fa-left"><div class="fa-name">☕ Nordic Breakfast</div><div class="fa-sub">Reed Smith · 8am · Free</div></div><span class="fa-badge fab-free">FREE</span></div>
+    <div class="fa" onclick="selFA(this)"><div class="fa-left"><div class="fa-name">💡 Indie Fund Pitch</div><div class="fa-sub">GitHub HQ · 5pm · Panel</div></div></div>
+  </div>
+</div>
+
+<!-- ═══ ROW 3: DATES ═══ -->
+<!-- Calendar dates -->
+<div class="row3" id="r3-cal">
+  <button class="pill-yr on" onclick="selPillYr(this)">2025</button>
+  <button class="pill-yr" onclick="selPillYr(this)">2026</button>
+  <button class="pill-yr" onclick="selPillYr(this)">2027</button>
+  <div class="pill-sep"></div>
+  <button class="pill on" onclick="selPill(this)">All</button>
+  <button class="pill" onclick="selPill(this)">Jan</button>
+  <button class="pill" onclick="selPill(this)">Feb</button>
+  <button class="pill" onclick="selPill(this)">Mar <span style="font-size:8px;opacity:.5">7</span></button>
+  <button class="pill" onclick="selPill(this)">Apr</button>
+  <button class="pill" onclick="selPill(this)">May <span style="font-size:8px;opacity:.5">5</span></button>
+  <button class="pill" onclick="selPill(this)">Jun</button>
+  <button class="pill" onclick="selPill(this)">Jul</button>
+  <button class="pill" onclick="selPill(this)">Aug</button>
+  <button class="pill" onclick="selPill(this)">Sep</button>
+  <button class="pill" onclick="selPill(this)">Oct</button>
+  <button class="pill" onclick="selPill(this)">Nov</button>
+  <button class="pill" onclick="selPill(this)">Dec</button>
+</div>
+<!-- Live dates -->
+<div class="row3 hidden" id="r3-live">
+  <button class="pill on" onclick="selPill(this)">All Days</button>
+  <button class="pill" onclick="selPill(this)">Sat 7 <span class="pill-cnt">15</span></button>
+  <button class="pill" onclick="selPill(this)">Sun 8 <span class="pill-cnt">18</span></button>
+  <button class="pill" onclick="selPill(this)">Mon 9 <span class="pill-cnt">42</span></button>
+  <button class="pill" onclick="selPill(this)">Tue 10 <span class="pill-cnt">38</span></button>
+  <button class="pill" onclick="selPill(this)">Wed 11 <span class="pill-cnt">35</span></button>
+  <button class="pill" onclick="selPill(this)">Thu 12 <span class="pill-cnt">44</span></button>
+  <button class="pill" onclick="selPill(this)">Fri 13 <span class="pill-cnt">22</span></button>
+  <button class="pill" onclick="selPill(this)">Sat 14 <span class="pill-cnt">11</span></button>
+</div>
+
+<!-- ═══ ROW 4: TAGS + STATS ═══ -->
+<!-- Calendar tags -->
+<div class="row4" id="r4-cal">
+  <button class="tag on" data-c="def" onclick="selTag(this)">All</button>
+  <button class="tag" data-c="teal" onclick="selTag(this)">🤝 B2B</button>
+  <button class="tag" data-c="purple" onclick="selTag(this)">🎮 Consumer</button>
+  <button class="tag" data-c="green" onclick="selTag(this)">👾 Developer</button>
+  <button class="tag" data-c="orange" onclick="selTag(this)">🌏 Asia</button>
+  <button class="tag" data-c="blue" onclick="selTag(this)">🌍 Europe</button>
+  <span class="r4-stats"><b>48</b> events · <b>32</b> countries</span>
+</div>
+<!-- Live tags -->
+<div class="row4 hidden" id="r4-live">
+  <button class="tag on" data-c="def" onclick="selTag(this)">All</button>
+  <button class="tag" data-c="green" onclick="selTag(this)">🟢 Free</button>
+  <button class="tag" data-c="teal" onclick="selTag(this)">🤝 Networking</button>
+  <button class="tag" data-c="amber" onclick="selTag(this)">🎤 Talk</button>
+  <button class="tag" data-c="pink" onclick="selTag(this)">🎮 Showcase</button>
+  <button class="tag" data-c="purple" onclick="selTag(this)">🎉 Party</button>
+  <span class="r4-stats"><b>225</b> sessions</span>
+</div>
+
+<!-- ═══ ROW 5: COLLAPSIBLE ═══ -->
+<!-- Calendar: Territory -->
+<div class="row5" id="r5-cal" onclick="this.classList.toggle('open')">
+  <div class="r5-toggle"><div class="r5-left"><span class="r5-icon">🌍</span><div><div class="r5-label">Territory</div><div class="r5-sub">All regions</div></div></div><span class="r5-arrow">▾</span></div>
+  <div class="r5-body"><div class="r5-pills">
+    <button class="r5-pill on">🌐 All</button>
+    <button class="r5-pill">🌎 North America</button>
+    <button class="r5-pill">🌍 Europe</button>
+    <button class="r5-pill">🌏 Asia Pacific</button>
+    <button class="r5-pill">🌐 Online</button>
+  </div></div>
+</div>
+<!-- Live: Map -->
+<div class="row5 hidden" id="r5-live" onclick="this.classList.toggle('open')">
+  <div class="r5-toggle"><div class="r5-left"><span class="r5-icon">📍</span><div><div class="r5-label">Venue Map</div><div class="r5-sub">San Francisco · 5 venues</div></div></div><span class="r5-arrow">▾</span></div>
+  <div class="r5-body">
+    <div class="r5-map">
+      <svg viewBox="0 0 400 170" xmlns="http://www.w3.org/2000/svg">
+        <rect width="400" height="170" fill="#eae6de"/><rect x="20" y="8" width="360" height="155" fill="#e0ecf4" rx="4"/>
+        <line x1="20" y1="55" x2="380" y2="55" stroke="#d0dce8" stroke-width=".5"/><line x1="20" y1="105" x2="380" y2="105" stroke="#d0dce8" stroke-width=".5"/>
+        <line x1="130" y1="8" x2="130" y2="163" stroke="#d0dce8" stroke-width=".5"/><line x1="260" y1="8" x2="260" y2="163" stroke="#d0dce8" stroke-width=".5"/>
+        <rect x="140" y="42" width="48" height="32" rx="3" fill="#e8c4a8" stroke="#d95f2b" stroke-width="1"/>
+        <text x="164" y="60" text-anchor="middle" font-size="7" fill="#aa3a10" font-weight="700" font-family="DM Sans">MOSCONE</text>
+        <circle cx="220" cy="95" r="5.5" fill="#d95f2b" stroke="#fff" stroke-width="1.5"/><text x="220" y="110" text-anchor="middle" font-size="7" fill="#6b6660" font-family="DM Sans">Monarch</text>
+        <circle cx="290" cy="50" r="4.5" fill="#0a7fa8" stroke="#fff" stroke-width="1.5"/><text x="290" y="63" text-anchor="middle" font-size="7" fill="#6b6660" font-family="DM Sans">715 Harrison</text>
+        <circle cx="100" cy="115" r="4.5" fill="#0d9b72" stroke="#fff" stroke-width="1.5"/><text x="100" y="128" text-anchor="middle" font-size="7" fill="#6b6660" font-family="DM Sans">Reed Smith</text>
+        <circle cx="320" cy="125" r="4.5" fill="#7c3aed" stroke="#fff" stroke-width="1.5"/><text x="320" y="138" text-anchor="middle" font-size="7" fill="#6b6660" font-family="DM Sans">GitHub HQ</text>
+        <circle cx="164" cy="58" r="3.5" fill="#d95f2b"/><circle cx="164" cy="58" r="7" fill="rgba(217,95,43,0.18)"/>
+        <circle cx="164" cy="58" r="28" fill="none" stroke="rgba(217,95,43,0.1)" stroke-width="1" stroke-dasharray="3,3"/>
+      </svg>
+    </div>
+    <div class="r5-legend">
+      <div class="r5-leg"><div class="r5-dot" style="background:#d95f2b"></div>Going</div>
+      <div class="r5-leg"><div class="r5-dot" style="background:#0a7fa8"></div>Nearby</div>
+      <div class="r5-leg"><div class="r5-dot" style="background:#0d9b72"></div>Free</div>
+      <div class="r5-leg"><div class="r5-dot" style="background:#7c3aed"></div>Party</div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ SEARCH (Live only) ═══ -->
+<div class="searchbox hidden" id="searchLive">
+  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#999" stroke-width="2.2"><circle cx="11" cy="11" r="7"/><line x1="16.5" y1="16.5" x2="22" y2="22"/></svg>
+  <input type="text" placeholder="Search events, venues, sponsors…">
+</div>
+
+<!-- ═══ CARD LIST: CALENDAR ═══ -->
+<div id="list-cal">
+  <div class="card" onclick="togCard(this)"><div class="c-top"><div class="c-date cal"><div class="cd-mon">MAR</div><div class="cd-day">17</div></div><div class="c-body"><div class="c-badges"><span class="c-badge cb-b2b">B2B</span><span class="c-badge cb-dev">DEV</span></div><div class="c-name">GDC 2026</div><div class="c-meta"><span>🇺🇸 San Francisco</span><span style="color:var(--t4)">·</span><span>30,000+</span></div></div><div class="c-right-cal"><button class="c-save" onclick="event.stopPropagation()">☆</button><div class="c-dur">Mar 17–21</div></div></div><div class="c-detail"><div class="c-detail-inner"><div class="cd-desc">The world's largest professional game industry event. Five days of lectures, tutorials, and networking.</div><div class="cd-tags"><span class="cd-dtag">All verticals</span><span class="cd-dtag">30,000+</span></div><div class="cd-tools"><a class="cd-tool cdt-link" href="#">🔗 Website</a><button class="cd-tool cdt-cal">📅 Calendar</button></div></div></div></div>
+
+  <div class="card" onclick="togCard(this)"><div class="c-top"><div class="c-date cal"><div class="cd-mon">MAR</div><div class="cd-day">17</div></div><div class="c-body"><div class="c-badges"><span class="c-badge cb-b2b">B2B</span><span class="c-badge cb-plat">PLATFORM</span></div><div class="c-name">Game Connection America 2026</div><div class="c-meta"><span>🇺🇸 San Francisco</span><span style="color:var(--t4)">·</span><span>3,000+</span></div></div><div class="c-right-cal"><button class="c-save" onclick="event.stopPropagation()">☆</button><div class="c-dur">Mar 17–18</div></div></div><div class="c-detail"><div class="c-detail-inner"><div class="cd-desc">One-on-one meetings between developers and publishers. The premier B2B event at GDC week.</div><div class="cd-tags"><span class="cd-dtag">B2B Meetings</span><span class="cd-dtag">3,000+</span></div><div class="cd-tools"><button class="cd-tool" style="background:var(--bl08);border-color:var(--bl-bdr);color:var(--blue)">🚀 Platform</button><a class="cd-tool cdt-link" href="#">🔗 Website</a><button class="cd-tool cdt-cal">📅 Calendar</button></div></div></div></div>
+
+  <div class="card" onclick="togCard(this)"><div class="c-top"><div class="c-date cal"><div class="cd-mon">MAY</div><div class="cd-day">20</div></div><div class="c-body"><div class="c-badges"><span class="c-badge cb-b2b">B2B</span><span class="c-badge cb-dev">DEV</span></div><div class="c-name">Nordic Game 2026</div><div class="c-meta"><span>🇸🇪 Malmö</span><span style="color:var(--t4)">·</span><span>3,000+</span></div></div><div class="c-right-cal"><button class="c-save" onclick="event.stopPropagation()">☆</button><div class="c-dur">May 20–22</div></div></div><div class="c-detail"><div class="c-detail-inner"><div class="cd-desc">Premier Nordic games industry conference. Talks, workshops, and business meetings.</div><div class="cd-tools"><a class="cd-tool cdt-link" href="#">🔗 Website</a><button class="cd-tool cdt-cal">📅 Calendar</button></div></div></div></div>
+
+  <div class="card" onclick="togCard(this)"><div class="c-top"><div class="c-date cal"><div class="cd-mon">JUN</div><div class="cd-day">9</div></div><div class="c-body"><div class="c-badges"><span class="c-badge cb-con">CONSUMER</span><span class="c-badge cb-b2b">B2B</span></div><div class="c-name">E3 2026</div><div class="c-meta"><span>🇺🇸 Los Angeles</span><span style="color:var(--t4)">·</span><span>60,000+</span></div></div><div class="c-right-cal"><button class="c-save" onclick="event.stopPropagation()">☆</button><div class="c-dur">Jun 9–11</div></div></div><div class="c-detail"><div class="c-detail-inner"><div class="cd-desc">The iconic Electronic Entertainment Expo. Major announcements, demos, showcases.</div><div class="cd-tools"><a class="cd-tool cdt-link" href="#">🔗 Website</a><button class="cd-tool cdt-cal">📅 Calendar</button></div></div></div></div>
+
+  <div class="card" onclick="togCard(this)"><div class="c-top"><div class="c-date cal"><div class="cd-mon">AUG</div><div class="cd-day">26</div></div><div class="c-body"><div class="c-badges"><span class="c-badge cb-con">CONSUMER</span><span class="c-badge cb-b2b">B2B</span></div><div class="c-name">Gamescom 2026</div><div class="c-meta"><span>🇩🇪 Cologne</span><span style="color:var(--t4)">·</span><span>300,000+</span></div></div><div class="c-right-cal"><button class="c-save" onclick="event.stopPropagation()">☆</button><div class="c-dur">Aug 26–30</div></div></div><div class="c-detail"><div class="c-detail-inner"><div class="cd-desc">The world's largest games trade fair. Consumer expo + B2B Biz Area.</div><div class="cd-tools"><a class="cd-tool cdt-link" href="#">🔗 Website</a><button class="cd-tool cdt-cal">📅 Calendar</button></div></div></div></div>
+
+  <div class="card" onclick="togCard(this)"><div class="c-top"><div class="c-date cal"><div class="cd-mon">SEP</div><div class="cd-day">24</div></div><div class="c-body"><div class="c-badges"><span class="c-badge cb-con">CONSUMER</span></div><div class="c-name">Tokyo Game Show 2026</div><div class="c-meta"><span>🇯🇵 Chiba</span><span style="color:var(--t4)">·</span><span>250,000+</span></div></div><div class="c-right-cal"><button class="c-save" onclick="event.stopPropagation()">☆</button><div class="c-dur">Sep 24–27</div></div></div><div class="c-detail"><div class="c-detail-inner"><div class="cd-desc">Asia's largest game trade show. Consumer + B2B area.</div><div class="cd-tools"><a class="cd-tool cdt-link" href="#">🔗 Website</a><button class="cd-tool cdt-cal">📅 Calendar</button></div></div></div></div>
+
+  <div class="show-more">Showing 6 of 48 conferences</div>
+</div>
+
+<!-- ═══ CARD LIST: LIVE ═══ -->
+<div id="list-live" class="hidden">
+  <div class="card is-now open" onclick="togCard(this)"><div class="c-top"><div class="c-date live cdl-og"><div class="cd-mon">MAR</div><div class="cd-day">9</div></div><div class="c-body"><div class="c-name" style="display:flex;align-items:center;gap:5px;flex-wrap:wrap">Indie Mixer @ GDC 2026 <span style="display:inline-flex;align-items:center;gap:3px;font-size:8px;font-weight:800;color:var(--orange);background:var(--og08);padding:2px 6px;border-radius:10px"><span class="pulse-sm"></span>LIVE</span></div><div class="c-venue">📍 Monarch, 101 6th St <span class="c-dist">0.6 mi</span></div><div class="c-time">🕖 7:00pm – 10:00pm</div><div class="c-tags"><span class="c-tag ct-free">Free</span><span class="c-tag ct-net">Networking</span></div></div><div class="c-right"><button class="c-star on" onclick="event.stopPropagation()">★</button><button class="c-going on" onclick="event.stopPropagation()">✓</button><div class="c-gcnt">312</div><span class="c-chev">▾</span></div></div><div class="c-detail"><div class="c-detail-inner"><div class="cd-sponsor">Hosted by <span>GDC Community</span></div><div class="cd-desc">The biggest indie mixer of GDC week. 400+ developers, publishers, and investors. Free drinks for the first 100.</div><div class="cd-note">⚡ Inside · Free alcohol · First 100 guests</div><a class="cd-reg" href="#">Register / RSVP →</a><div class="cd-tools"><a class="cd-tool cdt-nav" href="#">🧭 Navigate</a><button class="cd-tool cdt-cal">📅 Calendar</button><a class="cd-tool cdt-link" href="#">🔗 Website</a><button class="cd-tool">↗ Share</button></div></div></div></div>
+
+  <div class="card" onclick="togCard(this)"><div class="c-top"><div class="c-date live cdl-tl"><div class="cd-mon">MAR</div><div class="cd-day">9</div></div><div class="c-body"><div class="c-name">PG Connects Summit SF</div><div class="c-venue">📍 715 Harrison <span class="c-dist">0.3 mi</span></div><div class="c-time">🕘 9:00am – 5:30pm</div><div class="c-tags"><span class="c-tag ct-net">Networking</span><span class="c-tag ct-b2b">B2B</span></div></div><div class="c-right"><button class="c-star" onclick="event.stopPropagation()">☆</button><button class="c-going" onclick="event.stopPropagation()">✈</button><div class="c-gcnt">178</div><span class="c-chev">▾</span></div></div><div class="c-detail"><div class="c-detail-inner"><div class="cd-sponsor">Hosted by <span>PocketGamer</span></div><div class="cd-desc">Mobile B2B summit. Speed networking, roundtables, keynotes.</div><div class="cd-note">⚡ Requires PGC ticket · Inside</div><a class="cd-reg" href="#">Register / RSVP →</a><div class="cd-tools"><a class="cd-tool cdt-nav" href="#">🧭 Navigate</a><button class="cd-tool cdt-cal">📅 Calendar</button><a class="cd-tool cdt-link" href="#">🔗 Website</a><button class="cd-tool">↗ Share</button></div></div></div></div>
+
+  <div class="card" onclick="togCard(this)"><div class="c-top"><div class="c-date live cdl-og"><div class="cd-mon">MAR</div><div class="cd-day">9</div></div><div class="c-body"><div class="c-name">Opening Night at the Ballpark</div><div class="c-venue">📍 Oracle Park <span class="c-dist">0.8 mi</span></div><div class="c-time">🕕 6:00pm – 10:00pm</div><div class="c-tags"><span class="c-tag ct-show">Showcase</span></div></div><div class="c-right"><button class="c-star" onclick="event.stopPropagation()">☆</button><button class="c-going" onclick="event.stopPropagation()">✈</button><div class="c-gcnt">521</div><span class="c-chev">▾</span></div></div><div class="c-detail"><div class="c-detail-inner"><div class="cd-sponsor">Hosted by <span>GDC Official</span></div><div class="cd-desc">Iconic outdoor showcase. Game reveals, live entertainment under stadium lights.</div><div class="cd-note">⚡ GDC pass required · Outside · Food/drink for purchase</div><a class="cd-reg" href="#">Register / RSVP →</a><div class="cd-tools"><a class="cd-tool cdt-nav" href="#">🧭 Navigate</a><button class="cd-tool cdt-cal">📅 Calendar</button><a class="cd-tool cdt-link" href="#">🔗 Website</a><button class="cd-tool">↗ Share</button></div></div></div></div>
+
+  <div class="card" onclick="togCard(this)"><div class="c-top"><div class="c-date live cdl-gn"><div class="cd-mon">MAR</div><div class="cd-day">10</div></div><div class="c-body"><div class="c-name">Nordic Breakfast @ GDC</div><div class="c-venue">📍 Reed Smith LLP <span class="c-dist">0.3 mi</span></div><div class="c-time">🕗 8:00am – 12:00pm</div><div class="c-tags"><span class="c-tag ct-free">Free</span></div></div><div class="c-right"><button class="c-star" onclick="event.stopPropagation()">☆</button><button class="c-going" onclick="event.stopPropagation()">✈</button><div class="c-gcnt">94</div><span class="c-chev">▾</span></div></div><div class="c-detail"><div class="c-detail-inner"><div class="cd-sponsor">Hosted by <span>Nordic Game Community</span></div><div class="cd-desc">Annual morning gathering for Nordic developers. Coffee, pastries, introductions.</div><div class="cd-note">⚡ Inside · Quiet · Free food</div><a class="cd-reg" href="#">Register / RSVP →</a><div class="cd-tools"><a class="cd-tool cdt-nav" href="#">🧭 Navigate</a><button class="cd-tool cdt-cal">📅 Calendar</button><a class="cd-tool cdt-link" href="#">🔗 Website</a><button class="cd-tool">↗ Share</button></div></div></div></div>
+
+  <div class="card" onclick="togCard(this)"><div class="c-top"><div class="c-date live cdl-pu"><div class="cd-mon">MAR</div><div class="cd-day">10</div></div><div class="c-body"><div class="c-name">VFX Mixer @ GDC</div><div class="c-venue">📍 Monarch <span class="c-dist">0.6 mi</span></div><div class="c-time">🕖 7:00pm – 10:00pm</div><div class="c-tags"><span class="c-tag ct-party">Party</span></div></div><div class="c-right"><button class="c-star" onclick="event.stopPropagation()">☆</button><button class="c-going" onclick="event.stopPropagation()">✈</button><div class="c-gcnt">67</div><span class="c-chev">▾</span></div></div><div class="c-detail"><div class="c-detail-inner"><div class="cd-sponsor">Hosted by <span>GDC VFX Summit</span></div><div class="cd-desc">Annual mixer for VFX & tech artists. Real-time visual effects community.</div><div class="cd-note">⚡ Inside · Free alcohol · Club music</div><a class="cd-reg" href="#">Register / RSVP →</a><div class="cd-tools"><a class="cd-tool cdt-nav" href="#">🧭 Navigate</a><button class="cd-tool cdt-cal">📅 Calendar</button><a class="cd-tool cdt-link" href="#">🔗 Website</a><button class="cd-tool">↗ Share</button></div></div></div></div>
+
+  <div class="card" onclick="togCard(this)"><div class="c-top"><div class="c-date live cdl-tl"><div class="cd-mon">MAR</div><div class="cd-day">11</div></div><div class="c-body"><div class="c-name">Developers in China & IGDA SZ</div><div class="c-venue">📍 Moscone South <span class="c-onsite">on-site</span></div><div class="c-time">🕒 3:10pm – 4:10pm</div><div class="c-tags"><span class="c-tag ct-net">Networking</span></div></div><div class="c-right"><button class="c-star" onclick="event.stopPropagation()">☆</button><button class="c-going" onclick="event.stopPropagation()">✈</button><div class="c-gcnt">143</div><span class="c-chev">▾</span></div></div><div class="c-detail"><div class="c-detail-inner"><div class="cd-sponsor">Hosted by <span>IGDA Shenzhen</span></div><div class="cd-desc">Informal gathering for devs working in or interested in the Chinese game market.</div><div class="cd-note">⚡ GDC pass required · Inside · Quiet</div><a class="cd-reg" href="#">Register / RSVP →</a><div class="cd-tools"><a class="cd-tool cdt-nav" href="#">🧭 Navigate</a><button class="cd-tool cdt-cal">📅 Calendar</button><a class="cd-tool cdt-link" href="#">🔗 Website</a><button class="cd-tool">↗ Share</button></div></div></div></div>
+
+  <div class="card" onclick="togCard(this)"><div class="c-top"><div class="c-date live cdl-gn"><div class="cd-mon">MAR</div><div class="cd-day">12</div></div><div class="c-body"><div class="c-name">Women in Games Happy Hour</div><div class="c-venue">📍 Bar Agricole <span class="c-dist">0.5 mi</span></div><div class="c-time">🕔 5:00pm – 8:00pm</div><div class="c-tags"><span class="c-tag ct-free">Free</span><span class="c-tag ct-net">Networking</span></div></div><div class="c-right"><button class="c-star" onclick="event.stopPropagation()">☆</button><button class="c-going" onclick="event.stopPropagation()">✈</button><div class="c-gcnt">289</div><span class="c-chev">▾</span></div></div><div class="c-detail"><div class="c-detail-inner"><div class="cd-sponsor">Hosted by <span>WIGI</span></div><div class="cd-desc">Annual celebration for women and allies. Free entry, open bar.</div><div class="cd-note">⚡ Inside · Free alcohol</div><a class="cd-reg" href="#">Register / RSVP →</a><div class="cd-tools"><a class="cd-tool cdt-nav" href="#">🧭 Navigate</a><button class="cd-tool cdt-cal">📅 Calendar</button><a class="cd-tool cdt-link" href="#">🔗 Website</a><button class="cd-tool">↗ Share</button></div></div></div></div>
+
+  <div class="card" onclick="togCard(this)"><div class="c-top"><div class="c-date live cdl-og"><div class="cd-mon">MAR</div><div class="cd-day">13</div></div><div class="c-body"><div class="c-name">Indie Fund Pitch Night</div><div class="c-venue">📍 GitHub HQ <span class="c-dist">0.4 mi</span></div><div class="c-time">🕕 5:00pm – 9:00pm</div><div class="c-tags"><span class="c-tag ct-talk">Talk / Panel</span></div></div><div class="c-right"><button class="c-star" onclick="event.stopPropagation()">☆</button><button class="c-going" onclick="event.stopPropagation()">✈</button><div class="c-gcnt">201</div><span class="c-chev">▾</span></div></div><div class="c-detail"><div class="c-detail-inner"><div class="cd-sponsor">Hosted by <span>Indie Fund</span></div><div class="cd-desc">Eight indie studios pitch to investors. Open to attend. Q&A after each pitch.</div><div class="cd-note">⚡ Inside · Food for purchase · Quiet</div><a class="cd-reg" href="#">Register / RSVP →</a><div class="cd-tools"><a class="cd-tool cdt-nav" href="#">🧭 Navigate</a><button class="cd-tool cdt-cal">📅 Calendar</button><a class="cd-tool cdt-link" href="#">🔗 Website</a><button class="cd-tool">↗ Share</button></div></div></div></div>
+
+  <div class="show-more">Showing 8 of 225 sessions</div>
+</div>
+
+</div><!-- /body -->
+
+<!-- ═══ BOTTOM NAV ═══ -->
+<div class="bnav">
+  <div class="bn"><div class="bn-ico"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--t3)" stroke-width="2"><path d="M3 12L12 4l9 8v8h-6v-5H9v5H3z"/></svg></div><span class="bn-lbl">Home</span></div>
+  <div class="bn"><div class="bn-ico"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--t3)" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg></div><span class="bn-lbl">People</span></div>
+  <div class="bn"><div class="bn-ico"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--t3)" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/></svg></div><span class="bn-lbl">Projects</span></div>
+  <div class="bn on"><div class="bn-ico"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--teal)" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="3" y1="9" x2="21" y2="9"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="16" y1="2" x2="16" y2="6"/></svg></div><span class="bn-lbl">Events</span></div>
+  <div class="bn"><div class="bn-ico"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--t3)" stroke-width="2"><circle cx="12" cy="7" r="4"/><path d="M20 21a8 8 0 1 0-16 0"/></svg></div><span class="bn-lbl">Profile</span></div>
+</div>
+
+</div><!-- /app -->
+
+<script>
+function switchMode(m){
+  var s=document.getElementById('capSlider'),bc=document.getElementById('capCal'),bl=document.getElementById('capLive');
+  if(m==='cal'){s.classList.remove('pos-r');bc.classList.add('on');bl.classList.remove('on')}
+  else{s.classList.add('pos-r');bl.classList.add('on');bc.classList.remove('on')}
+  tog('r2-cal',m==='cal');tog('r2-live',m==='live');
+  tog('r3-cal',m==='cal');tog('r3-live',m==='live');
+  tog('r4-cal',m==='cal');tog('r4-live',m==='live');
+  tog('r5-cal',m==='cal');tog('r5-live',m==='live');
+  tog('list-cal',m==='cal');tog('list-live',m==='live');
+  tog('searchLive',m==='live');
+  document.getElementById('body').scrollTop=0;
+}
+function tog(id,show){document.getElementById(id).classList.toggle('hidden',!show)}
+function selFC(el){document.querySelectorAll('.fc').forEach(function(c){c.classList.remove('on')});el.classList.add('on')}
+function selFA(el){document.querySelectorAll('.fa').forEach(function(c){c.classList.remove('on')});el.classList.add('on')}
+function selPill(el){el.closest('.row3').querySelectorAll('.pill').forEach(function(p){p.classList.remove('on')});el.classList.add('on')}
+function selPillYr(el){document.querySelectorAll('.pill-yr').forEach(function(p){p.classList.remove('on')});el.classList.add('on')}
+function selTag(el){el.closest('.row4').querySelectorAll('.tag').forEach(function(t){t.classList.remove('on')});el.classList.add('on')}
+function togCard(el){var was=el.classList.contains('open');document.querySelectorAll('.card.open').forEach(function(c){c.classList.remove('open')});if(!was)el.classList.add('open')}
+</script>
+</body>
+</html>

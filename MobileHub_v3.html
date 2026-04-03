@@ -1,0 +1,493 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=no">
+<title>Game Connection — Event Hub</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600;9..40,700;9..40,800;9..40,900&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+html,body{height:100%;overflow-x:hidden}
+body{background:#e8e4da;font-family:"DM Sans","PingFang SC",-apple-system,sans-serif;color:#1c1a17;-webkit-font-smoothing:antialiased}
+.app{max-width:430px;margin:0 auto;min-height:100vh;background:#e8e4da;padding-bottom:76px;position:relative}
+
+:root{
+  --orange:#d95f2b;--orange-dim:rgba(217,95,43,0.08);--orange-border:rgba(217,95,43,0.22);
+  --teal:#0a7fa8;--teal-dim:rgba(10,127,168,0.08);--teal-border:rgba(10,127,168,0.2);
+  --green:#0d9b72;--green-dim:rgba(13,155,114,0.08);--green-border:rgba(13,155,114,0.2);
+  --purple:#7c3aed;--purple-dim:rgba(124,58,237,0.08);--purple-border:rgba(124,58,237,0.2);
+  --blue:#2563eb;--blue-dim:rgba(37,99,235,0.08);--blue-border:rgba(37,99,235,0.2);
+  --red:#dc2626;
+  --card:#ffffff;--card-hover:#faf9f7;
+  --border:rgba(0,0,0,0.08);--border2:rgba(0,0,0,0.04);
+  --text1:#1c1a17;--text2:#6b6660;--text3:#a09890;--text4:#c4bdb5;
+  --bg:#e8e4da;
+  --s1:0 1px 2px rgba(0,0,0,0.05);
+  --s2:0 4px 12px rgba(0,0,0,0.08);
+  --radius:12px;
+}
+
+/* ═══ HEADER ═══ */
+.header{
+  position:sticky;top:0;z-index:100;
+  background:rgba(232,228,218,0.92);
+  backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);
+  border-bottom:1px solid var(--border);
+}
+.header-top{display:flex;align-items:center;gap:8px;padding:10px 16px}
+.h-logo{font-size:13px;font-weight:900;color:var(--text1);letter-spacing:-.3px;flex-shrink:0}
+.h-logo span{color:var(--orange)}
+.h-gap{flex:1}
+.h-ai{
+  display:flex;align-items:center;gap:4px;padding:5px 10px;border-radius:20px;
+  background:linear-gradient(135deg,rgba(217,95,43,0.12),rgba(217,95,43,0.05));
+  border:1px solid var(--orange-border);font-size:10px;font-weight:800;color:var(--orange);
+  letter-spacing:.3px;cursor:pointer;
+}
+.h-search{width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;cursor:pointer;color:var(--text3)}
+
+.mode-tabs{display:flex;padding:0 16px 10px;gap:4px}
+.mode-tab{
+  flex:1;padding:8px 0;border-radius:10px;border:1px solid transparent;background:transparent;
+  font-family:inherit;font-size:13px;font-weight:600;color:var(--text3);cursor:pointer;
+  display:flex;align-items:center;justify-content:center;gap:6px;transition:all .2s ease;
+}
+.mode-tab.active-cal{background:var(--teal-dim);color:var(--teal);font-weight:700;border-color:var(--teal-border)}
+.mode-tab.active-live{background:var(--orange-dim);color:var(--orange);font-weight:700;border-color:var(--orange-border)}
+.mode-tab .tab-dot{width:6px;height:6px;border-radius:50%;background:var(--orange);display:none}
+.mode-tab.has-live .tab-dot{display:block;animation:blink 1.6s ease-in-out infinite}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
+
+/* ═══ CONFERENCE SELECTOR ═══ */
+.conf-strip{padding:0 0 0 16px;border-bottom:1px solid var(--border);background:var(--card);overflow:hidden}
+.conf-scroll{display:flex;gap:8px;padding:10px 16px 10px 0;overflow-x:auto;scrollbar-width:none}
+.conf-scroll::-webkit-scrollbar{display:none}
+.conf-chip{
+  flex-shrink:0;display:flex;align-items:center;gap:8px;
+  padding:7px 12px 7px 8px;border-radius:10px;
+  border:1.5px solid var(--border);background:var(--card);
+  cursor:pointer;transition:all .2s;
+}
+.conf-chip:active{transform:scale(.97)}
+.conf-chip.active{border-color:var(--orange);background:rgba(217,95,43,0.03)}
+.conf-chip-icon{
+  width:28px;height:28px;border-radius:7px;flex-shrink:0;
+  display:flex;align-items:center;justify-content:center;
+  font-size:9px;font-weight:900;color:#fff;letter-spacing:-.2px;
+}
+.conf-chip-info{display:flex;flex-direction:column}
+.conf-chip-name{font-size:12px;font-weight:700;color:var(--text1);white-space:nowrap}
+.conf-chip-meta{font-size:9px;color:var(--text3);white-space:nowrap}
+.conf-chip-status{font-size:8px;font-weight:800;padding:2px 6px;border-radius:20px;letter-spacing:.4px;flex-shrink:0}
+.cs-live{background:rgba(217,95,43,0.12);color:var(--orange)}
+.cs-soon{background:rgba(10,127,168,0.08);color:var(--teal)}
+
+/* ═══ CALENDAR SECTION ═══ */
+#sec-calendar{display:block}
+#sec-live{display:none}
+
+.date-filter{display:flex;align-items:center;gap:6px;padding:8px 16px;overflow-x:auto;scrollbar-width:none}
+.date-filter::-webkit-scrollbar{display:none}
+.ybtn{
+  flex-shrink:0;padding:5px 12px;border-radius:8px;border:1px solid var(--border);background:transparent;
+  font-size:11px;font-weight:700;color:var(--text3);cursor:pointer;font-family:inherit;transition:all .15s;
+}
+.ybtn.active{background:var(--orange);color:#fff;border-color:var(--orange)}
+.date-sep{width:1px;height:16px;background:var(--border);flex-shrink:0}
+.mbtn-s{
+  flex-shrink:0;padding:5px 10px;border-radius:8px;border:1px solid transparent;background:transparent;
+  font-size:11px;font-weight:600;color:var(--text3);cursor:pointer;font-family:inherit;transition:all .15s;
+}
+.mbtn-s:active{background:rgba(0,0,0,0.04)}
+.mbtn-s.active{color:var(--orange);font-weight:700;border-color:var(--orange-border);background:var(--orange-dim)}
+.mbtn-s .mc{font-size:8px;opacity:.55;margin-left:1px}
+
+.filter-bar{
+  display:flex;align-items:center;gap:6px;padding:6px 16px 8px;overflow-x:auto;scrollbar-width:none;
+  border-bottom:1px solid var(--border2);
+}
+.filter-bar::-webkit-scrollbar{display:none}
+.fbtn{
+  flex-shrink:0;padding:5px 11px;border-radius:20px;border:1px solid var(--border);background:transparent;
+  font-size:11px;font-weight:600;color:var(--text2);cursor:pointer;font-family:inherit;white-space:nowrap;transition:all .15s;
+}
+.fbtn.active{background:var(--text1);color:#fff;border-color:var(--text1)}
+
+.stats{
+  display:flex;gap:0;margin:8px 16px 4px;background:var(--card);border-radius:10px;
+  border:1px solid var(--border);overflow:hidden;
+}
+.stat{flex:1;text-align:center;padding:10px 4px;border-right:1px solid var(--border2)}
+.stat:last-child{border-right:none}
+.stat-n{font-size:17px;font-weight:800;color:var(--text1);line-height:1}
+.stat-l{font-size:8px;color:var(--text3);font-weight:700;text-transform:uppercase;letter-spacing:.5px;margin-top:3px}
+
+/* ═══ EVENT LIST ═══ */
+.elist{padding:8px 0}
+.month-hdr{padding:10px 16px 6px;display:flex;align-items:center;gap:6px}
+.mh-month{font-size:10px;font-weight:800;letter-spacing:1.5px;text-transform:uppercase;color:var(--orange)}
+.mh-year{font-size:10px;color:var(--text3)}
+.mh-count{font-size:9px;color:var(--text4);margin-left:auto;background:rgba(0,0,0,0.04);padding:2px 7px;border-radius:8px}
+
+.ecard{background:var(--card);margin:0 0 1px;border-top:1px solid var(--border2);cursor:pointer;transition:background .12s;overflow:hidden}
+.ecard:active{background:var(--card-hover)}
+.ecard.is-platform{border-left:3px solid var(--blue)}
+.ecard.has-live{border-left:3px solid var(--red)}
+
+.ec-head{display:flex;align-items:center;gap:0;padding:12px 16px}
+.ec-date{width:42px;height:46px;flex-shrink:0;margin-right:12px;border-radius:8px;overflow:hidden;display:flex;flex-direction:column}
+.ec-date-top{background:var(--orange);padding:2px 0;text-align:center;font-size:7px;font-weight:800;color:rgba(255,255,255,0.85);text-transform:uppercase;letter-spacing:.5px}
+.ec-date-bot{flex:1;display:flex;align-items:center;justify-content:center;background:var(--card);border:1px solid var(--border);border-top:none;border-radius:0 0 8px 8px;font-size:18px;font-weight:900;color:var(--text1)}
+.ec-body{flex:1;min-width:0}
+.ec-badges{display:flex;gap:3px;flex-wrap:wrap;margin-bottom:3px}
+.ec-badge{font-size:8px;font-weight:800;padding:1px 6px;border-radius:20px;letter-spacing:.3px}
+.eb-b2b{background:var(--teal-dim);color:var(--teal)}
+.eb-dev{background:var(--green-dim);color:var(--green)}
+.eb-con{background:var(--purple-dim);color:var(--purple)}
+.eb-live{background:rgba(220,38,38,0.08);color:var(--red);animation:blink 1.5s infinite}
+.eb-plat{background:var(--blue-dim);color:var(--blue)}
+.ec-name{font-size:14px;font-weight:700;color:var(--text1);line-height:1.3;margin-bottom:2px}
+.ec-meta{font-size:11px;color:var(--text2);display:flex;align-items:center;gap:5px;flex-wrap:wrap}
+.ec-right{display:flex;flex-direction:column;align-items:flex-end;gap:4px;flex-shrink:0;margin-left:8px}
+.ec-save{width:28px;height:28px;border-radius:7px;border:1px solid var(--border);background:transparent;display:flex;align-items:center;justify-content:center;font-size:13px;cursor:pointer;color:var(--text4);transition:all .15s}
+.ec-save.on{background:var(--orange-dim);border-color:var(--orange-border);color:var(--orange)}
+.ec-dur{font-size:9px;color:var(--text4);font-weight:500;white-space:nowrap}
+
+.ec-detail{max-height:0;overflow:hidden;transition:max-height .25s ease}
+.ecard.open .ec-detail{max-height:400px}
+.ec-detail-inner{padding:0 16px 14px;border-top:1px solid var(--border2)}
+.ecd-desc{font-size:12px;color:var(--text2);line-height:1.65;margin:10px 0 10px}
+.ecd-tags{display:flex;gap:4px;flex-wrap:wrap;margin-bottom:10px}
+.ecd-tag{font-size:10px;padding:3px 8px;border-radius:20px;background:rgba(0,0,0,0.04);color:var(--text2)}
+.ecd-btns{display:flex;gap:6px;flex-wrap:wrap}
+.ecd-btn{display:inline-flex;align-items:center;gap:4px;font-size:11px;font-weight:600;padding:7px 12px;border-radius:8px;cursor:pointer;font-family:inherit;text-decoration:none;border:none;transition:all .15s}
+.ecd-primary{background:var(--orange);color:#fff}
+.ecd-primary:active{opacity:.8}
+.ecd-plat{background:var(--blue);color:#fff}
+.ecd-plat:active{opacity:.8}
+.ecd-cal{background:var(--teal-dim);border:1px solid var(--teal-border);color:var(--teal)}
+
+.empty{text-align:center;padding:60px 24px;color:var(--text3)}
+.empty-icon{font-size:36px;margin-bottom:10px}
+.empty-title{font-size:14px;font-weight:700;color:var(--text2);margin-bottom:4px}
+.empty-sub{font-size:12px}
+
+/* ═══ LIVE SECTION ═══ */
+.live-hero{padding:14px 16px;display:flex;align-items:center;gap:10px;border-bottom:1px solid var(--border);background:var(--card)}
+.lh-dot{width:10px;height:10px;border-radius:50%;background:var(--orange);animation:blink 1.4s ease-in-out infinite;flex-shrink:0}
+.lh-info{flex:1}
+.lh-title{font-size:15px;font-weight:800;color:var(--text1)}
+.lh-sub{font-size:11px;color:var(--text2);margin-top:1px}
+.lh-count{font-size:11px;font-weight:700;color:var(--orange);background:var(--orange-dim);padding:4px 10px;border-radius:20px;border:1px solid var(--orange-border)}
+
+.live-dates{display:flex;gap:0;overflow-x:auto;scrollbar-width:none;background:var(--card);border-bottom:1px solid var(--border)}
+.live-dates::-webkit-scrollbar{display:none}
+.ld-btn{
+  flex-shrink:0;padding:10px 14px;border:none;background:transparent;font-family:inherit;
+  font-size:11px;font-weight:600;color:var(--text3);cursor:pointer;white-space:nowrap;
+  border-bottom:2px solid transparent;transition:all .15s;display:flex;flex-direction:column;align-items:center;gap:1px;
+}
+.ld-btn.active{color:var(--orange);border-bottom-color:var(--orange);font-weight:700}
+.ld-btn .ld-day{font-size:13px;font-weight:700}
+.ld-btn .ld-cnt{font-size:9px;opacity:.6}
+
+.live-tags{display:flex;gap:5px;padding:8px 16px;overflow-x:auto;scrollbar-width:none}
+.live-tags::-webkit-scrollbar{display:none}
+.ltag{
+  flex-shrink:0;padding:5px 11px;border-radius:20px;border:1px solid var(--border);background:transparent;
+  font-size:11px;font-weight:600;color:var(--text2);cursor:pointer;font-family:inherit;transition:all .15s;
+}
+.ltag.active{background:var(--orange);color:#fff;border-color:var(--orange)}
+
+.lcard{background:var(--card);margin:0 12px 8px;border-radius:var(--radius);box-shadow:var(--s1);overflow:hidden;transition:all .15s}
+.lcard:active{transform:scale(.99)}
+.lcard.is-now{border:1.5px solid var(--orange-border)}
+.lc-top{display:flex;gap:0;padding:12px 14px}
+.lc-time{width:52px;flex-shrink:0;display:flex;flex-direction:column;align-items:center;justify-content:flex-start;padding-top:2px;gap:2px}
+.lc-hour{font-size:13px;font-weight:800;color:var(--text1)}
+.lc-ampm{font-size:8px;font-weight:700;color:var(--text3);text-transform:uppercase}
+.lc-live-dot{width:8px;height:8px;border-radius:50%;background:var(--orange);margin-top:2px;animation:blink 1.4s ease-in-out infinite}
+.lc-body{flex:1;min-width:0}
+.lc-title{font-size:14px;font-weight:700;color:var(--text1);line-height:1.3;margin-bottom:4px}
+.lc-venue{font-size:11px;color:var(--text2);margin-bottom:5px;display:flex;align-items:center;gap:4px;flex-wrap:wrap}
+.lc-dist{font-size:9px;font-weight:700;padding:2px 6px;border-radius:10px;background:var(--orange-dim);color:var(--orange);border:1px solid var(--orange-border)}
+.lc-onsite{font-size:9px;font-weight:600;color:var(--text3);background:rgba(0,0,0,0.05);padding:2px 6px;border-radius:10px}
+.lc-tags{display:flex;gap:3px;flex-wrap:wrap;margin-bottom:8px}
+.lc-tag{font-size:9px;font-weight:700;padding:2px 7px;border-radius:10px}
+.lt-free{background:var(--green-dim);color:var(--green)}
+.lt-net{background:var(--teal-dim);color:var(--teal)}
+.lt-show{background:var(--orange-dim);color:var(--orange)}
+.lt-party{background:var(--purple-dim);color:var(--purple)}
+.lt-talk{background:rgba(6,182,212,0.08);color:#0891b2}
+.lt-b2b{background:var(--blue-dim);color:var(--blue)}
+.lc-actions{display:flex;align-items:center;gap:6px}
+.la-btn{padding:5px 10px;border-radius:7px;border:1px solid var(--border);background:transparent;font-size:10px;font-weight:600;color:var(--text2);cursor:pointer;font-family:inherit}
+.la-btn.la-go{background:var(--orange);color:#fff;border-color:var(--orange)}
+.la-btn.la-going{background:var(--green-dim);color:var(--green);border-color:var(--green-border)}
+.la-count{font-size:10px;color:var(--text3)}
+
+.map-bar{margin:8px 12px;border-radius:var(--radius);background:var(--card);border:1px solid var(--border);overflow:hidden}
+.map-toggle{display:flex;align-items:center;justify-content:space-between;padding:10px 14px;cursor:pointer}
+.mt-left{display:flex;align-items:center;gap:8px;font-size:12px;font-weight:600;color:var(--text1)}
+.mt-arrow{font-size:14px;color:var(--text3);transition:transform .2s}
+.map-bar.open .mt-arrow{transform:rotate(180deg)}
+.map-inner{max-height:0;overflow:hidden;transition:max-height .3s ease}
+.map-bar.open .map-inner{max-height:220px}
+
+/* ═══ BOTTOM NAV ═══ */
+.bnav{
+  position:fixed;bottom:0;left:50%;transform:translateX(-50%);
+  width:100%;max-width:430px;
+  background:rgba(232,228,218,0.95);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);
+  border-top:1px solid var(--border);padding:6px 0 env(safe-area-inset-bottom,20px);
+  display:flex;z-index:200;
+}
+.bn-item{flex:1;display:flex;flex-direction:column;align-items:center;gap:2px;cursor:pointer;padding:4px 0}
+.bn-ico{width:22px;height:22px;display:flex;align-items:center;justify-content:center}
+.bn-lbl{font-size:9px;font-weight:700;color:var(--text3);letter-spacing:.2px;text-transform:uppercase}
+.bn-item.active .bn-lbl{color:var(--teal)}
+
+/* ═══ SHEETS & OVERLAYS ═══ */
+.sheet-bg{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.45);z-index:500;backdrop-filter:blur(4px);align-items:flex-end;justify-content:center}
+.sheet-bg.open{display:flex}
+.sheet{background:#fff;border-radius:16px 16px 0 0;max-width:430px;width:100%;padding:16px 20px 36px;box-shadow:0 -8px 24px rgba(0,0,0,0.12);animation:slideUp .25s ease}
+@keyframes slideUp{from{transform:translateY(100%)}to{transform:translateY(0)}}
+.sheet-drag{width:32px;height:4px;background:#e0ddd8;border-radius:2px;margin:0 auto 16px}
+.sheet-title{font-size:15px;font-weight:800;color:var(--text1);margin-bottom:3px}
+.sheet-sub{font-size:12px;color:var(--text2);margin-bottom:16px}
+.sheet-opts{display:flex;flex-direction:column;gap:6px;margin-bottom:12px}
+.sheet-opt{display:flex;align-items:center;gap:12px;padding:12px;border-radius:10px;border:1px solid var(--border);background:#fafaf9;cursor:pointer;transition:background .1s}
+.sheet-opt:active{background:#f0ede8}
+.so-ico{font-size:20px;flex-shrink:0}
+.so-label{font-size:13px;font-weight:600;color:var(--text1)}
+.so-sub{font-size:10px;color:var(--text3)}
+.sheet-cancel{width:100%;padding:11px;border-radius:10px;border:1px solid var(--border);background:transparent;font-size:13px;color:var(--text2);cursor:pointer;font-family:inherit}
+
+.search-overlay{display:none;position:fixed;inset:0;z-index:400;background:rgba(232,228,218,0.97);backdrop-filter:blur(12px);padding:12px 16px}
+.search-overlay.open{display:block}
+.search-bar{display:flex;align-items:center;gap:8px;margin-bottom:16px}
+.search-input{flex:1;height:40px;border-radius:10px;border:1.5px solid var(--border);background:var(--card);padding:0 14px;font-size:14px;font-family:inherit;color:var(--text1);outline:none}
+.search-input:focus{border-color:var(--orange)}
+.search-close{font-size:13px;font-weight:600;color:var(--text2);cursor:pointer;padding:8px}
+.search-hint{font-size:12px;color:var(--text3);text-align:center;margin-top:40px}
+</style>
+</head>
+<body>
+<div class="app">
+
+<div class="header">
+  <div class="header-top">
+    <div class="h-logo">GAME<span>CONNECTION</span></div>
+    <div class="h-gap"></div>
+    <div class="h-ai">✦ AI</div>
+    <div class="h-search" onclick="openSearch()">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="11" cy="11" r="7"/><line x1="16.5" y1="16.5" x2="22" y2="22"/></svg>
+    </div>
+  </div>
+  <div class="mode-tabs">
+    <button class="mode-tab active-cal" id="tab-cal" onclick="switchMode('calendar')">📅 Calendar</button>
+    <button class="mode-tab has-live" id="tab-live" onclick="switchMode('live')"><span class="tab-dot"></span>🔴 Live · GDC</button>
+  </div>
+</div>
+
+<div class="conf-strip">
+  <div class="conf-scroll">
+    <div class="conf-chip active" onclick="selConf(this)">
+      <div class="conf-chip-icon" style="background:linear-gradient(135deg,#d95f2b,#aa3a10)">GDC</div>
+      <div class="conf-chip-info"><span class="conf-chip-name">GDC 2026</span><span class="conf-chip-meta">Mar 7–14 · SF</span></div>
+      <span class="conf-chip-status cs-live">LIVE</span>
+    </div>
+    <div class="conf-chip" onclick="selConf(this)">
+      <div class="conf-chip-icon" style="background:linear-gradient(135deg,#0a7fa8,#055a7a)">GCA</div>
+      <div class="conf-chip-info"><span class="conf-chip-name">GC America</span><span class="conf-chip-meta">Mar 17–18 · SF</span></div>
+      <span class="conf-chip-status cs-soon">SOON</span>
+    </div>
+    <div class="conf-chip" onclick="selConf(this)">
+      <div class="conf-chip-icon" style="background:linear-gradient(135deg,#0d9b72,#076644)">NG</div>
+      <div class="conf-chip-info"><span class="conf-chip-name">Nordic Game</span><span class="conf-chip-meta">May 20–22 · Malmö</span></div>
+      <span class="conf-chip-status cs-soon">SOON</span>
+    </div>
+    <div class="conf-chip" onclick="selConf(this)">
+      <div class="conf-chip-icon" style="background:linear-gradient(135deg,#7c3aed,#5b21b6)">GCA</div>
+      <div class="conf-chip-info"><span class="conf-chip-name">Gamescom Asia</span><span class="conf-chip-meta">Oct · Singapore</span></div>
+      <span class="conf-chip-status cs-soon">SOON</span>
+    </div>
+    <div class="conf-chip" onclick="selConf(this)">
+      <div class="conf-chip-icon" style="background:linear-gradient(135deg,#1d4ed8,#0a7fa8)">GCE</div>
+      <div class="conf-chip-info"><span class="conf-chip-name">GC Europe</span><span class="conf-chip-meta">Dec 3–4 · Paris</span></div>
+      <span class="conf-chip-status cs-soon">SOON</span>
+    </div>
+    <div class="conf-chip" onclick="selConf(this)">
+      <div class="conf-chip-icon" style="background:linear-gradient(135deg,#be123c,#9f1239)">TGS</div>
+      <div class="conf-chip-info"><span class="conf-chip-name">Tokyo Game Show</span><span class="conf-chip-meta">Sep · Chiba</span></div>
+      <span class="conf-chip-status cs-soon">SOON</span>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ CALENDAR ═══ -->
+<div id="sec-calendar">
+  <div class="date-filter" id="date-filter"></div>
+  <div class="filter-bar">
+    <button class="fbtn active" data-f="all" onclick="setFilter('all',this)">All</button>
+    <button class="fbtn" data-f="platform" onclick="setFilter('platform',this)">⭐ Platform</button>
+    <button class="fbtn" data-f="B2B" onclick="setFilter('B2B',this)">🤝 B2B</button>
+    <button class="fbtn" data-f="Developer" onclick="setFilter('Developer',this)">👾 Dev</button>
+    <button class="fbtn" data-f="Consumer" onclick="setFilter('Consumer',this)">🎮 Consumer</button>
+    <button class="fbtn" data-f="Asia" onclick="setFilter('Asia',this)">🌏 Asia</button>
+    <button class="fbtn" data-f="Europe" onclick="setFilter('Europe',this)">🌍 Europe</button>
+    <button class="fbtn" data-f="NorthAmerica" onclick="setFilter('NorthAmerica',this)">🌎 Americas</button>
+  </div>
+  <div class="stats">
+    <div class="stat"><div class="stat-n" id="st-total">0</div><div class="stat-l">Events</div></div>
+    <div class="stat"><div class="stat-n" id="st-countries">0</div><div class="stat-l">Countries</div></div>
+    <div class="stat"><div class="stat-n" id="st-saved">0</div><div class="stat-l">Saved</div></div>
+    <div class="stat"><div class="stat-n" id="st-upcoming">0</div><div class="stat-l">Upcoming</div></div>
+  </div>
+  <div class="elist" id="event-list"></div>
+</div>
+
+<!-- ═══ LIVE ═══ -->
+<div id="sec-live">
+  <div class="live-hero">
+    <div class="lh-dot"></div>
+    <div class="lh-info"><div class="lh-title">GDC 2026 · Side Events</div><div class="lh-sub">San Francisco · Mar 7–14</div></div>
+    <div class="lh-count">225</div>
+  </div>
+  <div class="live-dates" id="live-dates">
+    <button class="ld-btn active" onclick="selLiveDate(this)"><span class="ld-day">All</span><span class="ld-cnt">225</span></button>
+    <button class="ld-btn" onclick="selLiveDate(this)"><span class="ld-day">Sat 7</span><span class="ld-cnt">15</span></button>
+    <button class="ld-btn" onclick="selLiveDate(this)"><span class="ld-day">Sun 8</span><span class="ld-cnt">18</span></button>
+    <button class="ld-btn" onclick="selLiveDate(this)"><span class="ld-day">Mon 9</span><span class="ld-cnt">42</span></button>
+    <button class="ld-btn" onclick="selLiveDate(this)"><span class="ld-day">Tue 10</span><span class="ld-cnt">38</span></button>
+    <button class="ld-btn" onclick="selLiveDate(this)"><span class="ld-day">Wed 11</span><span class="ld-cnt">35</span></button>
+    <button class="ld-btn" onclick="selLiveDate(this)"><span class="ld-day">Thu 12</span><span class="ld-cnt">44</span></button>
+    <button class="ld-btn" onclick="selLiveDate(this)"><span class="ld-day">Fri 13</span><span class="ld-cnt">22</span></button>
+    <button class="ld-btn" onclick="selLiveDate(this)"><span class="ld-day">Sat 14</span><span class="ld-cnt">11</span></button>
+  </div>
+  <div class="live-tags">
+    <button class="ltag active">All</button>
+    <button class="ltag">🟢 Free</button>
+    <button class="ltag">🤝 Networking</button>
+    <button class="ltag">🎤 Talk</button>
+    <button class="ltag">🎮 Showcase</button>
+    <button class="ltag">🎉 Party</button>
+  </div>
+  <div style="padding:8px 0">
+    <div class="lcard is-now"><div class="lc-top"><div class="lc-time"><div class="lc-hour">7pm</div><div class="lc-live-dot"></div></div><div class="lc-body"><div class="lc-title">Indie Mixer @ GDC 2026</div><div class="lc-venue">📍 Monarch, 101 6th St <span class="lc-dist">0.6 mi</span></div><div class="lc-tags"><span class="lc-tag lt-free">Free</span><span class="lc-tag lt-net">Networking</span></div><div class="lc-actions"><button class="la-btn la-going">✓ Going</button><span class="la-count">312 going</span></div></div></div></div>
+    <div class="lcard"><div class="lc-top"><div class="lc-time"><div class="lc-hour">9am</div><div class="lc-ampm">–5:30pm</div></div><div class="lc-body"><div class="lc-title">PG Connects Summit</div><div class="lc-venue">📍 715 Harrison Event Space <span class="lc-dist">0.3 mi</span></div><div class="lc-tags"><span class="lc-tag lt-net">Networking</span><span class="lc-tag lt-b2b">B2B</span></div><div class="lc-actions"><button class="la-btn la-go">✈️ Going</button><span class="la-count">178 going</span></div></div></div></div>
+    <div class="lcard"><div class="lc-top"><div class="lc-time"><div class="lc-hour">6pm</div><div class="lc-ampm">–10pm</div></div><div class="lc-body"><div class="lc-title">Opening Night at the Ballpark</div><div class="lc-venue">📍 Oracle Park <span class="lc-dist">0.8 mi</span></div><div class="lc-tags"><span class="lc-tag lt-show">Showcase</span></div><div class="lc-actions"><button class="la-btn la-go">✈️ Going</button><span class="la-count">521 going</span></div></div></div></div>
+    <div class="lcard"><div class="lc-top"><div class="lc-time"><div class="lc-hour">8am</div><div class="lc-ampm">–12pm</div></div><div class="lc-body"><div class="lc-title">Nordic Breakfast @ GDC 2026</div><div class="lc-venue">📍 Reed Smith LLP <span class="lc-dist">0.3 mi</span></div><div class="lc-tags"><span class="lc-tag lt-free">Free</span></div><div class="lc-actions"><button class="la-btn la-go">✈️ Going</button><span class="la-count">94 going</span></div></div></div></div>
+    <div class="lcard"><div class="lc-top"><div class="lc-time"><div class="lc-hour">7pm</div><div class="lc-ampm">–10pm</div></div><div class="lc-body"><div class="lc-title">VFX Mixer @ GDC</div><div class="lc-venue">📍 Monarch <span class="lc-dist">0.6 mi</span></div><div class="lc-tags"><span class="lc-tag lt-party">Party</span></div><div class="lc-actions"><button class="la-btn la-go">✈️ Going</button><span class="la-count">67 going</span></div></div></div></div>
+    <div class="lcard"><div class="lc-top"><div class="lc-time"><div class="lc-hour">3pm</div><div class="lc-ampm">–4pm</div></div><div class="lc-body"><div class="lc-title">Developers in China & IGDA SZ</div><div class="lc-venue">📍 Moscone Center South <span class="lc-onsite">on-site</span></div><div class="lc-tags"><span class="lc-tag lt-net">Networking</span></div><div class="lc-actions"><button class="la-btn la-go">✈️ Going</button><span class="la-count">143 going</span></div></div></div></div>
+    <div class="lcard"><div class="lc-top"><div class="lc-time"><div class="lc-hour">5pm</div><div class="lc-ampm">–8pm</div></div><div class="lc-body"><div class="lc-title">Women in Games Happy Hour</div><div class="lc-venue">📍 Bar Agricole <span class="lc-dist">0.5 mi</span></div><div class="lc-tags"><span class="lc-tag lt-free">Free</span><span class="lc-tag lt-net">Networking</span></div><div class="lc-actions"><button class="la-btn la-go">✈️ Going</button><span class="la-count">289 going</span></div></div></div></div>
+    <div class="lcard"><div class="lc-top"><div class="lc-time"><div class="lc-hour">5pm</div><div class="lc-ampm">–9pm</div></div><div class="lc-body"><div class="lc-title">Indie Fund Pitch Night</div><div class="lc-venue">📍 GitHub HQ <span class="lc-dist">0.4 mi</span></div><div class="lc-tags"><span class="lc-tag lt-talk">Talk / Panel</span></div><div class="lc-actions"><button class="la-btn la-go">✈️ Going</button><span class="la-count">201 going</span></div></div></div></div>
+    <div style="text-align:center;padding:16px;font-size:11px;color:var(--text3)">Showing 8 of 225 sessions</div>
+  </div>
+  <div class="map-bar" id="mapBar">
+    <div class="map-toggle" onclick="toggleMap()"><span class="mt-left">📍 Venue Map · San Francisco</span><span class="mt-arrow">▾</span></div>
+    <div class="map-inner">
+      <svg width="100%" viewBox="0 0 400 180" xmlns="http://www.w3.org/2000/svg">
+        <rect width="400" height="180" fill="#f0ece4"/><rect x="20" y="10" width="360" height="160" fill="#e8f0f5" rx="4"/>
+        <line x1="20" y1="60" x2="380" y2="60" stroke="#d0dce8" stroke-width=".5"/><line x1="20" y1="110" x2="380" y2="110" stroke="#d0dce8" stroke-width=".5"/>
+        <line x1="130" y1="10" x2="130" y2="170" stroke="#d0dce8" stroke-width=".5"/><line x1="260" y1="10" x2="260" y2="170" stroke="#d0dce8" stroke-width=".5"/>
+        <rect x="140" y="45" width="50" height="35" rx="3" fill="#e8c4a8" stroke="#d95f2b" stroke-width="1"/>
+        <text x="165" y="65" text-anchor="middle" font-size="7" fill="#aa3a10" font-weight="700" font-family="DM Sans">MOSCONE</text>
+        <circle cx="220" cy="100" r="6" fill="#d95f2b" stroke="#fff" stroke-width="1.5"/><text x="220" y="116" text-anchor="middle" font-size="7" fill="#6b6660" font-family="DM Sans">Monarch</text>
+        <circle cx="290" cy="55" r="5" fill="#0a7fa8" stroke="#fff" stroke-width="1.5"/><text x="290" y="68" text-anchor="middle" font-size="7" fill="#6b6660" font-family="DM Sans">715 Harrison</text>
+        <circle cx="100" cy="120" r="5" fill="#0d9b72" stroke="#fff" stroke-width="1.5"/><text x="100" y="133" text-anchor="middle" font-size="7" fill="#6b6660" font-family="DM Sans">Reed Smith</text>
+        <circle cx="320" cy="130" r="5" fill="#7c3aed" stroke="#fff" stroke-width="1.5"/><text x="320" y="143" text-anchor="middle" font-size="7" fill="#6b6660" font-family="DM Sans">GitHub HQ</text>
+        <circle cx="165" cy="63" r="4" fill="#d95f2b"/><circle cx="165" cy="63" r="8" fill="rgba(217,95,43,0.2)"/>
+      </svg>
+    </div>
+  </div>
+</div>
+
+<div class="bnav">
+  <div class="bn-item"><div class="bn-ico"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--text3)" stroke-width="2"><path d="M3,12 L12,4 L21,12 V20 H15 V15 H9 V20 H3 Z"/></svg></div><span class="bn-lbl">Home</span></div>
+  <div class="bn-item"><div class="bn-ico"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--text3)" stroke-width="2"><path d="M17,21v-2a4,4,0,0,0-4-4H5a4,4,0,0,0-4,4v2"/><circle cx="9" cy="7" r="4"/></svg></div><span class="bn-lbl">People</span></div>
+  <div class="bn-item"><div class="bn-ico"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--text3)" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8,21 L16,21"/><path d="M12,17 L12,21"/></svg></div><span class="bn-lbl">Projects</span></div>
+  <div class="bn-item active"><div class="bn-ico"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--teal)" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="3" y1="9" x2="21" y2="9"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="16" y1="2" x2="16" y2="6"/></svg></div><span class="bn-lbl">Events</span></div>
+  <div class="bn-item"><div class="bn-ico"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--text3)" stroke-width="2"><circle cx="12" cy="7" r="4"/><path d="M20,21v-2a4,4,0,0,0-4-4H8a4,4,0,0,0-4,4v2"/></svg></div><span class="bn-lbl">Profile</span></div>
+</div>
+</div>
+
+<div class="sheet-bg" id="cal-sheet" onclick="if(event.target===this)closeSheet()">
+  <div class="sheet">
+    <div class="sheet-drag"></div>
+    <div class="sheet-title" id="sheet-name"></div>
+    <div class="sheet-sub" id="sheet-meta"></div>
+    <div class="sheet-opts">
+      <div class="sheet-opt" onclick="addToGoogleCal()"><div class="so-ico">📅</div><div><div class="so-label">Google Calendar</div><div class="so-sub">Opens in browser</div></div></div>
+      <div class="sheet-opt" onclick="downloadICS()"><div class="so-ico">📥</div><div><div class="so-label">Download .ics</div><div class="so-sub">Apple Calendar, Outlook</div></div></div>
+      <div class="sheet-opt" onclick="copyLink()"><div class="so-ico">🔗</div><div><div class="so-label">Copy Event Link</div><div class="so-sub">Share with colleagues</div></div></div>
+    </div>
+    <button class="sheet-cancel" onclick="closeSheet()">Cancel</button>
+  </div>
+</div>
+
+<div class="search-overlay" id="search-overlay">
+  <div class="search-bar"><input class="search-input" id="search-input" placeholder="Search events, venues…" autocomplete="off"><div class="search-close" onclick="closeSearch()">Cancel</div></div>
+  <div class="search-hint">Type to search across all conferences and side events</div>
+</div>
+
+<script>
+var MONTHS=["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
+var MONTH_NAMES={Jan:"January",Feb:"February",Mar:"March",Apr:"April",May:"May",Jun:"June",Jul:"July",Aug:"August",Sep:"September",Oct:"October",Nov:"November",Dec:"December"};
+var EVENTS=[
+  {id:1,name:"DICE Summit 2026",dateStart:"Jan 27",dateEnd:"Jan 29",month:"Jan",year:2026,city:"Las Vegas",country:"USA",flag:"🇺🇸",region:"NorthAmerica",types:["B2B","Developer"],desc:"Annual gathering of gaming executives and industry leaders.",link:"https://www.dicesummit.org/",attendance:"1,000+",focus:"Leadership, Innovation",hasLive:false,isOnPlatform:false},
+  {id:2,name:"Global Games Pitch",dateStart:"Jan 15",dateEnd:"Jan 16",month:"Jan",year:2026,city:"Online",country:"Online",flag:"🌐",region:"Online",types:["B2B","Developer"],desc:"International pitching competition for indie developers seeking funding.",link:"#",attendance:"500+",focus:"Funding, Pitching",hasLive:false,isOnPlatform:false},
+  {id:3,name:"GGJ (Global Game Jam)",dateStart:"Feb 20",dateEnd:"Feb 22",month:"Feb",year:2026,city:"Worldwide",country:"Global",flag:"🌍",region:"NorthAmerica",types:["Developer"],desc:"World's largest game creation event.",link:"https://globalgamejam.org/",attendance:"50,000+",focus:"Game Development",hasLive:false,isOnPlatform:false},
+  {id:4,name:"Casual Connect Tel Aviv",dateStart:"Feb 10",dateEnd:"Feb 12",month:"Feb",year:2026,city:"Tel Aviv",country:"Israel",flag:"🇮🇱",region:"Europe",types:["B2B","Developer"],desc:"Mobile and casual games conference with networking.",link:"#",attendance:"2,000+",focus:"Mobile, Casual",hasLive:false,isOnPlatform:false},
+  {id:5,name:"GDC 2026",dateStart:"Mar 17",dateEnd:"Mar 21",month:"Mar",year:2026,city:"San Francisco",country:"USA",flag:"🇺🇸",region:"NorthAmerica",types:["B2B","Developer"],desc:"The world's largest professional game industry event.",link:"https://gdconf.com/",attendance:"30,000+",focus:"All verticals",hasLive:false,isOnPlatform:false},
+  {id:6,name:"PAX East 2026",dateStart:"Mar 26",dateEnd:"Mar 29",month:"Mar",year:2026,city:"Boston",country:"USA",flag:"🇺🇸",region:"NorthAmerica",types:["Consumer","Developer"],desc:"One of the largest gaming festivals in North America.",link:"#",attendance:"80,000+",focus:"Consumer, Tabletop",hasLive:false,isOnPlatform:false},
+  {id:7,name:"SXSW Gaming 2026",dateStart:"Mar 13",dateEnd:"Mar 15",month:"Mar",year:2026,city:"Austin",country:"USA",flag:"🇺🇸",region:"NorthAmerica",types:["Consumer","B2B"],desc:"Gaming track of SXSW — panels, demos, networking.",link:"#",attendance:"10,000+",focus:"Culture, Indie",hasLive:false,isOnPlatform:false},
+  {id:8,name:"Game Connection America",dateStart:"Mar 17",dateEnd:"Mar 18",month:"Mar",year:2026,city:"San Francisco",country:"USA",flag:"🇺🇸",region:"NorthAmerica",types:["B2B"],desc:"Co-located with GDC. One-on-one publisher/developer meetings.",link:"https://www.game-connection.com/",attendance:"3,000+",focus:"B2B Meetings",hasLive:true,isOnPlatform:true},
+  {id:9,name:"Reboot Develop Blue",dateStart:"Apr 23",dateEnd:"Apr 25",month:"Apr",year:2026,city:"Dubrovnik",country:"Croatia",flag:"🇭🇷",region:"Europe",types:["Developer","B2B"],desc:"Boutique dev conference on the Adriatic coast.",link:"#",attendance:"1,500+",focus:"Development, Indie",hasLive:false,isOnPlatform:false},
+  {id:10,name:"Taipei Game Show",dateStart:"Apr 10",dateEnd:"Apr 13",month:"Apr",year:2026,city:"Taipei",country:"Taiwan",flag:"🇹🇼",region:"Asia",types:["Consumer","B2B"],desc:"Asia's leading consumer and B2B game show.",link:"#",attendance:"250,000+",focus:"Asia Market",hasLive:false,isOnPlatform:false},
+  {id:11,name:"Game Connection Asia",dateStart:"May 14",dateEnd:"May 15",month:"May",year:2026,city:"Singapore",country:"Singapore",flag:"🇸🇬",region:"Asia",types:["B2B"],desc:"B2B one-on-one meeting event for the Asian market.",link:"https://www.game-connection.com/",attendance:"1,500+",focus:"B2B, Asia",hasLive:false,isOnPlatform:true},
+  {id:12,name:"Nordic Game 2026",dateStart:"May 20",dateEnd:"May 22",month:"May",year:2026,city:"Malmö",country:"Sweden",flag:"🇸🇪",region:"Europe",types:["B2B","Developer"],desc:"Premier Nordic games industry conference.",link:"https://nordicgame.com/",attendance:"3,000+",focus:"Nordic Dev Scene",hasLive:false,isOnPlatform:false},
+  {id:13,name:"Pocket Gamer Connects",dateStart:"May 5",dateEnd:"May 6",month:"May",year:2026,city:"Toronto",country:"Canada",flag:"🇨🇦",region:"NorthAmerica",types:["B2B","Developer"],desc:"Mobile-focused B2B conference.",link:"#",attendance:"1,500+",focus:"Mobile",hasLive:false,isOnPlatform:false},
+  {id:14,name:"E3 2026",dateStart:"Jun 9",dateEnd:"Jun 11",month:"Jun",year:2026,city:"Los Angeles",country:"USA",flag:"🇺🇸",region:"NorthAmerica",types:["Consumer","B2B"],desc:"The iconic Electronic Entertainment Expo.",link:"#",attendance:"60,000+",focus:"Game Reveals",hasLive:false,isOnPlatform:false},
+  {id:15,name:"Devcom 2026",dateStart:"Jun 22",dateEnd:"Jun 24",month:"Jun",year:2026,city:"Cologne",country:"Germany",flag:"🇩🇪",region:"Europe",types:["Developer","B2B"],desc:"Developer conference adjacent to Gamescom.",link:"#",attendance:"4,000+",focus:"Dev Talks",hasLive:false,isOnPlatform:false},
+  {id:16,name:"Develop:Brighton",dateStart:"Jul 8",dateEnd:"Jul 10",month:"Jul",year:2026,city:"Brighton",country:"UK",flag:"🇬🇧",region:"Europe",types:["Developer"],desc:"UK's leading game developer conference.",link:"#",attendance:"2,500+",focus:"Technical Talks",hasLive:false,isOnPlatform:false},
+  {id:17,name:"ChinaJoy 2026",dateStart:"Jul 25",dateEnd:"Jul 28",month:"Jul",year:2026,city:"Shanghai",country:"China",flag:"🇨🇳",region:"Asia",types:["Consumer","B2B"],desc:"China's largest digital entertainment expo.",link:"#",attendance:"350,000+",focus:"China Market",hasLive:false,isOnPlatform:false},
+  {id:18,name:"BitSummit 2026",dateStart:"Jul 18",dateEnd:"Jul 20",month:"Jul",year:2026,city:"Kyoto",country:"Japan",flag:"🇯🇵",region:"Asia",types:["Developer"],desc:"Japan's premier indie game festival.",link:"#",attendance:"15,000+",focus:"Indie, Japan",hasLive:false,isOnPlatform:false},
+  {id:19,name:"Gamescom 2026",dateStart:"Aug 20",dateEnd:"Aug 24",month:"Aug",year:2026,city:"Cologne",country:"Germany",flag:"🇩🇪",region:"Europe",types:["Consumer","B2B"],desc:"World's largest games trade fair.",link:"https://www.gamescom.de/",attendance:"300,000+",focus:"Consumer, B2B",hasLive:false,isOnPlatform:false},
+  {id:20,name:"PAX West 2026",dateStart:"Aug 29",dateEnd:"Sep 1",month:"Aug",year:2026,city:"Seattle",country:"USA",flag:"🇺🇸",region:"NorthAmerica",types:["Consumer"],desc:"West coast PAX gaming festival.",link:"#",attendance:"70,000+",focus:"Consumer",hasLive:false,isOnPlatform:false},
+  {id:21,name:"Tokyo Game Show 2026",dateStart:"Sep 24",dateEnd:"Sep 27",month:"Sep",year:2026,city:"Chiba",country:"Japan",flag:"🇯🇵",region:"Asia",types:["Consumer","B2B"],desc:"Asia's largest game trade show.",link:"#",attendance:"250,000+",focus:"Asia, B2B",hasLive:false,isOnPlatform:false},
+  {id:22,name:"Games Industry Gathering",dateStart:"Sep 15",dateEnd:"Sep 17",month:"Sep",year:2026,city:"Dubrovnik",country:"Croatia",flag:"🇭🇷",region:"Europe",types:["B2B"],desc:"Intimate networking for executives.",link:"#",attendance:"500+",focus:"Executive",hasLive:false,isOnPlatform:false},
+  {id:23,name:"Gamescom Asia 2026",dateStart:"Oct 16",dateEnd:"Oct 19",month:"Oct",year:2026,city:"Singapore",country:"Singapore",flag:"🇸🇬",region:"Asia",types:["Consumer","B2B"],desc:"Asian edition of Gamescom.",link:"#",attendance:"30,000+",focus:"SE Asia",hasLive:false,isOnPlatform:false},
+  {id:24,name:"G-STAR 2026",dateStart:"Nov 13",dateEnd:"Nov 16",month:"Nov",year:2026,city:"Busan",country:"South Korea",flag:"🇰🇷",region:"Asia",types:["Consumer","B2B"],desc:"South Korea's premier game exhibition.",link:"#",attendance:"200,000+",focus:"Korea Market",hasLive:false,isOnPlatform:false},
+  {id:25,name:"MIGS 2026",dateStart:"Nov 9",dateEnd:"Nov 11",month:"Nov",year:2026,city:"Montreal",country:"Canada",flag:"🇨🇦",region:"NorthAmerica",types:["Developer","B2B"],desc:"Canada's most important game industry event.",link:"#",attendance:"3,000+",focus:"Dev, Business",hasLive:false,isOnPlatform:false},
+  {id:26,name:"Game Connection Europe",dateStart:"Dec 3",dateEnd:"Dec 4",month:"Dec",year:2026,city:"Paris",country:"France",flag:"🇫🇷",region:"Europe",types:["B2B"],desc:"The original Game Connection. Structured 1-on-1 meetings.",link:"https://www.game-connection.com/",attendance:"2,500+",focus:"B2B, Europe",hasLive:false,isOnPlatform:true},
+  {id:27,name:"Game Awards 2026",dateStart:"Dec 12",dateEnd:"Dec 12",month:"Dec",year:2026,city:"Los Angeles",country:"USA",flag:"🇺🇸",region:"NorthAmerica",types:["Consumer"],desc:"Annual celebration of the best games.",link:"#",attendance:"10,000+",focus:"Awards",hasLive:false,isOnPlatform:false}
+];
+var selYear=2026,selMonth="All",selFilter="all",openId=null,savedEvs={},calPendingId=null;
+function getYears(){var y={};EVENTS.forEach(function(e){y[e.year]=1});return Object.keys(y).map(Number).sort()}
+function getFiltered(){return EVENTS.filter(function(e){if(e.year!==selYear)return false;if(selMonth!=="All"&&e.month!==selMonth)return false;if(selFilter==="all")return true;if(selFilter==="platform")return e.isOnPlatform;if(["Asia","Europe","NorthAmerica"].indexOf(selFilter)>=0)return e.region===selFilter;return e.types.indexOf(selFilter)>=0})}
+function renderDateFilter(){var h='';getYears().forEach(function(y){h+='<button class="ybtn'+(y===selYear?' active':'')+'" onclick="setYear('+y+')">'+y+'</button>'});h+='<div class="date-sep"></div><button class="mbtn-s'+(selMonth==="All"?' active':'')+'" onclick="setMonth(\'All\')">All</button>';var mc={};EVENTS.filter(function(e){return e.year===selYear}).forEach(function(e){mc[e.month]=(mc[e.month]||0)+1});MONTHS.forEach(function(m){if(mc[m])h+='<button class="mbtn-s'+(selMonth===m?' active':'')+'" onclick="setMonth(\''+m+'\')">'+m+'<span class="mc">'+mc[m]+'</span></button>'});document.getElementById('date-filter').innerHTML=h}
+function renderStats(){var l=EVENTS.filter(function(e){return e.year===selYear});document.getElementById('st-total').textContent=l.length;var cs={};l.forEach(function(e){cs[e.country]=1});document.getElementById('st-countries').textContent=Object.keys(cs).length;document.getElementById('st-saved').textContent=Object.keys(savedEvs).filter(function(k){return savedEvs[k]}).length;document.getElementById('st-upcoming').textContent=l.filter(function(e){return MONTHS.indexOf(e.month)>=2}).length}
+function renderList(){var list=getFiltered(),el=document.getElementById('event-list');if(!list.length){el.innerHTML='<div class="empty"><div class="empty-icon">📅</div><div class="empty-title">No events found</div><div class="empty-sub">Try a different filter</div></div>';return}var g={},o=[];list.forEach(function(e){if(!g[e.month]){g[e.month]=[];o.push(e.month)}g[e.month].push(e)});o=o.filter(function(v,i){return o.indexOf(v)===i});var h='';o.forEach(function(m){var evs=g[m];h+='<div class="month-hdr"><span class="mh-month">'+MONTH_NAMES[m]+'</span><span class="mh-year">'+selYear+'</span><span class="mh-count">'+evs.length+'</span></div>';evs.forEach(function(ev){var isO=openId===ev.id,isS=!!savedEvs[ev.id],dn=ev.dateStart.split(' ')[1]||'',ma=ev.dateStart.split(' ')[0]||'',dur=ev.dateStart===ev.dateEnd?ev.dateStart:ev.dateStart+' – '+ev.dateEnd;var bd=ev.types.map(function(t){return'<span class="ec-badge '+(t==='B2B'?'eb-b2b':t==='Developer'?'eb-dev':t==='Consumer'?'eb-con':'')+'">'+t+'</span>'}).join('');if(ev.hasLive)bd+='<span class="ec-badge eb-live">🔴 LIVE</span>';else if(ev.isOnPlatform)bd+='<span class="ec-badge eb-plat">PLATFORM</span>';var cc='ecard';if(isO)cc+=' open';if(ev.hasLive)cc+=' has-live';else if(ev.isOnPlatform)cc+=' is-platform';h+='<div class="'+cc+'" id="evc-'+ev.id+'" onclick="toggleCard('+ev.id+')">';h+='<div class="ec-head"><div class="ec-date"><div class="ec-date-top">'+ma+'</div><div class="ec-date-bot">'+dn+'</div></div>';h+='<div class="ec-body"><div class="ec-badges">'+bd+'</div><div class="ec-name">'+ev.name+'</div><div class="ec-meta"><span>'+ev.flag+' '+ev.city+'</span><span style="color:var(--text4)">·</span><span>'+ev.attendance+'</span></div></div>';h+='<div class="ec-right"><button class="ec-save'+(isS?' on':'')+'" onclick="event.stopPropagation();toggleSave('+ev.id+')">'+(isS?'★':'☆')+'</button><div class="ec-dur">'+dur+'</div></div></div>';h+='<div class="ec-detail"><div class="ec-detail-inner"><div class="ecd-desc">'+ev.desc+'</div><div class="ecd-tags"><span class="ecd-tag">'+ev.focus+'</span><span class="ecd-tag">'+ev.attendance+'</span></div><div class="ecd-btns">';if(ev.isOnPlatform)h+='<button class="ecd-btn ecd-plat" onclick="event.stopPropagation()">🚀 Platform</button>';if(ev.link&&ev.link!=='#')h+='<a class="ecd-btn ecd-primary" href="'+ev.link+'" target="_blank" onclick="event.stopPropagation()">🔗 Website</a>';h+='<button class="ecd-btn ecd-cal" onclick="event.stopPropagation();openSheet('+ev.id+')">📅 Calendar</button></div></div></div></div>'})});el.innerHTML=h}
+function renderAll(){renderDateFilter();renderStats();renderList()}
+function setYear(y){selYear=y;selMonth="All";renderAll()}
+function setMonth(m){selMonth=m;renderAll()}
+function setFilter(f,btn){selFilter=f;document.querySelectorAll('.fbtn').forEach(function(b){b.classList.remove('active')});btn.classList.add('active');renderAll()}
+function toggleCard(id){openId=openId===id?null:id;renderList();if(openId)setTimeout(function(){var e=document.getElementById('evc-'+id);if(e)e.scrollIntoView({behavior:'smooth',block:'nearest'})},60)}
+function toggleSave(id){if(savedEvs[id])delete savedEvs[id];else savedEvs[id]=true;renderStats();var c=document.getElementById('evc-'+id);if(c){var b=c.querySelector('.ec-save');if(b){b.classList.toggle('on',!!savedEvs[id]);b.textContent=savedEvs[id]?'★':'☆'}}}
+function switchMode(m){document.getElementById('tab-cal').className='mode-tab'+(m==='calendar'?' active-cal':'');document.getElementById('tab-live').className='mode-tab has-live'+(m==='live'?' active-live':'');document.getElementById('sec-calendar').style.display=m==='calendar'?'block':'none';document.getElementById('sec-live').style.display=m==='live'?'block':'none'}
+function selConf(el){document.querySelectorAll('.conf-chip').forEach(function(c){c.classList.remove('active')});el.classList.add('active')}
+function selLiveDate(btn){document.querySelectorAll('.ld-btn').forEach(function(b){b.classList.remove('active')});btn.classList.add('active')}
+function toggleMap(){document.getElementById('mapBar').classList.toggle('open')}
+function openSheet(id){calPendingId=id;var ev=EVENTS.filter(function(e){return e.id===id})[0];if(!ev)return;document.getElementById('sheet-name').textContent=ev.name;document.getElementById('sheet-meta').textContent=ev.dateStart+(ev.dateEnd!==ev.dateStart?' – '+ev.dateEnd:'')+' · '+ev.city;document.getElementById('cal-sheet').classList.add('open');document.body.style.overflow='hidden'}
+function closeSheet(){document.getElementById('cal-sheet').classList.remove('open');document.body.style.overflow=''}
+function addToGoogleCal(){var ev=EVENTS.filter(function(e){return e.id===calPendingId})[0];if(!ev)return;var mi=MONTHS.indexOf(ev.dateStart.split(' ')[0]),d=ev.dateStart.split(' ')[1],s=ev.year+''+String(mi+1).padStart(2,'0')+String(parseInt(d)).padStart(2,'0');var mi2=MONTHS.indexOf(ev.dateEnd.split(' ')[0]),d2=ev.dateEnd.split(' ')[1],e2=ev.year+''+String(mi2+1).padStart(2,'0')+String(parseInt(d2)+1).padStart(2,'0');window.open('https://calendar.google.com/calendar/render?action=TEMPLATE&text='+encodeURIComponent(ev.name)+'&dates='+s+'/'+e2+'&location='+encodeURIComponent(ev.city+', '+ev.country),'_blank');closeSheet()}
+function downloadICS(){var ev=EVENTS.filter(function(e){return e.id===calPendingId})[0];if(!ev)return;var mi=MONTHS.indexOf(ev.dateStart.split(' ')[0]),d=ev.dateStart.split(' ')[1],s=ev.year+''+String(mi+1).padStart(2,'0')+String(parseInt(d)).padStart(2,'0');var mi2=MONTHS.indexOf(ev.dateEnd.split(' ')[0]),d2=ev.dateEnd.split(' ')[1],e2=ev.year+''+String(mi2+1).padStart(2,'0')+String(parseInt(d2)+1).padStart(2,'0');var ics=['BEGIN:VCALENDAR','VERSION:2.0','BEGIN:VEVENT','DTSTART;VALUE=DATE:'+s,'DTEND;VALUE=DATE:'+e2,'SUMMARY:'+ev.name,'LOCATION:'+ev.city+', '+ev.country,'END:VEVENT','END:VCALENDAR'].join('\r\n');var blob=new Blob([ics],{type:'text/calendar'});var a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=ev.name.replace(/[^a-zA-Z0-9]/g,'_')+'.ics';a.click();closeSheet()}
+function copyLink(){var ev=EVENTS.filter(function(e){return e.id===calPendingId})[0];if(!ev)return;if(navigator.clipboard)navigator.clipboard.writeText(ev.name+'\n'+ev.dateStart+' – '+ev.dateEnd+' · '+ev.city+'\n'+ev.link);closeSheet()}
+function openSearch(){document.getElementById('search-overlay').classList.add('open');setTimeout(function(){document.getElementById('search-input').focus()},100)}
+function closeSearch(){document.getElementById('search-overlay').classList.remove('open');document.getElementById('search-input').value=''}
+document.querySelectorAll('.ltag').forEach(function(b){b.addEventListener('click',function(){document.querySelectorAll('.ltag').forEach(function(x){x.classList.remove('active')});b.classList.add('active')})});
+renderAll();
+</script>
+</body>
+</html>

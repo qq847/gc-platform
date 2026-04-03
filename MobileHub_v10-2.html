@@ -1,0 +1,327 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=no">
+<title>Game Connection — Event Hub</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;0,9..40,800;0,9..40,900&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+html{height:100%;overflow:hidden}
+body{height:100%;overflow:hidden;font-family:"DM Sans","PingFang SC",-apple-system,sans-serif;color:#1c1a17;-webkit-font-smoothing:antialiased}
+:root{
+  --pr:#2563eb;--pr08:rgba(37,99,235,0.07);--pr16:rgba(37,99,235,0.16);--prb:rgba(37,99,235,0.2);
+  --tl:#0a7fa8;--tl08:rgba(10,127,168,0.08);--tlb:rgba(10,127,168,0.18);
+  --gn:#0d9b72;--gn08:rgba(13,155,114,0.08);--gnb:rgba(13,155,114,0.2);
+  --pu:#7c3aed;--pu08:rgba(124,58,237,0.08);--pub:rgba(124,58,237,0.2);
+  --bl:#2563eb;--bl08:rgba(37,99,235,0.08);--blb:rgba(37,99,235,0.2);
+  --am:#f59e0b;--pk:#ec4899;--rd:#dc2626;--cy:#06b6d4;
+  --c:#fff;--bg:#f7f7f5;--bg2:#efefed;
+  --b:rgba(28,26,23,0.07);--b2:rgba(28,26,23,0.04);
+  --t1:#1c1a17;--t2:#6b6660;--t3:#a09890;--t4:#c4bdb5;
+  --s1:0 1px 3px rgba(0,0,0,0.05);--s2:0 3px 12px rgba(0,0,0,0.08);
+  --r:12px;--r2:10px;--r3:8px;
+}
+.app{max-width:430px;margin:0 auto;height:100%;display:flex;flex-direction:column;overflow:hidden;background:var(--bg);position:relative}
+.hidden{display:none!important}
+
+/* ═══ HEADER ═══ */
+.hdr{flex-shrink:0;background:rgba(255,255,255,0.92);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);border-bottom:1px solid var(--b);padding:10px 20px;display:flex;align-items:center;justify-content:center;z-index:100}
+.cap{display:flex;align-items:center;background:var(--bg2);border-radius:22px;padding:3px;position:relative;height:38px;width:100%;max-width:300px}
+.cap-s{position:absolute;top:3px;left:3px;height:32px;width:calc(50% - 3px);border-radius:19px;background:var(--c);box-shadow:0 1px 6px rgba(0,0,0,0.1);transition:transform .3s cubic-bezier(.4,0,.2,1)}
+.cap-s.r{transform:translateX(100%)}
+.cap-b{flex:1;height:32px;border-radius:19px;border:none;padding:0;background:0;font-family:inherit;font-size:13px;font-weight:600;color:var(--t3);cursor:pointer;z-index:1;display:flex;align-items:center;justify-content:center;gap:6px;transition:color .25s;white-space:nowrap}
+.cap-b.on{color:var(--t1);font-weight:700}
+.live-dot{width:8px;height:8px;border-radius:50%;background:#dc2626;flex-shrink:0;animation:lp 1.6s ease-in-out infinite}
+@keyframes lp{0%,100%{box-shadow:0 0 0 0 rgba(220,38,38,0.5)}60%{box-shadow:0 0 0 4px rgba(220,38,38,0)}}
+
+.body{flex:1;overflow-y:auto;overflow-x:hidden;-webkit-overflow-scrolling:touch;padding-bottom:76px}
+
+/* ═══ ROW 2 ═══ */
+.row2{padding:10px 0 6px;background:var(--c);border-bottom:1px solid var(--b)}
+.r2s{display:flex;gap:8px;padding:0 14px;overflow-x:auto;scrollbar-width:none}.r2s::-webkit-scrollbar{display:none}
+.fc{flex-shrink:0;display:flex;align-items:center;gap:7px;padding:7px 11px 7px 7px;border-radius:var(--r2);border:1.5px solid var(--b);background:var(--c);cursor:pointer;transition:all .2s;box-shadow:var(--s1)}
+.fc:active{transform:scale(.97)}.fc.on{border-color:var(--pr);box-shadow:0 2px 10px rgba(37,99,235,0.12)}
+.fc-i{width:28px;height:28px;border-radius:7px;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:900;color:#fff;letter-spacing:-.2px}
+.fc-n{font-size:11px;font-weight:700;color:var(--t1);white-space:nowrap}.fc-m{font-size:9px;color:var(--t3);white-space:nowrap}
+.fc-b{font-size:7px;font-weight:800;padding:2px 5px;border-radius:20px;letter-spacing:.4px;flex-shrink:0}
+.fcb-l{background:rgba(220,38,38,0.08);color:#dc2626}.fcb-s{background:var(--tl08);color:var(--tl)}
+.fa{flex-shrink:0;display:flex;align-items:center;gap:8px;padding:8px 12px;border-radius:var(--r2);min-width:155px;border:1.5px solid var(--b);background:var(--c);cursor:pointer;transition:all .2s;box-shadow:var(--s1)}
+.fa:active{transform:scale(.97)}.fa.on{border-color:var(--pr);box-shadow:0 2px 10px rgba(37,99,235,0.12)}
+.fa-n{font-size:11px;font-weight:700;color:var(--t1);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.fa-s{font-size:9px;color:var(--t3);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.fa-b{font-size:8px;font-weight:800;padding:2px 6px;border-radius:10px;flex-shrink:0;white-space:nowrap}
+.fab-now{background:rgba(220,38,38,0.08);color:#dc2626}.fab-hot{background:rgba(236,72,153,0.08);color:#ec4899}.fab-free{background:var(--gn08);color:var(--gn)}
+
+/* ═══ ROW 3: DATES (v40 vertical) ═══ */
+.row3{display:flex;gap:4px;padding:8px 14px;overflow-x:auto;scrollbar-width:none;background:var(--bg)}.row3::-webkit-scrollbar{display:none}
+.dt{flex-shrink:0;min-width:44px;padding:6px 8px;border-radius:var(--r2);border:1px solid var(--b);background:var(--c);cursor:pointer;text-align:center;transition:all .2s;box-shadow:var(--s1)}
+.dt:active{transform:scale(.95)}
+.dt.on{background:var(--pr);border-color:var(--pr);box-shadow:0 2px 10px rgba(37,99,235,0.3)}
+.dt-t{font-size:11px;font-weight:700;color:var(--t1);line-height:1.3}.dt.on .dt-t{color:#fff}
+.dt-c{font-size:10px;color:var(--pr);font-weight:700;line-height:1.3}.dt.on .dt-c{color:rgba(255,255,255,0.8)}
+
+/* ═══ ROW 4: TAGS (wrap multi-select) ═══ */
+.row4{position:relative;padding:4px 14px 6px;background:var(--bg)}
+.tg-wrap{display:flex;flex-wrap:wrap;gap:5px;max-height:54px;overflow:hidden;transition:max-height .3s ease}
+.tg-wrap.expanded{max-height:500px}
+.tg{padding:4px 10px;border-radius:20px;border:1px solid var(--b);background:var(--c);font-size:10px;font-weight:600;color:var(--t2);cursor:pointer;font-family:inherit;transition:all .15s;box-shadow:var(--s1)}
+.tg-more{padding:4px 10px;border-radius:20px;border:1px dashed var(--b);background:0;font-size:10px;font-weight:600;color:var(--t3);cursor:pointer;font-family:inherit}
+.tg:active{transform:scale(.95)}.tg.on{color:#fff}
+.tg[data-c="gn"].on{background:var(--gn);border-color:var(--gn)}.tg[data-c="cy"].on{background:var(--cy);border-color:var(--cy)}.tg[data-c="pu"].on{background:var(--pu);border-color:var(--pu)}.tg[data-c="bl"].on{background:var(--bl);border-color:var(--bl)}.tg[data-c="pk"].on{background:var(--pk);border-color:var(--pk)}.tg[data-c="am"].on{background:var(--am);border-color:var(--am)}.tg[data-c="og"].on{background:var(--pr);border-color:var(--pr)}.tg[data-c="tl"].on{background:var(--tl);border-color:var(--tl)}.tg[data-c="def"].on{background:var(--t1);border-color:var(--t1)}
+
+/* ═══ ROW 4.5: VIEW ROW ═══ */
+.vr{display:flex;align-items:center;gap:0;margin:0 14px 8px;background:var(--c);border-radius:var(--r2);border:1px solid var(--b);overflow:hidden;box-shadow:var(--s1)}
+.vr-t{flex:1;padding:9px 4px;border:none;background:0;font-family:inherit;font-size:11px;font-weight:600;color:var(--t3);cursor:pointer;text-align:center;transition:all .15s;border-right:1px solid var(--b2);white-space:nowrap}
+.vr-t:last-of-type{border-right:none}
+.vr-t.on{background:var(--pr08);color:var(--pr);font-weight:700}.vr-t b{font-weight:800}
+.vr-i{flex-shrink:0;width:42px;padding:9px 0;border:none;background:0;font-size:12px;cursor:pointer;text-align:center;border-right:1px solid var(--b2);color:var(--t3);font-family:inherit;display:flex;align-items:center;justify-content:center;gap:2px}
+.vr-n{font-size:10px;font-weight:700}
+.vr-ai{flex-shrink:0;padding:9px 12px;border:none;background:linear-gradient(135deg,rgba(37,99,235,0.08),rgba(201,168,76,0.08));font-size:11px;font-weight:800;color:var(--pr);cursor:pointer;font-family:inherit;letter-spacing:.3px;display:flex;align-items:center;gap:3px;transition:all .15s}
+.vr-ai:active{background:linear-gradient(135deg,rgba(37,99,235,0.15),rgba(201,168,76,0.15))}
+
+/* ═══ ROW 5: TERRITORY / MAP ═══ */
+.row5{margin:0 14px 8px;border-radius:var(--r2);background:var(--c);border:1px solid var(--b);overflow:hidden;box-shadow:var(--s1)}
+.r5-h{display:flex;align-items:center;justify-content:space-between;padding:9px 12px;cursor:pointer}
+.r5-l{display:flex;align-items:center;gap:6px}
+.r5-lab{font-size:12px;font-weight:600;color:var(--t1)}.r5-sub{font-size:10px;color:var(--t3)}
+.r5-a{font-size:12px;color:var(--t3);transition:transform .2s}.row5.open .r5-a{transform:rotate(180deg)}
+.r5-bd{max-height:0;overflow:hidden;transition:max-height .3s ease}.row5.open .r5-bd{max-height:300px}
+.r5-pills{display:flex;flex-wrap:wrap;gap:5px;padding:0 12px 10px}
+.r5-p{padding:4px 10px;border-radius:20px;border:1px solid var(--b);background:0;font-size:10px;font-weight:600;color:var(--t2);cursor:pointer;font-family:inherit;transition:all .15s}
+.r5-p.on{background:var(--t1);color:#fff;border-color:var(--t1)}
+.r5-map svg{width:100%;display:block}
+.r5-leg{display:flex;gap:10px;padding:6px 12px;border-top:1px solid var(--b2)}
+.r5-lg{display:flex;align-items:center;gap:3px;font-size:9px;color:var(--t2)}
+.r5-d{width:6px;height:6px;border-radius:50%}
+
+/* ═══ CARDS ═══ */
+.card{background:var(--c);margin:0 14px 8px;border-radius:var(--r);border:1px solid var(--b);box-shadow:var(--s1);overflow:hidden;cursor:pointer;transition:all .2s}
+.card:active{transform:scale(.985)}.card.is-plat{border-left:3px solid var(--pr)}.card.is-now{border:1.5px solid rgba(220,38,38,0.2);box-shadow:0 2px 12px rgba(220,38,38,0.06)}.card.open{background:#f8f9ff}
+.card-strip{height:3px;width:100%}
+.ct{display:flex;gap:0}
+.cd{width:48px;flex-shrink:0;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:6px 4px;color:#fff;background:linear-gradient(180deg,#2563eb,#1d4ed8)}
+.cd-m{font-size:8px;font-weight:800;letter-spacing:.5px;text-transform:uppercase;opacity:.85}.cd-d{font-size:20px;font-weight:900;line-height:1}
+.cdl-og{background:linear-gradient(180deg,#2563eb,#1d4ed8)}
+.cb{flex:1;min-width:0;padding:7px 0 7px 10px}
+.cb-bg{display:flex;gap:3px;flex-wrap:wrap;margin-bottom:3px}.cb-b{font-size:8px;font-weight:800;padding:1.5px 6px;border-radius:20px;letter-spacing:.3px}
+.bb-b{background:var(--tl08);color:var(--tl)}.bb-d{background:var(--gn08);color:var(--gn)}.bb-c{background:var(--pu08);color:var(--pu)}.bb-p{background:var(--bl08);color:var(--bl)}
+.cb-n{font-size:13px;font-weight:700;color:var(--t1);line-height:1.35;margin-bottom:2px}
+.cb-mt{font-size:10px;color:var(--t2);display:flex;align-items:center;gap:5px;flex-wrap:wrap}
+.cb-v{font-size:10px;color:var(--t2);margin-bottom:2px}.cb-tm{font-size:10px;color:var(--t3)}
+.cb-tg{display:flex;gap:3px;flex-wrap:wrap;margin-top:3px}.cb-t{font-size:8px;font-weight:700;padding:2px 6px;border-radius:10px}
+.ct-f{background:var(--gn08);color:var(--gn)}.ct-n{background:var(--tl08);color:var(--tl)}.ct-s{background:var(--pr08);color:var(--pr)}.ct-p{background:var(--pu08);color:var(--pu)}.ct-t{background:rgba(6,182,212,0.06);color:#0891b2}.ct-b{background:var(--bl08);color:var(--bl)}
+.cb-di{font-size:9px;font-weight:700;padding:2px 6px;border-radius:10px;background:var(--pr08);color:var(--pr);border:1px solid var(--prb)}
+.cb-os{font-size:9px;font-weight:600;color:var(--t3);background:rgba(0,0,0,0.04);padding:2px 6px;border-radius:10px}
+/* Right col */
+.cr{display:flex;flex-direction:column;align-items:center;gap:3px;padding:8px 8px 8px 2px;flex-shrink:0}
+.cr-s{width:28px;height:28px;border-radius:var(--r3);border:1px solid var(--b);background:0;display:flex;align-items:center;justify-content:center;font-size:14px;color:var(--t4);cursor:pointer;transition:all .15s}.cr-s:active{transform:scale(1.3)}.cr-s.on{background:var(--pr08);border-color:var(--prb);color:var(--pr)}
+.cr-g{width:28px;height:28px;border-radius:var(--r3);border:1px solid var(--b);background:0;display:flex;align-items:center;justify-content:center;font-size:11px;color:var(--t4);cursor:pointer;transition:all .15s}.cr-g.on{background:var(--gn08);border-color:var(--gnb);color:var(--gn)}
+.cr-gc{font-size:8px;color:var(--gn);font-weight:700}
+.cr-ch{font-size:9px;color:var(--t4);transition:transform .2s;margin-top:1px}.card.open .cr-ch{transform:rotate(180deg)}
+/* Detail */
+.c-x{max-height:0;overflow:hidden;transition:max-height .3s ease}.card.open .c-x{max-height:500px}
+.c-xi{padding:0 12px 12px;border-top:1px solid var(--b2)}
+.xi-sp{font-size:10px;color:var(--t3);margin-top:8px;margin-bottom:4px}.xi-sp span{color:var(--t2);font-weight:600}
+.xi-d{font-size:12px;color:var(--t2);line-height:1.65;margin-bottom:6px}
+.xi-n{font-size:10px;color:#d97706;background:rgba(245,158,11,0.06);border:1px solid rgba(245,158,11,0.15);border-radius:var(--r3);padding:5px 9px;margin-bottom:8px}
+.xi-r{display:block;width:100%;padding:10px;border-radius:var(--r2);border:none;background:linear-gradient(135deg,var(--pr),#1d4ed8);color:#fff;font-size:12px;font-weight:700;cursor:pointer;font-family:inherit;text-align:center;text-decoration:none;margin-bottom:8px;box-shadow:0 2px 8px rgba(37,99,235,0.25)}.xi-r:active{opacity:.85}
+.xi-tl{display:flex;gap:5px;flex-wrap:wrap}
+.xi-t{display:inline-flex;align-items:center;gap:3px;padding:6px 10px;border-radius:var(--r3);border:1px solid var(--b);background:0;font-size:10px;font-weight:600;color:var(--t2);cursor:pointer;font-family:inherit;text-decoration:none}.xi-t:active{background:rgba(0,0,0,0.02)}
+.xt-n{background:var(--gn08);border-color:var(--gnb);color:var(--gn)}.xt-c{background:rgba(99,102,241,0.06);border-color:rgba(99,102,241,0.18);color:#6366f1}.xt-l{background:var(--pr08);border-color:var(--prb);color:var(--pr)}
+.xi-tags{display:flex;gap:4px;flex-wrap:wrap;margin:8px 0}.xi-dtag{font-size:10px;padding:3px 8px;border-radius:20px;background:rgba(0,0,0,0.04);color:var(--t2)}
+.sm{text-align:center;padding:14px;font-size:11px;color:var(--t3)}
+
+/* ═══ BOTTOM NAV ═══ */
+.bnav{position:absolute;bottom:0;left:0;right:0;height:68px;background:rgba(255,255,255,0.88);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);border-top:1px solid var(--b);display:flex;align-items:flex-start;padding-top:8px;z-index:200}
+.bn{flex:1;display:flex;flex-direction:column;align-items:center;gap:2px;cursor:pointer;padding:2px 0}
+.bn-i{width:22px;height:22px;display:flex;align-items:center;justify-content:center}
+.bn-l{font-size:8px;font-weight:700;color:var(--t3);letter-spacing:.2px;text-transform:uppercase}.bn.on .bn-l{color:var(--tl)}
+</style>
+</head>
+<body>
+<div class="app">
+
+<!-- HEADER -->
+<div class="hdr">
+  <div class="cap">
+    <div class="cap-s" id="cs"></div>
+    <button class="cap-b on" id="cC" onclick="sw('cal')">📅 Calendar</button>
+    <button class="cap-b" id="cL" onclick="sw('live')"><span class="live-dot"></span> Live</button>
+  </div>
+</div>
+
+<div class="body" id="body">
+
+<!-- ROW 2 -->
+<div class="row2" id="r2c"><div class="r2s">
+  <div class="fc on" onclick="sf(this,'fc')"><div class="fc-i" style="background:linear-gradient(135deg,#2563eb,#8e3a18)">GDC</div><div><div class="fc-n">GDC 2026</div><div class="fc-m">🇺🇸 SF · Mar 7–14</div></div><span class="fc-b fcb-l">LIVE</span></div>
+  <div class="fc" onclick="sf(this,'fc')"><div class="fc-i" style="background:linear-gradient(135deg,#0a7fa8,#055a7a)">GCA</div><div><div class="fc-n">GC America</div><div class="fc-m">🇺🇸 SF · Mar 17–18</div></div><span class="fc-b fcb-s">SOON</span></div>
+  <div class="fc" onclick="sf(this,'fc')"><div class="fc-i" style="background:linear-gradient(135deg,#0d9b72,#076644)">NG</div><div><div class="fc-n">Nordic Game</div><div class="fc-m">🇸🇪 May 20–22</div></div><span class="fc-b fcb-s">SOON</span></div>
+  <div class="fc" onclick="sf(this,'fc')"><div class="fc-i" style="background:linear-gradient(135deg,#7c3aed,#5b21b6)">GCA</div><div><div class="fc-n">Gamescom Asia</div><div class="fc-m">🇸🇬 Oct 16–19</div></div><span class="fc-b fcb-s">SOON</span></div>
+  <div class="fc" onclick="sf(this,'fc')"><div class="fc-i" style="background:linear-gradient(135deg,#1d4ed8,#0a7fa8)">GCE</div><div><div class="fc-n">GC Europe</div><div class="fc-m">🇫🇷 Dec 3–4</div></div><span class="fc-b fcb-s">SOON</span></div>
+  <div class="fc" onclick="sf(this,'fc')"><div class="fc-i" style="background:linear-gradient(135deg,#be123c,#9f1239)">TGS</div><div><div class="fc-n">TGS 2026</div><div class="fc-m">🇯🇵 Sep 24–27</div></div><span class="fc-b fcb-s">SOON</span></div>
+</div></div>
+<div class="row2 hidden" id="r2l"><div class="r2s">
+  <div class="fa on" onclick="sf(this,'fa')"><div><div class="fa-n">🔥 Indie Mixer</div><div class="fa-s">Monarch · 7pm · 312 going</div></div><span class="fa-b fab-now">NOW</span></div>
+  <div class="fa" onclick="sf(this,'fa')"><div><div class="fa-n">🏟 Ballpark Night</div><div class="fa-s">Oracle Park · 6pm · 521</div></div><span class="fa-b fab-hot">HOT</span></div>
+  <div class="fa" onclick="sf(this,'fa')"><div><div class="fa-n">🎯 PG Connects</div><div class="fa-s">715 Harrison · 9am</div></div><span class="fa-b fab-free">FREE</span></div>
+  <div class="fa" onclick="sf(this,'fa')"><div><div class="fa-n">☕ Nordic Breakfast</div><div class="fa-s">Reed Smith · 8am</div></div><span class="fa-b fab-free">FREE</span></div>
+  <div class="fa" onclick="sf(this,'fa')"><div><div class="fa-n">💡 Pitch Night</div><div class="fa-s">GitHub HQ · 5pm</div></div></div>
+</div></div>
+
+<!-- VIEW ROW (moved before dates) -->
+<div class="vr" id="v4c">
+  <button class="vr-t on">All Events <b>(48)</b></button>
+  <button class="vr-t">My Calendar <b>(0)</b></button>
+  <button class="vr-i">⭐ <span class="vr-n">0</span></button>
+  <button class="vr-ai" onclick="alert('AI Pick wizard coming soon')">✦ AI</button>
+</div>
+<div class="vr hidden" id="v4l">
+  <button class="vr-t on">All Events <b>(225)</b></button>
+  <button class="vr-t">My Calendar <b>(0)</b></button>
+  <button class="vr-i">👋 <span class="vr-n">0</span></button>
+  <button class="vr-i">⭐ <span class="vr-n">0</span></button>
+  <button class="vr-ai" onclick="alert('AI Pick wizard coming soon')">✦ AI</button>
+</div>
+
+<!-- DATES (simplified 2-line) -->
+<div class="row3" id="r3c">
+  <div class="dt on" onclick="sd(this)"><div class="dt-t">All</div><div class="dt-c">48</div></div>
+  <div class="dt" onclick="sd(this)"><div class="dt-t">Jan</div><div class="dt-c">2</div></div>
+  <div class="dt" onclick="sd(this)"><div class="dt-t">Feb</div><div class="dt-c">3</div></div>
+  <div class="dt" onclick="sd(this)"><div class="dt-t">Mar</div><div class="dt-c">7</div></div>
+  <div class="dt" onclick="sd(this)"><div class="dt-t">Apr</div><div class="dt-c">5</div></div>
+  <div class="dt" onclick="sd(this)"><div class="dt-t">May</div><div class="dt-c">5</div></div>
+  <div class="dt" onclick="sd(this)"><div class="dt-t">Jun</div><div class="dt-c">3</div></div>
+  <div class="dt" onclick="sd(this)"><div class="dt-t">Jul</div><div class="dt-c">3</div></div>
+  <div class="dt" onclick="sd(this)"><div class="dt-t">Aug</div><div class="dt-c">5</div></div>
+  <div class="dt" onclick="sd(this)"><div class="dt-t">Sep</div><div class="dt-c">4</div></div>
+  <div class="dt" onclick="sd(this)"><div class="dt-t">Oct</div><div class="dt-c">5</div></div>
+  <div class="dt" onclick="sd(this)"><div class="dt-t">Nov</div><div class="dt-c">4</div></div>
+  <div class="dt" onclick="sd(this)"><div class="dt-t">Dec</div><div class="dt-c">2</div></div>
+</div>
+<div class="row3 hidden" id="r3l">
+  <div class="dt on" onclick="sd(this)"><div class="dt-t">All</div><div class="dt-c">225</div></div>
+  <div class="dt" onclick="sd(this)"><div class="dt-t">Sat</div><div class="dt-c">Mar 7</div></div>
+  <div class="dt" onclick="sd(this)"><div class="dt-t">Sun</div><div class="dt-c">Mar 8</div></div>
+  <div class="dt" onclick="sd(this)"><div class="dt-t">Mon</div><div class="dt-c">Mar 9</div></div>
+  <div class="dt" onclick="sd(this)"><div class="dt-t">Tue</div><div class="dt-c">Mar 10</div></div>
+  <div class="dt" onclick="sd(this)"><div class="dt-t">Wed</div><div class="dt-c">Mar 11</div></div>
+  <div class="dt" onclick="sd(this)"><div class="dt-t">Thu</div><div class="dt-c">Mar 12</div></div>
+  <div class="dt" onclick="sd(this)"><div class="dt-t">Fri</div><div class="dt-c">Mar 13</div></div>
+  <div class="dt" onclick="sd(this)"><div class="dt-t">Sat</div><div class="dt-c">Mar 14</div></div>
+</div>
+
+<!-- TAGS (collapsible) -->
+<div class="row4" id="r4c"><div class="tg-wrap" id="tw-c">
+  <button class="tg" data-c="tl" onclick="tt(this)">B2B</button>
+  <button class="tg" data-c="pu" onclick="tt(this)">Consumer</button>
+  <button class="tg" data-c="gn" onclick="tt(this)">Developer</button>
+  <button class="tg" data-c="og" onclick="tt(this)">Asia</button>
+  <button class="tg" data-c="bl" onclick="tt(this)">Europe</button>
+  <button class="tg" data-c="def" onclick="tt(this)">Americas</button>
+  <button class="tg" data-c="def" onclick="tt(this)">Online</button>
+  <button class="tg-more" onclick="togW('tw-c',this)">More ▾</button>
+</div></div>
+<div class="row4 hidden" id="r4l"><div class="tg-wrap" id="tw-l">
+  <button class="tg" data-c="gn" onclick="tt(this)">Free</button>
+  <button class="tg" data-c="cy" onclick="tt(this)">No Pass</button>
+  <button class="tg" data-c="pu" onclick="tt(this)">Party</button>
+  <button class="tg" data-c="bl" onclick="tt(this)">Networking</button>
+  <button class="tg" data-c="pk" onclick="tt(this)">Showcase</button>
+  <button class="tg" data-c="am" onclick="tt(this)">Talk/Panel</button>
+  <button class="tg" data-c="tl" onclick="tt(this)">Hackathon</button>
+  <button class="tg" data-c="og" onclick="tt(this)">Jobs/Hiring</button>
+  <button class="tg" data-c="def" onclick="tt(this)">Indie</button>
+  <button class="tg" data-c="gn" onclick="tt(this)">Sports/Fun</button>
+  <button class="tg-more" onclick="togW('tw-l',this)">More ▾</button>
+</div></div>
+
+<!-- ROW 5 -->
+<div class="row5" id="r5c" onclick="this.classList.toggle('open')">
+  <div class="r5-h"><div class="r5-l"><span style="font-size:14px">🌍</span><div><div class="r5-lab">Territory</div><div class="r5-sub">All regions</div></div></div><span class="r5-a">▾</span></div>
+  <div class="r5-bd"><div class="r5-pills">
+    <button class="r5-p on" onclick="event.stopPropagation()">🌐 All</button>
+    <button class="r5-p" onclick="event.stopPropagation()">🌎 North America</button>
+    <button class="r5-p" onclick="event.stopPropagation()">🌍 Europe</button>
+    <button class="r5-p" onclick="event.stopPropagation()">🌏 Asia Pacific</button>
+    <button class="r5-p" onclick="event.stopPropagation()">🌐 Online</button>
+  </div></div>
+</div>
+<div class="row5 open hidden" id="r5l" onclick="this.classList.toggle('open')">
+  <div class="r5-h"><div class="r5-l"><span style="font-size:14px">📍</span><div><div class="r5-lab">Venue Map</div><div class="r5-sub">San Francisco · 5 venues</div></div></div><span class="r5-a">▾</span></div>
+  <div class="r5-bd"><div class="r5-map">
+    <svg viewBox="0 0 400 170" xmlns="http://www.w3.org/2000/svg">
+      <rect width="400" height="170" fill="#eae6de"/><rect x="20" y="8" width="360" height="155" fill="#e0ecf4" rx="4"/>
+      <line x1="20" y1="55" x2="380" y2="55" stroke="#d0dce8" stroke-width=".5"/><line x1="20" y1="105" x2="380" y2="105" stroke="#d0dce8" stroke-width=".5"/>
+      <line x1="130" y1="8" x2="130" y2="163" stroke="#d0dce8" stroke-width=".5"/><line x1="260" y1="8" x2="260" y2="163" stroke="#d0dce8" stroke-width=".5"/>
+      <rect x="140" y="42" width="48" height="32" rx="3" fill="#e8c4a8" stroke="#2563eb" stroke-width="1"/>
+      <text x="164" y="60" text-anchor="middle" font-size="7" fill="#8e3a18" font-weight="700" font-family="DM Sans">MOSCONE</text>
+      <circle cx="220" cy="95" r="5.5" fill="#2563eb" stroke="#fff" stroke-width="1.5"/><text x="220" y="110" text-anchor="middle" font-size="7" fill="#6b6660" font-family="DM Sans">Monarch</text>
+      <circle cx="290" cy="50" r="4.5" fill="#0a7fa8" stroke="#fff" stroke-width="1.5"/><text x="290" y="63" text-anchor="middle" font-size="7" fill="#6b6660" font-family="DM Sans">715 Harrison</text>
+      <circle cx="100" cy="115" r="4.5" fill="#0d9b72" stroke="#fff" stroke-width="1.5"/><text x="100" y="128" text-anchor="middle" font-size="7" fill="#6b6660" font-family="DM Sans">Reed Smith</text>
+      <circle cx="320" cy="125" r="4.5" fill="#7c3aed" stroke="#fff" stroke-width="1.5"/><text x="320" y="138" text-anchor="middle" font-size="7" fill="#6b6660" font-family="DM Sans">GitHub HQ</text>
+      <circle cx="164" cy="58" r="3.5" fill="#2563eb"/><circle cx="164" cy="58" r="7" fill="rgba(37,99,235,0.18)"/>
+      <circle cx="164" cy="58" r="28" fill="none" stroke="rgba(37,99,235,0.1)" stroke-width="1" stroke-dasharray="3,3"/>
+    </svg>
+  </div>
+  <div class="r5-leg"><div class="r5-lg"><div class="r5-d" style="background:#2563eb"></div>Going</div><div class="r5-lg"><div class="r5-d" style="background:#0a7fa8"></div>Nearby</div><div class="r5-lg"><div class="r5-d" style="background:#0d9b72"></div>Free</div><div class="r5-lg"><div class="r5-d" style="background:#7c3aed"></div>Party</div></div></div>
+</div>
+
+<!-- CALENDAR CARDS -->
+<div id="lc">
+  <div class="card" onclick="tc(this)"><div class="card-strip" style="background:linear-gradient(90deg,#d95f2b,#e8956a)"></div><div class="ct"><div class="cd"><div class="cd-m">MAR</div><div class="cd-d">17</div></div><div class="cb"><div class="cb-bg"><span class="cb-b bb-b">B2B</span><span class="cb-b bb-d">DEV</span></div><div class="cb-n">GDC 2026</div><div class="cb-v">📍 San Francisco, USA · Moscone Center</div><div class="cb-mt"><span>Mar 17–21</span><span style="color:var(--t4)">·</span><span>30,000+</span></div></div><div class="cr"><button class="cr-s" onclick="event.stopPropagation()">☆</button><button class="cr-g" onclick="event.stopPropagation()">✈</button><div class="cr-gc">842</div><span class="cr-ch">▾</span></div></div><div class="c-x"><div class="c-xi"><div class="xi-d">The world's largest professional game industry event. Five days of lectures, tutorials, and networking.</div><div class="xi-tl"><a class="xi-t xt-l" href="#">🔗 Website</a><button class="xi-t xt-c">📅 Calendar</button><button class="xi-t">↗ Share</button></div></div></div></div>
+  <div class="card is-plat" onclick="tc(this)"><div class="card-strip" style="background:linear-gradient(90deg,#0a7fa8,#4db8d4)"></div><div class="ct"><div class="cd"><div class="cd-m">MAR</div><div class="cd-d">17</div></div><div class="cb"><div class="cb-bg"><span class="cb-b bb-b">B2B</span><span class="cb-b bb-p">PLATFORM</span></div><div class="cb-n">Game Connection America</div><div class="cb-v">📍 San Francisco, USA · Co-located GDC</div><div class="cb-mt"><span>Mar 17–18</span><span style="color:var(--t4)">·</span><span>3,000+</span></div></div><div class="cr"><button class="cr-s" onclick="event.stopPropagation()">☆</button><button class="cr-g" onclick="event.stopPropagation()">✈</button><div class="cr-gc">247</div><span class="cr-ch">▾</span></div></div><div class="c-x"><div class="c-xi"><div class="xi-d">One-on-one meetings between developers and publishers. The premier B2B event at GDC week.</div><div class="xi-tl"><button class="xi-t" style="background:var(--bl08);border-color:var(--blb);color:var(--bl)">🚀 Platform</button><a class="xi-t xt-l" href="#">🔗 Website</a><button class="xi-t xt-c">📅 Calendar</button></div></div></div></div>
+  <div class="card" onclick="tc(this)"><div class="card-strip" style="background:linear-gradient(90deg,#0d9b72,#4dc89a)"></div><div class="ct"><div class="cd"><div class="cd-m">MAY</div><div class="cd-d">20</div></div><div class="cb"><div class="cb-bg"><span class="cb-b bb-b">B2B</span><span class="cb-b bb-d">DEV</span></div><div class="cb-n">Nordic Game 2026</div><div class="cb-v">📍 Malmö, Sweden · Malmö Live</div><div class="cb-mt"><span>May 20–22</span><span style="color:var(--t4)">·</span><span>3,000+</span></div></div><div class="cr"><button class="cr-s" onclick="event.stopPropagation()">☆</button><button class="cr-g" onclick="event.stopPropagation()">✈</button><div class="cr-gc">124</div><span class="cr-ch">▾</span></div></div><div class="c-x"><div class="c-xi"><div class="xi-d">Premier Nordic games industry conference. Talks, workshops, business meetings.</div><div class="xi-tl"><a class="xi-t xt-l" href="#">🔗 Website</a><button class="xi-t xt-c">📅 Calendar</button></div></div></div></div>
+  <div class="card" onclick="tc(this)"><div class="card-strip" style="background:linear-gradient(90deg,#7c3aed,#a78bfa)"></div><div class="ct"><div class="cd"><div class="cd-m">JUN</div><div class="cd-d">9</div></div><div class="cb"><div class="cb-bg"><span class="cb-b bb-c">CONSUMER</span><span class="cb-b bb-b">B2B</span></div><div class="cb-n">E3 2026</div><div class="cb-v">📍 Los Angeles, USA · Convention Center</div><div class="cb-mt"><span>Jun 9–11</span><span style="color:var(--t4)">·</span><span>60,000+</span></div></div><div class="cr"><button class="cr-s" onclick="event.stopPropagation()">☆</button><button class="cr-g" onclick="event.stopPropagation()">✈</button><div class="cr-gc">518</div><span class="cr-ch">▾</span></div></div><div class="c-x"><div class="c-xi"><div class="xi-d">The iconic Electronic Entertainment Expo. Major announcements, demos, showcases.</div><div class="xi-tl"><a class="xi-t xt-l" href="#">🔗 Website</a><button class="xi-t xt-c">📅 Calendar</button></div></div></div></div>
+  <div class="card" onclick="tc(this)"><div class="card-strip" style="background:linear-gradient(90deg,#1d4ed8,#60a5fa)"></div><div class="ct"><div class="cd"><div class="cd-m">AUG</div><div class="cd-d">26</div></div><div class="cb"><div class="cb-bg"><span class="cb-b bb-c">CONSUMER</span><span class="cb-b bb-b">B2B</span></div><div class="cb-n">Gamescom 2026</div><div class="cb-v">📍 Cologne, Germany · Koelnmesse</div><div class="cb-mt"><span>Aug 26–30</span><span style="color:var(--t4)">·</span><span>300,000+</span></div></div><div class="cr"><button class="cr-s" onclick="event.stopPropagation()">☆</button><button class="cr-g" onclick="event.stopPropagation()">✈</button><div class="cr-gc">1204</div><span class="cr-ch">▾</span></div></div><div class="c-x"><div class="c-xi"><div class="xi-d">World's largest games trade fair. Consumer expo + B2B Biz Area.</div><div class="xi-tl"><a class="xi-t xt-l" href="#">🔗 Website</a><button class="xi-t xt-c">📅 Calendar</button></div></div></div></div>
+  <div class="card" onclick="tc(this)"><div class="card-strip" style="background:linear-gradient(90deg,#be123c,#f472b6)"></div><div class="ct"><div class="cd"><div class="cd-m">SEP</div><div class="cd-d">24</div></div><div class="cb"><div class="cb-bg"><span class="cb-b bb-c">CONSUMER</span></div><div class="cb-n">Tokyo Game Show 2026</div><div class="cb-v">📍 Chiba, Japan · Makuhari Messe</div><div class="cb-mt"><span>Sep 24–27</span><span style="color:var(--t4)">·</span><span>250,000+</span></div></div><div class="cr"><button class="cr-s" onclick="event.stopPropagation()">☆</button><button class="cr-g" onclick="event.stopPropagation()">✈</button><div class="cr-gc">389</div><span class="cr-ch">▾</span></div></div><div class="c-x"><div class="c-xi"><div class="xi-d">Asia's largest game trade show. Consumer + B2B area.</div><div class="xi-tl"><a class="xi-t xt-l" href="#">🔗 Website</a><button class="xi-t xt-c">📅 Calendar</button></div></div></div></div>
+  <div class="sm">Showing 6 of 48 conferences</div>
+</div>
+
+<!-- LIVE CARDS -->
+<div id="ll" class="hidden">
+  <div class="card is-now open" onclick="tc(this)"><div class="ct"><div class="cd"><div class="cd-m">MAR</div><div class="cd-d">9</div></div><div class="cb"><div class="cb-n" style="display:flex;align-items:center;gap:5px;flex-wrap:wrap">Indie Mixer @ GDC <span style="display:inline-flex;align-items:center;gap:3px;font-size:8px;font-weight:800;color:var(--pr);background:var(--pr08);padding:2px 6px;border-radius:10px">● LIVE</span></div><div class="cb-v">📍 Monarch, 101 6th St <span class="cb-di">0.6 mi</span></div><div class="cb-tm">🕖 7pm – 10pm</div><div class="cb-tg"><span class="cb-t ct-f">Free</span><span class="cb-t ct-n">Networking</span></div></div><div class="cr"><button class="cr-s on" onclick="event.stopPropagation()">★</button><button class="cr-g on" onclick="event.stopPropagation()">✓</button><div class="cr-gc">312</div><span class="cr-ch">▾</span></div></div><div class="c-x"><div class="c-xi"><div class="xi-sp">Hosted by <span>GDC Community</span></div><div class="xi-d">The biggest indie mixer of GDC week. 400+ developers, publishers, investors. Free drinks first 100.</div><div class="xi-n">⚡ Inside · Free alcohol · First 100 guests</div><a class="xi-r" href="#">Register / RSVP →</a><div class="xi-tl"><a class="xi-t xt-n" href="#">🧭 Navigate</a><button class="xi-t xt-c">📅 Calendar</button><a class="xi-t xt-l" href="#">🔗 Website</a><button class="xi-t">↗ Share</button></div></div></div></div>
+  <div class="card" onclick="tc(this)"><div class="ct"><div class="cd"><div class="cd-m">MAR</div><div class="cd-d">9</div></div><div class="cb"><div class="cb-n">PG Connects Summit SF</div><div class="cb-v">📍 715 Harrison <span class="cb-di">0.3 mi</span></div><div class="cb-tm">🕘 9am – 5:30pm</div><div class="cb-tg"><span class="cb-t ct-n">Networking</span><span class="cb-t ct-b">B2B</span></div></div><div class="cr"><button class="cr-s" onclick="event.stopPropagation()">☆</button><button class="cr-g" onclick="event.stopPropagation()">✈</button><div class="cr-gc">178</div><span class="cr-ch">▾</span></div></div><div class="c-x"><div class="c-xi"><div class="xi-sp">Hosted by <span>PocketGamer</span></div><div class="xi-d">Mobile B2B summit. Speed networking, roundtables, keynotes.</div><div class="xi-n">⚡ Requires PGC ticket · Inside</div><a class="xi-r" href="#">Register / RSVP →</a><div class="xi-tl"><a class="xi-t xt-n" href="#">🧭 Navigate</a><button class="xi-t xt-c">📅 Calendar</button><a class="xi-t xt-l" href="#">🔗 Website</a><button class="xi-t">↗ Share</button></div></div></div></div>
+  <div class="card" onclick="tc(this)"><div class="card-strip" style="background:linear-gradient(90deg,#d95f2b,#e8956a)"></div><div class="ct"><div class="cd"><div class="cd-m">MAR</div><div class="cd-d">9</div></div><div class="cb"><div class="cb-n">Opening Night at the Ballpark</div><div class="cb-v">📍 Oracle Park <span class="cb-di">0.8 mi</span></div><div class="cb-tm">🕕 6pm – 10pm</div><div class="cb-tg"><span class="cb-t ct-s">Showcase</span></div></div><div class="cr"><button class="cr-s" onclick="event.stopPropagation()">☆</button><button class="cr-g" onclick="event.stopPropagation()">✈</button><div class="cr-gc">521</div><span class="cr-ch">▾</span></div></div><div class="c-x"><div class="c-xi"><div class="xi-sp">Hosted by <span>GDC Official</span></div><div class="xi-d">Iconic outdoor showcase. Game reveals, live entertainment under stadium lights.</div><div class="xi-n">⚡ GDC pass required · Outside · Food/drink for purchase</div><a class="xi-r" href="#">Register / RSVP →</a><div class="xi-tl"><a class="xi-t xt-n" href="#">🧭 Navigate</a><button class="xi-t xt-c">📅 Calendar</button><a class="xi-t xt-l" href="#">🔗 Website</a><button class="xi-t">↗ Share</button></div></div></div></div>
+  <div class="card" onclick="tc(this)"><div class="ct"><div class="cd"><div class="cd-m">MAR</div><div class="cd-d">10</div></div><div class="cb"><div class="cb-n">Nordic Breakfast @ GDC</div><div class="cb-v">📍 Reed Smith LLP <span class="cb-di">0.3 mi</span></div><div class="cb-tm">🕗 8am – 12pm</div><div class="cb-tg"><span class="cb-t ct-f">Free</span></div></div><div class="cr"><button class="cr-s" onclick="event.stopPropagation()">☆</button><button class="cr-g" onclick="event.stopPropagation()">✈</button><div class="cr-gc">94</div><span class="cr-ch">▾</span></div></div><div class="c-x"><div class="c-xi"><div class="xi-sp">Hosted by <span>Nordic Game</span></div><div class="xi-d">Annual morning gathering for Nordic developers. Coffee, pastries, introductions.</div><div class="xi-n">⚡ Inside · Quiet · Free food</div><a class="xi-r" href="#">Register / RSVP →</a><div class="xi-tl"><a class="xi-t xt-n" href="#">🧭 Navigate</a><button class="xi-t xt-c">📅 Calendar</button><a class="xi-t xt-l" href="#">🔗 Website</a><button class="xi-t">↗ Share</button></div></div></div></div>
+  <div class="card" onclick="tc(this)"><div class="card-strip" style="background:linear-gradient(90deg,#7c3aed,#a78bfa)"></div><div class="ct"><div class="cd"><div class="cd-m">MAR</div><div class="cd-d">10</div></div><div class="cb"><div class="cb-n">VFX Mixer @ GDC</div><div class="cb-v">📍 Monarch <span class="cb-di">0.6 mi</span></div><div class="cb-tm">🕖 7pm – 10pm</div><div class="cb-tg"><span class="cb-t ct-p">Party</span></div></div><div class="cr"><button class="cr-s" onclick="event.stopPropagation()">☆</button><button class="cr-g" onclick="event.stopPropagation()">✈</button><div class="cr-gc">67</div><span class="cr-ch">▾</span></div></div><div class="c-x"><div class="c-xi"><div class="xi-sp">Hosted by <span>VFX Summit</span></div><div class="xi-d">Annual mixer for VFX & tech artists.</div><div class="xi-n">⚡ Inside · Free alcohol · Club music</div><a class="xi-r" href="#">Register / RSVP →</a><div class="xi-tl"><a class="xi-t xt-n" href="#">🧭 Navigate</a><button class="xi-t xt-c">📅 Calendar</button><a class="xi-t xt-l" href="#">🔗 Website</a><button class="xi-t">↗ Share</button></div></div></div></div>
+  <div class="card" onclick="tc(this)"><div class="card-strip" style="background:linear-gradient(90deg,#2563eb,#60a5fa)"></div><div class="ct"><div class="cd"><div class="cd-m">MAR</div><div class="cd-d">11</div></div><div class="cb"><div class="cb-n">Developers in China & IGDA SZ</div><div class="cb-v">📍 Moscone South <span class="cb-os">on-site</span></div><div class="cb-tm">🕒 3:10pm – 4:10pm</div><div class="cb-tg"><span class="cb-t ct-n">Networking</span></div></div><div class="cr"><button class="cr-s" onclick="event.stopPropagation()">☆</button><button class="cr-g" onclick="event.stopPropagation()">✈</button><div class="cr-gc">143</div><span class="cr-ch">▾</span></div></div><div class="c-x"><div class="c-xi"><div class="xi-sp">Hosted by <span>IGDA Shenzhen</span></div><div class="xi-d">Informal gathering for devs in the Chinese game market.</div><div class="xi-n">⚡ GDC pass required · Inside · Quiet</div><a class="xi-r" href="#">Register / RSVP →</a><div class="xi-tl"><a class="xi-t xt-n" href="#">🧭 Navigate</a><button class="xi-t xt-c">📅 Calendar</button><a class="xi-t xt-l" href="#">🔗 Website</a><button class="xi-t">↗ Share</button></div></div></div></div>
+  <div class="card" onclick="tc(this)"><div class="card-strip" style="background:linear-gradient(90deg,#0d9b72,#4dc89a)"></div><div class="ct"><div class="cd"><div class="cd-m">MAR</div><div class="cd-d">12</div></div><div class="cb"><div class="cb-n">Women in Games Happy Hour</div><div class="cb-v">📍 Bar Agricole <span class="cb-di">0.5 mi</span></div><div class="cb-tm">🕔 5pm – 8pm</div><div class="cb-tg"><span class="cb-t ct-f">Free</span><span class="cb-t ct-n">Networking</span></div></div><div class="cr"><button class="cr-s" onclick="event.stopPropagation()">☆</button><button class="cr-g" onclick="event.stopPropagation()">✈</button><div class="cr-gc">289</div><span class="cr-ch">▾</span></div></div><div class="c-x"><div class="c-xi"><div class="xi-sp">Hosted by <span>WIGI</span></div><div class="xi-d">Annual celebration for women and allies. Free entry, open bar.</div><div class="xi-n">⚡ Inside · Free alcohol</div><a class="xi-r" href="#">Register / RSVP →</a><div class="xi-tl"><a class="xi-t xt-n" href="#">🧭 Navigate</a><button class="xi-t xt-c">📅 Calendar</button><a class="xi-t xt-l" href="#">🔗 Website</a><button class="xi-t">↗ Share</button></div></div></div></div>
+  <div class="card" onclick="tc(this)"><div class="card-strip" style="background:linear-gradient(90deg,#f59e0b,#fbbf24)"></div><div class="ct"><div class="cd"><div class="cd-m">MAR</div><div class="cd-d">13</div></div><div class="cb"><div class="cb-n">Indie Fund Pitch Night</div><div class="cb-v">📍 GitHub HQ <span class="cb-di">0.4 mi</span></div><div class="cb-tm">🕕 5pm – 9pm</div><div class="cb-tg"><span class="cb-t ct-t">Talk / Panel</span></div></div><div class="cr"><button class="cr-s" onclick="event.stopPropagation()">☆</button><button class="cr-g" onclick="event.stopPropagation()">✈</button><div class="cr-gc">201</div><span class="cr-ch">▾</span></div></div><div class="c-x"><div class="c-xi"><div class="xi-sp">Hosted by <span>Indie Fund</span></div><div class="xi-d">Eight indie studios pitch to investors. Open to attend.</div><div class="xi-n">⚡ Inside · Food for purchase</div><a class="xi-r" href="#">Register / RSVP →</a><div class="xi-tl"><a class="xi-t xt-n" href="#">🧭 Navigate</a><button class="xi-t xt-c">📅 Calendar</button><a class="xi-t xt-l" href="#">🔗 Website</a><button class="xi-t">↗ Share</button></div></div></div></div>
+  <div class="sm">Showing 8 of 225 sessions</div>
+</div>
+
+</div>
+
+<!-- BOTTOM NAV -->
+<div class="bnav">
+  <div class="bn"><div class="bn-i"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--t3)" stroke-width="2"><path d="M3 12L12 4l9 8v8h-6v-5H9v5H3z"/></svg></div><span class="bn-l">Home</span></div>
+  <div class="bn"><div class="bn-i"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--t3)" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg></div><span class="bn-l">People</span></div>
+  <div class="bn"><div class="bn-i"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--t3)" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/></svg></div><span class="bn-l">Projects</span></div>
+  <div class="bn on"><div class="bn-i"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--tl)" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="3" y1="9" x2="21" y2="9"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="16" y1="2" x2="16" y2="6"/></svg></div><span class="bn-l">Events</span></div>
+  <div class="bn"><div class="bn-i"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--t3)" stroke-width="2"><circle cx="12" cy="7" r="4"/><path d="M20 21a8 8 0 1 0-16 0"/></svg></div><span class="bn-l">Profile</span></div>
+</div>
+
+</div>
+
+<script>
+function sw(m){
+  var s=document.getElementById('cs'),bc=document.getElementById('cC'),bl=document.getElementById('cL');
+  if(m==='cal'){s.classList.remove('r');bc.classList.add('on');bl.classList.remove('on')}
+  else{s.classList.add('r');bl.classList.add('on');bc.classList.remove('on')}
+  [['r2c','r2l'],['r3c','r3l'],['r4c','r4l'],['v4c','v4l'],['r5c','r5l'],['lc','ll']].forEach(function(p){
+    document.getElementById(p[0]).classList.toggle('hidden',m!=='cal');
+    document.getElementById(p[1]).classList.toggle('hidden',m!=='live');
+  });
+  document.getElementById('body').scrollTop=0;
+}
+function sf(el,cls){el.closest('.r2s').querySelectorAll('.'+cls).forEach(function(c){c.classList.remove('on')});el.classList.add('on')}
+function sd(el){el.closest('.row3').querySelectorAll('.dt').forEach(function(d){d.classList.remove('on')});el.classList.add('on')}
+function tt(el){el.classList.toggle('on')}
+function tc(el){var w=el.classList.contains('open');var p=el.parentElement;p.querySelectorAll('.card.open').forEach(function(c){c.classList.remove('open')});if(!w)el.classList.add('open')}
+function togW(id,btn){var w=document.getElementById(id);w.classList.toggle('expanded');btn.textContent=w.classList.contains('expanded')?'Less ▴':'More ▾'}
+</script>
+</body>
+</html>
