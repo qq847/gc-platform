@@ -389,6 +389,9 @@ body{background:#f3f2ef}
 .chip{padding:7px 18px;border-radius:20px;border:1.5px solid var(--border);background:#fff;font-family:inherit;font-size:13px;font-weight:500;color:var(--muted);cursor:pointer;transition:.2s}
 .chip:hover{border-color:var(--orange);color:var(--orange)}
 .chip.active{background:var(--orange);color:#fff;border-color:var(--orange)}
+.home-chip{padding:7px 16px;border-radius:20px;border:1.5px solid var(--border);background:#fff;font-family:inherit;font-size:12px;font-weight:600;color:var(--text2);cursor:pointer;transition:.2s;white-space:nowrap}
+.home-chip:hover{border-color:var(--orange);color:var(--orange)}
+.home-chip.active{background:var(--orange);color:#fff;border-color:var(--orange)}
 .feed-col{display:flex;flex-direction:column;gap:16px}
 
 /* Feed cards */
@@ -1159,6 +1162,14 @@ async function gcSignOut() {
   <div class="feed-layout">
     <!-- MAIN FEED -->
     <div>
+
+      <!-- Feed Chip Filters -->
+      <div id="home-chips" style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px">
+        <button class="home-chip active" data-feed="all" onclick="homeFeedFilter(this)">All</button>
+        <button class="home-chip" data-feed="events" onclick="homeFeedFilter(this)">📅 Events</button>
+        <button class="home-chip" data-feed="projects" onclick="homeFeedFilter(this)">🎮 Projects</button>
+        <button class="home-chip" data-feed="news" onclick="homeFeedFilter(this)">📰 News</button>
+      </div>
 
       <div class="feed-col" id="feed">
 
@@ -2414,8 +2425,66 @@ async function loadHomeUpcoming() {
   } catch(e) { console.warn('Upcoming error', e); }
 }
 
+let _feedNewsItems = []; // cached news items from RSS
+let _feedNewsIdx = 0;    // pointer into news array
+let _homeFeedFilter = 'all';
+
+async function _ensureNewsCache() {
+  if (_feedNewsItems.length > 0) return;
+  const sources = [
+    'https://www.gamesindustry.biz/feed/news',
+    'https://www.gamedeveloper.com/rss.xml',
+    'https://kotaku.com/rss',
+    'https://www.rockpapershotgun.com/feed',
+    'https://www.videogameschronicle.com/feed/'
+  ];
+  const srcMeta = [
+    {name:'GI.biz', color:'#e53935'},
+    {name:'Game Developer', color:'#1565c0'},
+    {name:'Kotaku', color:'#d84315'},
+    {name:'Rock Paper Shotgun', color:'#2e7d32'},
+    {name:'VGC', color:'#6a1b9a'}
+  ];
+  const results = await Promise.all(sources.map(async (url, i) => {
+    try {
+      const r = await fetch('https://api.rss2json.com/v1/api.json?rss_url=' + encodeURIComponent(url));
+      const d = await r.json();
+      if (d.status === 'ok' && d.items) {
+        return d.items.map(item => ({
+          _feedType: 'news',
+          srcName: srcMeta[i].name,
+          srcColor: srcMeta[i].color,
+          title: item.title || '',
+          link: item.link || item.guid || '#',
+          date: item.pubDate ? item.pubDate.slice(0,10) : '',
+          desc: (item.description || item.content || '').replace(/<[^>]*>/g,'').slice(0,160),
+          img: item.thumbnail || item.enclosure?.link || null
+        }));
+      }
+    } catch(e) {}
+    return [];
+  }));
+  _feedNewsItems = results.flat().sort((a,b) => b.date.localeCompare(a.date));
+}
+
+function homeFeedFilter(btn) {
+  document.querySelectorAll('.home-chip').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  _homeFeedFilter = btn.dataset.feed;
+  const container = document.getElementById('home-feed-dynamic');
+  if (!container) return;
+  // Show/hide cards based on filter
+  container.querySelectorAll('[data-feed-type]').forEach(card => {
+    const t = card.dataset.feedType;
+    card.style.display = (_homeFeedFilter === 'all' || _homeFeedFilter === t) ? '' : 'none';
+  });
+  // Also hide/show the live card
+  const liveCard = document.querySelector('.card-live-card');
+  if (liveCard) liveCard.style.display = (_homeFeedFilter === 'all' || _homeFeedFilter === 'events') ? '' : 'none';
+}
+
 async function loadHomeFeedBatch(reset) {
-  const BATCH = 6; // 3 events + 3 projects interleaved
+  const BATCH = 4;
   const today = new Date().toISOString().split('T')[0];
   try {
     const [evRes, prRes] = await Promise.all([
@@ -2430,28 +2499,59 @@ async function loadHomeFeedBatch(reset) {
     _feedEvtOffset += (evts||[]).length;
     _feedProjOffset += (projs||[]).length;
 
+    // Ensure news cache is ready
+    await _ensureNewsCache();
+
+    // Interleave: proj, evt, news, proj, evt, news ...
     const cards = [];
     const maxLen = Math.max((evts||[]).length, (projs||[]).length);
     for (let i = 0; i < maxLen; i++) {
       if (projs && projs[i]) cards.push(renderProjCard(projs[i], i));
       if (evts && evts[i]) cards.push(renderEvtCard(evts[i], i));
+      // Insert a news card every 2 items
+      if (_feedNewsItems.length > 0) {
+        const newsItem = _feedNewsItems[_feedNewsIdx % _feedNewsItems.length];
+        _feedNewsIdx++;
+        cards.push(renderNewsCard(newsItem));
+      }
     }
 
     const container = document.getElementById('home-feed-dynamic');
     if (!container) return;
-    if (reset) container.innerHTML = '';
+    if (reset) { container.innerHTML = ''; _feedNewsIdx = 0; }
     if (!cards.length && reset) {
-      container.innerHTML = '<div style="text-align:center;padding:40px;color:#aaa;font-size:13px">🌍 No upcoming events found</div>';
+      container.innerHTML = '<div style="text-align:center;padding:40px;color:#aaa;font-size:13px">🌍 No content found</div>';
     } else {
       container.insertAdjacentHTML('beforeend', cards.join(''));
+      // Apply current filter
+      if (_homeFeedFilter !== 'all') {
+        container.querySelectorAll('[data-feed-type]').forEach(card => {
+          card.style.display = (card.dataset.feedType === _homeFeedFilter) ? '' : 'none';
+        });
+      }
     }
-    // Show/hide Load More
     const moreBtn = document.getElementById('home-feed-more');
     if (moreBtn) moreBtn.style.display = (_feedEvtOffset < _feedEvtTotal || _feedProjOffset < _feedProjTotal) ? 'block' : 'none';
   } catch(e) { console.warn('Feed error', e); }
 }
 
 function loadHomeFeedMore() { loadHomeFeedBatch(false); }
+
+function renderNewsCard(item) {
+  const imgHtml = item.img ? `<img src="${item.img}" style="width:100%;height:140px;object-fit:cover;border-radius:10px 10px 0 0;display:block" onerror="this.style.display='none'">` : '';
+  return `<a href="${item.link}" target="_blank" rel="noopener" class="card" data-type="news" data-feed-type="news" style="text-decoration:none;display:block;cursor:pointer" onmouseover="this.style.boxShadow='0 4px 20px rgba(0,0,0,0.10)'" onmouseout="this.style.boxShadow=''">
+    ${imgHtml}
+    <div style="padding:14px">
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">
+        <span style="font-size:10px;font-weight:800;padding:2px 9px;border-radius:10px;background:${item.srcColor}18;color:${item.srcColor}">${item.srcName}</span>
+        <span style="font-size:10px;color:#9ca3af">${item.date}</span>
+        <span style="margin-left:auto;font-size:11px;color:#9ca3af">↗</span>
+      </div>
+      <div style="font-size:14px;font-weight:800;color:var(--text1);line-height:1.45;margin-bottom:6px">${item.title}</div>
+      <div style="font-size:12px;color:var(--text2);line-height:1.6;overflow:hidden;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical">${item.desc}</div>
+    </div>
+  </a>`;
+}
 
 function renderEvtCard(ev, idx) {
   const grad = _GRAD[idx % _GRAD.length];
@@ -2462,7 +2562,7 @@ function renderEvtCard(ev, idx) {
   const att = ev.attendee_count ? '👥 '+Number(ev.attendee_count).toLocaleString()+' Attendees' : (ev.exhibitor_count ? '🏪 '+ev.exhibitor_count+' Exhibitors' : '');
   const typeLabel = {conference:'CONFERENCE',tradeshow:'TRADE SHOW',awards:'AWARDS',esports:'ESPORTS',festival:'FESTIVAL',meetup:'MEETUP',online:'ONLINE'}[ev.type] || (ev.type||'EVENT').toUpperCase();
   const statusLabel = ev.status === 'live' ? '<span class="evt-status" style="background:rgba(229,57,53,0.15);color:#e53935">LIVE</span>' : '<span class="evt-status s-upcoming">Upcoming</span>';
-  return `<div class="card" data-type="events">
+  return `<div class="card" data-type="events" data-feed-type="events">
     <span class="data-badge" style="background:rgba(10,102,194,0.1);color:var(--orange);font-size:9px;font-weight:700;padding:2px 7px;border-radius:4px">${typeLabel}</span>
     <div class="card-event-cover" style="${grad}">
       ${statusLabel}
@@ -2496,7 +2596,7 @@ function renderProjCard(p, idx) {
   const studio = p.tagline || '';
   const lookingFor = p.looking_for ? '<div style="font-size:11px;color:var(--orange);margin-top:4px">🤝 '+p.looking_for+'</div>' : '';
   const plats = (p.platforms||[]).slice(0,3).map(pl=>`<span style="font-size:9px;font-weight:700;padding:1px 7px;border-radius:6px;background:rgba(28,26,23,0.06);color:var(--text2)">${pl}</span>`).join('');
-  return `<div class="card" data-type="games">
+  return `<div class="card" data-type="games" data-feed-type="projects">
     <span class="data-badge" style="background:rgba(13,155,114,0.1);color:#0d9b72;font-size:9px;font-weight:700;padding:2px 7px;border-radius:4px">🎮 Project DB</span>
     <div style="height:80px;${grad};position:relative;display:flex;align-items:flex-end;padding:10px 14px">
       <span style="font-size:10px;font-weight:800;padding:3px 10px;border-radius:20px;${statusStyle}">${statusLabel}</span>
