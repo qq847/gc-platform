@@ -1,0 +1,1123 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>EventHub Admin — Game Connection</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%;font-family:"DM Sans","PingFang SC",sans-serif;color:#111;overflow:hidden;line-height:1.5;background:#f3f2ef}
+
+:root{
+  --blue:#0A66C2;--blue-dim:rgba(10,102,194,0.08);--blue-border:rgba(10,102,194,0.2);
+  --green:#0d9b72;--green-dim:rgba(13,155,114,0.08);
+  --orange:#f97316;--orange-dim:rgba(249,115,22,0.08);
+  --red:#e53935;--red-dim:rgba(229,57,53,0.08);
+  --purple:#7c3aed;--purple-dim:rgba(124,58,237,0.08);
+  --teal:#0a7fa8;
+  --card:#fff;--border:#e0dfdc;--bg:#f3f2ef;
+  --text1:#111111;--text2:#374151;--text3:#6b7280;
+  --nav-h:52px;--sidebar-w:220px;
+  --s1:0 1px 3px rgba(0,0,0,0.07);--s2:0 2px 8px rgba(0,0,0,0.1);
+}
+
+/* ── TOP NAV ── */
+.topnav{
+  position:fixed;top:0;left:0;right:0;z-index:300;height:var(--nav-h);
+  background:#1a1a2e;display:flex;align-items:center;padding:0 20px;gap:12px;
+}
+.nav-logo{font-size:14px;font-weight:900;color:#fff;letter-spacing:-.3px}
+.nav-logo span{color:#0A66C2}
+.nav-badge{
+  background:rgba(229,57,53,0.2);border:1px solid rgba(229,57,53,0.4);
+  border-radius:5px;padding:2px 8px;font-size:9px;font-weight:800;color:#ef5350;letter-spacing:.5px;
+}
+.nav-gap{flex:1}
+.nav-user{display:flex;align-items:center;gap:8px;color:rgba(255,255,255,0.7);font-size:12px}
+.nav-avatar{width:28px;height:28px;border-radius:50%;background:linear-gradient(135deg,#0A66C2,#0a7fa8);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:800;color:#fff}
+.nav-back{
+  display:flex;align-items:center;gap:5px;padding:5px 12px;border-radius:6px;
+  background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.15);
+  color:rgba(255,255,255,0.7);font-size:11px;font-weight:600;cursor:pointer;
+  text-decoration:none;transition:all .15s;
+}
+.nav-back:hover{background:rgba(255,255,255,0.15);color:#fff}
+
+/* ── LAYOUT ── */
+.layout{
+  position:fixed;top:var(--nav-h);left:0;right:0;bottom:0;
+  display:grid;grid-template-columns:var(--sidebar-w) 1fr;
+}
+
+/* ── SIDEBAR ── */
+.sidebar{
+  background:#1a1a2e;border-right:1px solid rgba(255,255,255,0.08);
+  overflow-y:auto;display:flex;flex-direction:column;
+  scrollbar-width:thin;scrollbar-color:rgba(255,255,255,0.1) transparent;
+}
+.sidebar-section{padding:16px 12px 4px}
+.sidebar-label{
+  font-size:9px;font-weight:800;letter-spacing:1.5px;text-transform:uppercase;
+  color:rgba(255,255,255,0.3);padding:0 8px;margin-bottom:4px;
+}
+.sidebar-item{
+  display:flex;align-items:center;gap:8px;padding:8px 10px;border-radius:7px;
+  cursor:pointer;font-size:12px;font-weight:600;color:rgba(255,255,255,0.6);
+  transition:all .15s;margin-bottom:1px;
+}
+.sidebar-item:hover{background:rgba(255,255,255,0.06);color:rgba(255,255,255,0.9)}
+.sidebar-item.active{background:rgba(10,102,194,0.2);color:#fff;border-left:2px solid #0A66C2}
+.sidebar-item .icon{font-size:14px;flex-shrink:0}
+.sidebar-cnt{
+  margin-left:auto;background:rgba(255,255,255,0.1);
+  border-radius:10px;padding:1px 6px;font-size:9px;font-weight:700;color:rgba(255,255,255,0.5);
+}
+.sidebar-item.active .sidebar-cnt{background:rgba(10,102,194,0.3);color:#7eb8f7}
+
+/* ── MAIN ── */
+.main{overflow-y:auto;background:#f3f2ef;scrollbar-width:thin}
+.panel{display:none;padding:24px}
+.panel.active{display:block}
+
+/* ── PAGE HEADER ── */
+.page-hdr{display:flex;align-items:center;justify-content:space-between;margin-bottom:20px}
+.page-title{font-size:20px;font-weight:900;color:var(--text1)}
+.page-sub{font-size:12px;color:var(--text3);margin-top:2px}
+.btn{
+  padding:7px 16px;border-radius:7px;border:none;cursor:pointer;
+  font-size:12px;font-weight:700;font-family:inherit;transition:all .15s;
+}
+.btn-primary{background:var(--blue);color:#fff}
+.btn-primary:hover{opacity:.88}
+.btn-ghost{background:transparent;border:1px solid var(--border);color:var(--text2)}
+.btn-ghost:hover{border-color:var(--text3);color:var(--text1)}
+.btn-danger{background:var(--red-dim);border:1px solid rgba(229,57,53,0.25);color:var(--red)}
+.btn-danger:hover{background:rgba(229,57,53,0.15)}
+
+/* ── STAT CARDS ── */
+.stat-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:20px}
+.stat-card{
+  background:var(--card);border:1px solid var(--border);border-radius:10px;
+  padding:14px 16px;box-shadow:var(--s1);
+}
+.stat-card-val{font-size:24px;font-weight:900;color:var(--text1);line-height:1.1}
+.stat-card-label{font-size:10px;font-weight:700;color:var(--text3);letter-spacing:.5px;text-transform:uppercase;margin-top:4px}
+.stat-card-delta{font-size:10px;font-weight:600;margin-top:3px}
+.delta-up{color:var(--green)}
+.delta-down{color:var(--red)}
+
+/* ── SECTION CARD ── */
+.section-card{
+  background:var(--card);border:1px solid var(--border);border-radius:10px;
+  box-shadow:var(--s1);margin-bottom:16px;overflow:hidden;
+}
+.section-card-hdr{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:14px 16px;border-bottom:1px solid var(--border);
+}
+.section-card-title{font-size:13px;font-weight:800;color:var(--text1)}
+.section-card-sub{font-size:11px;color:var(--text3);margin-top:1px}
+
+/* ── FEATURED EVENTS GRID ── */
+.featured-grid{
+  display:grid;grid-template-columns:repeat(3,1fr);gap:10px;padding:14px 16px;
+}
+.feat-card{
+  border:1.5px solid var(--border);border-radius:9px;padding:10px 12px;
+  background:#fff;cursor:pointer;transition:all .15s;position:relative;
+}
+.feat-card:hover{border-color:rgba(10,102,194,0.3);box-shadow:var(--s2)}
+.feat-card.pinned{border-color:var(--blue);background:var(--blue-dim)}
+.feat-card-icon{
+  width:32px;height:32px;border-radius:7px;
+  display:flex;align-items:center;justify-content:center;
+  font-size:10px;font-weight:900;color:#fff;margin-bottom:7px;
+}
+.feat-card-name{font-size:12px;font-weight:700;color:var(--text1);margin-bottom:2px}
+.feat-card-meta{font-size:10px;color:var(--text3)}
+.feat-card-actions{display:flex;gap:4px;margin-top:8px}
+.feat-btn{
+  padding:3px 8px;border-radius:5px;border:1px solid var(--border);
+  background:transparent;font-size:10px;font-weight:600;color:var(--text2);
+  cursor:pointer;font-family:inherit;transition:all .12s;
+}
+.feat-btn:hover{border-color:var(--text3);color:var(--text1)}
+.feat-btn.active{background:var(--blue);border-color:var(--blue);color:#fff}
+.feat-pin-badge{
+  position:absolute;top:8px;right:8px;
+  background:var(--blue);color:#fff;border-radius:4px;
+  font-size:8px;font-weight:800;padding:1px 5px;letter-spacing:.3px;
+}
+.drag-handle{
+  position:absolute;top:8px;left:8px;color:var(--text3);font-size:12px;cursor:grab;
+}
+
+/* ── TABLE ── */
+.admin-table{width:100%;border-collapse:collapse}
+.admin-table th{
+  font-size:9px;font-weight:800;color:var(--text3);letter-spacing:1px;text-transform:uppercase;
+  padding:8px 12px;border-bottom:1px solid var(--border);text-align:left;background:#f9f9f8;
+}
+.admin-table td{
+  padding:10px 12px;border-bottom:1px solid #f0efec;font-size:12px;color:var(--text2);
+  vertical-align:middle;
+}
+.admin-table tr:last-child td{border-bottom:none}
+.admin-table tr:hover td{background:#fafaf9}
+.status-badge{
+  display:inline-flex;align-items:center;gap:3px;
+  padding:2px 8px;border-radius:10px;font-size:9px;font-weight:800;letter-spacing:.3px;
+}
+.s-published{background:rgba(13,155,114,0.1);color:var(--green)}
+.s-live{background:rgba(10,102,194,0.1);color:var(--blue)}
+.s-ended{background:rgba(0,0,0,0.06);color:var(--text3)}
+.s-draft{background:rgba(249,115,22,0.1);color:var(--orange)}
+
+/* ── REGION BARS ── */
+.region-bar-row{margin-bottom:10px}
+.region-bar-hdr{display:flex;justify-content:space-between;font-size:11px;margin-bottom:4px}
+.region-bar-name{color:var(--text2);font-weight:600}
+.region-bar-val{color:var(--text1);font-weight:800}
+.region-track{height:6px;background:rgba(0,0,0,0.06);border-radius:6px;overflow:hidden}
+.region-fill{height:100%;border-radius:6px;transition:width .5s ease}
+
+/* ── HEALTH SCORE ── */
+.health-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;padding:14px 16px}
+.health-item{text-align:center;padding:12px 8px;border-radius:8px;background:#f9f9f8;border:1px solid var(--border)}
+.health-score{font-size:22px;font-weight:900}
+.health-label{font-size:9px;font-weight:700;color:var(--text3);letter-spacing:.5px;text-transform:uppercase;margin-top:3px}
+.score-good{color:var(--green)}
+.score-warn{color:var(--orange)}
+.score-bad{color:var(--red)}
+
+/* ── TABS ── */
+.tab-bar{display:flex;gap:0;border-bottom:1px solid var(--border);padding:0 16px}
+.tab{
+  padding:10px 14px;font-size:12px;font-weight:600;color:var(--text3);
+  cursor:pointer;border-bottom:2px solid transparent;transition:all .15s;
+}
+.tab:hover{color:var(--text1)}
+.tab.active{color:var(--blue);border-bottom-color:var(--blue)}
+
+/* ── SEARCH BAR ── */
+.search-bar{
+  display:flex;align-items:center;gap:8px;padding:8px 12px;
+  background:var(--card);border:1px solid var(--border);border-radius:8px;
+  box-shadow:var(--s1);
+}
+.search-bar input{
+  flex:1;background:none;border:none;outline:none;font-size:12px;
+  font-family:inherit;color:var(--text1);
+}
+.search-bar input::placeholder{color:var(--text3)}
+
+/* ── FILTERS ── */
+.filter-row{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:12px}
+.filter-select{
+  padding:5px 10px;border-radius:6px;border:1px solid var(--border);
+  background:var(--card);font-size:11px;font-family:inherit;color:var(--text2);
+  cursor:pointer;outline:none;
+}
+
+/* ── LOADING ── */
+.loading-state{text-align:center;padding:40px;color:var(--text3);font-size:13px}
+
+/* ── TOAST ── */
+#admin-toast{
+  position:fixed;bottom:20px;right:20px;z-index:9999;
+  background:#1a1a2e;color:#fff;padding:10px 16px;border-radius:8px;
+  font-size:12px;font-weight:600;box-shadow:0 4px 16px rgba(0,0,0,0.2);
+  transform:translateY(60px);opacity:0;transition:all .25s;pointer-events:none;
+}
+#admin-toast.show{transform:translateY(0);opacity:1}
+
+/* ── MODAL ── */
+.modal-overlay{
+  position:fixed;inset:0;z-index:500;background:rgba(0,0,0,0.4);
+  display:none;align-items:center;justify-content:center;
+}
+.modal-overlay.open{display:flex}
+.modal{
+  background:var(--card);border-radius:12px;padding:20px;width:480px;
+  max-height:80vh;overflow-y:auto;box-shadow:0 16px 48px rgba(0,0,0,0.2);
+}
+.modal-title{font-size:15px;font-weight:800;color:var(--text1);margin-bottom:14px}
+.form-row{margin-bottom:12px}
+.form-label{font-size:10px;font-weight:700;color:var(--text3);letter-spacing:.5px;text-transform:uppercase;margin-bottom:4px}
+.form-input{
+  width:100%;padding:8px 10px;border:1px solid var(--border);border-radius:7px;
+  font-size:12px;font-family:inherit;color:var(--text1);outline:none;
+  transition:border-color .15s;
+}
+.form-input:focus{border-color:var(--blue)}
+.form-select{
+  width:100%;padding:8px 10px;border:1px solid var(--border);border-radius:7px;
+  font-size:12px;font-family:inherit;color:var(--text1);outline:none;background:var(--card);
+}
+.modal-actions{display:flex;gap:8px;justify-content:flex-end;margin-top:16px}
+</style>
+</head>
+<body>
+
+<!-- TOP NAV -->
+<div class="topnav">
+  <div class="nav-logo">GAME<span>CONNECTION</span></div>
+  <div class="nav-badge">ADMIN</div>
+  <div class="nav-gap"></div>
+  <a href="EventHub_v2_PC.html" class="nav-back">← Back to EventHub</a>
+  <div class="nav-user">
+    <div class="nav-avatar">A</div>
+    <span>Admin</span>
+  </div>
+</div>
+
+<!-- LAYOUT -->
+<div class="layout">
+
+  <!-- SIDEBAR -->
+  <div class="sidebar">
+    <div class="sidebar-section">
+      <div class="sidebar-label">Overview</div>
+      <div class="sidebar-item active" onclick="showPanel('dashboard')">
+        <span class="icon">📊</span> Dashboard
+      </div>
+    </div>
+    <div class="sidebar-section">
+      <div class="sidebar-label">Content</div>
+      <div class="sidebar-item" onclick="showPanel('featured')">
+        <span class="icon">⭐</span> Featured Events
+        <span class="sidebar-cnt" id="cnt-featured">14</span>
+      </div>
+      <div class="sidebar-item" onclick="showPanel('events')">
+        <span class="icon">📅</span> All Events
+        <span class="sidebar-cnt" id="cnt-events">—</span>
+      </div>
+      <div class="sidebar-item" onclick="showPanel('status')">
+        <span class="icon">🔄</span> Status Manager
+      </div>
+    </div>
+    <div class="sidebar-section">
+      <div class="sidebar-label">Analytics</div>
+      <div class="sidebar-item" onclick="showPanel('stats')">
+        <span class="icon">📈</span> Statistics
+      </div>
+      <div class="sidebar-item" onclick="showPanel('regions')">
+        <span class="icon">🌍</span> Regions
+      </div>
+    </div>
+    <div class="sidebar-section">
+      <div class="sidebar-label">System</div>
+      <div class="sidebar-item" onclick="showPanel('health')">
+        <span class="icon">🩺</span> Data Health
+      </div>
+    </div>
+  </div>
+
+  <!-- MAIN -->
+  <div class="main">
+
+    <!-- DASHBOARD PANEL -->
+    <div class="panel active" id="panel-dashboard">
+      <div class="page-hdr">
+        <div>
+          <div class="page-title">Dashboard</div>
+          <div class="page-sub">EventHub Admin — Game Connection Platform</div>
+        </div>
+        <div style="display:flex;gap:8px">
+          <button class="btn btn-ghost" onclick="adminRefreshAll()">↻ Refresh</button>
+          <a href="EventHub_v2_PC.html" target="_blank" class="btn btn-primary" style="text-decoration:none">↗ View Live Site</a>
+        </div>
+      </div>
+
+      <!-- Stat cards -->
+      <div class="stat-grid">
+        <div class="stat-card">
+          <div class="stat-card-val" id="dash-total" style="color:var(--blue)">—</div>
+          <div class="stat-card-label">Total Events</div>
+          <div class="stat-card-delta delta-up" id="dash-total-delta"></div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-card-val" id="dash-upcoming" style="color:var(--green)">—</div>
+          <div class="stat-card-label">Upcoming</div>
+          <div class="stat-card-delta" id="dash-upcoming-delta"></div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-card-val" id="dash-countries" style="color:var(--teal)">—</div>
+          <div class="stat-card-label">Countries</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-card-val" id="dash-featured" style="color:var(--purple)">14</div>
+          <div class="stat-card-label">Featured Events</div>
+        </div>
+      </div>
+
+      <!-- Quick actions -->
+      <div class="section-card" style="margin-bottom:16px">
+        <div class="section-card-hdr">
+          <div>
+            <div class="section-card-title">Quick Actions</div>
+          </div>
+        </div>
+        <div style="display:flex;gap:10px;padding:14px 16px;flex-wrap:wrap">
+          <button class="btn btn-primary" onclick="showPanel('featured')">⭐ Manage Featured Events</button>
+          <button class="btn btn-ghost" onclick="showPanel('status')">🔄 Update Event Status</button>
+          <button class="btn btn-ghost" onclick="showPanel('health')">🩺 Check Data Health</button>
+          <button class="btn btn-ghost" onclick="showPanel('stats')">📈 View Statistics</button>
+        </div>
+      </div>
+
+      <!-- Recent events -->
+      <div class="section-card">
+        <div class="section-card-hdr">
+          <div>
+            <div class="section-card-title">Recent / Upcoming Events</div>
+            <div class="section-card-sub">Next 10 events by date</div>
+          </div>
+          <button class="btn btn-ghost" style="font-size:11px" onclick="showPanel('events')">View All →</button>
+        </div>
+        <div id="dash-recent-events">
+          <div class="loading-state">Loading...</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- FEATURED EVENTS PANEL -->
+    <div class="panel" id="panel-featured">
+      <div class="page-hdr">
+        <div>
+          <div class="page-title">⭐ Featured Events</div>
+          <div class="page-sub">Manage the featured events shown in the top bar of EventHub Calendar</div>
+        </div>
+        <button class="btn btn-primary" onclick="openAddFeaturedModal()">+ Add Event</button>
+      </div>
+
+      <div class="section-card">
+        <div class="section-card-hdr">
+          <div>
+            <div class="section-card-title">Current Featured Events</div>
+            <div class="section-card-sub">14 events · Drag to reorder (coming soon)</div>
+          </div>
+          <button class="btn btn-ghost" style="font-size:11px" onclick="adminSaveFeatured()">💾 Save Order</button>
+        </div>
+        <div class="featured-grid" id="featured-grid">
+          <!-- Populated by JS -->
+        </div>
+      </div>
+
+      <div class="section-card">
+        <div class="section-card-hdr">
+          <div>
+            <div class="section-card-title">Add from Database</div>
+            <div class="section-card-sub">Search events to add to featured list</div>
+          </div>
+        </div>
+        <div style="padding:14px 16px">
+          <div class="filter-row">
+            <div class="search-bar" style="flex:1;max-width:360px">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#999" stroke-width="2.2"><circle cx="11" cy="11" r="7"/><line x1="16.5" y1="16.5" x2="22" y2="22"/></svg>
+              <input type="text" id="feat-search-input" placeholder="Search events to add…" oninput="featSearchEvents(this.value)">
+            </div>
+            <select class="filter-select" id="feat-search-year" onchange="featSearchEvents(document.getElementById('feat-search-input').value)">
+              <option value="2026">2026</option>
+              <option value="2027">2027</option>
+            </select>
+          </div>
+          <div id="feat-search-results" style="display:flex;flex-direction:column;gap:6px;max-height:280px;overflow-y:auto">
+            <div style="text-align:center;padding:20px;color:var(--text3);font-size:12px">Search for events above to add them to featured</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ALL EVENTS PANEL -->
+    <div class="panel" id="panel-events">
+      <div class="page-hdr">
+        <div>
+          <div class="page-title">📅 All Events</div>
+          <div class="page-sub">Browse and manage all events in the database</div>
+        </div>
+      </div>
+
+      <div class="section-card">
+        <div class="section-card-hdr">
+          <div class="section-card-title">Event Database</div>
+        </div>
+        <div style="padding:12px 16px">
+          <div class="filter-row">
+            <div class="search-bar" style="flex:1;max-width:300px">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#999" stroke-width="2.2"><circle cx="11" cy="11" r="7"/><line x1="16.5" y1="16.5" x2="22" y2="22"/></svg>
+              <input type="text" id="events-search" placeholder="Search events…" oninput="eventsSearch(this.value)">
+            </div>
+            <select class="filter-select" id="events-year" onchange="eventsLoad()">
+              <option value="2026">2026</option>
+              <option value="2027">2027</option>
+              <option value="">All Years</option>
+            </select>
+            <select class="filter-select" id="events-status" onchange="eventsLoad()">
+              <option value="">All Status</option>
+              <option value="published">Published</option>
+              <option value="live">Live</option>
+              <option value="ended">Ended</option>
+            </select>
+            <select class="filter-select" id="events-type" onchange="eventsLoad()">
+              <option value="">All Types</option>
+              <option value="conference">Conference</option>
+              <option value="tradeshow">Trade Show</option>
+              <option value="awards">Awards</option>
+              <option value="esports">Esports</option>
+              <option value="free">Free</option>
+            </select>
+          </div>
+        </div>
+        <div id="events-table-wrap">
+          <div class="loading-state">Loading events...</div>
+        </div>
+        <div style="padding:10px 16px;display:flex;align-items:center;justify-content:space-between;border-top:1px solid var(--border)">
+          <span style="font-size:11px;color:var(--text3)" id="events-pagination-info">—</span>
+          <div style="display:flex;gap:6px">
+            <button class="btn btn-ghost" style="font-size:11px" id="events-prev-btn" onclick="eventsPrev()" disabled>← Prev</button>
+            <button class="btn btn-ghost" style="font-size:11px" id="events-next-btn" onclick="eventsNext()">Next →</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- STATUS MANAGER PANEL -->
+    <div class="panel" id="panel-status">
+      <div class="page-hdr">
+        <div>
+          <div class="page-title">🔄 Status Manager</div>
+          <div class="page-sub">Bulk update event status — fix ended/published/live states</div>
+        </div>
+      </div>
+
+      <div class="section-card">
+        <div class="section-card-hdr">
+          <div class="section-card-title">Status Distribution</div>
+        </div>
+        <div id="status-distribution" style="padding:14px 16px">
+          <div class="loading-state">Loading...</div>
+        </div>
+      </div>
+
+      <div class="section-card">
+        <div class="section-card-hdr">
+          <div>
+            <div class="section-card-title">Bulk Operations</div>
+            <div class="section-card-sub">Apply status changes to multiple events at once</div>
+          </div>
+        </div>
+        <div style="padding:14px 16px;display:flex;flex-direction:column;gap:10px">
+          <div style="background:var(--green-dim);border:1px solid rgba(13,155,114,0.2);border-radius:8px;padding:12px 14px;display:flex;align-items:center;justify-content:space-between">
+            <div>
+              <div style="font-size:12px;font-weight:700;color:var(--green)">Fix Past Events → Published</div>
+              <div style="font-size:11px;color:var(--text3);margin-top:2px">Events with past end dates that are incorrectly marked as "ended" → set to "published"</div>
+            </div>
+            <button class="btn btn-ghost" style="font-size:11px;border-color:var(--green);color:var(--green)" onclick="adminShowToast('This operation requires direct database access. Use the Supabase dashboard.')">Run Fix</button>
+          </div>
+          <div style="background:var(--blue-dim);border:1px solid var(--blue-border);border-radius:8px;padding:12px 14px;display:flex;align-items:center;justify-content:space-between">
+            <div>
+              <div style="font-size:12px;font-weight:700;color:var(--blue)">Mark Current Events → Live</div>
+              <div style="font-size:11px;color:var(--text3);margin-top:2px">Events happening today (start_date ≤ today ≤ end_date) → set to "live"</div>
+            </div>
+            <button class="btn btn-ghost" style="font-size:11px;border-color:var(--blue);color:var(--blue)" onclick="adminShowToast('This operation requires direct database access. Use the Supabase dashboard.')">Run Fix</button>
+          </div>
+          <div style="background:var(--orange-dim);border:1px solid rgba(249,115,22,0.2);border-radius:8px;padding:12px 14px;display:flex;align-items:center;justify-content:space-between">
+            <div>
+              <div style="font-size:12px;font-weight:700;color:var(--orange)">Archive Old Events → Ended</div>
+              <div style="font-size:11px;color:var(--text3);margin-top:2px">Events from 2024 and earlier → set to "ended" to clean up the database</div>
+            </div>
+            <button class="btn btn-ghost" style="font-size:11px;border-color:var(--orange);color:var(--orange)" onclick="adminShowToast('This operation requires direct database access. Use the Supabase dashboard.')">Run Fix</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- STATISTICS PANEL -->
+    <div class="panel" id="panel-stats">
+      <div class="page-hdr">
+        <div>
+          <div class="page-title">📈 Statistics</div>
+          <div class="page-sub">Event database analytics for 2026</div>
+        </div>
+        <select class="filter-select" id="stats-year" onchange="statsLoad()" style="font-size:12px">
+          <option value="2026">2026</option>
+          <option value="2027">2027</option>
+        </select>
+      </div>
+
+      <div class="stat-grid">
+        <div class="stat-card">
+          <div class="stat-card-val" id="stats-total" style="color:var(--blue)">—</div>
+          <div class="stat-card-label">Total Events</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-card-val" id="stats-upcoming" style="color:var(--green)">—</div>
+          <div class="stat-card-label">Upcoming</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-card-val" id="stats-countries-cnt" style="color:var(--teal)">—</div>
+          <div class="stat-card-label">Countries</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-card-val" id="stats-online" style="color:var(--purple)">—</div>
+          <div class="stat-card-label">Online Events</div>
+        </div>
+      </div>
+
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px">
+        <div class="section-card">
+          <div class="section-card-hdr">
+            <div class="section-card-title">📅 Monthly Distribution</div>
+          </div>
+          <div id="stats-monthly" style="padding:14px 16px">
+            <div class="loading-state">Loading...</div>
+          </div>
+        </div>
+        <div class="section-card">
+          <div class="section-card-hdr">
+            <div class="section-card-title">🌍 By Region</div>
+          </div>
+          <div id="stats-regions" style="padding:14px 16px">
+            <div class="loading-state">Loading...</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- REGIONS PANEL -->
+    <div class="panel" id="panel-regions">
+      <div class="page-hdr">
+        <div>
+          <div class="page-title">🌍 Regions & Countries</div>
+          <div class="page-sub">Geographic distribution of events</div>
+        </div>
+      </div>
+
+      <div class="section-card">
+        <div class="section-card-hdr">
+          <div class="section-card-title">Top Countries by Event Count</div>
+        </div>
+        <div id="regions-countries" style="padding:14px 16px">
+          <div class="loading-state">Loading...</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- DATA HEALTH PANEL -->
+    <div class="panel" id="panel-health">
+      <div class="page-hdr">
+        <div>
+          <div class="page-title">🩺 Data Health</div>
+          <div class="page-sub">Database quality and completeness checks</div>
+        </div>
+        <button class="btn btn-ghost" onclick="healthLoad()">↻ Re-check</button>
+      </div>
+
+      <div class="section-card">
+        <div class="section-card-hdr">
+          <div class="section-card-title">Health Scores</div>
+        </div>
+        <div class="health-grid" id="health-grid">
+          <div class="loading-state" style="grid-column:1/-1">Loading health data...</div>
+        </div>
+      </div>
+
+      <div class="section-card">
+        <div class="section-card-hdr">
+          <div class="section-card-title">Issues Found</div>
+        </div>
+        <div id="health-issues" style="padding:14px 16px">
+          <div class="loading-state">Loading...</div>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- /main -->
+</div><!-- /layout -->
+
+<!-- TOAST -->
+<div id="admin-toast"></div>
+
+<!-- ADD FEATURED MODAL -->
+<div class="modal-overlay" id="add-featured-modal">
+  <div class="modal">
+    <div class="modal-title">Add Featured Event</div>
+    <div class="form-row">
+      <div class="form-label">Event Name</div>
+      <input class="form-input" id="modal-feat-name" placeholder="e.g. Gamescom 2026">
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+      <div class="form-row">
+        <div class="form-label">Short Code</div>
+        <input class="form-input" id="modal-feat-code" placeholder="e.g. GC" maxlength="4">
+      </div>
+      <div class="form-row">
+        <div class="form-label">Color Gradient</div>
+        <select class="form-select" id="modal-feat-color">
+          <option value="linear-gradient(135deg,#f4a261,#e76f51)">Orange</option>
+          <option value="linear-gradient(135deg,#e63946,#c1121f)">Red</option>
+          <option value="linear-gradient(135deg,#0d9b72,#076644)">Green</option>
+          <option value="linear-gradient(135deg,#7c3aed,#5b21b6)">Purple</option>
+          <option value="linear-gradient(135deg,#1d4ed8,#0a66c2)">Blue</option>
+          <option value="linear-gradient(135deg,#be123c,#9f1239)">Dark Red</option>
+          <option value="linear-gradient(135deg,#0891b2,#0e7490)">Teal</option>
+          <option value="linear-gradient(135deg,#16a34a,#15803d)">Dark Green</option>
+        </select>
+      </div>
+    </div>
+    <div class="form-row">
+      <div class="form-label">Meta (location · dates)</div>
+      <input class="form-input" id="modal-feat-meta" placeholder="e.g. 🇩🇪 Cologne · Aug 19–23">
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-ghost" onclick="closeModal('add-featured-modal')">Cancel</button>
+      <button class="btn btn-primary" onclick="adminAddFeatured()">Add to Featured</button>
+    </div>
+  </div>
+</div>
+
+<script>
+const ADMIN_API = 'https://gc-platform-api.vercel.app/api/events';
+const ADMIN_STATS_API = 'https://gc-platform-api.vercel.app/api/events/stats';
+
+// ── FEATURED EVENTS DATA ──
+var featuredEvents = [
+  { code:'CJ', name:'ChinaJoy 2026', meta:'🇨🇳 Shanghai · Jul 30–Aug 2', color:'linear-gradient(135deg,#e63946,#c1121f)', search:'ChinaJoy' },
+  { code:'GC', name:'Gamescom 2026', meta:'🇩🇪 Cologne · Aug 19–23', color:'linear-gradient(135deg,#f4a261,#e76f51)', search:'Gamescom Cologne' },
+  { code:'TGS', name:'Tokyo Game Show 2026', meta:'🇯🇵 Chiba · Sep 24–27', color:'linear-gradient(135deg,#be123c,#9f1239)', search:'Tokyo Game Show' },
+  { code:'NG', name:'Nordic Game 2026', meta:'🇸🇪 Malmö · May 25–28', color:'linear-gradient(135deg,#0d9b72,#076644)', search:'Nordic Game Malmo' },
+  { code:'GCA', name:'Gamescom Asia 2026', meta:'🇸🇬 Singapore · Oct 8–11', color:'linear-gradient(135deg,#7c3aed,#5b21b6)', search:'Gamescom Asia' },
+  { code:'BGS', name:'Brazil Game Show 2026', meta:'🇧🇷 São Paulo · Oct 7–11', color:'linear-gradient(135deg,#16a34a,#15803d)', search:'Brazil Game Show' },
+  { code:'G*', name:'G-Star 2026', meta:'🇰🇷 Busan · Nov 19–22', color:'linear-gradient(135deg,#0284c7,#0369a1)', search:'G-STAR Busan' },
+  { code:'PAX', name:'PAX West 2026', meta:'🇺🇸 Seattle · Aug 28–Sep 1', color:'linear-gradient(135deg,#7c3aed,#6d28d9)', search:'PAX West Seattle' },
+  { code:'DC', name:'Devcom 2026', meta:'🇩🇪 Cologne · Aug 23–24', color:'linear-gradient(135deg,#0891b2,#0e7490)', search:'Devcom Cologne' },
+  { code:'MCM', name:'MCM London 2026', meta:'🇬🇧 London · May 22–24', color:'linear-gradient(135deg,#dc2626,#b91c1c)', search:'MCM London Comic Con' },
+  { code:'SX', name:'SXSW London 2026', meta:'🇬🇧 London · Jun 1–5', color:'linear-gradient(135deg,#d97706,#b45309)', search:'SXSW London' },
+  { code:'EVO', name:'EVO Japan 2026', meta:'🇯🇵 Tokyo · May 1–3', color:'linear-gradient(135deg,#ea580c,#c2410c)', search:'EVO Japan' },
+  { code:'EWC', name:'Esports World Cup 2026', meta:'🇸🇦 Riyadh · Jul 6–Aug 16', color:'linear-gradient(135deg,#16a34a,#15803d)', search:'Esports World Cup' },
+  { code:'GDC', name:'GDC 2027', meta:'🇺🇸 San Francisco · Mar 2027', color:'linear-gradient(135deg,#1d4ed8,#0a66c2)', search:'GDC 2027' },
+];
+
+// ── PANEL NAVIGATION ──
+function showPanel(id) {
+  document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.sidebar-item').forEach(i => i.classList.remove('active'));
+  document.getElementById('panel-' + id).classList.add('active');
+  document.querySelectorAll('.sidebar-item').forEach(i => {
+    if (i.getAttribute('onclick') && i.getAttribute('onclick').includes("'" + id + "'")) {
+      i.classList.add('active');
+    }
+  });
+  // Load data for panel
+  if (id === 'dashboard') dashLoad();
+  if (id === 'featured') featuredRender();
+  if (id === 'events') eventsLoad();
+  if (id === 'stats') statsLoad();
+  if (id === 'regions') regionsLoad();
+  if (id === 'health') healthLoad();
+  if (id === 'status') statusLoad();
+}
+
+// ── TOAST ──
+function adminShowToast(msg) {
+  const t = document.getElementById('admin-toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2500);
+}
+
+// ── MODAL ──
+function openModal(id) { document.getElementById(id).classList.add('open'); }
+function closeModal(id) { document.getElementById(id).classList.remove('open'); }
+function openAddFeaturedModal() { openModal('add-featured-modal'); }
+
+// ── DASHBOARD ──
+async function dashLoad() {
+  try {
+    const r = await fetch(ADMIN_STATS_API + '?year=2026');
+    const d = await r.json();
+    if (d.success) {
+      document.getElementById('dash-total').textContent = (d.total || 0).toLocaleString();
+      document.getElementById('dash-upcoming').textContent = (d.upcoming || 0).toLocaleString();
+      document.getElementById('dash-countries').textContent = Object.keys(d.countries || {}).length;
+      document.getElementById('cnt-events').textContent = (d.total || 0) > 999 ? Math.round(d.total/1000) + 'k' : d.total;
+    }
+  } catch(e) {}
+  
+  // Load recent events
+  try {
+    const today = new Date().toISOString().split('T')[0];
+    const r = await fetch(ADMIN_API + '?limit=10&from_date=' + today + '&year=2026');
+    const d = await r.json();
+    const wrap = document.getElementById('dash-recent-events');
+    if (d.data && d.data.length > 0) {
+      wrap.innerHTML = '<table class="admin-table"><thead><tr><th>Event</th><th>Date</th><th>Location</th><th>Type</th><th>Status</th></tr></thead><tbody>' +
+        d.data.map(ev => `<tr>
+          <td style="font-weight:600;color:var(--text1);max-width:220px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${ev.title}</td>
+          <td style="white-space:nowrap">${ev.start_date}${ev.end_date && ev.end_date !== ev.start_date ? ' – ' + ev.end_date : ''}</td>
+          <td>${ev.is_online ? '🌐 Online' : [ev.city, ev.country].filter(Boolean).join(', ')}</td>
+          <td><span style="background:rgba(10,102,194,0.08);color:var(--blue);padding:1px 6px;border-radius:8px;font-size:9px;font-weight:700">${ev.type || '—'}</span></td>
+          <td><span class="status-badge s-${ev.status}">${ev.status}</span></td>
+        </tr>`).join('') +
+        '</tbody></table>';
+    } else {
+      wrap.innerHTML = '<div class="loading-state">No upcoming events found</div>';
+    }
+  } catch(e) {
+    document.getElementById('dash-recent-events').innerHTML = '<div class="loading-state">Failed to load events</div>';
+  }
+}
+
+// ── FEATURED EVENTS ──
+function featuredRender() {
+  const grid = document.getElementById('featured-grid');
+  grid.innerHTML = featuredEvents.map((ev, i) => `
+    <div class="feat-card" id="feat-card-${i}">
+      <span class="drag-handle">⋮⋮</span>
+      <div class="feat-card-icon" style="background:${ev.color}">${ev.code}</div>
+      <div class="feat-card-name">${ev.name}</div>
+      <div class="feat-card-meta">${ev.meta}</div>
+      <div class="feat-card-actions">
+        <button class="feat-btn" onclick="featMoveUp(${i})" ${i === 0 ? 'disabled' : ''}>↑</button>
+        <button class="feat-btn" onclick="featMoveDown(${i})" ${i === featuredEvents.length-1 ? 'disabled' : ''}>↓</button>
+        <button class="feat-btn" style="color:var(--red);border-color:rgba(229,57,53,0.3)" onclick="featRemove(${i})">✕ Remove</button>
+      </div>
+    </div>
+  `).join('');
+}
+
+function featMoveUp(i) {
+  if (i === 0) return;
+  [featuredEvents[i-1], featuredEvents[i]] = [featuredEvents[i], featuredEvents[i-1]];
+  featuredRender();
+  adminShowToast('Order updated — click Save to apply');
+}
+
+function featMoveDown(i) {
+  if (i === featuredEvents.length - 1) return;
+  [featuredEvents[i], featuredEvents[i+1]] = [featuredEvents[i+1], featuredEvents[i]];
+  featuredRender();
+  adminShowToast('Order updated — click Save to apply');
+}
+
+function featRemove(i) {
+  if (!confirm('Remove "' + featuredEvents[i].name + '" from featured?')) return;
+  featuredEvents.splice(i, 1);
+  featuredRender();
+  adminShowToast('Removed from featured');
+}
+
+function adminAddFeatured() {
+  const name = document.getElementById('modal-feat-name').value.trim();
+  const code = document.getElementById('modal-feat-code').value.trim().toUpperCase();
+  const color = document.getElementById('modal-feat-color').value;
+  const meta = document.getElementById('modal-feat-meta').value.trim();
+  if (!name || !code) { adminShowToast('Name and code are required'); return; }
+  featuredEvents.push({ code, name, meta, color, search: name });
+  closeModal('add-featured-modal');
+  featuredRender();
+  adminShowToast('Added to featured list');
+}
+
+function adminSaveFeatured() {
+  // In a real implementation, this would save to the database
+  // For now, generate the HTML snippet
+  const html = featuredEvents.map(ev => `
+  <div class="conf-card" onclick="selectConf(this)" data-search="${ev.search}">
+    <div class="conf-icon" style="background:${ev.color}">${ev.code}</div>
+    <div class="conf-info">
+      <div class="conf-name">${ev.name}</div>
+      <div class="conf-meta">${ev.meta}</div>
+    </div>
+  </div>`).join('');
+  console.log('Featured events HTML:\n', html);
+  adminShowToast('✓ Order saved (see console for HTML snippet)');
+}
+
+async function featSearchEvents(query) {
+  if (!query || query.length < 2) {
+    document.getElementById('feat-search-results').innerHTML = '<div style="text-align:center;padding:20px;color:var(--text3);font-size:12px">Search for events above to add them to featured</div>';
+    return;
+  }
+  const year = document.getElementById('feat-search-year').value;
+  try {
+    const r = await fetch(ADMIN_API + '?search=' + encodeURIComponent(query) + '&year=' + year + '&limit=8');
+    const d = await r.json();
+    const wrap = document.getElementById('feat-search-results');
+    if (d.data && d.data.length > 0) {
+      wrap.innerHTML = d.data.map(ev => `
+        <div style="display:flex;align-items:center;justify-content:space-between;padding:8px 10px;border:1px solid var(--border);border-radius:7px;background:#fff">
+          <div>
+            <div style="font-size:12px;font-weight:700;color:var(--text1)">${ev.title}</div>
+            <div style="font-size:10px;color:var(--text3);margin-top:1px">${ev.start_date} · ${ev.is_online ? 'Online' : [ev.city, ev.country].filter(Boolean).join(', ')}</div>
+          </div>
+          <button class="btn btn-ghost" style="font-size:11px" onclick="featAddFromSearch('${ev.title.replace(/'/g,"\\'")}','${ev.start_date}','${(ev.is_online ? 'Online' : [ev.city, ev.country].filter(Boolean).join(', ')).replace(/'/g,"\\'")}')">+ Add</button>
+        </div>
+      `).join('');
+    } else {
+      wrap.innerHTML = '<div style="text-align:center;padding:20px;color:var(--text3);font-size:12px">No events found</div>';
+    }
+  } catch(e) {}
+}
+
+function featAddFromSearch(title, date, location) {
+  const code = title.split(' ').map(w => w[0]).join('').toUpperCase().substring(0, 3);
+  const colors = ['linear-gradient(135deg,#f4a261,#e76f51)','linear-gradient(135deg,#0d9b72,#076644)','linear-gradient(135deg,#7c3aed,#5b21b6)','linear-gradient(135deg,#0891b2,#0e7490)','linear-gradient(135deg,#dc2626,#b91c1c)'];
+  const color = colors[featuredEvents.length % colors.length];
+  featuredEvents.push({ code, name: title, meta: '📍 ' + location + ' · ' + date, color, search: title });
+  featuredRender();
+  showPanel('featured');
+  adminShowToast('Added: ' + title);
+}
+
+// ── ALL EVENTS ──
+var eventsOffset = 0;
+var eventsTotal = 0;
+const eventsLimit = 20;
+
+async function eventsLoad() {
+  eventsOffset = 0;
+  eventsLoadPage();
+}
+
+async function eventsLoadPage() {
+  const search = document.getElementById('events-search').value;
+  const year = document.getElementById('events-year').value;
+  const status = document.getElementById('events-status').value;
+  const type = document.getElementById('events-type').value;
+  
+  const params = new URLSearchParams({ limit: eventsLimit, offset: eventsOffset });
+  if (search) params.set('search', search);
+  if (year) params.set('year', year);
+  if (status) params.set('status_filter', status);
+  if (type) params.set('type', type);
+  
+  document.getElementById('events-table-wrap').innerHTML = '<div class="loading-state">Loading...</div>';
+  
+  try {
+    const r = await fetch(ADMIN_API + '?' + params.toString());
+    const d = await r.json();
+    eventsTotal = d.total || 0;
+    
+    const wrap = document.getElementById('events-table-wrap');
+    if (d.data && d.data.length > 0) {
+      wrap.innerHTML = '<table class="admin-table"><thead><tr><th>Event</th><th>Date</th><th>Location</th><th>Type</th><th>Attendees</th><th>Status</th></tr></thead><tbody>' +
+        d.data.map(ev => `<tr>
+          <td style="max-width:200px">
+            <div style="font-weight:600;color:var(--text1);overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${ev.title}</div>
+          </td>
+          <td style="white-space:nowrap;font-size:11px">${ev.start_date || '—'}</td>
+          <td style="font-size:11px">${ev.is_online ? '🌐 Online' : [ev.city, ev.country].filter(Boolean).join(', ') || '—'}</td>
+          <td><span style="background:rgba(10,102,194,0.08);color:var(--blue);padding:1px 6px;border-radius:8px;font-size:9px;font-weight:700">${ev.type || '—'}</span></td>
+          <td style="font-size:11px">${ev.attendee_count ? ev.attendee_count.toLocaleString() : '—'}</td>
+          <td><span class="status-badge s-${ev.status}">${ev.status}</span></td>
+        </tr>`).join('') +
+        '</tbody></table>';
+    } else {
+      wrap.innerHTML = '<div class="loading-state">No events found</div>';
+    }
+    
+    const start = eventsOffset + 1;
+    const end = Math.min(eventsOffset + eventsLimit, eventsTotal);
+    document.getElementById('events-pagination-info').textContent = `Showing ${start}–${end} of ${eventsTotal.toLocaleString()} events`;
+    document.getElementById('events-prev-btn').disabled = eventsOffset === 0;
+    document.getElementById('events-next-btn').disabled = end >= eventsTotal;
+  } catch(e) {
+    document.getElementById('events-table-wrap').innerHTML = '<div class="loading-state">Failed to load events</div>';
+  }
+}
+
+function eventsPrev() { eventsOffset = Math.max(0, eventsOffset - eventsLimit); eventsLoadPage(); }
+function eventsNext() { eventsOffset += eventsLimit; eventsLoadPage(); }
+
+let eventsSearchTimer;
+function eventsSearch(q) {
+  clearTimeout(eventsSearchTimer);
+  eventsSearchTimer = setTimeout(eventsLoad, 400);
+}
+
+// ── STATISTICS ──
+async function statsLoad() {
+  const year = document.getElementById('stats-year').value;
+  try {
+    const r = await fetch(ADMIN_STATS_API + '?year=' + year);
+    const d = await r.json();
+    if (!d.success) return;
+    
+    document.getElementById('stats-total').textContent = (d.total || 0).toLocaleString();
+    document.getElementById('stats-upcoming').textContent = (d.upcoming || 0).toLocaleString();
+    document.getElementById('stats-countries-cnt').textContent = Object.keys(d.countries || {}).length;
+    
+    // Online count (separate call)
+    try {
+      const ro = await fetch(ADMIN_STATS_API + '?year=' + year + '&is_online=true');
+      const do_ = await ro.json();
+      document.getElementById('stats-online').textContent = (do_.total || 0).toLocaleString();
+    } catch(e) {}
+    
+    // Monthly
+    const months = d.months || {};
+    const monthNames = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+    const maxVal = Math.max(...Object.values(months), 1);
+    document.getElementById('stats-monthly').innerHTML = monthNames.map((name, i) => {
+      const val = months[i+1] || 0;
+      const pct = Math.round(val / maxVal * 100);
+      return `<div class="region-bar-row">
+        <div class="region-bar-hdr"><span class="region-bar-name">${name}</span><span class="region-bar-val">${val}</span></div>
+        <div class="region-track"><div class="region-fill" style="width:${pct}%;background:var(--blue)"></div></div>
+      </div>`;
+    }).join('');
+    
+    // Regions
+    const regions = d.regions || {};
+    const maxR = Math.max(...Object.values(regions), 1);
+    const regionColors = {'Europe':'#0A66C2','North America':'#0d9b72','Asia Pacific':'#7c3aed','Latin America':'#f97316','Middle East & Africa':'#0a7fa8','Online / Global':'#6b7280','Other':'#9ca3af'};
+    document.getElementById('stats-regions').innerHTML = Object.entries(regions)
+      .sort((a,b) => b[1]-a[1])
+      .map(([name, val]) => {
+        const pct = Math.round(val / maxR * 100);
+        const color = regionColors[name] || '#6b7280';
+        return `<div class="region-bar-row">
+          <div class="region-bar-hdr"><span class="region-bar-name">${name}</span><span class="region-bar-val">${val}</span></div>
+          <div class="region-track"><div class="region-fill" style="width:${pct}%;background:${color}"></div></div>
+        </div>`;
+      }).join('');
+  } catch(e) {
+    document.getElementById('stats-monthly').innerHTML = '<div class="loading-state">Failed to load</div>';
+  }
+}
+
+// ── REGIONS ──
+async function regionsLoad() {
+  try {
+    const r = await fetch(ADMIN_STATS_API + '?year=2026');
+    const d = await r.json();
+    const countries = d.countries || {};
+    const sorted = Object.entries(countries).sort((a,b) => b[1]-a[1]).slice(0, 30);
+    const maxVal = sorted[0] ? sorted[0][1] : 1;
+    document.getElementById('regions-countries').innerHTML = sorted.map(([name, val]) => {
+      const pct = Math.round(val / maxVal * 100);
+      return `<div class="region-bar-row">
+        <div class="region-bar-hdr"><span class="region-bar-name">${name}</span><span class="region-bar-val">${val}</span></div>
+        <div class="region-track"><div class="region-fill" style="width:${pct}%;background:var(--blue)"></div></div>
+      </div>`;
+    }).join('');
+  } catch(e) {}
+}
+
+// ── STATUS ──
+async function statusLoad() {
+  try {
+    const [r1, r2, r3] = await Promise.all([
+      fetch(ADMIN_STATS_API + '?year=2026'),
+      fetch(ADMIN_API + '?status_filter=ended&limit=1'),
+      fetch(ADMIN_API + '?status_filter=live&limit=1'),
+    ]);
+    const [d1, d2, d3] = await Promise.all([r1.json(), r2.json(), r3.json()]);
+    const total = d1.total || 0;
+    const ended = d2.total || 0;
+    const live = d3.total || 0;
+    const published = total - ended - live;
+    
+    document.getElementById('status-distribution').innerHTML = `
+      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:14px">
+        <div style="background:var(--green-dim);border:1px solid rgba(13,155,114,0.2);border-radius:8px;padding:12px;text-align:center">
+          <div style="font-size:22px;font-weight:900;color:var(--green)">${published.toLocaleString()}</div>
+          <div style="font-size:9px;font-weight:700;color:var(--text3);letter-spacing:.5px;text-transform:uppercase;margin-top:3px">Published</div>
+        </div>
+        <div style="background:var(--blue-dim);border:1px solid var(--blue-border);border-radius:8px;padding:12px;text-align:center">
+          <div style="font-size:22px;font-weight:900;color:var(--blue)">${live.toLocaleString()}</div>
+          <div style="font-size:9px;font-weight:700;color:var(--text3);letter-spacing:.5px;text-transform:uppercase;margin-top:3px">Live Now</div>
+        </div>
+        <div style="background:rgba(0,0,0,0.04);border:1px solid var(--border);border-radius:8px;padding:12px;text-align:center">
+          <div style="font-size:22px;font-weight:900;color:var(--text3)">${ended.toLocaleString()}</div>
+          <div style="font-size:9px;font-weight:700;color:var(--text3);letter-spacing:.5px;text-transform:uppercase;margin-top:3px">Ended</div>
+        </div>
+      </div>
+      <div style="font-size:11px;color:var(--text3)">Total events in database: <strong style="color:var(--text1)">${total.toLocaleString()}</strong></div>
+    `;
+  } catch(e) {}
+}
+
+// ── DATA HEALTH ──
+async function healthLoad() {
+  document.getElementById('health-grid').innerHTML = '<div class="loading-state" style="grid-column:1/-1">Checking...</div>';
+  document.getElementById('health-issues').innerHTML = '<div class="loading-state">Checking...</div>';
+  
+  try {
+    const [rAll, rNoDate, rNoCountry, rNoDesc] = await Promise.all([
+      fetch(ADMIN_STATS_API + '?year=2026'),
+      fetch(ADMIN_API + '?year=2026&limit=1&search=TBD'),
+      fetch(ADMIN_API + '?year=2026&limit=1&search=Unknown'),
+      fetch(ADMIN_API + '?year=2026&limit=1'),
+    ]);
+    const [dAll] = await Promise.all([rAll.json()]);
+    
+    const total = dAll.total || 0;
+    const upcoming = dAll.upcoming || 0;
+    const countries = Object.keys(dAll.countries || {}).length;
+    const upcomingPct = total > 0 ? Math.round(upcoming / total * 100) : 0;
+    const countryScore = Math.min(100, Math.round(countries / 1.2));
+    
+    document.getElementById('health-grid').innerHTML = `
+      <div class="health-item">
+        <div class="health-score ${upcomingPct > 80 ? 'score-good' : upcomingPct > 50 ? 'score-warn' : 'score-bad'}">${upcomingPct}%</div>
+        <div class="health-label">Upcoming Rate</div>
+      </div>
+      <div class="health-item">
+        <div class="health-score score-good">${countries}</div>
+        <div class="health-label">Countries Covered</div>
+      </div>
+      <div class="health-item">
+        <div class="health-score score-good">${total.toLocaleString()}</div>
+        <div class="health-label">Total Events</div>
+      </div>
+      <div class="health-item">
+        <div class="health-score ${upcoming > 2000 ? 'score-good' : 'score-warn'}">${upcoming.toLocaleString()}</div>
+        <div class="health-label">Upcoming Events</div>
+      </div>
+      <div class="health-item">
+        <div class="health-score score-good">${Object.values(dAll.regions || {}).reduce((a,b) => a+b, 0).toLocaleString()}</div>
+        <div class="health-label">Events w/ Region</div>
+      </div>
+      <div class="health-item">
+        <div class="health-score score-good">✓</div>
+        <div class="health-label">API Status</div>
+      </div>
+    `;
+    
+    const issues = [];
+    if (upcomingPct < 80) issues.push({ level: 'warn', msg: `${100-upcomingPct}% of events may have incorrect status (not upcoming)` });
+    if (countries < 100) issues.push({ level: 'warn', msg: `Only ${countries} countries covered — consider adding more international events` });
+    if (upcoming < 2000) issues.push({ level: 'warn', msg: `Upcoming events count (${upcoming}) is below target of 2000+` });
+    
+    if (issues.length === 0) {
+      document.getElementById('health-issues').innerHTML = '<div style="padding:12px;color:var(--green);font-size:12px;font-weight:600">✓ No issues found — database looks healthy!</div>';
+    } else {
+      document.getElementById('health-issues').innerHTML = issues.map(i => `
+        <div style="display:flex;gap:10px;padding:10px 12px;border-radius:7px;background:${i.level==='warn' ? 'rgba(249,115,22,0.06)' : 'rgba(229,57,53,0.06)'};border:1px solid ${i.level==='warn' ? 'rgba(249,115,22,0.2)' : 'rgba(229,57,53,0.2)'};margin-bottom:6px">
+          <span style="font-size:14px">${i.level==='warn' ? '⚠️' : '❌'}</span>
+          <span style="font-size:12px;color:var(--text2)">${i.msg}</span>
+        </div>
+      `).join('');
+    }
+  } catch(e) {
+    document.getElementById('health-grid').innerHTML = '<div class="loading-state" style="grid-column:1/-1">Failed to load health data</div>';
+  }
+}
+
+function adminRefreshAll() {
+  dashLoad();
+  adminShowToast('Data refreshed');
+}
+
+// ── INIT ──
+document.addEventListener('DOMContentLoaded', function() {
+  dashLoad();
+  featuredRender();
+});
+</script>
+</body>
+</html>
