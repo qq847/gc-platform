@@ -1,0 +1,560 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Project Database — Game Connection Platform</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'DM Sans',sans-serif;background:#f5f3ef;color:#1c1a17;min-height:100vh}
+
+/* ── Top Nav ── */
+.topnav{position:sticky;top:0;z-index:100;height:56px;background:#fff;border-bottom:1px solid #e0dbd0;display:flex;align-items:center;justify-content:space-between;padding:0 24px 0 220px}
+.topnav-logo{font-weight:700;font-size:15px;color:#1c1a17;letter-spacing:.3px;text-decoration:none}
+.topnav-logo span{color:#d95f2b}
+.topnav-right{display:flex;align-items:center;gap:16px}
+.user-avatar{width:32px;height:32px;border-radius:50%;background:linear-gradient(135deg,#d95f2b,#f08040);display:flex;align-items:center;justify-content:center;color:#fff;font-weight:700;font-size:13px;cursor:pointer}
+
+/* ── Sidebar ── */
+.sidebar{position:fixed;top:0;left:0;width:200px;height:100vh;background:#1c1a17;padding-top:56px;z-index:99;overflow-y:auto}
+.sidebar-nav{padding:16px 0}
+.nav-item{display:flex;align-items:center;gap:10px;padding:10px 16px;font-size:13.5px;font-weight:500;color:#a09890;cursor:pointer;transition:all .15s;text-decoration:none}
+.nav-item:hover{color:#fff;background:rgba(255,255,255,.06)}
+.nav-item.active{color:#fff;background:rgba(217,95,43,.2);border-right:3px solid #d95f2b}
+.nav-item .icon{font-size:15px;width:20px;text-align:center}
+.nav-section{padding:10px 16px 4px;font-size:10px;font-weight:700;color:#4a4540;letter-spacing:.8px;text-transform:uppercase}
+.sidebar-logo{padding:16px;border-bottom:1px solid #2a2825;display:flex;align-items:center;gap:8px;position:absolute;top:0;left:0;width:100%;height:56px}
+.sidebar-logo-text{font-weight:700;font-size:14px;color:#fff}
+.sidebar-logo-text span{color:#d95f2b}
+
+/* ── Main ── */
+.main{margin-left:200px;padding-top:56px;min-height:100vh}
+
+/* ── Page Header ── */
+.page-header{background:linear-gradient(135deg,#1c1a17 0%,#2d2a25 100%);padding:32px 32px 28px;color:#fff}
+.page-header h1{font-size:26px;font-weight:700;margin-bottom:6px}
+.page-header h1 span{color:#d95f2b}
+.page-header p{font-size:14px;color:#a09890;margin-bottom:20px}
+.header-stats{display:flex;gap:32px}
+.stat-item{text-align:center}
+.stat-num{font-size:28px;font-weight:700;color:#fff}
+.stat-label{font-size:11px;color:#6b6660;margin-top:2px;text-transform:uppercase;letter-spacing:.5px}
+
+/* ── Filter Bar ── */
+.filter-bar{background:#fff;border-bottom:1px solid #e0dbd0;padding:0 32px;position:sticky;top:56px;z-index:90}
+.filter-inner{max-width:1400px;margin:0 auto;display:flex;align-items:center;gap:12px;height:60px;overflow-x:auto;scrollbar-width:none}
+.filter-inner::-webkit-scrollbar{display:none}
+.search-wrap{flex-shrink:0;position:relative;flex:1;max-width:300px}
+.search-wrap input{width:100%;padding:9px 12px 9px 36px;border:1.5px solid #e0dbd0;border-radius:9px;font-size:13.5px;font-family:'DM Sans',sans-serif;background:#f5f3ef;color:#1c1a17;outline:none;transition:border-color .15s}
+.search-wrap input:focus{border-color:#d95f2b;background:#fff}
+.search-wrap input::placeholder{color:#a09890}
+.search-icon{position:absolute;left:11px;top:50%;transform:translateY(-50%);font-size:14px;color:#a09890;pointer-events:none}
+.filter-select{padding:8px 28px 8px 12px;border:1.5px solid #e0dbd0;border-radius:9px;font-size:13px;font-family:'DM Sans',sans-serif;background:#f5f3ef;color:#1c1a17;outline:none;cursor:pointer;white-space:nowrap;flex-shrink:0;transition:border-color .15s;-webkit-appearance:none;appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%23a09890' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 10px center}
+.filter-select:focus{border-color:#d95f2b}
+.filter-divider{width:1px;height:28px;background:#e0dbd0;flex-shrink:0}
+.filter-count{margin-left:auto;font-size:13px;color:#6b6660;white-space:nowrap;flex-shrink:0;font-weight:500}
+
+/* ── Grid ── */
+.grid-wrap{max-width:1400px;margin:24px auto 40px;padding:0 32px}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:16px}
+
+/* ── Project Card ── */
+.card{background:#fff;border-radius:12px;overflow:hidden;box-shadow:0 1px 4px rgba(0,0,0,.06);cursor:pointer;transition:transform .15s,box-shadow .15s;border:1px solid #e8e4da}
+.card:hover{transform:translateY(-3px);box-shadow:0 8px 24px rgba(0,0,0,.1)}
+.card-cover{width:100%;height:140px;background:linear-gradient(135deg,#2d2a25,#4a4540);display:flex;align-items:center;justify-content:center;font-size:40px;position:relative;overflow:hidden}
+.card-cover img{width:100%;height:100%;object-fit:cover}
+.card-cover-fallback{font-size:40px}
+.card-source-badge{position:absolute;top:8px;right:8px;background:rgba(0,0,0,.6);color:#fff;font-size:10px;font-weight:600;padding:3px 8px;border-radius:5px;backdrop-filter:blur(4px)}
+.card-body{padding:14px}
+.card-title{font-size:14px;font-weight:700;color:#1c1a17;margin-bottom:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.card-company{font-size:12px;color:#6b6660;margin-bottom:8px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.card-desc{font-size:12px;color:#6b6660;line-height:1.5;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;margin-bottom:10px;min-height:36px}
+.card-tags{display:flex;flex-wrap:wrap;gap:4px;margin-bottom:10px}
+.tag{padding:3px 8px;border-radius:5px;font-size:11px;font-weight:500;background:#f5f3ef;color:#6b6660;border:1px solid #e0dbd0}
+.tag.genre{background:#fde8dc;color:#d95f2b;border-color:#fac8b0}
+.card-footer{display:flex;align-items:center;justify-content:space-between;padding-top:10px;border-top:1px solid #f0ece6}
+.card-status{font-size:11px;font-weight:600;color:#6b6660}
+.card-looking{font-size:11px;color:#a09890;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:140px}
+
+/* ── Loading / Empty ── */
+.loading-wrap{display:flex;flex-direction:column;align-items:center;justify-content:center;padding:80px 32px;color:#a09890}
+.loading-spinner{width:40px;height:40px;border:3px solid #e0dbd0;border-top-color:#d95f2b;border-radius:50%;animation:spin .8s linear infinite;margin-bottom:16px}
+@keyframes spin{to{transform:rotate(360deg)}}
+.empty-icon{font-size:48px;margin-bottom:16px}
+.empty-text{font-size:15px;font-weight:600;color:#1c1a17;margin-bottom:6px}
+.empty-sub{font-size:13px;color:#a09890}
+
+/* ── Load More ── */
+.load-more-wrap{text-align:center;padding:24px 0 40px}
+.load-more-btn{padding:12px 32px;background:#1c1a17;color:#fff;border:none;border-radius:9px;font-size:14px;font-weight:600;font-family:'DM Sans',sans-serif;cursor:pointer;transition:background .15s}
+.load-more-btn:hover{background:#d95f2b}
+.load-more-btn:disabled{background:#e0dbd0;color:#a09890;cursor:not-allowed}
+
+/* ── Modal ── */
+.modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:200;backdrop-filter:blur(4px)}
+.modal-overlay.open{display:flex;align-items:center;justify-content:center;padding:24px}
+.modal{background:#fff;border-radius:16px;width:100%;max-width:640px;max-height:80vh;overflow-y:auto;box-shadow:0 20px 60px rgba(0,0,0,.2)}
+.modal-header{padding:24px 24px 0;display:flex;align-items:flex-start;justify-content:space-between;gap:16px}
+.modal-title{font-size:20px;font-weight:700;color:#1c1a17;flex:1}
+.modal-close{width:32px;height:32px;border:none;background:#f5f3ef;border-radius:8px;cursor:pointer;font-size:16px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.modal-body{padding:20px 24px 24px}
+.modal-company{font-size:13px;color:#6b6660;margin-bottom:12px}
+.modal-desc{font-size:14px;color:#3a3835;line-height:1.7;margin-bottom:16px}
+.modal-section{margin-bottom:14px}
+.modal-section-label{font-size:11px;font-weight:700;color:#a09890;text-transform:uppercase;letter-spacing:.6px;margin-bottom:6px}
+.modal-tags{display:flex;flex-wrap:wrap;gap:6px}
+.modal-tag{padding:4px 10px;border-radius:6px;font-size:12px;font-weight:500;background:#f5f3ef;color:#6b6660;border:1px solid #e0dbd0}
+.modal-tag.genre{background:#fde8dc;color:#d95f2b;border-color:#fac8b0}
+.modal-link{display:inline-flex;align-items:center;gap:6px;padding:8px 16px;background:#1c1a17;color:#fff;border-radius:8px;font-size:13px;font-weight:600;text-decoration:none;margin-top:8px;transition:background .15s}
+.modal-link:hover{background:#d95f2b}
+.modal-source{font-size:11px;color:#a09890;margin-top:16px;padding-top:12px;border-top:1px solid #f0ece6}
+</style>
+</head>
+<body>
+
+<!-- Sidebar -->
+<div class="sidebar">
+  <div class="sidebar-logo">
+    <div class="sidebar-logo-text">Game<span>Connect</span></div>
+  </div>
+  <nav class="sidebar-nav">
+    <div class="nav-section">Discover</div>
+    <a class="nav-item" href="EventHub_v2_PC.html"><span class="icon">📅</span> Events</a>
+    <a class="nav-item active" href="ProjectDatabase_v1_PC.html"><span class="icon">🎮</span> Projects</a>
+    <a class="nav-item" href="ExhibitorBrowse_v1_PC.html"><span class="icon">🏢</span> Companies</a>
+    <a class="nav-item" href="GameShowcaseBrowse_v1_PC.html"><span class="icon">🌟</span> Showcase</a>
+    <div class="nav-section">Connect</div>
+    <a class="nav-item" href="BuyerZone_v1_PC.html"><span class="icon">🤝</span> Buyer Zone</a>
+    <a class="nav-item" href="LetsMeet_Browse_v1_Mobile.html"><span class="icon">📆</span> Meetings</a>
+    <div class="nav-section">My Space</div>
+    <a class="nav-item" href="Profile_v2_PC.html"><span class="icon">👤</span> Profile</a>
+    <a class="nav-item" href="MySchedule_v1_PC.html"><span class="icon">🗓</span> My Schedule</a>
+  </nav>
+</div>
+
+<!-- Top Nav -->
+<div class="topnav">
+  <a class="topnav-logo" href="EventHub_v2_PC.html">Game<span>Connect</span></a>
+  <div class="topnav-right">
+    <div class="user-avatar" id="userAvatar">G</div>
+  </div>
+</div>
+
+<!-- Main -->
+<div class="main">
+
+  <!-- Page Header -->
+  <div class="page-header">
+    <h1>Project <span>Database</span></h1>
+    <p>Browse game projects from developers worldwide — find your next publishing deal, investment opportunity, or collaboration partner.</p>
+    <div class="header-stats">
+      <div class="stat-item">
+        <div class="stat-num" id="totalCount">—</div>
+        <div class="stat-label">Total Projects</div>
+      </div>
+      <div class="stat-item">
+        <div class="stat-num" id="steamCount">—</div>
+        <div class="stat-label">Steam Festival</div>
+      </div>
+      <div class="stat-item">
+        <div class="stat-num" id="allEntriesCount">—</div>
+        <div class="stat-label">Convention Entries</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Filter Bar -->
+  <div class="filter-bar">
+    <div class="filter-inner">
+      <div class="search-wrap">
+        <span class="search-icon">🔍</span>
+        <input type="text" id="searchInput" placeholder="Search game title or company..." />
+      </div>
+      <div class="filter-divider"></div>
+      <select class="filter-select" id="genreFilter">
+        <option value="">All Genres</option>
+        <option value="Action">Action</option>
+        <option value="RPG">RPG</option>
+        <option value="Strategy">Strategy</option>
+        <option value="Simulation">Simulation</option>
+        <option value="Adventure">Adventure</option>
+        <option value="Puzzle">Puzzle</option>
+        <option value="Horror">Horror</option>
+        <option value="Sports">Sports</option>
+        <option value="Casual">Casual</option>
+        <option value="Indie">Indie</option>
+      </select>
+      <select class="filter-select" id="sourceFilter">
+        <option value="">All Sources</option>
+        <option value="Steam Festival 2026">Steam Festival 2026</option>
+        <option value="All Entries">Convention Entries</option>
+        <option value="Project Database">Project Database</option>
+      </select>
+      <select class="filter-select" id="statusFilter">
+        <option value="">All Status</option>
+        <option value="In Development">In Development</option>
+        <option value="Alpha">Alpha</option>
+        <option value="Beta">Beta</option>
+        <option value="Released">Released</option>
+        <option value="Prototype">Prototype</option>
+      </select>
+      <div class="filter-divider"></div>
+      <div class="filter-count" id="filterCount">Loading...</div>
+    </div>
+  </div>
+
+  <!-- Grid -->
+  <div class="grid-wrap">
+    <div class="grid" id="projectGrid">
+      <div class="loading-wrap" style="grid-column:1/-1">
+        <div class="loading-spinner"></div>
+        <div>Loading projects...</div>
+      </div>
+    </div>
+    <div class="load-more-wrap" id="loadMoreWrap" style="display:none">
+      <button class="load-more-btn" id="loadMoreBtn" onclick="loadMore()">Load More Projects</button>
+    </div>
+  </div>
+
+</div>
+
+<!-- Detail Modal -->
+<div class="modal-overlay" id="modalOverlay" onclick="closeModal(event)">
+  <div class="modal" id="modal">
+    <div class="modal-header">
+      <div class="modal-title" id="modalTitle">—</div>
+      <button class="modal-close" onclick="closeModalDirect()">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="modal-company" id="modalCompany"></div>
+      <div class="modal-desc" id="modalDesc"></div>
+      <div id="modalGenreSection" class="modal-section" style="display:none">
+        <div class="modal-section-label">Genre</div>
+        <div class="modal-tags" id="modalGenre"></div>
+      </div>
+      <div id="modalPlatformsSection" class="modal-section" style="display:none">
+        <div class="modal-section-label">Platforms</div>
+        <div class="modal-tags" id="modalPlatforms"></div>
+      </div>
+      <div id="modalLookingSection" class="modal-section" style="display:none">
+        <div class="modal-section-label">Looking For</div>
+        <div class="modal-tags" id="modalLooking"></div>
+      </div>
+      <div id="modalStatusSection" class="modal-section" style="display:none">
+        <div class="modal-section-label">Development Status</div>
+        <div id="modalStatus" style="font-size:13px;color:#3a3835"></div>
+      </div>
+      <div id="modalLinkSection" style="display:none">
+        <a class="modal-link" id="modalLink" href="#" target="_blank" rel="noopener">
+          🔗 View on Steam / Trailer
+        </a>
+      </div>
+      <div class="modal-source" id="modalSource"></div>
+    </div>
+  </div>
+</div>
+
+<script>
+const SUPABASE_URL = 'https://gucqyrorgtsukqgnfjor.supabase.co';
+const SUPABASE_ANON_KEY = 'sb_publishable_-BkWoyQCBVhagJQIgR_zdw_qHvhYZpG';
+
+const PAGE_SIZE = 48;
+let currentOffset = 0;
+let currentTotal = 0;
+let currentFilters = {};
+let isLoading = false;
+
+// ── Fetch stats ──
+async function fetchStats() {
+  const sources = ['Steam Festival 2026', 'All Entries', 'Project Database'];
+  const counts = {};
+  
+  // Total
+  const r = await fetch(`${SUPABASE_URL}/rest/v1/game_projects?select=id`, {
+    headers: { apikey: SUPABASE_ANON_KEY, Prefer: 'count=exact', Range: '0-0' }
+  });
+  const total = r.headers.get('content-range')?.split('/')[1] || '?';
+  document.getElementById('totalCount').textContent = Number(total).toLocaleString();
+  
+  // Steam Festival
+  const r2 = await fetch(`${SUPABASE_URL}/rest/v1/game_projects?select=id&source=eq.Steam Festival 2026`, {
+    headers: { apikey: SUPABASE_ANON_KEY, Prefer: 'count=exact', Range: '0-0' }
+  });
+  const steam = r2.headers.get('content-range')?.split('/')[1] || '?';
+  document.getElementById('steamCount').textContent = Number(steam).toLocaleString();
+  
+  // All Entries
+  const r3 = await fetch(`${SUPABASE_URL}/rest/v1/game_projects?select=id&source=eq.All Entries`, {
+    headers: { apikey: SUPABASE_ANON_KEY, Prefer: 'count=exact', Range: '0-0' }
+  });
+  const entries = r3.headers.get('content-range')?.split('/')[1] || '?';
+  document.getElementById('allEntriesCount').textContent = Number(entries).toLocaleString();
+}
+
+// ── Build query URL ──
+function buildQuery(offset = 0) {
+  let params = new URLSearchParams({
+    select: 'id,title,tagline,description,genre,platforms,status,looking_for,cover_image_url,trailer_url,source',
+    order: 'created_at.desc',
+    limit: PAGE_SIZE,
+    offset: offset
+  });
+  
+  const search = document.getElementById('searchInput').value.trim();
+  const genre = document.getElementById('genreFilter').value;
+  const source = document.getElementById('sourceFilter').value;
+  const status = document.getElementById('statusFilter').value;
+  
+  if (search) {
+    params.set('or', `title.ilike.*${search}*,tagline.ilike.*${search}*,description.ilike.*${search}*`);
+  }
+  if (genre) {
+    params.set('genre', `cs.{${genre}}`);
+  }
+  if (source) {
+    if (source === 'All Entries') {
+      params.set('source', 'in.(All Entries,GC2024,GC2023,GC2022,GC2021,GC2020)');
+    } else {
+      params.set('source', `eq.${source}`);
+    }
+  }
+  if (status) {
+    params.set('status', `ilike.*${status}*`);
+  }
+  
+  return `${SUPABASE_URL}/rest/v1/game_projects?${params.toString()}`;
+}
+
+// ── Fetch projects ──
+async function fetchProjects(reset = false) {
+  if (isLoading) return;
+  isLoading = true;
+  
+  if (reset) {
+    currentOffset = 0;
+    document.getElementById('projectGrid').innerHTML = `
+      <div class="loading-wrap" style="grid-column:1/-1">
+        <div class="loading-spinner"></div>
+        <div>Loading projects...</div>
+      </div>`;
+    document.getElementById('loadMoreWrap').style.display = 'none';
+  }
+  
+  const url = buildQuery(currentOffset);
+  
+  try {
+    const r = await fetch(url, {
+      headers: { apikey: SUPABASE_ANON_KEY, Prefer: 'count=exact' }
+    });
+    const data = await r.json();
+    const cr = r.headers.get('content-range') || '0/0';
+    currentTotal = parseInt(cr.split('/')[1]) || 0;
+    
+    if (reset) {
+      document.getElementById('projectGrid').innerHTML = '';
+    }
+    
+    if (data.length === 0 && currentOffset === 0) {
+      document.getElementById('projectGrid').innerHTML = `
+        <div class="loading-wrap" style="grid-column:1/-1">
+          <div class="empty-icon">🔍</div>
+          <div class="empty-text">No projects found</div>
+          <div class="empty-sub">Try adjusting your search or filters</div>
+        </div>`;
+    } else {
+      data.forEach(p => {
+        document.getElementById('projectGrid').appendChild(createCard(p));
+      });
+      currentOffset += data.length;
+    }
+    
+    // Update count
+    const shown = Math.min(currentOffset, currentTotal);
+    document.getElementById('filterCount').textContent = 
+      `Showing ${shown.toLocaleString()} of ${currentTotal.toLocaleString()} projects`;
+    
+    // Load more button
+    if (currentOffset < currentTotal) {
+      document.getElementById('loadMoreWrap').style.display = 'block';
+      document.getElementById('loadMoreBtn').disabled = false;
+      document.getElementById('loadMoreBtn').textContent = 
+        `Load More (${(currentTotal - currentOffset).toLocaleString()} remaining)`;
+    } else {
+      document.getElementById('loadMoreWrap').style.display = currentTotal > 0 ? 'block' : 'none';
+      document.getElementById('loadMoreBtn').disabled = true;
+      document.getElementById('loadMoreBtn').textContent = 'All projects loaded';
+    }
+    
+  } catch(e) {
+    console.error(e);
+    if (reset) {
+      document.getElementById('projectGrid').innerHTML = `
+        <div class="loading-wrap" style="grid-column:1/-1">
+          <div class="empty-icon">⚠️</div>
+          <div class="empty-text">Failed to load projects</div>
+          <div class="empty-sub">Please check your connection and try again</div>
+        </div>`;
+    }
+  }
+  
+  isLoading = false;
+}
+
+// ── Create card ──
+const GENRE_COLORS = ['#fde8dc', '#e8f4fd', '#f0fde8', '#fdf0e8', '#f0e8fd'];
+const EMOJI_MAP = {
+  'action': '⚔️', 'rpg': '🗡️', 'strategy': '♟️', 'simulation': '🏗️',
+  'adventure': '🗺️', 'puzzle': '🧩', 'horror': '👻', 'sports': '⚽',
+  'casual': '🎈', 'indie': '🎮', 'racing': '🏎️', 'fighting': '🥊',
+  'shooter': '🎯', 'platformer': '🏃', 'survival': '🏕️', 'music': '🎵'
+};
+
+function getEmoji(title, genre) {
+  if (genre && genre.length > 0) {
+    const g = genre[0].toLowerCase();
+    for (const [key, emoji] of Object.entries(EMOJI_MAP)) {
+      if (g.includes(key)) return emoji;
+    }
+  }
+  return '🎮';
+}
+
+function getSourceBadge(source) {
+  if (!source) return '';
+  if (source.includes('Steam')) return 'Steam';
+  if (source.includes('Project Database')) return 'Archive';
+  return 'Convention';
+}
+
+function createCard(p) {
+  const div = document.createElement('div');
+  div.className = 'card';
+  div.onclick = () => openModal(p);
+  
+  const emoji = getEmoji(p.title, p.genre);
+  const badge = getSourceBadge(p.source);
+  const genreTags = (p.genre || []).slice(0, 2).map(g => 
+    `<span class="tag genre">${escHtml(g)}</span>`).join('');
+  const platformTags = (p.platforms || []).slice(0, 2).map(pl => 
+    `<span class="tag">${escHtml(pl)}</span>`).join('');
+  
+  const coverHtml = p.cover_image_url 
+    ? `<img src="${escHtml(p.cover_image_url)}" alt="" onerror="this.parentElement.innerHTML='<div class=card-cover-fallback>${emoji}</div>'">`
+    : `<div class="card-cover-fallback">${emoji}</div>`;
+  
+  div.innerHTML = `
+    <div class="card-cover">
+      ${coverHtml}
+      ${badge ? `<span class="card-source-badge">${badge}</span>` : ''}
+    </div>
+    <div class="card-body">
+      <div class="card-title" title="${escHtml(p.title)}">${escHtml(p.title)}</div>
+      <div class="card-company">${escHtml(p.tagline || '—')}</div>
+      <div class="card-desc">${escHtml(p.description || 'No description available.')}</div>
+      <div class="card-tags">${genreTags}${platformTags}</div>
+      <div class="card-footer">
+        <span class="card-status">${escHtml(p.status || '—')}</span>
+        <span class="card-looking">${(p.looking_for || []).join(', ') || ''}</span>
+      </div>
+    </div>`;
+  
+  return div;
+}
+
+// ── Modal ──
+function openModal(p) {
+  document.getElementById('modalTitle').textContent = p.title || '—';
+  document.getElementById('modalCompany').textContent = p.tagline ? `by ${p.tagline}` : '';
+  document.getElementById('modalDesc').textContent = p.description || 'No description available.';
+  
+  // Genre
+  const genreEl = document.getElementById('modalGenre');
+  const genreSection = document.getElementById('modalGenreSection');
+  if (p.genre && p.genre.length > 0) {
+    genreEl.innerHTML = p.genre.map(g => `<span class="modal-tag genre">${escHtml(g)}</span>`).join('');
+    genreSection.style.display = 'block';
+  } else {
+    genreSection.style.display = 'none';
+  }
+  
+  // Platforms
+  const platEl = document.getElementById('modalPlatforms');
+  const platSection = document.getElementById('modalPlatformsSection');
+  if (p.platforms && p.platforms.length > 0) {
+    platEl.innerHTML = p.platforms.map(pl => `<span class="modal-tag">${escHtml(pl)}</span>`).join('');
+    platSection.style.display = 'block';
+  } else {
+    platSection.style.display = 'none';
+  }
+  
+  // Looking For
+  const lookEl = document.getElementById('modalLooking');
+  const lookSection = document.getElementById('modalLookingSection');
+  if (p.looking_for && p.looking_for.length > 0) {
+    lookEl.innerHTML = p.looking_for.map(l => `<span class="modal-tag">${escHtml(l)}</span>`).join('');
+    lookSection.style.display = 'block';
+  } else {
+    lookSection.style.display = 'none';
+  }
+  
+  // Status
+  const statusSection = document.getElementById('modalStatusSection');
+  if (p.status) {
+    document.getElementById('modalStatus').textContent = p.status;
+    statusSection.style.display = 'block';
+  } else {
+    statusSection.style.display = 'none';
+  }
+  
+  // Link
+  const linkSection = document.getElementById('modalLinkSection');
+  if (p.trailer_url) {
+    document.getElementById('modalLink').href = p.trailer_url;
+    linkSection.style.display = 'block';
+  } else {
+    linkSection.style.display = 'none';
+  }
+  
+  // Source
+  document.getElementById('modalSource').textContent = `Source: ${p.source || 'Unknown'}`;
+  
+  document.getElementById('modalOverlay').classList.add('open');
+}
+
+function closeModal(e) {
+  if (e.target === document.getElementById('modalOverlay')) {
+    closeModalDirect();
+  }
+}
+
+function closeModalDirect() {
+  document.getElementById('modalOverlay').classList.remove('open');
+}
+
+function loadMore() {
+  fetchProjects(false);
+}
+
+function escHtml(str) {
+  if (!str) return '';
+  return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+// ── Search & Filter ──
+let searchTimeout;
+document.getElementById('searchInput').addEventListener('input', () => {
+  clearTimeout(searchTimeout);
+  searchTimeout = setTimeout(() => fetchProjects(true), 400);
+});
+
+['genreFilter', 'sourceFilter', 'statusFilter'].forEach(id => {
+  document.getElementById(id).addEventListener('change', () => fetchProjects(true));
+});
+
+// ── Init ──
+fetchStats();
+fetchProjects(true);
+</script>
+</body>
+</html>
