@@ -309,12 +309,24 @@ html,body{height:100%;font-family:"DM Sans","PingFang SC",sans-serif;color:#111;
     <div class="sidebar-section">
       <div class="sidebar-label">Data</div>
       <div class="sidebar-item" onclick="showPanel('database')">
-        <span class="icon">🗄️</span> Database Overview
+        <span class="icon">📈</span> DB Overview
         <span class="sidebar-cnt" id="cnt-db">3</span>
+      </div>
+      <div class="sidebar-item" onclick="showPanel('projects-data')">
+        <span class="icon">🎮</span> Projects
+        <span class="sidebar-cnt" id="cnt-projects">—</span>
+      </div>
+      <div class="sidebar-item" onclick="showPanel('companies-data')">
+        <span class="icon">🏢</span> Companies
+        <span class="sidebar-cnt" id="cnt-companies">—</span>
+      </div>
+      <div class="sidebar-item" onclick="showPanel('events-data')">
+        <span class="icon">🌍</span> Events Data
+        <span class="sidebar-cnt" id="cnt-events-data">—</span>
       </div>
       <div class="sidebar-item" onclick="showPanel('pages')">
         <span class="icon">📄</span> All Pages
-        <span class="sidebar-cnt">207</span>
+        <span class="sidebar-cnt" id="cnt-pages">207</span>
       </div>
       <div class="sidebar-label">System</div>
       <div class="sidebar-item" onclick="showPanel('health')">
@@ -688,14 +700,137 @@ html,body{height:100%;font-family:"DM Sans","PingFang SC",sans-serif;color:#111;
       </div>
     </div>
 
+    <!-- PROJECTS DATA PANEL -->
+    <div class="panel" id="panel-projects-data">
+      <div class="page-hdr">
+        <div>
+          <div class="page-title">🎮 Game Projects</div>
+          <div class="page-sub">Browse all game projects in the database</div>
+        </div>
+      </div>
+      <div class="section-card">
+        <div style="padding:12px 16px">
+          <div class="filter-row">
+            <div class="search-bar" style="flex:1;max-width:320px">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#999" stroke-width="2.2"><circle cx="11" cy="11" r="7"/><line x1="16.5" y1="16.5" x2="22" y2="22"/></svg>
+              <input type="text" id="proj-search" placeholder="Search by title, company, description…" oninput="projSearch()">
+            </div>
+            <select class="filter-select" id="proj-source" onchange="projLoad()">
+              <option value="">All Sources</option>
+              <option value="steam_festival">Steam Festival 2026</option>
+              <option value="all_entries">All Entries</option>
+              <option value="project_database">Project Database</option>
+            </select>
+            <select class="filter-select" id="proj-status" onchange="projLoad()">
+              <option value="">All Status</option>
+              <option value="in_development">In Development</option>
+              <option value="released">Released</option>
+              <option value="prototype">Prototype</option>
+            </select>
+          </div>
+        </div>
+        <div id="proj-table-wrap"><div class="loading-state">Loading projects…</div></div>
+        <div style="padding:10px 16px;display:flex;align-items:center;justify-content:space-between;border-top:1px solid var(--border)">
+          <span style="font-size:11px;color:var(--text3)" id="proj-info">—</span>
+          <div style="display:flex;gap:6px">
+            <button class="btn btn-ghost" style="font-size:11px" id="proj-prev" onclick="projPrev()" disabled>← Prev</button>
+            <button class="btn btn-ghost" style="font-size:11px" id="proj-next" onclick="projNext()">Next →</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- COMPANIES DATA PANEL -->
+    <div class="panel" id="panel-companies-data">
+      <div class="page-hdr">
+        <div>
+          <div class="page-title">🏢 Companies &amp; Contacts</div>
+          <div class="page-sub">Publishers, developers, investors, associations</div>
+        </div>
+      </div>
+      <div class="section-card">
+        <div style="padding:12px 16px">
+          <div class="filter-row">
+            <div class="search-bar" style="flex:1;max-width:320px">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#999" stroke-width="2.2"><circle cx="11" cy="11" r="7"/><line x1="16.5" y1="16.5" x2="22" y2="22"/></svg>
+              <input type="text" id="co-search" placeholder="Search by company name, contact, country…" oninput="coSearch()">
+            </div>
+            <select class="filter-select" id="co-type" onchange="coLoad()">
+              <option value="">All Types</option>
+              <option value="publisher">Publishers</option>
+              <option value="developer">Developers</option>
+              <option value="investor">Investors</option>
+              <option value="association">Associations</option>
+              <option value="buyer">Buyers</option>
+              <option value="sponsor">Sponsors</option>
+              <option value="platform">Platforms</option>
+              <option value="event_org">Event Orgs</option>
+            </select>
+            <select class="filter-select" id="co-country" onchange="coLoad()">
+              <option value="">All Countries</option>
+            </select>
+          </div>
+        </div>
+        <div id="co-table-wrap"><div class="loading-state">Loading companies…</div></div>
+        <div style="padding:10px 16px;display:flex;align-items:center;justify-content:space-between;border-top:1px solid var(--border)">
+          <span style="font-size:11px;color:var(--text3)" id="co-info">—</span>
+          <div style="display:flex;gap:6px">
+            <button class="btn btn-ghost" style="font-size:11px" id="co-prev" onclick="coPrev()" disabled>← Prev</button>
+            <button class="btn btn-ghost" style="font-size:11px" id="co-next" onclick="coNext()">Next →</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- EVENTS DATA PANEL -->
+    <div class="panel" id="panel-events-data">
+      <div class="page-hdr">
+        <div>
+          <div class="page-title">🌍 Events Database</div>
+          <div class="page-sub">All 3,264 conventions and industry events</div>
+        </div>
+      </div>
+      <div class="section-card">
+        <div style="padding:12px 16px">
+          <div class="filter-row">
+            <div class="search-bar" style="flex:1;max-width:320px">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#999" stroke-width="2.2"><circle cx="11" cy="11" r="7"/><line x1="16.5" y1="16.5" x2="22" y2="22"/></svg>
+              <input type="text" id="evd-search" placeholder="Search events…" oninput="evdSearch()">
+            </div>
+            <select class="filter-select" id="evd-year" onchange="evdLoad()">
+              <option value="">All Years</option>
+              <option value="2026">2026</option>
+              <option value="2027">2027</option>
+              <option value="2025">2025</option>
+            </select>
+            <select class="filter-select" id="evd-type" onchange="evdLoad()">
+              <option value="">All Types</option>
+              <option value="conference">Conference</option>
+              <option value="tradeshow">Trade Show</option>
+              <option value="awards">Awards</option>
+              <option value="esports">Esports</option>
+              <option value="free">Free</option>
+            </select>
+          </div>
+        </div>
+        <div id="evd-table-wrap"><div class="loading-state">Loading events…</div></div>
+        <div style="padding:10px 16px;display:flex;align-items:center;justify-content:space-between;border-top:1px solid var(--border)">
+          <span style="font-size:11px;color:var(--text3)" id="evd-info">—</span>
+          <div style="display:flex;gap:6px">
+            <button class="btn btn-ghost" style="font-size:11px" id="evd-prev" onclick="evdPrev()" disabled>← Prev</button>
+            <button class="btn btn-ghost" style="font-size:11px" id="evd-next" onclick="evdNext()">Next →</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
     <!-- ALL PAGES PANEL -->
     <div class="panel" id="panel-pages">
       <div class="page-hdr">
         <div>
           <div class="page-title">📄 All Platform Pages</div>
-          <div class="page-sub">207 HTML files — all versions, all features</div>
+          <div class="page-sub">207 HTML files — all versions, all features — LIVE pages highlighted in green</div>
         </div>
-        <a href="_all_pages.html" target="_blank" class="btn btn-primary" style="text-decoration:none">Open Full Index ↗</a>
       </div>
       <div class="search-bar" style="margin-bottom:16px">
         <span style="color:var(--text3)">🔍</span>
@@ -914,7 +1049,8 @@ const ALL_PAGES = [
   {n:'Market_v1_PC.html',cat:'Portals',tags:'current pc',desc:'Market page'},
   {n:'Market_v1_Mobile.html',cat:'Portals',tags:'current mobile',desc:'Market Mobile'},
   {n:'_admin.html',cat:'Admin',tags:'current pc',desc:'This admin dashboard'},
-  {n:'_all_pages.html',cat:'Admin',tags:'current pc',desc:'All pages index'},
+  {n:'_all_pages.html',cat:'Admin',tags:'old pc',desc:'Standalone all-pages index — archived, use All Pages tab above'},
+  {n:'ProjectDatabase_v1_PC.html',cat:'Admin',tags:'old pc',desc:'Standalone project database browser — archived, use Projects tab above'},
   {n:'PlatformMap_v1_PC.html',cat:'Admin',tags:'current pc',desc:'Platform map'},
   {n:'AdminDashboard_v1_PC.html',cat:'Admin',tags:'current pc',desc:'Admin dashboard old'},
   {n:'GC_Platform_Structure.html',cat:'Admin',tags:'current pc',desc:'Platform structure doc'},
@@ -978,6 +1114,9 @@ function showPanel(id) {
   if (id === 'health') healthLoad();
   if (id === 'status') statusLoad();
   if (id === 'database') dbLoad();
+  if (id === 'projects-data') projLoad();
+  if (id === 'companies-data') coLoad();
+  if (id === 'events-data') evdLoad();
   if (id === 'pages') pagesRender();
 }
 
@@ -1368,6 +1507,158 @@ async function healthLoad() {
     document.getElementById('health-grid').innerHTML = '<div class="loading-state" style="grid-column:1/-1">Failed to load health data</div>';
   }
 }
+
+// ── PROJECTS DATA ──
+let projOffset = 0, projTotal = 0;
+const PROJ_LIMIT = 50;
+
+async function projLoad() {
+  projOffset = 0;
+  await projLoadPage();
+  // update sidebar count
+  try {
+    const r = await fetch(`${SB_URL}/rest/v1/game_projects?select=id`, { headers: {...SB_HEADERS, 'Prefer': 'count=exact', 'Range': '0-0'} });
+    const cr = r.headers.get('content-range');
+    if (cr) document.getElementById('cnt-projects').textContent = parseInt(cr.split('/')[1]).toLocaleString();
+  } catch(e) {}
+}
+
+async function projLoadPage() {
+  const search = document.getElementById('proj-search').value.trim();
+  const source = document.getElementById('proj-source').value;
+  const status = document.getElementById('proj-status').value;
+  const wrap = document.getElementById('proj-table-wrap');
+  wrap.innerHTML = '<div class="loading-state">Loading…</div>';
+  try {
+    let url = `${SB_URL}/rest/v1/game_projects?select=id,title,company_name,genre,source,status,looking_for&limit=${PROJ_LIMIT}&offset=${projOffset}&order=id.asc`;
+    if (search) url += `&or=(title.ilike.*${encodeURIComponent(search)}*,company_name.ilike.*${encodeURIComponent(search)}*,description.ilike.*${encodeURIComponent(search)})` ;
+    if (source) url += `&source=eq.${encodeURIComponent(source)}`;
+    if (status) url += `&status=eq.${encodeURIComponent(status)}`;
+    const r = await fetch(url, { headers: {...SB_HEADERS, 'Prefer': 'count=exact'} });
+    const data = await r.json();
+    const cr = r.headers.get('content-range');
+    if (cr) projTotal = parseInt(cr.split('/')[1]);
+    if (!data.length) { wrap.innerHTML = '<div class="loading-state">No projects found</div>'; return; }
+    wrap.innerHTML = '<table class="admin-table"><thead><tr><th>Title</th><th>Company</th><th>Genre</th><th>Source</th><th>Status</th><th>Looking For</th></tr></thead><tbody>' +
+      data.map(p => `<tr>
+        <td style="max-width:200px;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--text1)">${p.title || '—'}</td>
+        <td style="font-size:11px;max-width:140px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${p.company_name || '—'}</td>
+        <td style="font-size:10px">${Array.isArray(p.genre) ? p.genre.slice(0,2).join(', ') : (p.genre || '—')}</td>
+        <td><span style="background:rgba(10,102,194,0.08);color:var(--blue);padding:1px 6px;border-radius:8px;font-size:9px;font-weight:700">${p.source || '—'}</span></td>
+        <td style="font-size:10px">${p.status || '—'}</td>
+        <td style="font-size:10px;max-width:120px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${Array.isArray(p.looking_for) ? p.looking_for.join(', ') : (p.looking_for || '—')}</td>
+      </tr>`).join('') + '</tbody></table>';
+    const s = projOffset + 1, e = Math.min(projOffset + PROJ_LIMIT, projTotal);
+    document.getElementById('proj-info').textContent = `Showing ${s}–${e} of ${projTotal.toLocaleString()} projects`;
+    document.getElementById('proj-prev').disabled = projOffset === 0;
+    document.getElementById('proj-next').disabled = e >= projTotal;
+  } catch(err) { wrap.innerHTML = '<div class="loading-state">Failed to load</div>'; }
+}
+
+function projPrev() { projOffset = Math.max(0, projOffset - PROJ_LIMIT); projLoadPage(); }
+function projNext() { projOffset += PROJ_LIMIT; projLoadPage(); }
+let projTimer;
+function projSearch() { clearTimeout(projTimer); projTimer = setTimeout(projLoad, 400); }
+
+// ── COMPANIES DATA ──
+let coOffset = 0, coTotal = 0;
+const CO_LIMIT = 50;
+
+async function coLoad() {
+  coOffset = 0;
+  await coLoadPage();
+  try {
+    const r = await fetch(`${SB_URL}/rest/v1/companies?select=id`, { headers: {...SB_HEADERS, 'Prefer': 'count=exact', 'Range': '0-0'} });
+    const cr = r.headers.get('content-range');
+    if (cr) document.getElementById('cnt-companies').textContent = parseInt(cr.split('/')[1]).toLocaleString();
+  } catch(e) {}
+}
+
+async function coLoadPage() {
+  const search = document.getElementById('co-search').value.trim();
+  const type = document.getElementById('co-type').value;
+  const wrap = document.getElementById('co-table-wrap');
+  wrap.innerHTML = '<div class="loading-state">Loading…</div>';
+  try {
+    let url = `${SB_URL}/rest/v1/companies?select=id,name,type,country,contact_name,contact_email,website&limit=${CO_LIMIT}&offset=${coOffset}&order=name.asc`;
+    if (search) url += `&or=(name.ilike.*${encodeURIComponent(search)}*,contact_name.ilike.*${encodeURIComponent(search)}*,country.ilike.*${encodeURIComponent(search)})` ;
+    if (type) url += `&type=eq.${encodeURIComponent(type)}`;
+    const r = await fetch(url, { headers: {...SB_HEADERS, 'Prefer': 'count=exact'} });
+    const data = await r.json();
+    const cr = r.headers.get('content-range');
+    if (cr) coTotal = parseInt(cr.split('/')[1]);
+    if (!data.length) { wrap.innerHTML = '<div class="loading-state">No companies found</div>'; return; }
+    wrap.innerHTML = '<table class="admin-table"><thead><tr><th>Company</th><th>Type</th><th>Country</th><th>Contact</th><th>Email</th><th>Website</th></tr></thead><tbody>' +
+      data.map(c => `<tr>
+        <td style="font-weight:600;color:var(--text1);max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${c.name || '—'}</td>
+        <td><span style="background:rgba(10,102,194,0.08);color:var(--blue);padding:1px 6px;border-radius:8px;font-size:9px;font-weight:700">${c.type || '—'}</span></td>
+        <td style="font-size:11px">${c.country || '—'}</td>
+        <td style="font-size:11px">${c.contact_name || '—'}</td>
+        <td style="font-size:10px;color:var(--blue)">${c.contact_email ? `<a href="mailto:${c.contact_email}" style="color:var(--blue)">${c.contact_email}</a>` : '—'}</td>
+        <td style="font-size:10px">${c.website ? `<a href="${c.website}" target="_blank" style="color:var(--blue)">Link ↗</a>` : '—'}</td>
+      </tr>`).join('') + '</tbody></table>';
+    const s = coOffset + 1, e = Math.min(coOffset + CO_LIMIT, coTotal);
+    document.getElementById('co-info').textContent = `Showing ${s}–${e} of ${coTotal.toLocaleString()} companies`;
+    document.getElementById('co-prev').disabled = coOffset === 0;
+    document.getElementById('co-next').disabled = e >= coTotal;
+  } catch(err) { wrap.innerHTML = '<div class="loading-state">Failed to load</div>'; }
+}
+
+function coPrev() { coOffset = Math.max(0, coOffset - CO_LIMIT); coLoadPage(); }
+function coNext() { coOffset += CO_LIMIT; coLoadPage(); }
+let coTimer;
+function coSearch() { clearTimeout(coTimer); coTimer = setTimeout(coLoad, 400); }
+
+// ── EVENTS DATA ──
+let evdOffset = 0, evdTotal = 0;
+const EVD_LIMIT = 50;
+
+async function evdLoad() {
+  evdOffset = 0;
+  await evdLoadPage();
+  try {
+    const r = await fetch(`${SB_URL}/rest/v1/events?select=id`, { headers: {...SB_HEADERS, 'Prefer': 'count=exact', 'Range': '0-0'} });
+    const cr = r.headers.get('content-range');
+    if (cr) document.getElementById('cnt-events-data').textContent = parseInt(cr.split('/')[1]).toLocaleString();
+  } catch(e) {}
+}
+
+async function evdLoadPage() {
+  const search = document.getElementById('evd-search').value.trim();
+  const year = document.getElementById('evd-year').value;
+  const type = document.getElementById('evd-type').value;
+  const wrap = document.getElementById('evd-table-wrap');
+  wrap.innerHTML = '<div class="loading-state">Loading…</div>';
+  try {
+    let url = `${SB_URL}/rest/v1/events?select=id,title,start_date,city,country,type,status,attendee_count&limit=${EVD_LIMIT}&offset=${evdOffset}&order=start_date.asc`;
+    if (search) url += `&title=ilike.*${encodeURIComponent(search)}*`;
+    if (year) url += `&start_date=gte.${year}-01-01&start_date=lte.${year}-12-31`;
+    if (type) url += `&type=eq.${encodeURIComponent(type)}`;
+    const r = await fetch(url, { headers: {...SB_HEADERS, 'Prefer': 'count=exact'} });
+    const data = await r.json();
+    const cr = r.headers.get('content-range');
+    if (cr) evdTotal = parseInt(cr.split('/')[1]);
+    if (!data.length) { wrap.innerHTML = '<div class="loading-state">No events found</div>'; return; }
+    wrap.innerHTML = '<table class="admin-table"><thead><tr><th>Event</th><th>Date</th><th>Location</th><th>Type</th><th>Attendees</th><th>Status</th></tr></thead><tbody>' +
+      data.map(ev => `<tr>
+        <td style="font-weight:600;color:var(--text1);max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${ev.title || '—'}</td>
+        <td style="font-size:11px;white-space:nowrap">${ev.start_date ? ev.start_date.slice(0,10) : '—'}</td>
+        <td style="font-size:11px">${[ev.city, ev.country].filter(Boolean).join(', ') || '—'}</td>
+        <td><span style="background:rgba(10,102,194,0.08);color:var(--blue);padding:1px 6px;border-radius:8px;font-size:9px;font-weight:700">${ev.type || '—'}</span></td>
+        <td style="font-size:11px">${ev.attendee_count ? ev.attendee_count.toLocaleString() : '—'}</td>
+        <td><span class="status-badge s-${ev.status}">${ev.status || '—'}</span></td>
+      </tr>`).join('') + '</tbody></table>';
+    const s = evdOffset + 1, e = Math.min(evdOffset + EVD_LIMIT, evdTotal);
+    document.getElementById('evd-info').textContent = `Showing ${s}–${e} of ${evdTotal.toLocaleString()} events`;
+    document.getElementById('evd-prev').disabled = evdOffset === 0;
+    document.getElementById('evd-next').disabled = e >= evdTotal;
+  } catch(err) { wrap.innerHTML = '<div class="loading-state">Failed to load</div>'; }
+}
+
+function evdPrev() { evdOffset = Math.max(0, evdOffset - EVD_LIMIT); evdLoadPage(); }
+function evdNext() { evdOffset += EVD_LIMIT; evdLoadPage(); }
+let evdTimer;
+function evdSearch() { clearTimeout(evdTimer); evdTimer = setTimeout(evdLoad, 400); }
 
 function adminRefreshAll() {
   dashLoad();
