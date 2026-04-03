@@ -3591,30 +3591,90 @@ function calAddToIcs(e, evData) {
   e.stopPropagation();
   const existing = document.getElementById('ics-picker');
   if (existing) existing.remove();
-  const picker = document.createElement('div');
-  picker.id = 'ics-picker';
-  picker.style.cssText = 'position:fixed;z-index:9999;background:#fff;border:1px solid #e0dfdc;border-radius:12px;box-shadow:0 8px 32px rgba(0,0,0,0.15);padding:14px;min-width:210px;';
-  const rect = (e.target || e.currentTarget).getBoundingClientRect();
-  picker.style.left = Math.min(rect.left, window.innerWidth - 230) + 'px';
-  picker.style.top = Math.min(rect.bottom + 8, window.innerHeight - 200) + 'px';
+
   const title = evData.title || 'Event';
   const start = evData.start || '';
   const end = evData.end || start;
   const location = evData.location || '';
   const url = evData.url || '';
+
+  // Google Calendar URL
   const gcStart = start.replace(/-/g,'');
   const gcEndNext = end ? (() => { const d = new Date(end+'T00:00:00'); d.setDate(d.getDate()+1); return d.toISOString().split('T')[0].replace(/-/g,''); })() : gcStart;
-  const gcUrl = 'https://calendar.google.com/calendar/render?action=TEMPLATE&text=' + encodeURIComponent(title) + '&dates=' + gcStart + '/' + gcEndNext + '&location=' + encodeURIComponent(location);
-  const outlookUrl = 'https://outlook.live.com/calendar/0/deeplink/compose?subject=' + encodeURIComponent(title) + '&startdt=' + start + '&enddt=' + (end||start) + '&location=' + encodeURIComponent(location);
+  const googleUrl = 'https://calendar.google.com/calendar/render?action=TEMPLATE&text=' + encodeURIComponent(title) + '&dates=' + gcStart + '/' + gcEndNext + '&location=' + encodeURIComponent(location) + (url ? '&details=' + encodeURIComponent('Event website: ' + url) : '');
+
+  // Outlook Live URL
+  const outlookUrl = 'https://outlook.live.com/calendar/0/deeplink/compose?subject=' + encodeURIComponent(title) + '&startdt=' + start + 'T00:00:00&enddt=' + (end||start) + 'T23:59:00&location=' + encodeURIComponent(location) + '&body=' + encodeURIComponent(url ? 'Event website: ' + url : '');
+
+  // Outlook 365 (work accounts)
+  const outlook365Url = 'https://outlook.office.com/calendar/0/deeplink/compose?subject=' + encodeURIComponent(title) + '&startdt=' + start + 'T00:00:00&enddt=' + (end||start) + 'T23:59:00&location=' + encodeURIComponent(location) + '&body=' + encodeURIComponent(url ? 'Event website: ' + url : '');
+
+  // Yahoo Calendar URL
+  const yStart = start + 'T000000Z';
+  const yEnd = (end||start) + 'T235959Z';
+  const yahooUrl = 'https://calendar.yahoo.com/?v=60&title=' + encodeURIComponent(title) + '&st=' + yStart + '&et=' + yEnd + '&in_loc=' + encodeURIComponent(location) + '&desc=' + encodeURIComponent(url ? 'Event website: ' + url : '');
+
+  // Apple Calendar: use .ics download (Apple Calendar on macOS/iOS opens .ics natively)
+  // iCloud web compose URL
+  const appleUrl = 'https://www.icloud.com/calendar/';
+
   const evJson = JSON.stringify(evData).replace(/"/g,'&quot;');
-  picker.innerHTML = '<div style="font-size:10px;font-weight:800;color:var(--text3);letter-spacing:1px;text-transform:uppercase;margin-bottom:8px">Add to Calendar</div>' +
-    '<div style="font-size:12px;font-weight:700;color:var(--text1);margin-bottom:10px;line-height:1.3;max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">' + title + '</div>' +
-    '<div style="display:flex;flex-direction:column;gap:4px">' +
-      '<a href="' + gcUrl + '" target="_blank" onclick="document.getElementById(\'ics-picker\').remove()" style="display:flex;align-items:center;gap:8px;padding:7px 10px;border-radius:7px;border:1px solid #e0dfdc;text-decoration:none;color:var(--text1);font-size:12px;font-weight:600">📅 Google Calendar</a>' +
-      '<a href="' + outlookUrl + '" target="_blank" onclick="document.getElementById(\'ics-picker\').remove()" style="display:flex;align-items:center;gap:8px;padding:7px 10px;border-radius:7px;border:1px solid #e0dfdc;text-decoration:none;color:var(--text1);font-size:12px;font-weight:600">📆 Outlook Calendar</a>' +
-      '<button onclick="calDownloadIcs(' + evJson + ')" style="display:flex;align-items:center;gap:8px;padding:7px 10px;border-radius:7px;border:1px solid #e0dfdc;background:transparent;cursor:pointer;font-family:inherit;color:var(--text1);font-size:12px;font-weight:600;width:100%">⬇ Download .ics</button>' +
+
+  // Build picker
+  const picker = document.createElement('div');
+  picker.id = 'ics-picker';
+  picker.style.cssText = 'position:fixed;z-index:9999;background:#fff;border:1px solid #e5e7eb;border-radius:14px;box-shadow:0 12px 40px rgba(0,0,0,0.18);padding:16px 14px 12px;min-width:240px;';
+
+  const rect = (e.target || e.currentTarget).getBoundingClientRect();
+  let left = rect.left;
+  let top = rect.bottom + 8;
+  if (left + 260 > window.innerWidth) left = window.innerWidth - 265;
+  if (top + 340 > window.innerHeight) top = rect.top - 340;
+  picker.style.left = Math.max(8, left) + 'px';
+  picker.style.top = Math.max(8, top) + 'px';
+
+  const btnStyle = 'display:flex;align-items:center;gap:10px;padding:9px 12px;border-radius:9px;border:1px solid #e5e7eb;text-decoration:none;color:#111827;font-size:13px;font-weight:600;transition:background .12s;cursor:pointer;background:#fff;font-family:inherit;width:100%;box-sizing:border-box;';  // hover handled inline per element
+
+  picker.innerHTML =
+    '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px">' +
+      '<span style="font-size:10px;font-weight:800;color:#9ca3af;letter-spacing:1px;text-transform:uppercase">Add to Calendar</span>' +
+      '<button onclick="document.getElementById(\'ics-picker\').remove()" style="background:none;border:none;cursor:pointer;font-size:20px;color:#9ca3af;line-height:1;padding:0 2px">&times;</button>' +
     '</div>' +
-    '<button onclick="document.getElementById(\'ics-picker\').remove()" style="position:absolute;top:8px;right:10px;background:none;border:none;cursor:pointer;font-size:18px;color:var(--text3);line-height:1">×</button>';
+    '<div style="font-size:13px;font-weight:700;color:#111827;margin-bottom:12px;line-height:1.35;max-width:210px;word-break:break-word">' + title + '</div>' +
+    '<div style="display:flex;flex-direction:column;gap:5px">' +
+      // Google
+      '<a href="' + googleUrl + '" target="_blank" rel="noopener" onclick="document.getElementById(\'ics-picker\').remove()" style="' + btnStyle + '" onmouseover="this.style.background=\'#f3f4f6\'" onmouseout="this.style.background=\'#fff\'">' +
+        '<svg width="18" height="18" viewBox="0 0 48 48"><path fill="#4285F4" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/><path fill="#34A853" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/><path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/><path fill="#EA4335" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.18 1.48-4.97 2.31-8.16 2.31-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/></svg>' +
+        'Google Calendar' +
+      '</a>' +
+      // Outlook Personal
+      '<a href="' + outlookUrl + '" target="_blank" rel="noopener" onclick="document.getElementById(\'ics-picker\').remove()" style="' + btnStyle + '" onmouseover="this.style.background=\'#f3f4f6\'" onmouseout="this.style.background=\'#fff\'">' +
+        '<svg width="18" height="18" viewBox="0 0 48 48"><rect width="48" height="48" rx="6" fill="#0078D4"/><path fill="#fff" d="M24 12c-6.63 0-12 5.37-12 12s5.37 12 12 12 12-5.37 12-12-5.37-12-12-12zm0 20c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8z"/><path fill="#fff" d="M26 24h-4v-6h2v4h2z"/></svg>' +
+        'Outlook (Personal)' +
+      '</a>' +
+      // Outlook 365
+      '<a href="' + outlook365Url + '" target="_blank" rel="noopener" onclick="document.getElementById(\'ics-picker\').remove()" style="' + btnStyle + '" onmouseover="this.style.background=\'#f3f4f6\'" onmouseout="this.style.background=\'#fff\'">' +
+        '<svg width="18" height="18" viewBox="0 0 48 48"><rect width="48" height="48" rx="6" fill="#0078D4"/><path fill="#fff" d="M10 14h28v20H10z" opacity=".15"/><path fill="#fff" d="M10 14h28l-14 12L10 14z"/></svg>' +
+        'Outlook 365 (Work)' +
+      '</a>' +
+      // Apple iCal (.ics download — opens Apple Calendar natively)
+      '<button onclick="calDownloadIcs(' + evJson + ');" style="' + btnStyle + '" onmouseover="this.style.background=\'#f3f4f6\'" onmouseout="this.style.background=\'#fff\'">' +
+        '<svg width="18" height="18" viewBox="0 0 48 48"><rect width="48" height="48" rx="10" fill="#fff" stroke="#e5e7eb"/><rect x="4" y="4" width="40" height="40" rx="8" fill="#fff"/><rect x="4" y="4" width="40" height="12" rx="8" fill="#FC3C44"/><rect x="4" y="10" width="40" height="6" fill="#FC3C44"/><text x="24" y="36" text-anchor="middle" font-size="16" font-weight="700" fill="#1c1c1e" font-family="-apple-system,sans-serif">CAL</text></svg>' +
+        'Apple Calendar (.ics)' +
+      '</button>' +
+      // Yahoo
+      '<a href="' + yahooUrl + '" target="_blank" rel="noopener" onclick="document.getElementById(\'ics-picker\').remove()" style="' + btnStyle + '" onmouseover="this.style.background=\'#f3f4f6\'" onmouseout="this.style.background=\'#fff\'">' +
+        '<svg width="18" height="18" viewBox="0 0 48 48"><rect width="48" height="48" rx="6" fill="#6001D2"/><text x="24" y="34" text-anchor="middle" font-size="22" font-weight="900" fill="#fff" font-family="Arial,sans-serif">Y!</text></svg>' +
+        'Yahoo Calendar' +
+      '</a>' +
+      // Generic .ics download
+      '<div style="border-top:1px solid #f3f4f6;margin:4px 0"></div>' +
+      '<button onclick="calDownloadIcs(' + evJson + ')" style="' + btnStyle + 'color:#6b7280;font-weight:500;" onmouseover="this.style.background=\'#f3f4f6\'" onmouseout="this.style.background=\'#fff\'">' +
+        '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>' +
+        'Download .ics file' +
+      '</button>' +
+    '</div>';
+
   document.body.appendChild(picker);
   setTimeout(() => {
     document.addEventListener('click', function closePicker(ev) {
