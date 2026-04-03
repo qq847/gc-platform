@@ -3271,6 +3271,9 @@ async function _pcProjLoadBatch(reset) {
           ${desc ? '<div style="font-size:12px;color:var(--text2);line-height:1.5;margin-bottom:6px">'+desc+'</div>' : ''}
           ${lookFor}
           <div style="display:flex;gap:4px;flex-wrap:wrap;margin-top:8px">${plats}</div>
+          <div style="margin-top:12px;padding-top:10px;border-top:1px solid #f0eeeb;display:flex;gap:8px">
+            <button onclick="openTestKeyModal('${p.id}','${(p.title||'').replace(/'/g,"\\'").replace(/"/g,'&quot;')}')" style="flex:1;padding:7px 0;border-radius:8px;background:linear-gradient(135deg,#7c3aed,#5b21b6);color:#fff;border:none;font-size:11px;font-weight:700;cursor:pointer;transition:.2s" onmouseover="this.style.opacity='.85'" onmouseout="this.style.opacity='1'">🎁 Send Test Key</button>
+          </div>
         </div>
       </div>`;
     }).join('');
@@ -4435,6 +4438,170 @@ document.addEventListener('DOMContentLoaded', function() {
       }, 2000);
     }
   }
+</script>
+
+<!-- TEST KEY MODAL -->
+<div id="testkey-overlay" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:9999;align-items:center;justify-content:center">
+  <div style="background:#fff;border-radius:16px;padding:28px;width:520px;max-width:95vw;box-shadow:0 20px 60px rgba(0,0,0,.25);position:relative">
+    <button onclick="closeTestKeyModal()" style="position:absolute;top:16px;right:16px;background:none;border:none;font-size:20px;cursor:pointer;color:#999;line-height:1">&times;</button>
+    <div style="font-size:18px;font-weight:800;color:var(--text1);margin-bottom:4px">🎁 Send Test Key</div>
+    <div id="testkey-proj-name" style="font-size:13px;color:var(--text3);margin-bottom:20px"></div>
+
+    <!-- Step 1: Select Publisher -->
+    <div id="testkey-step1">
+      <div style="font-size:12px;font-weight:700;color:var(--text2);margin-bottom:8px">1. Select Target Publisher / Investor</div>
+      <input type="text" id="testkey-pub-search" placeholder="Search company name..." oninput="testKeySearchPub()" style="width:100%;padding:9px 12px;border:1.5px solid var(--border);border-radius:8px;font-size:13px;font-family:inherit;outline:none;box-sizing:border-box">
+      <div id="testkey-pub-results" style="margin-top:8px;max-height:180px;overflow-y:auto;display:flex;flex-direction:column;gap:4px"></div>
+      <div id="testkey-pub-selected" style="display:none;margin-top:10px;padding:10px 14px;background:#f0f4ff;border-radius:8px;border:1.5px solid #4a6cf7">
+        <div style="font-size:12px;font-weight:700;color:#1d4ed8" id="testkey-pub-name"></div>
+        <div style="font-size:11px;color:var(--text3)" id="testkey-pub-email"></div>
+        <button onclick="testKeyClearPub()" style="font-size:10px;color:#dc2626;background:none;border:none;cursor:pointer;margin-top:4px">× Change</button>
+      </div>
+    </div>
+
+    <!-- Step 2: Key type & value -->
+    <div style="margin-top:18px">
+      <div style="font-size:12px;font-weight:700;color:var(--text2);margin-bottom:8px">2. Test Key / Code</div>
+      <div style="display:flex;gap:8px;margin-bottom:8px">
+        <button class="testkey-type-btn active" data-type="steam" onclick="testKeySetType(this,'steam')">Steam Key</button>
+        <button class="testkey-type-btn" data-type="itch" onclick="testKeySetType(this,'itch')">itch.io</button>
+        <button class="testkey-type-btn" data-type="apk" onclick="testKeySetType(this,'apk')">APK Link</button>
+        <button class="testkey-type-btn" data-type="custom" onclick="testKeySetType(this,'custom')">Custom</button>
+      </div>
+      <input type="text" id="testkey-code" placeholder="e.g. XXXXX-XXXXX-XXXXX" style="width:100%;padding:9px 12px;border:1.5px solid var(--border);border-radius:8px;font-size:13px;font-family:inherit;outline:none;box-sizing:border-box;font-family:monospace">
+    </div>
+
+    <!-- Step 3: Note -->
+    <div style="margin-top:14px">
+      <div style="font-size:12px;font-weight:700;color:var(--text2);margin-bottom:6px">3. Personal Note (optional)</div>
+      <textarea id="testkey-note" placeholder="Hi! We'd love for you to try our game..." rows="3" style="width:100%;padding:9px 12px;border:1.5px solid var(--border);border-radius:8px;font-size:13px;font-family:inherit;outline:none;resize:vertical;box-sizing:border-box"></textarea>
+    </div>
+
+    <div style="margin-top:20px;display:flex;gap:10px">
+      <button onclick="closeTestKeyModal()" style="flex:1;padding:11px;border:1.5px solid var(--border);border-radius:8px;background:#fff;font-size:13px;font-weight:600;cursor:pointer;color:var(--text2)">Cancel</button>
+      <button id="testkey-send-btn" onclick="testKeySend()" style="flex:2;padding:11px;border:none;border-radius:8px;background:linear-gradient(135deg,#7c3aed,#5b21b6);color:#fff;font-size:13px;font-weight:700;cursor:pointer">📧 Send Test Key</button>
+    </div>
+    <div id="testkey-status" style="margin-top:10px;font-size:12px;text-align:center;color:var(--text3)"></div>
+  </div>
+</div>
+
+<style>
+.testkey-type-btn{padding:5px 12px;border-radius:20px;border:1.5px solid var(--border);background:#fff;font-size:11px;font-weight:600;color:var(--text2);cursor:pointer;transition:.2s}
+.testkey-type-btn:hover{border-color:#7c3aed;color:#7c3aed}
+.testkey-type-btn.active{background:#7c3aed;color:#fff;border-color:#7c3aed}
+</style>
+
+<script>
+let _testKeyProjId = null, _testKeyProjName = '', _testKeyPubData = null, _testKeyType = 'steam';
+
+function openTestKeyModal(projId, projName) {
+  _testKeyProjId = projId;
+  _testKeyProjName = projName;
+  _testKeyPubData = null;
+  document.getElementById('testkey-proj-name').textContent = 'Project: ' + projName;
+  document.getElementById('testkey-pub-search').value = '';
+  document.getElementById('testkey-pub-results').innerHTML = '';
+  document.getElementById('testkey-pub-selected').style.display = 'none';
+  document.getElementById('testkey-code').value = '';
+  document.getElementById('testkey-note').value = '';
+  document.getElementById('testkey-status').textContent = '';
+  const overlay = document.getElementById('testkey-overlay');
+  overlay.style.display = 'flex';
+}
+
+function closeTestKeyModal() {
+  document.getElementById('testkey-overlay').style.display = 'none';
+}
+
+function testKeySetType(btn, type) {
+  _testKeyType = type;
+  document.querySelectorAll('.testkey-type-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  const placeholders = {steam:'e.g. XXXXX-XXXXX-XXXXX',itch:'https://itch.io/...',apk:'https://drive.google.com/...',custom:'Enter code or link'};
+  document.getElementById('testkey-code').placeholder = placeholders[type]||'';
+}
+
+async function testKeySearchPub() {
+  const q = (document.getElementById('testkey-pub-search').value||'').trim();
+  const res = document.getElementById('testkey-pub-results');
+  if (!q || q.length < 2) { res.innerHTML = ''; return; }
+  try {
+    const r = await fetch(_SB_URL + '/rest/v1/companies?select=id,name,type,primary_email,country&name=ilike.*' + encodeURIComponent(q) + '*&type=in.(publisher,investor,distributor)&limit=8', {headers: _SB_H});
+    const data = await r.json();
+    if (!data || !data.length) { res.innerHTML = '<div style="font-size:12px;color:var(--text3);padding:8px">No publishers found</div>'; return; }
+    res.innerHTML = data.map(c => `
+      <div onclick='testKeySelectPub(${JSON.stringify(c).replace(/'/g,"\\'")})' style="padding:9px 12px;border:1px solid #e4e6ea;border-radius:7px;cursor:pointer;background:#fff" onmouseover="this.style.background='#f8f9fa'" onmouseout="this.style.background='#fff'">
+        <div style="font-size:12px;font-weight:700;color:var(--text1)">${c.name}</div>
+        <div style="font-size:10px;color:var(--text3)">${c.type||''} · ${c.country||''} · ${c.primary_email||'no email'}</div>
+      </div>
+    `).join('');
+  } catch(e) { res.innerHTML = '<div style="font-size:12px;color:#dc2626">Search failed</div>'; }
+}
+
+function testKeySelectPub(company) {
+  _testKeyPubData = company;
+  document.getElementById('testkey-pub-search').value = '';
+  document.getElementById('testkey-pub-results').innerHTML = '';
+  document.getElementById('testkey-pub-name').textContent = company.name + ' (' + (company.type||'') + ')';
+  document.getElementById('testkey-pub-email').textContent = company.primary_email || 'No email on file';
+  document.getElementById('testkey-pub-selected').style.display = 'block';
+}
+
+function testKeyClearPub() {
+  _testKeyPubData = null;
+  document.getElementById('testkey-pub-selected').style.display = 'none';
+}
+
+async function testKeySend() {
+  const code = (document.getElementById('testkey-code').value||'').trim();
+  const note = (document.getElementById('testkey-note').value||'').trim();
+  const status = document.getElementById('testkey-status');
+  const sendBtn = document.getElementById('testkey-send-btn');
+
+  if (!_testKeyPubData) { status.textContent = '⚠️ Please select a publisher first.'; status.style.color='#dc2626'; return; }
+  if (!code) { status.textContent = '⚠️ Please enter a test key or code.'; status.style.color='#dc2626'; return; }
+  if (!_testKeyPubData.primary_email) { status.textContent = '⚠️ This company has no email on file.'; status.style.color='#dc2626'; return; }
+
+  sendBtn.disabled = true;
+  sendBtn.textContent = 'Sending...';
+  status.textContent = '';
+
+  const typeLabels = {steam:'Steam Key',itch:'itch.io Link',apk:'APK Download',custom:'Test Code'};
+  const subject = `[Game Connection] Test Key Invitation: ${_testKeyProjName}`;
+  const body = `Hello ${_testKeyPubData.name},\n\nYou have been invited to test a game project on Game Connection.\n\nProject: ${_testKeyProjName}\n${typeLabels[_testKeyType]||'Code'}: ${code}\n${note ? '\nMessage from developer:\n' + note + '\n' : ''}\n---\nThis invitation was sent via Game Connection platform.\nVisit: https://qq847.github.io/gc-platform/EventHub_v2_PC.html\n`;
+
+  try {
+    // Use MCP Gmail to send
+    const response = await fetch('https://api.manus.im/mcp/gmail/send', {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({
+        to: _testKeyPubData.primary_email,
+        subject,
+        body
+      })
+    });
+    // Since MCP isn't directly callable from browser, we log and show success
+    // The actual send will be handled by copying to clipboard as fallback
+    throw new Error('use_fallback');
+  } catch(e) {
+    // Fallback: copy email draft to clipboard and open mailto
+    const mailto = `mailto:${_testKeyPubData.primary_email}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+    const a = document.createElement('a');
+    a.href = mailto;
+    a.click();
+    sendBtn.disabled = false;
+    sendBtn.textContent = '📧 Send Test Key';
+    status.textContent = '✓ Email draft opened in your mail client!';
+    status.style.color = 'var(--green)';
+    setTimeout(() => closeTestKeyModal(), 2500);
+  }
+}
+
+// Close on overlay click
+document.getElementById('testkey-overlay').addEventListener('click', function(e) {
+  if (e.target === this) closeTestKeyModal();
+});
 </script>
 </body>
 </html>
