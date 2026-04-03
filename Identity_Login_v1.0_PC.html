@@ -1,0 +1,379 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Game Connection — Sign In</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%;font-family:"DM Sans","PingFang SC",sans-serif;color:#1c1a17;overflow:hidden}
+
+:root{
+  --orange:#d95f2b;--orange-dim:rgba(217,95,43,0.1);--orange-border:rgba(217,95,43,0.25);
+  --teal:#0a7fa8;--green:#0d9b72;
+  --text1:#1c1a17;--text2:#6b6660;--text3:#a09890;
+  --border:rgba(0,0,0,0.09);
+}
+
+/* ── LAYOUT ── */
+.page{display:flex;height:100vh}
+
+/* ── LEFT PANEL ── */
+.left{
+  flex:0 0 58%;position:relative;overflow:hidden;
+  background:linear-gradient(135deg,#0f1a2e 0%,#1a2a4a 40%,#0f2a1f 100%);
+}
+.left-bg{
+  position:absolute;inset:0;
+  background:
+    radial-gradient(ellipse 60% 50% at 20% 30%,rgba(217,95,43,0.18) 0%,transparent 60%),
+    radial-gradient(ellipse 50% 40% at 80% 70%,rgba(10,127,168,0.15) 0%,transparent 60%),
+    radial-gradient(ellipse 40% 30% at 50% 50%,rgba(13,155,114,0.1) 0%,transparent 50%);
+}
+.left-grid{
+  position:absolute;inset:0;
+  background-image:linear-gradient(rgba(255,255,255,0.03) 1px,transparent 1px),
+                   linear-gradient(90deg,rgba(255,255,255,0.03) 1px,transparent 1px);
+  background-size:48px 48px;
+}
+.left-content{
+  position:relative;z-index:1;
+  height:100%;display:flex;flex-direction:column;
+  padding:48px;
+}
+
+/* Logo */
+.logo{display:flex;align-items:center;gap:10px;margin-bottom:auto}
+.logo-mark{
+  width:38px;height:38px;border-radius:10px;
+  background:linear-gradient(135deg,#d95f2b,#c04f20);
+  display:flex;align-items:center;justify-content:center;
+  font-size:16px;font-weight:900;color:#fff;letter-spacing:-1px;
+}
+.logo-text{font-size:16px;font-weight:800;color:#fff;letter-spacing:.5px}
+.logo-text span{color:#d95f2b}
+
+/* Hero text */
+.hero{margin-top:auto;margin-bottom:0;padding-bottom:8px}
+.hero-eyebrow{
+  font-size:10px;letter-spacing:3px;font-weight:800;
+  color:rgba(217,95,43,0.9);text-transform:uppercase;
+  margin-bottom:16px;display:flex;align-items:center;gap:8px;
+}
+.hero-eyebrow::before{content:'';width:24px;height:1.5px;background:#d95f2b;display:block}
+.hero-title{
+  font-size:42px;font-weight:800;color:#fff;
+  line-height:1.15;letter-spacing:-1px;margin-bottom:20px;
+}
+.hero-title span{color:#d95f2b}
+.hero-sub{font-size:15px;color:rgba(255,255,255,0.55);line-height:1.7;max-width:440px;margin-bottom:40px}
+
+/* Stats */
+.stats{display:flex;gap:0;margin-bottom:48px}
+.stat{padding-right:32px;margin-right:32px;border-right:1px solid rgba(255,255,255,0.1)}
+.stat:last-child{border-right:none}
+.stat-num{font-size:26px;font-weight:800;color:#fff;letter-spacing:-1px}
+.stat-label{font-size:11px;color:rgba(255,255,255,0.4);margin-top:2px;font-weight:500}
+
+/* Partner logos */
+.partners{display:flex;align-items:center;gap:6px}
+.partner-label{font-size:11px;color:rgba(255,255,255,0.3);margin-right:8px;font-weight:500;letter-spacing:.3px}
+.partner-badge{
+  height:28px;padding:0 12px;border-radius:6px;
+  background:rgba(255,255,255,0.07);border:1px solid rgba(255,255,255,0.1);
+  display:flex;align-items:center;justify-content:center;
+  font-size:11px;font-weight:700;color:rgba(255,255,255,0.5);
+}
+
+/* Floating cards */
+.float-cards{position:absolute;right:48px;top:50%;transform:translateY(-50%);display:flex;flex-direction:column;gap:10px}
+.float-card{
+  background:rgba(255,255,255,0.06);
+  backdrop-filter:blur(20px);
+  border:1px solid rgba(255,255,255,0.1);
+  border-radius:12px;padding:12px 16px;
+  display:flex;align-items:center;gap:10px;
+  width:220px;
+}
+.fc-icon{width:36px;height:36px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0}
+.fc-icon.orange{background:rgba(217,95,43,0.2)}
+.fc-icon.teal{background:rgba(10,127,168,0.2)}
+.fc-icon.green{background:rgba(13,155,114,0.2)}
+.fc-body{}
+.fc-label{font-size:11px;color:rgba(255,255,255,0.5);margin-bottom:1px}
+.fc-val{font-size:13px;font-weight:700;color:#fff}
+
+/* ── RIGHT PANEL ── */
+.right{
+  flex:1;
+  background:#e8e4da;
+  display:flex;align-items:center;justify-content:center;
+  padding:48px;
+}
+.auth-box{width:100%;max-width:400px}
+.auth-logo-mobile{display:none}
+.auth-title{font-size:26px;font-weight:800;color:var(--text1);letter-spacing:-.5px;margin-bottom:6px}
+.auth-sub{font-size:14px;color:var(--text2);margin-bottom:36px;line-height:1.6}
+
+/* Google button */
+.btn-google{
+  display:flex;align-items:center;justify-content:center;gap:12px;
+  width:100%;padding:14px 20px;
+  background:#fff;
+  border:1.5px solid var(--border);
+  border-radius:10px;
+  font-size:15px;font-weight:600;color:var(--text1);
+  cursor:pointer;font-family:inherit;
+  transition:all .2s;
+  box-shadow:0 1px 4px rgba(0,0,0,0.08);
+  text-decoration:none;
+}
+.btn-google:hover{
+  border-color:#d95f2b;
+  box-shadow:0 4px 16px rgba(217,95,43,0.15);
+  transform:translateY(-1px);
+}
+.btn-google:active{transform:translateY(0)}
+.btn-google:disabled{opacity:.6;cursor:not-allowed;transform:none}
+.google-icon{width:22px;height:22px;flex-shrink:0}
+
+/* Features list */
+.features{margin-top:32px;display:flex;flex-direction:column;gap:10px}
+.feature{display:flex;align-items:flex-start;gap:10px}
+.feature-dot{
+  width:22px;height:22px;border-radius:50%;
+  background:rgba(217,95,43,0.1);border:1px solid rgba(217,95,43,0.2);
+  display:flex;align-items:center;justify-content:center;
+  font-size:11px;flex-shrink:0;margin-top:1px;
+}
+.feature-text{font-size:13px;color:var(--text2);line-height:1.5}
+.feature-text strong{color:var(--text1);font-weight:600}
+
+/* Footer */
+.auth-footer{margin-top:36px;font-size:11px;color:var(--text3);line-height:1.8;text-align:center}
+.auth-footer a{color:var(--text3);text-decoration:underline;text-underline-offset:2px}
+
+/* Error message */
+.auth-error{
+  margin-top:16px;padding:12px 14px;
+  background:rgba(220,38,38,0.08);border:1px solid rgba(220,38,38,0.2);
+  border-radius:8px;font-size:13px;color:#dc2626;
+  display:none;
+}
+
+/* Spinner */
+@keyframes spin{to{transform:rotate(360deg)}}
+.spinner{
+  width:20px;height:20px;border-radius:50%;flex-shrink:0;
+  border:2.5px solid rgba(217,95,43,0.2);
+  border-top-color:#d95f2b;
+  animation:spin .8s linear infinite;
+}
+
+/* ── Responsive ── */
+@media(max-width:900px){
+  .left{display:none}
+  .right{padding:32px 24px;background:#e8e4da}
+  .page{overflow:auto}
+  html,body{overflow:auto}
+  .auth-logo-mobile{
+    display:flex;align-items:center;gap:8px;
+    margin-bottom:32px;
+  }
+  .auth-logo-mobile .logo-mark{width:32px;height:32px;font-size:13px}
+  .auth-logo-mobile .logo-text{font-size:14px}
+}
+</style>
+</head>
+<body>
+
+<!-- Supabase -->
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+const _supabase = supabase.createClient(
+  'https://gucqyrorgtsukqgnfjor.supabase.co',
+  'sb_publishable_-BkWoyQCBVhagJQIgR_zdw_qHvhYZpG'
+);
+
+// Handle OAuth callback if we land here with a token in the hash
+(async function() {
+  const hash = window.location.hash;
+  if (hash && hash.includes('access_token')) {
+    const { data, error } = await _supabase.auth.getSession();
+    if (data && data.session) {
+      localStorage.setItem('gc_auth_token', data.session.access_token);
+      localStorage.setItem('gc_auth_user', JSON.stringify({
+        id: data.session.user.id,
+        email: data.session.user.email,
+        name: data.session.user.user_metadata?.full_name || data.session.user.email,
+        avatar: data.session.user.user_metadata?.avatar_url || null
+      }));
+      // Redirect to main app with profile mode
+      window.location.replace('EventHub_v2_PC.html?mode=profile');
+    }
+  }
+  // If already logged in, redirect to profile
+  const token = localStorage.getItem('gc_auth_token');
+  if (token) {
+    window.location.replace('EventHub_v2_PC.html?mode=profile');
+  }
+})();
+</script>
+
+<div class="page">
+
+  <!-- ── LEFT PANEL ── -->
+  <div class="left">
+    <div class="left-bg"></div>
+    <div class="left-grid"></div>
+
+    <!-- Floating info cards -->
+    <div class="float-cards">
+      <div class="float-card">
+        <div class="fc-icon orange">🤝</div>
+        <div class="fc-body">
+          <div class="fc-label">Last deal closed</div>
+          <div class="fc-val">RPG · Publishing</div>
+        </div>
+      </div>
+      <div class="float-card">
+        <div class="fc-icon teal">📅</div>
+        <div class="fc-body">
+          <div class="fc-label">Next event</div>
+          <div class="fc-val">Gamescom Asia · 12 days</div>
+        </div>
+      </div>
+      <div class="float-card">
+        <div class="fc-icon green">🎮</div>
+        <div class="fc-body">
+          <div class="fc-label">New project listed</div>
+          <div class="fc-val">Phantom Circuit</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="left-content">
+      <!-- Logo -->
+      <div class="logo">
+        <div class="logo-mark">GC</div>
+        <div class="logo-text">GAME<span>CONNECTION</span></div>
+      </div>
+
+      <!-- Hero -->
+      <div class="hero">
+        <div class="hero-eyebrow">The Game Industry Platform</div>
+        <div class="hero-title">
+          Where games find<br>their <span>publishers</span>.
+        </div>
+        <div class="hero-sub">
+          Connect with 3,000+ verified publishers, investors, and developers worldwide. Discover events, close deals, and grow your game.
+        </div>
+
+        <div class="stats">
+          <div class="stat">
+            <div class="stat-num">3,000+</div>
+            <div class="stat-label">Verified Buyers</div>
+          </div>
+          <div class="stat">
+            <div class="stat-num">200+</div>
+            <div class="stat-label">Global Events</div>
+          </div>
+          <div class="stat">
+            <div class="stat-num">40+</div>
+            <div class="stat-label">Countries</div>
+          </div>
+        </div>
+
+        <div class="partners">
+          <span class="partner-label">Trusted by</span>
+          <span class="partner-badge">Devolver</span>
+          <span class="partner-badge">Ubisoft</span>
+          <span class="partner-badge">Team17</span>
+          <span class="partner-badge">Xsolla</span>
+          <span class="partner-badge">+200</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── RIGHT PANEL ── -->
+  <div class="right">
+    <div class="auth-box">
+
+      <!-- Mobile logo -->
+      <div class="auth-logo-mobile">
+        <div class="logo-mark">GC</div>
+        <div class="logo-text">GAME<span>CONNECTION</span></div>
+      </div>
+
+      <div class="auth-title">Welcome back 👋</div>
+      <div class="auth-sub">Sign in to access your network, events, and deals.</div>
+
+      <!-- Google sign in -->
+      <button class="btn-google" id="btn-google" onclick="handleGoogleLogin()">
+        <svg class="google-icon" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+          <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>
+          <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/>
+          <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05"/>
+          <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/>
+        </svg>
+        Continue with Google
+      </button>
+
+      <div class="auth-error" id="auth-error"></div>
+
+      <!-- What you get -->
+      <div class="features">
+        <div class="feature">
+          <div class="feature-dot">📅</div>
+          <div class="feature-text"><strong>Track 200+ global events</strong> and mark which ones you're attending</div>
+        </div>
+        <div class="feature">
+          <div class="feature-dot">🎮</div>
+          <div class="feature-text"><strong>Showcase your game</strong> to 3,000+ publishers and investors worldwide</div>
+        </div>
+        <div class="feature">
+          <div class="feature-dot">🤝</div>
+          <div class="feature-text"><strong>Close deals</strong> through our B2B Market and Deal Room</div>
+        </div>
+      </div>
+
+      <!-- Footer -->
+      <div class="auth-footer">
+        By continuing, you agree to our <a href="#">Terms of Service</a> and <a href="#">Privacy Policy</a>.<br>
+        Game Connection © 2026 · <a href="#">Help</a>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+async function handleGoogleLogin() {
+  const btn = document.getElementById('btn-google');
+  const errEl = document.getElementById('auth-error');
+  errEl.style.display = 'none';
+
+  // Show loading state
+  btn.disabled = true;
+  btn.innerHTML = '<div class="spinner"></div> Connecting to Google...';
+
+  try {
+    const redirectTo = 'https://qq847.github.io/gc-platform/EventHub_v2_PC.html?mode=profile';
+    const { data, error } = await _supabase.auth.signInWithOAuth({
+      provider: 'google',
+      options: { redirectTo }
+    });
+    if (error) throw error;
+    // OAuth redirect will happen automatically
+  } catch (err) {
+    btn.disabled = false;
+    btn.innerHTML = `<svg class="google-icon" viewBox="0 0 24 24"><path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/><path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/><path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05"/><path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/></svg> Continue with Google`;
+    errEl.textContent = 'Sign in failed: ' + err.message;
+    errEl.style.display = 'block';
+  }
+}
+</script>
+</body>
+</html>
