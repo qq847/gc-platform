@@ -196,6 +196,25 @@ const _supabase = supabase.createClient(
   'sb_publishable_-BkWoyQCBVhagJQIgR_zdw_qHvhYZpG'
 );
 
+// ── Auth flow helper ──
+function gcRedirectAfterLogin() {
+  // Check if there's a pending action (e.g. I'm Going from calendar)
+  const pending = JSON.parse(localStorage.getItem('gc_pending_action') || 'null');
+  // Check if user is new (no wizard data = new user)
+  const hasProfile = !!localStorage.getItem('gc_wizard');
+  if (!hasProfile) {
+    // New user → go to Onboarding Wizard
+    window.location.replace('Onboarding_Wizard_v1_PC.html');
+  } else if (pending && pending.action === 'going') {
+    // Returning from I'm Going → back to calendar with going flag
+    localStorage.removeItem('gc_pending_action');
+    window.location.replace('EventHub_v2_PC.html?mode=calendar&going=' + encodeURIComponent(pending.eventId));
+  } else {
+    // Normal login → go to profile
+    window.location.replace('EventHub_v2_PC.html?mode=profile');
+  }
+}
+
 // Handle OAuth callback if we land here with a token in the hash
 (async function() {
   const hash = window.location.hash;
@@ -209,14 +228,14 @@ const _supabase = supabase.createClient(
         name: data.session.user.user_metadata?.full_name || data.session.user.email,
         avatar: data.session.user.user_metadata?.avatar_url || null
       }));
-      // Redirect to main app with profile mode
-      window.location.replace('EventHub_v2_PC.html?mode=profile');
+      gcRedirectAfterLogin();
+      return;
     }
   }
-  // If already logged in, redirect to profile
+  // If already logged in, redirect appropriately
   const token = localStorage.getItem('gc_auth_token');
   if (token) {
-    window.location.replace('EventHub_v2_PC.html?mode=profile');
+    gcRedirectAfterLogin();
   }
 })();
 </script>
@@ -360,7 +379,8 @@ async function handleGoogleLogin() {
   btn.innerHTML = '<div class="spinner"></div> Connecting to Google...';
 
   try {
-    const redirectTo = 'https://qq847.github.io/gc-platform/EventHub_v2_PC.html?mode=profile';
+    // redirectTo must be the login page itself so the hash callback fires here
+    const redirectTo = 'https://qq847.github.io/gc-platform/Identity_Login_v1.0_PC.html';
     const { data, error } = await _supabase.auth.signInWithOAuth({
       provider: 'google',
       options: { redirectTo }
