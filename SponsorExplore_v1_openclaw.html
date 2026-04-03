@@ -1,0 +1,612 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Explore Events — GAME CONNECTION Commerce</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: 'DM Sans', sans-serif; background: #e8e4da; color: #1c1a17; min-height: 100vh; }
+
+/* ── NAV ── */
+nav {
+  position: sticky; top: 0; z-index: 100;
+  background: #fff; border-bottom: 1px solid #e0dcd4;
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 0 32px; height: 60px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+}
+.nav-logo { font-size: 15px; font-weight: 700; color: #1c1a17; letter-spacing: 0.02em; }
+.nav-logo span { color: #d95f2b; }
+.nav-links { display: flex; gap: 4px; }
+.nav-links a {
+  padding: 6px 14px; font-size: 14px; font-weight: 500; color: #6b6660;
+  text-decoration: none; border-radius: 6px; cursor: pointer; transition: all 0.15s;
+}
+.nav-links a:hover, .nav-links a.active { background: #f5f0eb; color: #1c1a17; }
+.nav-links a.active { color: #d95f2b; font-weight: 600; }
+.nav-right { display: flex; align-items: center; gap: 12px; }
+.nav-bell { font-size: 18px; cursor: pointer; color: #6b6660; position: relative; }
+.nav-bell::after { content:'3'; position:absolute; top:-4px; right:-4px; background:#d95f2b; color:#fff; font-size:9px; font-weight:700; border-radius:99px; padding:1px 4px; }
+.nav-avatar { width: 32px; height: 32px; border-radius: 50%; background: linear-gradient(135deg,#0a7fa8,#0d9b72); display:flex;align-items:center;justify-content:center; color:#fff; font-size:12px; font-weight:700; cursor:pointer; }
+.nav-company { font-size: 14px; font-weight: 600; color: #1c1a17; cursor: pointer; }
+
+/* ── HERO ── */
+.hero {
+  background: linear-gradient(135deg, #1a1a2e 0%, #0f3460 100%);
+  padding: 56px 32px 48px;
+  text-align: center;
+  position: relative; overflow: hidden;
+}
+.hero::before {
+  content: ''; position: absolute; inset: 0;
+  background: radial-gradient(ellipse at 70% 50%, rgba(10,127,168,0.15) 0%, transparent 60%);
+}
+.hero-title { font-size: 42px; font-weight: 700; color: #fff; line-height: 1.15; margin-bottom: 14px; position: relative; }
+.hero-sub { font-size: 17px; color: rgba(255,255,255,0.72); margin-bottom: 32px; position: relative; }
+.hero-stats { display: flex; justify-content: center; gap: 40px; margin-bottom: 36px; position: relative; }
+.hero-stat { text-align: center; }
+.hero-stat-num { font-size: 28px; font-weight: 700; color: #d95f2b; }
+.hero-stat-lbl { font-size: 13px; color: rgba(255,255,255,0.6); margin-top: 2px; }
+.hero-search-wrap { max-width: 600px; margin: 0 auto; position: relative; }
+.hero-search {
+  width: 100%; padding: 16px 56px 16px 20px;
+  font-family: 'DM Sans', sans-serif; font-size: 15px;
+  border: none; border-radius: 10px;
+  background: #fff; color: #1c1a17;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.2);
+  outline: none;
+}
+.hero-search::placeholder { color: #a09890; }
+.hero-search-icon { position: absolute; right: 18px; top: 50%; transform: translateY(-50%); font-size: 18px; color: #a09890; pointer-events: none; }
+
+/* ── LAYOUT ── */
+.page-body { display: flex; gap: 0; align-items: flex-start; }
+
+/* ── SIDEBAR ── */
+.sidebar {
+  width: 260px; flex-shrink: 0;
+  position: sticky; top: 60px;
+  height: calc(100vh - 60px); overflow-y: auto;
+  background: #fff; border-right: 1px solid #e0dcd4;
+  padding: 24px 16px;
+}
+.sidebar::-webkit-scrollbar { width: 4px; }
+.sidebar::-webkit-scrollbar-thumb { background: #d0ccc4; border-radius: 4px; }
+.sidebar h3 { font-size: 14px; font-weight: 700; color: #1c1a17; margin-bottom: 20px; letter-spacing: 0.04em; text-transform: uppercase; }
+.filter-section { margin-bottom: 24px; border-bottom: 1px solid #f0ece4; padding-bottom: 20px; }
+.filter-section:last-of-type { border-bottom: none; }
+.filter-label { font-size: 12px; font-weight: 600; color: #6b6660; text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 10px; }
+
+/* chips */
+.chips { display: flex; flex-wrap: wrap; gap: 6px; }
+.chip {
+  padding: 4px 10px; font-size: 12px; font-weight: 500;
+  border: 1px solid #d0ccc4; border-radius: 99px;
+  color: #6b6660; background: #f7f4f0;
+  cursor: pointer; transition: all 0.15s; user-select: none;
+}
+.chip:hover { border-color: #d95f2b; color: #d95f2b; }
+.chip.active { background: #d95f2b; color: #fff; border-color: #d95f2b; }
+
+/* radio */
+.radio-group { display: flex; flex-direction: column; gap: 8px; }
+.radio-opt { display: flex; align-items: center; gap: 8px; cursor: pointer; font-size: 13px; color: #1c1a17; }
+.radio-opt input { accent-color: #d95f2b; }
+
+/* slider */
+.slider-wrap { padding: 4px 0; }
+.slider-labels { display: flex; justify-content: space-between; font-size: 11px; color: #a09890; margin-bottom: 8px; }
+input[type=range] {
+  width: 100%; accent-color: #d95f2b;
+  height: 4px; border-radius: 4px; cursor: pointer;
+}
+
+/* checkboxes */
+.check-group { display: flex; flex-direction: column; gap: 8px; }
+.check-opt { display: flex; align-items: center; gap: 8px; cursor: pointer; font-size: 13px; color: #1c1a17; }
+.check-opt input { accent-color: #d95f2b; }
+
+.btn-apply {
+  width: 100%; padding: 10px; background: #d95f2b; color: #fff;
+  border: none; border-radius: 8px; font-family: 'DM Sans',sans-serif;
+  font-size: 14px; font-weight: 600; cursor: pointer; transition: background 0.15s;
+  margin-top: 16px;
+}
+.btn-apply:hover { background: #c24e1e; }
+.btn-reset { display: block; text-align: center; margin-top: 10px; font-size: 13px; color: #0a7fa8; cursor: pointer; text-decoration: underline; }
+.filter-count { font-size: 11px; color: #a09890; text-align: center; margin-top: 14px; }
+
+/* ── MAIN LIST ── */
+.main-list { flex: 1; padding: 24px; min-width: 0; }
+.sort-bar {
+  display: flex; align-items: center; gap: 8px; margin-bottom: 20px;
+  background: #fff; border-radius: 10px; padding: 12px 16px;
+  border: 1px solid #e0dcd4;
+}
+.sort-bar span { font-size: 13px; color: #6b6660; font-weight: 500; flex-shrink: 0; }
+.sort-btn {
+  padding: 5px 12px; font-size: 13px; font-weight: 500;
+  border: 1px solid #e0dcd4; border-radius: 6px; background: #f7f4f0;
+  color: #6b6660; cursor: pointer; transition: all 0.15s;
+}
+.sort-btn:hover { border-color: #d95f2b; color: #d95f2b; }
+.sort-btn.active { background: #d95f2b; color: #fff; border-color: #d95f2b; }
+
+/* event cards */
+.event-card {
+  background: #fff; border-radius: 12px; border: 1.5px solid #e0dcd4;
+  display: flex; gap: 0; margin-bottom: 14px;
+  transition: box-shadow 0.2s, border-color 0.2s;
+  overflow: hidden; cursor: pointer;
+}
+.event-card:hover { box-shadow: 0 6px 24px rgba(0,0,0,0.1); border-color: #c8c4bc; }
+.event-card.selected { border-color: #d95f2b; box-shadow: 0 0 0 2px rgba(217,95,43,0.15); }
+
+.event-thumb {
+  width: 160px; min-height: 120px; flex-shrink: 0;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 28px; position: relative;
+}
+.event-body { flex: 1; padding: 16px 14px; min-width: 0; }
+.event-name { font-size: 16px; font-weight: 700; color: #1c1a17; margin-bottom: 6px; }
+.event-meta { display: flex; align-items: center; gap: 10px; font-size: 12px; color: #6b6660; margin-bottom: 8px; flex-wrap: wrap; }
+.event-meta-dot { color: #d0ccc4; }
+.event-desc { font-size: 13px; color: #6b6660; line-height: 1.5; margin-bottom: 10px;
+  display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+.event-tags { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 10px; }
+.event-tag {
+  padding: 2px 8px; font-size: 11px; font-weight: 600;
+  border-radius: 4px; background: #f0ece4; color: #6b6660;
+}
+.event-tag.logo { background: #e8f4f8; color: #0a7fa8; }
+.event-tag.booth { background: #e8f6f1; color: #0d9b72; }
+.event-tag.award { background: #f3edfc; color: #7c3aed; }
+.event-tag.newsletter { background: #fef4e8; color: #d95f2b; }
+.event-tag.speaking { background: #e8f4f8; color: #0a7fa8; }
+.event-footer { display: flex; align-items: center; gap: 14px; font-size: 12px; color: #a09890; }
+.event-footer-price { font-size: 13px; font-weight: 600; color: #0d9b72; }
+
+.event-actions { padding: 16px 14px; display: flex; flex-direction: column; align-items: flex-end; justify-content: space-between; width: 160px; flex-shrink: 0; }
+.btn-fav {
+  font-size: 20px; background: none; border: none; cursor: pointer;
+  color: #d0ccc4; transition: color 0.15s; padding: 4px;
+}
+.btn-fav:hover, .btn-fav.active { color: #d95f2b; }
+.btn-view {
+  padding: 9px 16px; background: #d95f2b; color: #fff;
+  border: none; border-radius: 8px; font-family: 'DM Sans',sans-serif;
+  font-size: 13px; font-weight: 600; cursor: pointer; transition: background 0.15s;
+  white-space: nowrap;
+}
+.btn-view:hover { background: #c24e1e; }
+.badge {
+  display: inline-block; padding: 3px 8px; border-radius: 6px;
+  font-size: 11px; font-weight: 700; letter-spacing: 0.02em;
+}
+.badge-hot { background: #fff0eb; color: #d95f2b; }
+.badge-featured { background: #fffbeb; color: #b45309; }
+.badge-new { background: #ecfdf5; color: #0d9b72; }
+
+/* ── RIGHT PANEL ── */
+.right-panel {
+  width: 280px; flex-shrink: 0;
+  position: sticky; top: 60px;
+  height: calc(100vh - 60px); overflow-y: auto;
+  padding: 24px 16px;
+}
+.right-panel::-webkit-scrollbar { width: 4px; }
+.right-panel::-webkit-scrollbar-thumb { background: #d0ccc4; border-radius: 4px; }
+.panel-card {
+  background: #fff; border-radius: 12px; border: 1px solid #e0dcd4;
+  padding: 16px; margin-bottom: 16px;
+}
+.panel-card h4 { font-size: 13px; font-weight: 700; color: #1c1a17; margin-bottom: 12px; }
+.saved-item {
+  display: flex; align-items: center; gap: 10px;
+  padding: 8px 0; border-bottom: 1px solid #f0ece4;
+}
+.saved-item:last-child { border-bottom: none; padding-bottom: 0; }
+.saved-dot { width: 8px; height: 8px; border-radius: 50%; background: #d95f2b; flex-shrink: 0; }
+.saved-name { font-size: 13px; font-weight: 500; color: #1c1a17; }
+.saved-loc { font-size: 11px; color: #a09890; }
+
+.rec-item { padding: 8px 0; border-bottom: 1px solid #f0ece4; }
+.rec-item:last-child { border-bottom: none; }
+.rec-name { font-size: 13px; font-weight: 600; color: #1c1a17; margin-bottom: 2px; }
+.rec-meta { font-size: 11px; color: #a09890; }
+
+.reach-calc { }
+.reach-desc { font-size: 12px; color: #6b6660; margin-bottom: 12px; line-height: 1.5; }
+.reach-stat { margin-bottom: 10px; }
+.reach-stat-label { font-size: 11px; color: #a09890; text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 2px; }
+.reach-stat-value { font-size: 22px; font-weight: 700; color: #0a7fa8; }
+.reach-stat-sub { font-size: 11px; color: #6b6660; }
+.reach-events { font-size: 12px; color: #6b6660; margin-top: 8px; }
+.reach-events strong { color: #d95f2b; font-size: 16px; }
+
+.pop-pkg { display: flex; align-items: center; gap: 10px; padding: 8px 0; border-bottom: 1px solid #f0ece4; }
+.pop-pkg:last-child { border-bottom: none; }
+.pop-pkg-rank { width: 20px; height: 20px; border-radius: 50%; background: #f0ece4; color: #6b6660; font-size: 11px; font-weight: 700; display:flex;align-items:center;justify-content:center; flex-shrink:0; }
+.pop-pkg-name { font-size: 13px; font-weight: 500; color: #1c1a17; flex:1; }
+.pop-pkg-price { font-size: 12px; color: #0d9b72; font-weight: 600; }
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+  <div class="nav-logo">GAME CONNECTION · <span>Commerce</span></div>
+  <div class="nav-links">
+    <a href="#" class="active">Explore</a>
+    <a href="#">My Sponsorships</a>
+    <a href="#">Orders</a>
+    <a href="#">Analytics</a>
+  </div>
+  <div class="nav-right">
+    <div class="nav-bell">🔔</div>
+    <div class="nav-avatar">X</div>
+    <div class="nav-company">Xsolla ▾</div>
+  </div>
+</nav>
+
+<!-- HERO -->
+<div class="hero">
+  <div class="hero-title">Sponsor the Future of Gaming</div>
+  <div class="hero-sub">Reach 50,000+ game industry professionals across 200+ events worldwide</div>
+  <div class="hero-stats">
+    <div class="hero-stat"><div class="hero-stat-num">200+</div><div class="hero-stat-lbl">Events</div></div>
+    <div class="hero-stat"><div class="hero-stat-num">50K+</div><div class="hero-stat-lbl">Attendees</div></div>
+    <div class="hero-stat"><div class="hero-stat-num">40+</div><div class="hero-stat-lbl">Countries</div></div>
+  </div>
+  <div class="hero-search-wrap">
+    <input class="hero-search" type="text" placeholder="Search events by name, location, genre...">
+    <div class="hero-search-icon">🔍</div>
+  </div>
+</div>
+
+<div class="page-body">
+
+  <!-- SIDEBAR -->
+  <aside class="sidebar">
+    <h3>Filter Events</h3>
+
+    <div class="filter-section">
+      <div class="filter-label">Region</div>
+      <div class="chips">
+        <span class="chip active" onclick="toggleChip(this)">All</span>
+        <span class="chip" onclick="toggleChip(this)">Asia</span>
+        <span class="chip" onclick="toggleChip(this)">Europe</span>
+        <span class="chip" onclick="toggleChip(this)">North America</span>
+        <span class="chip" onclick="toggleChip(this)">Latin America</span>
+        <span class="chip" onclick="toggleChip(this)">Online</span>
+      </div>
+    </div>
+
+    <div class="filter-section">
+      <div class="filter-label">Month</div>
+      <div class="chips">
+        <span class="chip active" onclick="toggleChip(this)">All</span>
+        <span class="chip" onclick="toggleChip(this)">Mar</span>
+        <span class="chip" onclick="toggleChip(this)">Apr</span>
+        <span class="chip" onclick="toggleChip(this)">May</span>
+        <span class="chip" onclick="toggleChip(this)">Jun</span>
+        <span class="chip" onclick="toggleChip(this)">Jul</span>
+        <span class="chip" onclick="toggleChip(this)">Aug</span>
+        <span class="chip" onclick="toggleChip(this)">Sep</span>
+        <span class="chip" onclick="toggleChip(this)">Oct</span>
+        <span class="chip" onclick="toggleChip(this)">Nov</span>
+        <span class="chip" onclick="toggleChip(this)">Dec</span>
+      </div>
+    </div>
+
+    <div class="filter-section">
+      <div class="filter-label">Event Size</div>
+      <div class="radio-group">
+        <label class="radio-opt"><input type="radio" name="size" checked> Any</label>
+        <label class="radio-opt"><input type="radio" name="size"> &lt;500</label>
+        <label class="radio-opt"><input type="radio" name="size"> 500–2K</label>
+        <label class="radio-opt"><input type="radio" name="size"> 2K–10K</label>
+        <label class="radio-opt"><input type="radio" name="size"> 10K+</label>
+      </div>
+    </div>
+
+    <div class="filter-section">
+      <div class="filter-label">Event Type</div>
+      <div class="check-group">
+        <label class="check-opt"><input type="checkbox" checked> B2B</label>
+        <label class="check-opt"><input type="checkbox"> Consumer</label>
+        <label class="check-opt"><input type="checkbox" checked> Developer</label>
+        <label class="check-opt"><input type="checkbox"> Mixed</label>
+      </div>
+    </div>
+
+    <div class="filter-section">
+      <div class="filter-label">Sponsorship Budget</div>
+      <div class="slider-wrap">
+        <div class="slider-labels"><span>$500</span><span>$50,000+</span></div>
+        <input type="range" min="500" max="50000" value="10000">
+        <div style="text-align:center;font-size:12px;color:#6b6660;margin-top:6px;">Up to <strong>$10,000</strong></div>
+      </div>
+    </div>
+
+    <div class="filter-section">
+      <div class="filter-label">Available Packages</div>
+      <div class="check-group">
+        <label class="check-opt"><input type="checkbox" checked> Logo Placement</label>
+        <label class="check-opt"><input type="checkbox"> Digital Booth</label>
+        <label class="check-opt"><input type="checkbox"> Award Naming</label>
+        <label class="check-opt"><input type="checkbox"> Newsletter</label>
+        <label class="check-opt"><input type="checkbox"> Speaking Slot</label>
+        <label class="check-opt"><input type="checkbox"> Opening Ceremony</label>
+      </div>
+    </div>
+
+    <button class="btn-apply">Apply Filters</button>
+    <a class="btn-reset" onclick="return false;">Reset</a>
+    <div class="filter-count">Showing 12 of 48 events</div>
+  </aside>
+
+  <!-- MAIN LIST -->
+  <main class="main-list">
+    <div class="sort-bar">
+      <span>Sort:</span>
+      <button class="sort-btn active" onclick="setSort(this)">Most Popular</button>
+      <button class="sort-btn" onclick="setSort(this)">Upcoming First</button>
+      <button class="sort-btn" onclick="setSort(this)">Budget: Low to High</button>
+      <button class="sort-btn" onclick="setSort(this)">Best Match</button>
+    </div>
+
+    <!-- Cards -->
+    <div id="eventList"></div>
+  </main>
+
+  <!-- RIGHT PANEL -->
+  <aside class="right-panel">
+    <!-- Saved -->
+    <div class="panel-card">
+      <h4>⭐ Your Saved Events</h4>
+      <div class="saved-item">
+        <div class="saved-dot"></div>
+        <div>
+          <div class="saved-name">Indie Game Fest 2026</div>
+          <div class="saved-loc">Berlin · Apr 15–17</div>
+        </div>
+      </div>
+      <div class="saved-item">
+        <div class="saved-dot" style="background:#0a7fa8"></div>
+        <div>
+          <div class="saved-name">Tokyo Indies Showcase</div>
+          <div class="saved-loc">Tokyo · May 8–9</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Recommended -->
+    <div class="panel-card">
+      <h4>💡 Recommended for You</h4>
+      <div class="rec-item">
+        <div class="rec-name">Seoul Dev Conference</div>
+        <div class="rec-meta">Seoul · Apr 28–30 · from $600</div>
+      </div>
+      <div class="rec-item">
+        <div class="rec-name">China Indie Games Festival</div>
+        <div class="rec-meta">Shanghai · Jul 10–12 · from $800</div>
+      </div>
+      <div class="rec-item">
+        <div class="rec-name">Nordic Indie Days</div>
+        <div class="rec-meta">Stockholm · May 22–23 · from $300</div>
+      </div>
+    </div>
+
+    <!-- Reach Calculator -->
+    <div class="panel-card">
+      <h4>📊 Total Reach Calculator</h4>
+      <div class="reach-desc">Select events to calculate your potential reach</div>
+      <div class="reach-stat">
+        <div class="reach-stat-label">Est. Attendees</div>
+        <div class="reach-stat-value" id="reachAttendees">0</div>
+        <div class="reach-stat-sub">across selected events</div>
+      </div>
+      <div class="reach-stat">
+        <div class="reach-stat-label">Est. Impressions</div>
+        <div class="reach-stat-value" id="reachImpressions" style="color:#0d9b72">0</div>
+        <div class="reach-stat-sub">total brand touchpoints</div>
+      </div>
+      <div class="reach-events">
+        <strong id="reachCount">0</strong> events selected
+      </div>
+    </div>
+
+    <!-- Popular Packages -->
+    <div class="panel-card">
+      <h4>🔥 Popular Packages</h4>
+      <div class="pop-pkg">
+        <div class="pop-pkg-rank">1</div>
+        <div class="pop-pkg-name">Logo on Event Website</div>
+        <div class="pop-pkg-price">from $200</div>
+      </div>
+      <div class="pop-pkg">
+        <div class="pop-pkg-rank">2</div>
+        <div class="pop-pkg-name">Speaking Slot (20 min)</div>
+        <div class="pop-pkg-price">from $1,200</div>
+      </div>
+      <div class="pop-pkg">
+        <div class="pop-pkg-rank">3</div>
+        <div class="pop-pkg-name">Award Category Naming</div>
+        <div class="pop-pkg-price">from $2,000</div>
+      </div>
+    </div>
+  </aside>
+
+</div>
+
+<script>
+const events = [
+  {
+    id:1, name:"Indie Game Fest 2026", city:"Berlin", flag:"🇩🇪", date:"Apr 15–17",
+    attendees:500, price:500, sponsors:3, badge:"Hot",
+    desc:"Europe's premier indie game festival bringing together developers, publishers, and innovators for three days of workshops, demos, and networking.",
+    tags:["logo","booth","award","newsletter"],
+    color:"linear-gradient(135deg,#1a1a2e,#d95f2b)", icon:"🎮"
+  },
+  {
+    id:2, name:"Tokyo Indies Showcase", city:"Tokyo", flag:"🇯🇵", date:"May 8–9",
+    attendees:800, price:400, sponsors:2, badge:"Featured",
+    desc:"Japan's leading independent games showcase connecting East Asian developers with global publishers and investors in a curated two-day format.",
+    tags:["logo","newsletter","speaking"],
+    color:"linear-gradient(135deg,#0f3460,#0a7fa8)", icon:"🕹️"
+  },
+  {
+    id:3, name:"Seoul Dev Conference", city:"Seoul", flag:"🇰🇷", date:"Apr 28–30",
+    attendees:1200, price:600, sponsors:5, badge:"Hot",
+    desc:"South Korea's premier developer conference covering mobile, PC, and console game development with major industry keynotes and B2B matchmaking sessions.",
+    tags:["logo","booth","speaking"],
+    color:"linear-gradient(135deg,#0d9b72,#0a7fa8)", icon:"🎯"
+  },
+  {
+    id:4, name:"Southeast Asia Game Summit", city:"Singapore", flag:"🇸🇬", date:"Jun 3–4",
+    attendees:900, price:350, sponsors:1, badge:"New",
+    desc:"The rising hub for Southeast Asian game development. Connect with a rapidly growing market of 400M+ gamers and the studios serving them.",
+    tags:["logo","booth","newsletter"],
+    color:"linear-gradient(135deg,#7c3aed,#0a7fa8)", icon:"🌏"
+  },
+  {
+    id:5, name:"Nordic Indie Days", city:"Stockholm", flag:"🇸🇪", date:"May 22–23",
+    attendees:400, price:300, sponsors:2, badge:null,
+    desc:"A cozy but impactful gathering of Nordic indie developers known for its intimate atmosphere, high-quality game demos, and strong press attendance.",
+    tags:["logo","newsletter"],
+    color:"linear-gradient(135deg,#1a1a2e,#0d9b72)", icon:"❄️"
+  },
+  {
+    id:6, name:"China Indie Games Festival", city:"Shanghai", flag:"🇨🇳", date:"Jul 10–12",
+    attendees:2000, price:800, sponsors:8, badge:"Hot",
+    desc:"China's largest independent games festival with massive media coverage, streaming partnerships, and direct access to the world's biggest gaming market.",
+    tags:["logo","booth","award","speaking","newsletter"],
+    color:"linear-gradient(135deg,#d95f2b,#7c3aed)", icon:"🐉"
+  },
+  {
+    id:7, name:"Latin Game Dev Summit", city:"São Paulo", flag:"🇧🇷", date:"Jun 18–19",
+    attendees:600, price:250, sponsors:1, badge:"New",
+    desc:"Latin America's fastest-growing game dev community event, spotlighting local studios and connecting them with international publishers and investors.",
+    tags:["logo","speaking"],
+    color:"linear-gradient(135deg,#0d9b72,#d95f2b)", icon:"🌎"
+  },
+  {
+    id:8, name:"Middle East Games Expo", city:"Dubai", flag:"🇦🇪", date:"May 14–15",
+    attendees:700, price:450, sponsors:3, badge:null,
+    desc:"The MENA region's premier games business event, offering unique access to the Gulf's premium gaming audience and cross-regional networking opportunities.",
+    tags:["logo","booth","newsletter"],
+    color:"linear-gradient(135deg,#b45309,#d95f2b)", icon:"✨"
+  },
+  {
+    id:9, name:"Australian Indie Showcase", city:"Melbourne", flag:"🇦🇺", date:"Aug 5–6",
+    attendees:500, price:350, sponsors:2, badge:null,
+    desc:"Australia and New Zealand's showcase for independent games, with strong media representation and a passionate audience of local and regional gamers.",
+    tags:["logo","booth"],
+    color:"linear-gradient(135deg,#0a7fa8,#0d9b72)", icon:"🦘"
+  },
+  {
+    id:10, name:"Eastern Europe Game Dev", city:"Warsaw", flag:"🇵🇱", date:"Sep 10–11",
+    attendees:800, price:400, sponsors:0, badge:"New",
+    desc:"A new regional conference spotlighting the booming Eastern European game development scene, from Poland to Romania, Ukraine to the Czech Republic.",
+    tags:["logo","speaking"],
+    color:"linear-gradient(135deg,#1a1a2e,#7c3aed)", icon:"🏰"
+  },
+  {
+    id:11, name:"Vietnam Game Dev Meetup", city:"Ho Chi Minh", flag:"🇻🇳", date:"Jun 25",
+    attendees:300, price:200, sponsors:1, badge:null,
+    desc:"Vietnam's growing indie game community meetup, perfect for brands looking to establish early presence in one of Southeast Asia's most dynamic gaming markets.",
+    tags:["logo","newsletter"],
+    color:"linear-gradient(135deg,#d95f2b,#b45309)", icon:"🌸"
+  },
+  {
+    id:12, name:"Canada Indie Summit", city:"Vancouver", flag:"🇨🇦", date:"Jul 22–23",
+    attendees:600, price:350, sponsors:2, badge:null,
+    desc:"Canada's west coast hub for indie game developers, featuring studio tours, investor pitches, and a curated marketplace for B2B connections.",
+    tags:["logo","booth","speaking"],
+    color:"linear-gradient(135deg,#0a7fa8,#7c3aed)", icon:"🍁"
+  }
+];
+
+const tagLabels = { logo:"Logo", booth:"Booth", award:"Award Naming", newsletter:"Newsletter", speaking:"Speaking" };
+const tagClasses = { logo:"logo", booth:"booth", award:"award", newsletter:"newsletter", speaking:"speaking" };
+
+let selected = new Set();
+
+function renderEvents() {
+  const list = document.getElementById('eventList');
+  list.innerHTML = events.map(ev => {
+    const badgeHtml = ev.badge
+      ? `<span class="badge badge-${ev.badge.toLowerCase()}">${ev.badge==='Hot'?'🔥':ev.badge==='Featured'?'⭐':'🆕'} ${ev.badge}</span>`
+      : '';
+    const tagsHtml = ev.tags.map(t =>
+      `<span class="event-tag ${tagClasses[t]}">${tagLabels[t]}</span>`
+    ).join('');
+    const isSel = selected.has(ev.id);
+    return `
+<div class="event-card ${isSel?'selected':''}" id="card-${ev.id}" onclick="toggleSelect(${ev.id})">
+  <div class="event-thumb" style="background:${ev.color}">${ev.icon}</div>
+  <div class="event-body">
+    <div class="event-name">${ev.name}</div>
+    <div class="event-meta">
+      <span>${ev.flag} ${ev.city}</span>
+      <span class="event-meta-dot">·</span>
+      <span>📅 ${ev.date}</span>
+      <span class="event-meta-dot">·</span>
+      <span>👥 ${ev.attendees.toLocaleString()} attendees</span>
+    </div>
+    <div class="event-desc">${ev.desc}</div>
+    <div class="event-tags">${tagsHtml}</div>
+    <div class="event-footer">
+      <span>${ev.sponsors > 0 ? ev.sponsors + ' sponsors' : 'Be the first sponsor!'}</span>
+      <span class="event-meta-dot">·</span>
+      <span class="event-footer-price">from $${ev.price}</span>
+    </div>
+  </div>
+  <div class="event-actions" onclick="event.stopPropagation()">
+    <div style="display:flex;flex-direction:column;align-items:flex-end;gap:6px">
+      ${badgeHtml}
+      <button class="btn-fav ${isSel?'active':''}" onclick="toggleFav(event,${ev.id})" title="Save event">
+        ${isSel?'❤️':'🤍'}
+      </button>
+    </div>
+    <button class="btn-view" onclick="alert('Opening packages for ${ev.name}...')">View Packages →</button>
+  </div>
+</div>`;
+  }).join('');
+}
+
+function toggleSelect(id) {
+  if (selected.has(id)) selected.delete(id);
+  else selected.add(id);
+  renderEvents();
+  updateReach();
+}
+
+function toggleFav(e, id) {
+  e.stopPropagation();
+  toggleSelect(id);
+}
+
+function updateReach() {
+  const sel = events.filter(ev => selected.has(ev.id));
+  const att = sel.reduce((s,ev) => s + ev.attendees, 0);
+  const imp = att * 4.8;
+  document.getElementById('reachAttendees').textContent = att.toLocaleString();
+  document.getElementById('reachImpressions').textContent = Math.round(imp).toLocaleString();
+  document.getElementById('reachCount').textContent = sel.length;
+}
+
+function toggleChip(el) { el.classList.toggle('active'); }
+function setSort(btn) {
+  document.querySelectorAll('.sort-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+}
+
+renderEvents();
+updateReach();
+</script>
+</body>
+</html>

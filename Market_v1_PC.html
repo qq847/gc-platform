@@ -1,0 +1,667 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Game Market — Game Connection</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'DM Sans', sans-serif; background: #e8e4da; color: #1c1a17; min-height: 100vh; }
+
+  /* ===== TOPNAV ===== */
+  .topnav {
+    position: sticky; top: 0; z-index: 100;
+    background: #fff; border-bottom: 1px solid #e0dbd2;
+    height: 60px; display: flex; align-items: center;
+    padding: 0 24px; gap: 20px; box-shadow: 0 1px 4px rgba(0,0,0,.06);
+  }
+  .nav-logo { font-size: 16px; font-weight: 700; color: #1c1a17; white-space: nowrap; letter-spacing: .5px; }
+  .nav-logo span { color: #d95f2b; }
+  .nav-search {
+    display: flex; align-items: center; gap: 8px;
+    background: #f5f3ef; border: 1px solid #e0dbd2; border-radius: 8px;
+    padding: 6px 12px; min-width: 220px;
+  }
+  .nav-search input { border: none; background: transparent; outline: none; font-family: inherit; font-size: 14px; color: #1c1a17; width: 100%; }
+  .nav-search input::placeholder { color: #a09890; }
+  .nav-links { display: flex; align-items: center; gap: 4px; flex: 1; justify-content: center; }
+  .nav-links a {
+    text-decoration: none; color: #6b6660; font-size: 14px; font-weight: 500;
+    padding: 6px 14px; border-radius: 6px; cursor: pointer; transition: all .15s;
+  }
+  .nav-links a:hover { color: #1c1a17; background: #f5f3ef; }
+  .nav-links a.active { color: #d95f2b; font-weight: 600; background: #fef0e9; }
+  .nav-right { display: flex; align-items: center; gap: 12px; }
+  .nav-bell { font-size: 18px; cursor: pointer; color: #6b6660; transition: color .15s; }
+  .nav-bell:hover { color: #1c1a17; }
+  .nav-avatar { width: 34px; height: 34px; border-radius: 50%; background: linear-gradient(135deg, #d95f2b, #e8834f); display: flex; align-items: center; justify-content: center; color: #fff; font-size: 13px; font-weight: 700; cursor: pointer; }
+
+  /* ===== LAYOUT ===== */
+  .page-wrap { display: flex; max-width: 1440px; margin: 0 auto; padding: 24px; gap: 20px; align-items: flex-start; }
+
+  /* ===== LEFT SIDEBAR ===== */
+  .sidebar-left {
+    width: 280px; flex-shrink: 0;
+    position: sticky; top: 84px;
+    background: #fff; border-radius: 12px; padding: 20px;
+    border: 1px solid #e0dbd2; max-height: calc(100vh - 100px); overflow-y: auto;
+  }
+  .sidebar-left::-webkit-scrollbar { width: 4px; }
+  .sidebar-left::-webkit-scrollbar-thumb { background: #d0ccc4; border-radius: 4px; }
+  .filter-title { font-size: 16px; font-weight: 700; margin-bottom: 18px; }
+  .filter-section { margin-bottom: 20px; border-bottom: 1px solid #f0ede7; padding-bottom: 18px; }
+  .filter-section:last-of-type { border-bottom: none; }
+  .filter-label { font-size: 12px; font-weight: 600; color: #6b6660; text-transform: uppercase; letter-spacing: .6px; margin-bottom: 10px; }
+  .filter-option { display: flex; align-items: center; gap: 8px; margin-bottom: 7px; cursor: pointer; }
+  .filter-option input[type="checkbox"], .filter-option input[type="radio"] { accent-color: #d95f2b; width: 15px; height: 15px; cursor: pointer; }
+  .filter-option label { font-size: 13.5px; color: #1c1a17; cursor: pointer; }
+  .budget-range { margin-top: 6px; }
+  .budget-slider-wrap { position: relative; height: 6px; background: #e8e4da; border-radius: 3px; margin: 8px 0 6px; }
+  .budget-slider-fill { position: absolute; left: 0; width: 65%; height: 100%; background: #d95f2b; border-radius: 3px; }
+  .budget-slider-thumb { position: absolute; top: 50%; left: 65%; transform: translate(-50%, -50%); width: 14px; height: 14px; background: #fff; border: 2px solid #d95f2b; border-radius: 50%; cursor: pointer; box-shadow: 0 1px 4px rgba(0,0,0,.15); }
+  .budget-labels { display: flex; justify-content: space-between; font-size: 11px; color: #a09890; }
+  .filter-actions { display: flex; align-items: center; gap: 12px; margin-top: 18px; }
+  .btn-apply { background: #d95f2b; color: #fff; border: none; border-radius: 8px; padding: 9px 18px; font-family: inherit; font-size: 13.5px; font-weight: 600; cursor: pointer; transition: background .15s; }
+  .btn-apply:hover { background: #c05426; }
+  .btn-reset { background: none; border: none; color: #6b6660; font-family: inherit; font-size: 13.5px; cursor: pointer; text-decoration: underline; }
+  .filter-count { margin-top: 12px; font-size: 12px; color: #a09890; text-align: center; }
+
+  /* ===== CENTER MAIN ===== */
+  .center-main { flex: 1; min-width: 0; }
+  .market-header { display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: 16px; }
+  .market-header h1 { font-size: 24px; font-weight: 700; }
+  .market-header p { font-size: 14px; color: #6b6660; margin-top: 2px; }
+  .btn-post { background: #d95f2b; color: #fff; border: none; border-radius: 8px; padding: 10px 20px; font-family: inherit; font-size: 14px; font-weight: 600; cursor: pointer; white-space: nowrap; transition: background .15s; }
+  .btn-post:hover { background: #c05426; }
+  .sort-bar { display: flex; align-items: center; gap: 6px; margin-bottom: 16px; background: #fff; border-radius: 8px; padding: 8px 12px; border: 1px solid #e0dbd2; }
+  .sort-label { font-size: 12px; color: #a09890; margin-right: 4px; }
+  .sort-btn { background: none; border: none; font-family: inherit; font-size: 13px; color: #6b6660; cursor: pointer; padding: 4px 12px; border-radius: 6px; transition: all .15s; }
+  .sort-btn:hover { background: #f5f3ef; color: #1c1a17; }
+  .sort-btn.active { background: #fef0e9; color: #d95f2b; font-weight: 600; }
+
+  /* ===== LISTING CARD ===== */
+  .listing-card {
+    background: #fff; border-radius: 12px; border: 2px solid transparent;
+    padding: 16px; margin-bottom: 14px; display: flex; gap: 16px;
+    cursor: pointer; transition: all .15s; box-shadow: 0 1px 3px rgba(0,0,0,.05);
+  }
+  .listing-card:hover { border-color: #d95f2b; box-shadow: 0 4px 12px rgba(217,95,43,.12); }
+  .listing-card.selected { border-color: #d95f2b; }
+  .listing-cover {
+    width: 120px; height: 90px; border-radius: 8px; flex-shrink: 0;
+    display: flex; align-items: center; justify-content: center; overflow: hidden;
+  }
+  .listing-cover svg { width: 100%; height: 100%; }
+  .listing-body { flex: 1; min-width: 0; }
+  .listing-meta { display: flex; align-items: center; gap: 8px; margin-bottom: 6px; flex-wrap: wrap; }
+  .badge { display: inline-flex; align-items: center; padding: 3px 9px; border-radius: 20px; font-size: 11.5px; font-weight: 600; }
+  .badge-orange { background: #fef0e9; color: #d95f2b; }
+  .badge-blue { background: #e6f4fa; color: #0a7fa8; }
+  .badge-green { background: #e6f7f2; color: #0d9b72; }
+  .badge-purple { background: #f0ecfa; color: #7c4dbe; }
+  .platform-icons { display: flex; gap: 4px; }
+  .platform-icon { font-size: 13px; }
+  .post-time { font-size: 11.5px; color: #a09890; margin-left: auto; }
+  .listing-title { font-size: 17px; font-weight: 700; margin-bottom: 4px; display: flex; align-items: center; gap: 8px; }
+  .genre-tag { font-size: 11px; background: #f5f3ef; color: #6b6660; padding: 2px 8px; border-radius: 4px; font-weight: 500; }
+  .listing-dev { font-size: 13px; color: #6b6660; margin-bottom: 6px; }
+  .listing-desc { font-size: 13px; color: #6b6660; line-height: 1.5; margin-bottom: 10px; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+  .listing-footer { display: flex; align-items: center; gap: 14px; flex-wrap: wrap; }
+  .listing-tag { font-size: 11.5px; color: #6b6660; display: flex; align-items: center; gap: 4px; }
+  .listing-tag svg { width: 13px; height: 13px; opacity: .6; }
+  .listing-actions { display: flex; flex-direction: column; align-items: flex-end; gap: 8px; flex-shrink: 0; justify-content: center; min-width: 100px; }
+  .btn-fav { background: none; border: 1.5px solid #e0dbd2; border-radius: 8px; width: 36px; height: 36px; display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: 16px; color: #a09890; transition: all .15s; }
+  .btn-fav:hover { border-color: #d95f2b; color: #d95f2b; }
+  .btn-view { background: #d95f2b; color: #fff; border: none; border-radius: 8px; padding: 8px 16px; font-family: inherit; font-size: 13px; font-weight: 600; cursor: pointer; transition: background .15s; white-space: nowrap; }
+  .btn-view:hover { background: #c05426; }
+  .proposal-count { font-size: 11.5px; color: #a09890; text-align: right; }
+
+  /* ===== RIGHT SIDEBAR ===== */
+  .sidebar-right {
+    width: 300px; flex-shrink: 0;
+    position: sticky; top: 84px;
+    display: flex; flex-direction: column; gap: 16px;
+    max-height: calc(100vh - 100px); overflow-y: auto;
+  }
+  .sidebar-right::-webkit-scrollbar { width: 4px; }
+  .sidebar-right::-webkit-scrollbar-thumb { background: #d0ccc4; border-radius: 4px; }
+  .panel-card { background: #fff; border-radius: 12px; padding: 18px; border: 1px solid #e0dbd2; }
+  .panel-title { font-size: 14px; font-weight: 700; margin-bottom: 14px; display: flex; align-items: center; gap: 6px; }
+  .hot-item { display: flex; align-items: flex-start; gap: 10px; margin-bottom: 12px; cursor: pointer; }
+  .hot-item:last-child { margin-bottom: 0; }
+  .hot-rank { width: 22px; height: 22px; border-radius: 50%; background: #fef0e9; color: #d95f2b; font-size: 11px; font-weight: 700; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+  .hot-info { flex: 1; }
+  .hot-name { font-size: 13px; font-weight: 600; margin-bottom: 2px; }
+  .hot-meta { font-size: 11.5px; color: #a09890; }
+  .hot-views { font-size: 11px; color: #d95f2b; font-weight: 600; }
+  .new-item { display: flex; align-items: center; gap: 8px; padding: 7px 0; border-bottom: 1px solid #f5f3ef; cursor: pointer; }
+  .new-item:last-child { border-bottom: none; padding-bottom: 0; }
+  .new-dot { width: 6px; height: 6px; border-radius: 50%; background: #0d9b72; flex-shrink: 0; }
+  .new-name { font-size: 13px; font-weight: 500; flex: 1; }
+  .new-time { font-size: 11px; color: #a09890; }
+  .stat-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  .stat-item { background: #f9f8f5; border-radius: 8px; padding: 10px 12px; }
+  .stat-val { font-size: 18px; font-weight: 700; color: #1c1a17; }
+  .stat-key { font-size: 11px; color: #a09890; margin-top: 2px; }
+  .stat-item.accent .stat-val { color: #d95f2b; }
+</style>
+</head>
+<body>
+
+<!-- TOPNAV -->
+<nav class="topnav">
+  <div class="nav-logo">GAME <span>CONNECTION</span></div>
+  <div class="nav-search">
+    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#a09890" stroke-width="2.5"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+    <input type="text" placeholder="Search games, studios, deals...">
+  </div>
+  <div class="nav-links">
+    <a href="#">Home</a>
+    <a href="#">People</a>
+    <a href="#">Projects</a>
+    <a href="#" class="active">Market</a>
+    <a href="#">Events</a>
+  </div>
+  <div class="nav-right">
+    <div class="nav-bell" title="Notifications">🔔</div>
+    <div class="nav-avatar">QQ</div>
+  </div>
+</nav>
+
+<!-- PAGE WRAP -->
+<div class="page-wrap">
+
+  <!-- LEFT SIDEBAR -->
+  <aside class="sidebar-left">
+    <div class="filter-title">Filter Deals</div>
+
+    <div class="filter-section">
+      <div class="filter-label">Deal Type</div>
+      <div class="filter-option"><input type="checkbox" id="dt1" checked><label for="dt1">Publishing Deal</label></div>
+      <div class="filter-option"><input type="checkbox" id="dt2"><label for="dt2">Distribution</label></div>
+      <div class="filter-option"><input type="checkbox" id="dt3"><label for="dt3">Co-development</label></div>
+      <div class="filter-option"><input type="checkbox" id="dt4"><label for="dt4">Investment</label></div>
+      <div class="filter-option"><input type="checkbox" id="dt5"><label for="dt5">Licensing</label></div>
+    </div>
+
+    <div class="filter-section">
+      <div class="filter-label">Platform</div>
+      <div class="filter-option"><input type="checkbox" id="p1" checked><label for="p1">PC</label></div>
+      <div class="filter-option"><input type="checkbox" id="p2"><label for="p2">Mobile</label></div>
+      <div class="filter-option"><input type="checkbox" id="p3" checked><label for="p3">Console</label></div>
+      <div class="filter-option"><input type="checkbox" id="p4"><label for="p4">VR</label></div>
+      <div class="filter-option"><input type="checkbox" id="p5"><label for="p5">All Platforms</label></div>
+    </div>
+
+    <div class="filter-section">
+      <div class="filter-label">Genre</div>
+      <div class="filter-option"><input type="checkbox" id="g1" checked><label for="g1">RPG</label></div>
+      <div class="filter-option"><input type="checkbox" id="g2"><label for="g2">Action</label></div>
+      <div class="filter-option"><input type="checkbox" id="g3"><label for="g3">Strategy</label></div>
+      <div class="filter-option"><input type="checkbox" id="g4"><label for="g4">Puzzle</label></div>
+      <div class="filter-option"><input type="checkbox" id="g5"><label for="g5">Simulation</label></div>
+      <div class="filter-option"><input type="checkbox" id="g6"><label for="g6">Horror</label></div>
+      <div class="filter-option"><input type="checkbox" id="g7"><label for="g7">Sports</label></div>
+    </div>
+
+    <div class="filter-section">
+      <div class="filter-label">Region Rights</div>
+      <div class="filter-option"><input type="checkbox" id="r1" checked><label for="r1">Global</label></div>
+      <div class="filter-option"><input type="checkbox" id="r2"><label for="r2">China</label></div>
+      <div class="filter-option"><input type="checkbox" id="r3"><label for="r3">Southeast Asia</label></div>
+      <div class="filter-option"><input type="checkbox" id="r4"><label for="r4">Europe</label></div>
+      <div class="filter-option"><input type="checkbox" id="r5"><label for="r5">North America</label></div>
+      <div class="filter-option"><input type="checkbox" id="r6"><label for="r6">Japan/Korea</label></div>
+    </div>
+
+    <div class="filter-section">
+      <div class="filter-label">Stage</div>
+      <div class="filter-option"><input type="radio" name="stage" id="s0"><label for="s0">All</label></div>
+      <div class="filter-option"><input type="radio" name="stage" id="s1"><label for="s1">Prototype</label></div>
+      <div class="filter-option"><input type="radio" name="stage" id="s2"><label for="s2">Alpha</label></div>
+      <div class="filter-option"><input type="radio" name="stage" id="s3" checked><label for="s3">Beta</label></div>
+      <div class="filter-option"><input type="radio" name="stage" id="s4"><label for="s4">Gold Master</label></div>
+      <div class="filter-option"><input type="radio" name="stage" id="s5"><label for="s5">Released</label></div>
+    </div>
+
+    <div class="filter-section">
+      <div class="filter-label">Budget Range</div>
+      <div class="budget-range">
+        <div class="budget-slider-wrap">
+          <div class="budget-slider-fill"></div>
+          <div class="budget-slider-thumb"></div>
+        </div>
+        <div class="budget-labels"><span>$0</span><span>$500K+</span></div>
+      </div>
+    </div>
+
+    <div class="filter-actions">
+      <button class="btn-apply">Apply Filters</button>
+      <button class="btn-reset">Reset</button>
+    </div>
+    <div class="filter-count">Showing 12 of 12 listings</div>
+  </aside>
+
+  <!-- CENTER MAIN -->
+  <main class="center-main">
+    <div class="market-header">
+      <div>
+        <h1>Game Market</h1>
+        <p>B2B Publishing &amp; Distribution Deals</p>
+      </div>
+      <button class="btn-post">+ Post a Listing</button>
+    </div>
+
+    <div class="sort-bar">
+      <span class="sort-label">Sort by:</span>
+      <button class="sort-btn active">Latest</button>
+      <button class="sort-btn">Most Viewed</button>
+      <button class="sort-btn">Closing Soon</button>
+      <button class="sort-btn">Best Match</button>
+    </div>
+
+    <!-- CARD 1 -->
+    <div class="listing-card selected" onclick="this.classList.toggle('selected')">
+      <div class="listing-cover">
+        <svg viewBox="0 0 120 90" xmlns="http://www.w3.org/2000/svg"><defs><linearGradient id="c1" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="#1a3a6e"/><stop offset="100%" stop-color="#7b2d8b"/></linearGradient></defs><rect width="120" height="90" fill="url(#c1)"/><text x="60" y="48" text-anchor="middle" fill="rgba(255,255,255,.25)" font-size="11" font-family="sans-serif">Echoes of</text><text x="60" y="62" text-anchor="middle" fill="rgba(255,255,255,.25)" font-size="11" font-family="sans-serif">Jade Dynasty</text></svg>
+      </div>
+      <div class="listing-body">
+        <div class="listing-meta">
+          <span class="badge badge-orange">Publishing Deal</span>
+          <div class="platform-icons"><span class="platform-icon" title="PC">🖥</span><span class="platform-icon" title="Console">🎮</span></div>
+          <span class="post-time">2 days ago</span>
+        </div>
+        <div class="listing-title">Echoes of Jade Dynasty <span class="genre-tag">RPG</span></div>
+        <div class="listing-dev">CloudPeak Games &nbsp;🇨🇳&nbsp; Shanghai</div>
+        <div class="listing-desc">An open-world action RPG rooted in Chinese mythology with 40+ hours of content, stunning UE5 visuals, and deep narrative branching. Seeking a global publishing partner with strong Western market presence.</div>
+        <div class="listing-footer">
+          <span class="listing-tag">🌍 Global Rights</span>
+          <span class="listing-tag">👥 12-person team</span>
+          <span class="listing-tag">📊 Beta</span>
+        </div>
+      </div>
+      <div class="listing-actions">
+        <button class="btn-fav">☆</button>
+        <button class="btn-view">View Deal</button>
+        <div class="proposal-count">3 proposals</div>
+      </div>
+    </div>
+
+    <!-- CARD 2 -->
+    <div class="listing-card" onclick="this.classList.toggle('selected')">
+      <div class="listing-cover">
+        <svg viewBox="0 0 120 90" xmlns="http://www.w3.org/2000/svg"><defs><linearGradient id="c2" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="#0f2847"/><stop offset="100%" stop-color="#1a6b3a"/></linearGradient></defs><rect width="120" height="90" fill="url(#c2)"/><text x="60" y="48" text-anchor="middle" fill="rgba(255,255,255,.25)" font-size="12" font-family="sans-serif">Steel</text><text x="60" y="62" text-anchor="middle" fill="rgba(255,255,255,.25)" font-size="12" font-family="sans-serif">Horizon</text></svg>
+      </div>
+      <div class="listing-body">
+        <div class="listing-meta">
+          <span class="badge badge-orange">Publishing Deal</span>
+          <div class="platform-icons"><span class="platform-icon" title="PC">🖥</span><span class="platform-icon" title="Mobile">📱</span></div>
+          <span class="post-time">3 days ago</span>
+        </div>
+        <div class="listing-title">Steel Horizon <span class="genre-tag">Strategy</span></div>
+        <div class="listing-dev">IronForge Interactive &nbsp;🇨🇳&nbsp; Shenzhen</div>
+        <div class="listing-desc">A hardcore military strategy game with real-time tactical combat and asynchronous multiplayer. Designed for the China and Southeast Asian markets with strong localization support already in place.</div>
+        <div class="listing-footer">
+          <span class="listing-tag">🌏 China + SEA</span>
+          <span class="listing-tag">👥 8-person team</span>
+          <span class="listing-tag">📊 Alpha</span>
+        </div>
+      </div>
+      <div class="listing-actions">
+        <button class="btn-fav">☆</button>
+        <button class="btn-view">View Deal</button>
+        <div class="proposal-count">1 proposal</div>
+      </div>
+    </div>
+
+    <!-- CARD 3 -->
+    <div class="listing-card" onclick="this.classList.toggle('selected')">
+      <div class="listing-cover">
+        <svg viewBox="0 0 120 90" xmlns="http://www.w3.org/2000/svg"><defs><linearGradient id="c3" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="#2d0a4e"/><stop offset="100%" stop-color="#0a3d6b"/></linearGradient></defs><rect width="120" height="90" fill="url(#c3)"/><text x="60" y="48" text-anchor="middle" fill="rgba(255,255,255,.25)" font-size="11" font-family="sans-serif">Phantom</text><text x="60" y="62" text-anchor="middle" fill="rgba(255,255,255,.25)" font-size="11" font-family="sans-serif">Circuit</text></svg>
+      </div>
+      <div class="listing-body">
+        <div class="listing-meta">
+          <span class="badge badge-orange">Publishing Deal</span>
+          <div class="platform-icons"><span class="platform-icon" title="PC">🖥</span><span class="platform-icon" title="Console">🎮</span></div>
+          <span class="post-time">4 days ago</span>
+        </div>
+        <div class="listing-title">Phantom Circuit <span class="genre-tag">Puzzle / Horror</span></div>
+        <div class="listing-dev">Akihabara Studio &nbsp;🇯🇵&nbsp; Tokyo</div>
+        <div class="listing-desc">A psychological horror puzzle game blending cyberpunk aesthetics with Japanese folklore. Strong narrative with 15+ hours of gameplay. Currently in Beta with full voiceover in Japanese and English.</div>
+        <div class="listing-footer">
+          <span class="listing-tag">🌍 Japan / Global</span>
+          <span class="listing-tag">👥 6-person team</span>
+          <span class="listing-tag">📊 Beta</span>
+        </div>
+      </div>
+      <div class="listing-actions">
+        <button class="btn-fav">☆</button>
+        <button class="btn-view">View Deal</button>
+        <div class="proposal-count">5 proposals</div>
+      </div>
+    </div>
+
+    <!-- CARD 4 -->
+    <div class="listing-card" onclick="this.classList.toggle('selected')">
+      <div class="listing-cover">
+        <svg viewBox="0 0 120 90" xmlns="http://www.w3.org/2000/svg"><defs><linearGradient id="c4" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="#1a4a1a"/><stop offset="100%" stop-color="#4a7a1a"/></linearGradient></defs><rect width="120" height="90" fill="url(#c4)"/><text x="60" y="48" text-anchor="middle" fill="rgba(255,255,255,.25)" font-size="11" font-family="sans-serif">Jungle</text><text x="60" y="62" text-anchor="middle" fill="rgba(255,255,255,.25)" font-size="11" font-family="sans-serif">Protocol</text></svg>
+      </div>
+      <div class="listing-body">
+        <div class="listing-meta">
+          <span class="badge badge-purple">Investment</span>
+          <div class="platform-icons"><span class="platform-icon" title="PC">🖥</span><span class="platform-icon" title="Mobile">📱</span></div>
+          <span class="post-time">5 days ago</span>
+        </div>
+        <div class="listing-title">Jungle Protocol <span class="genre-tag">Survival</span></div>
+        <div class="listing-dev">Mekong Dev &nbsp;🇻🇳&nbsp; Ho Chi Minh City</div>
+        <div class="listing-desc">An open-world survival game set in a dystopian Southeast Asian jungle. Seeks investment partner to accelerate development and bring the game to global markets with authentic regional storytelling.</div>
+        <div class="listing-footer">
+          <span class="listing-tag">🌏 SEA + Global</span>
+          <span class="listing-tag">👥 10-person team</span>
+          <span class="listing-tag">📊 Alpha</span>
+        </div>
+      </div>
+      <div class="listing-actions">
+        <button class="btn-fav">☆</button>
+        <button class="btn-view">View Deal</button>
+        <div class="proposal-count">2 proposals</div>
+      </div>
+    </div>
+
+    <!-- CARD 5 -->
+    <div class="listing-card" onclick="this.classList.toggle('selected')">
+      <div class="listing-cover">
+        <svg viewBox="0 0 120 90" xmlns="http://www.w3.org/2000/svg"><defs><linearGradient id="c5" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="#3a0a2a"/><stop offset="100%" stop-color="#c0206a"/></linearGradient></defs><rect width="120" height="90" fill="url(#c5)"/><text x="60" y="48" text-anchor="middle" fill="rgba(255,255,255,.25)" font-size="11" font-family="sans-serif">Neon</text><text x="60" y="62" text-anchor="middle" fill="rgba(255,255,255,.25)" font-size="11" font-family="sans-serif">Requiem</text></svg>
+      </div>
+      <div class="listing-body">
+        <div class="listing-meta">
+          <span class="badge badge-orange">Publishing Deal</span>
+          <div class="platform-icons"><span class="platform-icon" title="PC">🖥</span></div>
+          <span class="post-time">5 days ago</span>
+        </div>
+        <div class="listing-title">Neon Requiem <span class="genre-tag">Action RPG</span></div>
+        <div class="listing-dev">Lumière Studio &nbsp;🇫🇷&nbsp; Paris</div>
+        <div class="listing-desc">A narrative-driven action RPG set in a near-future Paris bathed in neon lights. Combines deep CRPG mechanics with stylish combat. Targets the European and North American premium PC market.</div>
+        <div class="listing-footer">
+          <span class="listing-tag">🌍 Europe + North America</span>
+          <span class="listing-tag">👥 9-person team</span>
+          <span class="listing-tag">📊 Beta</span>
+        </div>
+      </div>
+      <div class="listing-actions">
+        <button class="btn-fav">☆</button>
+        <button class="btn-view">View Deal</button>
+        <div class="proposal-count">3 proposals</div>
+      </div>
+    </div>
+
+    <!-- CARD 6 -->
+    <div class="listing-card" onclick="this.classList.toggle('selected')">
+      <div class="listing-cover">
+        <svg viewBox="0 0 120 90" xmlns="http://www.w3.org/2000/svg"><defs><linearGradient id="c6" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="#0a5a4a"/><stop offset="100%" stop-color="#2a9a6a"/></linearGradient></defs><rect width="120" height="90" fill="url(#c6)"/><text x="60" y="48" text-anchor="middle" fill="rgba(255,255,255,.25)" font-size="11" font-family="sans-serif">Island</text><text x="60" y="62" text-anchor="middle" fill="rgba(255,255,255,.25)" font-size="11" font-family="sans-serif">Keeper</text></svg>
+      </div>
+      <div class="listing-body">
+        <div class="listing-meta">
+          <span class="badge badge-blue">Distribution</span>
+          <div class="platform-icons"><span class="platform-icon" title="Mobile">📱</span></div>
+          <span class="post-time">6 days ago</span>
+        </div>
+        <div class="listing-title">Island Keeper <span class="genre-tag">Simulation / Casual</span></div>
+        <div class="listing-dev">Batik Games &nbsp;🇮🇩&nbsp; Jakarta</div>
+        <div class="listing-desc">A relaxing mobile simulation game about building and managing a tropical island resort. Already released in Indonesia with 500K+ downloads. Seeking distribution partners for broader SEA rollout.</div>
+        <div class="listing-footer">
+          <span class="listing-tag">🌏 SEA</span>
+          <span class="listing-tag">👥 7-person team</span>
+          <span class="listing-tag">📊 Released</span>
+        </div>
+      </div>
+      <div class="listing-actions">
+        <button class="btn-fav">☆</button>
+        <button class="btn-view">View Deal</button>
+        <div class="proposal-count">7 proposals</div>
+      </div>
+    </div>
+
+    <!-- CARD 7 -->
+    <div class="listing-card" onclick="this.classList.toggle('selected')">
+      <div class="listing-cover">
+        <svg viewBox="0 0 120 90" xmlns="http://www.w3.org/2000/svg"><defs><linearGradient id="c7" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="#2a0a0a"/><stop offset="100%" stop-color="#8a1a1a"/></linearGradient></defs><rect width="120" height="90" fill="url(#c7)"/><text x="60" y="48" text-anchor="middle" fill="rgba(255,255,255,.25)" font-size="11" font-family="sans-serif">Project</text><text x="60" y="62" text-anchor="middle" fill="rgba(255,255,255,.25)" font-size="11" font-family="sans-serif">Nemesis</text></svg>
+      </div>
+      <div class="listing-body">
+        <div class="listing-meta">
+          <span class="badge badge-green">Co-development</span>
+          <div class="platform-icons"><span class="platform-icon" title="PC">🖥</span><span class="platform-icon" title="Console">🎮</span></div>
+          <span class="post-time">1 week ago</span>
+        </div>
+        <div class="listing-title">Project Nemesis <span class="genre-tag">Action / Shooter</span></div>
+        <div class="listing-dev">Apex Interactive &nbsp;🇺🇸&nbsp; Los Angeles</div>
+        <div class="listing-desc">A third-person tactical shooter with advanced AI and destructible environments. Looking for a co-development partner to help scale art production and port to console platforms for global launch.</div>
+        <div class="listing-footer">
+          <span class="listing-tag">🌍 Global</span>
+          <span class="listing-tag">👥 14-person team</span>
+          <span class="listing-tag">📊 Alpha</span>
+        </div>
+      </div>
+      <div class="listing-actions">
+        <button class="btn-fav">☆</button>
+        <button class="btn-view">View Deal</button>
+        <div class="proposal-count">0 proposals</div>
+      </div>
+    </div>
+
+    <!-- CARD 8 -->
+    <div class="listing-card" onclick="this.classList.toggle('selected')">
+      <div class="listing-cover">
+        <svg viewBox="0 0 120 90" xmlns="http://www.w3.org/2000/svg"><defs><linearGradient id="c8" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="#0a1a4a"/><stop offset="100%" stop-color="#3a5a9a"/></linearGradient></defs><rect width="120" height="90" fill="url(#c8)"/><text x="60" y="48" text-anchor="middle" fill="rgba(255,255,255,.25)" font-size="11" font-family="sans-serif">Chronicle</text><text x="60" y="62" text-anchor="middle" fill="rgba(255,255,255,.25)" font-size="11" font-family="sans-serif">of Stars</text></svg>
+      </div>
+      <div class="listing-body">
+        <div class="listing-meta">
+          <span class="badge badge-orange">Publishing Deal</span>
+          <div class="platform-icons"><span class="platform-icon" title="PC">🖥</span><span class="platform-icon" title="Mobile">📱</span></div>
+          <span class="post-time">1 week ago</span>
+        </div>
+        <div class="listing-title">Chronicle of Stars <span class="genre-tag">Strategy RPG</span></div>
+        <div class="listing-dev">Northern Lights Dev &nbsp;🇨🇦&nbsp; Vancouver</div>
+        <div class="listing-desc">A cross-platform strategy RPG blending 4X empire-building with narrative RPG progression. Highly polished demo with strong Metacritic preview scores. Targets the premium North American and European PC/mobile market.</div>
+        <div class="listing-footer">
+          <span class="listing-tag">🌍 North America + Europe</span>
+          <span class="listing-tag">👥 11-person team</span>
+          <span class="listing-tag">📊 Alpha</span>
+        </div>
+      </div>
+      <div class="listing-actions">
+        <button class="btn-fav">☆</button>
+        <button class="btn-view">View Deal</button>
+        <div class="proposal-count">2 proposals</div>
+      </div>
+    </div>
+
+    <!-- CARD 9 -->
+    <div class="listing-card" onclick="this.classList.toggle('selected')">
+      <div class="listing-cover">
+        <svg viewBox="0 0 120 90" xmlns="http://www.w3.org/2000/svg"><defs><linearGradient id="c9" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="#1a0a4a"/><stop offset="100%" stop-color="#8a2a6a"/></linearGradient></defs><rect width="120" height="90" fill="url(#c9)"/><text x="60" y="44" text-anchor="middle" fill="rgba(255,255,255,.25)" font-size="10" font-family="sans-serif">Arena Legends</text><text x="60" y="58" text-anchor="middle" fill="rgba(255,255,255,.25)" font-size="10" font-family="sans-serif">Reborn</text></svg>
+      </div>
+      <div class="listing-body">
+        <div class="listing-meta">
+          <span class="badge badge-blue">Distribution</span>
+          <div class="platform-icons"><span class="platform-icon" title="PC">🖥</span><span class="platform-icon" title="Mobile">📱</span></div>
+          <span class="post-time">1 week ago</span>
+        </div>
+        <div class="listing-title">Arena Legends: Reborn <span class="genre-tag">MOBA</span></div>
+        <div class="listing-dev">DragonScale Games &nbsp;🇰🇷&nbsp; Seoul</div>
+        <div class="listing-desc">A reimagined 5v5 MOBA with a roster of 60+ unique heroes and seasonal esports leagues. Live in Korea with 2M+ MAU. Seeking distribution partners for expansion into Southeast Asian markets.</div>
+        <div class="listing-footer">
+          <span class="listing-tag">🌏 Korea + SEA</span>
+          <span class="listing-tag">👥 30-person team</span>
+          <span class="listing-tag">📊 Released</span>
+        </div>
+      </div>
+      <div class="listing-actions">
+        <button class="btn-fav">☆</button>
+        <button class="btn-view">View Deal</button>
+        <div class="proposal-count">4 proposals</div>
+      </div>
+    </div>
+
+    <!-- CARD 10 -->
+    <div class="listing-card" onclick="this.classList.toggle('selected')">
+      <div class="listing-cover">
+        <svg viewBox="0 0 120 90" xmlns="http://www.w3.org/2000/svg"><defs><linearGradient id="c10" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="#2a3a1a"/><stop offset="100%" stop-color="#5a7a3a"/></linearGradient></defs><rect width="120" height="90" fill="url(#c10)"/><text x="60" y="48" text-anchor="middle" fill="rgba(255,255,255,.25)" font-size="11" font-family="sans-serif">Roots &amp;</text><text x="60" y="62" text-anchor="middle" fill="rgba(255,255,255,.25)" font-size="11" font-family="sans-serif">Ruins</text></svg>
+      </div>
+      <div class="listing-body">
+        <div class="listing-meta">
+          <span class="badge badge-blue" style="background:#f5f0fa;color:#7c4dbe;">Licensing</span>
+          <div class="platform-icons"><span class="platform-icon" title="PC">🖥</span><span class="platform-icon" title="Mobile">📱</span></div>
+          <span class="post-time">8 days ago</span>
+        </div>
+        <div class="listing-title">Roots &amp; Ruins <span class="genre-tag">Simulation</span></div>
+        <div class="listing-dev">Grünwald Games &nbsp;🇩🇪&nbsp; Berlin</div>
+        <div class="listing-desc">A cozy city-builder simulation game set in medieval Germany with deep resource management systems. Released to strong reviews in Europe, seeking licensing partners for Eastern European and MENA expansion.</div>
+        <div class="listing-footer">
+          <span class="listing-tag">🌍 Europe</span>
+          <span class="listing-tag">👥 5-person team</span>
+          <span class="listing-tag">📊 Released</span>
+        </div>
+      </div>
+      <div class="listing-actions">
+        <button class="btn-fav">☆</button>
+        <button class="btn-view">View Deal</button>
+        <div class="proposal-count">1 proposal</div>
+      </div>
+    </div>
+
+    <!-- CARD 11 -->
+    <div class="listing-card" onclick="this.classList.toggle('selected')">
+      <div class="listing-cover">
+        <svg viewBox="0 0 120 90" xmlns="http://www.w3.org/2000/svg"><defs><linearGradient id="c11" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="#0a1a2a"/><stop offset="100%" stop-color="#0a4a6a"/></linearGradient></defs><rect width="120" height="90" fill="url(#c11)"/><text x="60" y="48" text-anchor="middle" fill="rgba(255,255,255,.25)" font-size="11" font-family="sans-serif">Shadow</text><text x="60" y="62" text-anchor="middle" fill="rgba(255,255,255,.25)" font-size="11" font-family="sans-serif">Protocol</text></svg>
+      </div>
+      <div class="listing-body">
+        <div class="listing-meta">
+          <span class="badge badge-orange">Publishing Deal</span>
+          <div class="platform-icons"><span class="platform-icon" title="Mobile">📱</span></div>
+          <span class="post-time">9 days ago</span>
+        </div>
+        <div class="listing-title">Shadow Protocol <span class="genre-tag">RPG</span></div>
+        <div class="listing-dev">ByteWave Studio &nbsp;🇨🇳&nbsp; Beijing</div>
+        <div class="listing-desc">A mobile turn-based tactical RPG with gacha progression and deep lore set in a cyberpunk alternate China. Gold Master build ready. Seeking a publishing partner with proven China mobile distribution channels.</div>
+        <div class="listing-footer">
+          <span class="listing-tag">🇨🇳 China</span>
+          <span class="listing-tag">👥 20-person team</span>
+          <span class="listing-tag">📊 Gold Master</span>
+        </div>
+      </div>
+      <div class="listing-actions">
+        <button class="btn-fav">☆</button>
+        <button class="btn-view">View Deal</button>
+        <div class="proposal-count">8 proposals</div>
+      </div>
+    </div>
+
+    <!-- CARD 12 -->
+    <div class="listing-card" onclick="this.classList.toggle('selected')">
+      <div class="listing-cover">
+        <svg viewBox="0 0 120 90" xmlns="http://www.w3.org/2000/svg"><defs><linearGradient id="c12" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="#0a0a2a"/><stop offset="100%" stop-color="#2a0a5a"/></linearGradient></defs><rect width="120" height="90" fill="url(#c12)"/><text x="60" y="48" text-anchor="middle" fill="rgba(255,255,255,.25)" font-size="11" font-family="sans-serif">Void</text><text x="60" y="62" text-anchor="middle" fill="rgba(255,255,255,.25)" font-size="11" font-family="sans-serif">Wanderer</text></svg>
+      </div>
+      <div class="listing-body">
+        <div class="listing-meta">
+          <span class="badge badge-green">Co-development</span>
+          <div class="platform-icons"><span class="platform-icon" title="PC">🖥</span><span class="platform-icon" title="Console">🎮</span></div>
+          <span class="post-time">10 days ago</span>
+        </div>
+        <div class="listing-title">Void Wanderer <span class="genre-tag">Sci-fi RPG</span></div>
+        <div class="listing-dev">Starfield Games &nbsp;🇰🇷&nbsp; Seoul</div>
+        <div class="listing-desc">An ambitious open-world sci-fi RPG set in a dying universe. Currently at prototype stage with a fully playable vertical slice. Seeking a co-development partner to help scale the project for global PC and console release.</div>
+        <div class="listing-footer">
+          <span class="listing-tag">🌍 Global</span>
+          <span class="listing-tag">👥 8-person team</span>
+          <span class="listing-tag">📊 Prototype</span>
+        </div>
+      </div>
+      <div class="listing-actions">
+        <button class="btn-fav">☆</button>
+        <button class="btn-view">View Deal</button>
+        <div class="proposal-count">0 proposals</div>
+      </div>
+    </div>
+
+  </main>
+
+  <!-- RIGHT SIDEBAR -->
+  <aside class="sidebar-right">
+    <!-- HOT DEALS -->
+    <div class="panel-card">
+      <div class="panel-title">🔥 Hot Deals</div>
+      <div class="hot-item">
+        <div class="hot-rank">1</div>
+        <div class="hot-info">
+          <div class="hot-name">Shadow Protocol</div>
+          <div class="hot-meta">ByteWave Studio · Beijing</div>
+          <div class="hot-views">👁 342 views this week</div>
+        </div>
+      </div>
+      <div class="hot-item">
+        <div class="hot-rank">2</div>
+        <div class="hot-info">
+          <div class="hot-name">Phantom Circuit</div>
+          <div class="hot-meta">Akihabara Studio · Tokyo</div>
+          <div class="hot-views">👁 289 views this week</div>
+        </div>
+      </div>
+      <div class="hot-item">
+        <div class="hot-rank">3</div>
+        <div class="hot-info">
+          <div class="hot-name">Echoes of Jade Dynasty</div>
+          <div class="hot-meta">CloudPeak Games · Shanghai</div>
+          <div class="hot-views">👁 247 views this week</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- NEW THIS WEEK -->
+    <div class="panel-card">
+      <div class="panel-title">✨ New This Week</div>
+      <div class="new-item"><div class="new-dot"></div><div class="new-name">Echoes of Jade Dynasty</div><div class="new-time">2d ago</div></div>
+      <div class="new-item"><div class="new-dot"></div><div class="new-name">Steel Horizon</div><div class="new-time">3d ago</div></div>
+      <div class="new-item"><div class="new-dot"></div><div class="new-name">Phantom Circuit</div><div class="new-time">4d ago</div></div>
+      <div class="new-item"><div class="new-dot"></div><div class="new-name">Jungle Protocol</div><div class="new-time">5d ago</div></div>
+      <div class="new-item"><div class="new-dot"></div><div class="new-name">Neon Requiem</div><div class="new-time">5d ago</div></div>
+    </div>
+
+    <!-- MARKET STATS -->
+    <div class="panel-card">
+      <div class="panel-title">📊 Market Stats</div>
+      <div class="stat-grid">
+        <div class="stat-item accent">
+          <div class="stat-val">127</div>
+          <div class="stat-key">Active Listings</div>
+        </div>
+        <div class="stat-item">
+          <div class="stat-val">23</div>
+          <div class="stat-key">Deals Closed This Month</div>
+        </div>
+        <div class="stat-item">
+          <div class="stat-val">2.3d</div>
+          <div class="stat-key">Avg Response Time</div>
+        </div>
+        <div class="stat-item">
+          <div class="stat-val">🇨🇳</div>
+          <div class="stat-key">Top Region: China</div>
+        </div>
+      </div>
+    </div>
+  </aside>
+
+</div>
+
+<script>
+  // Sort button toggle
+  document.querySelectorAll('.sort-btn').forEach(btn => {
+    btn.addEventListener('click', function() {
+      document.querySelectorAll('.sort-btn').forEach(b => b.classList.remove('active'));
+      this.classList.add('active');
+    });
+  });
+</script>
+</body>
+</html>

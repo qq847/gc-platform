@@ -1,0 +1,902 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>My Meeting Schedule | Game Connection</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --bg: #e8e4da;
+    --orange: #d95f2b;
+    --orange-dark: #b84e22;
+    --teal: #0a7fa8;
+    --green: #0d9b72;
+    --card: #ffffff;
+    --text: #1a1a1a;
+    --text-muted: #6b7280;
+    --border: #d4cfc4;
+    --chip-bg: #f0ece4;
+    --conf-bg: #e8f7f2;
+    --conf-border: #a8dece;
+    --conf-text: #065f46;
+    --pend-bg: #fffbeb;
+    --pend-border: #fcd34d;
+    --pend-text: #92400e;
+    --decl-bg: #f3f4f6;
+    --decl-border: #d1d5db;
+    --decl-text: #6b7280;
+  }
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+  }
+
+  /* ===== NAV ===== */
+  nav {
+    background: #fff;
+    border-bottom: 1px solid var(--border);
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+  }
+  .nav-inner {
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 0 24px;
+    height: 60px;
+    display: flex;
+    align-items: center;
+    gap: 20px;
+  }
+  .logo {
+    font-weight: 700;
+    font-size: 17px;
+    letter-spacing: 0.5px;
+    color: var(--text);
+    white-space: nowrap;
+    text-decoration: none;
+  }
+  .logo span { color: var(--orange); }
+  .nav-search {
+    flex: 1;
+    max-width: 320px;
+    position: relative;
+  }
+  .nav-search input {
+    width: 100%;
+    padding: 8px 12px 8px 36px;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    font-family: inherit;
+    font-size: 14px;
+    background: var(--bg);
+    outline: none;
+  }
+  .nav-search input:focus { border-color: var(--teal); }
+  .nav-search svg { position: absolute; left: 10px; top: 50%; transform: translateY(-50%); color: var(--text-muted); }
+  .nav-links {
+    display: flex;
+    gap: 4px;
+    margin-left: 8px;
+  }
+  .nav-links a {
+    text-decoration: none;
+    color: var(--text-muted);
+    font-size: 14px;
+    font-weight: 500;
+    padding: 6px 12px;
+    border-radius: 6px;
+    transition: all 0.15s;
+  }
+  .nav-links a:hover { background: var(--bg); color: var(--text); }
+  .nav-letsmeet {
+    background: var(--orange) !important;
+    color: #fff !important;
+    border-radius: 8px !important;
+    font-weight: 600 !important;
+  }
+  .nav-letsmeet:hover { background: var(--orange-dark) !important; color: #fff !important; }
+  .nav-right {
+    margin-left: auto;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+  .nav-icon-btn {
+    width: 36px; height: 36px;
+    display: flex; align-items: center; justify-content: center;
+    border-radius: 8px;
+    cursor: pointer;
+    position: relative;
+    color: var(--text-muted);
+    transition: background 0.15s;
+  }
+  .nav-icon-btn:hover { background: var(--bg); }
+  .notif-badge {
+    position: absolute; top: 4px; right: 4px;
+    width: 8px; height: 8px;
+    background: var(--orange);
+    border-radius: 50%;
+    border: 1.5px solid #fff;
+  }
+  .avatar-nav {
+    width: 34px; height: 34px;
+    border-radius: 50%;
+    background: var(--teal);
+    color: #fff;
+    font-weight: 700; font-size: 14px;
+    display: flex; align-items: center; justify-content: center;
+    cursor: pointer;
+  }
+
+  /* ===== PAGE HEADER ===== */
+  .page-header {
+    background: #fff;
+    border-bottom: 1px solid var(--border);
+    padding: 20px 24px;
+  }
+  .page-header-inner {
+    max-width: 1400px;
+    margin: 0 auto;
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 20px;
+  }
+  .badge-event {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: #fff3ee;
+    border: 1px solid #fbd0be;
+    color: var(--orange);
+    font-size: 12px;
+    font-weight: 600;
+    padding: 4px 10px;
+    border-radius: 20px;
+    margin-bottom: 8px;
+  }
+  .page-title { font-size: 26px; font-weight: 700; margin-bottom: 4px; }
+  .page-subtitle {
+    color: var(--text-muted);
+    font-size: 14px;
+    display: flex; gap: 8px; align-items: center; flex-wrap: wrap;
+  }
+  .stat-chip {
+    padding: 2px 9px;
+    border-radius: 12px;
+    font-size: 12px;
+    font-weight: 600;
+  }
+  .stat-green { background: var(--conf-bg); color: var(--green); border: 1px solid var(--conf-border); }
+  .stat-yellow { background: var(--pend-bg); color: #b45309; border: 1px solid var(--pend-border); }
+  .stat-gray { background: var(--decl-bg); color: var(--text-muted); border: 1px solid var(--decl-border); }
+  .stat-orange { background: #fff3ee; color: var(--orange); border: 1px solid #fbd0be; }
+  .header-actions {
+    display: flex; align-items: center; gap: 10px;
+    flex-shrink: 0; padding-top: 28px;
+  }
+  .btn-export {
+    display: flex; align-items: center; gap: 6px;
+    padding: 9px 14px;
+    background: var(--teal);
+    color: #fff;
+    border: none; border-radius: 8px;
+    font-family: inherit; font-size: 13px; font-weight: 600;
+    cursor: pointer; transition: opacity 0.15s; text-decoration: none;
+  }
+  .btn-export:hover { opacity: 0.88; }
+  .btn-back {
+    display: flex; align-items: center; gap: 6px;
+    padding: 9px 14px;
+    background: transparent;
+    color: var(--text);
+    border: 1.5px solid var(--border);
+    border-radius: 8px;
+    font-family: inherit; font-size: 13px; font-weight: 600;
+    cursor: pointer; transition: all 0.15s; text-decoration: none;
+  }
+  .btn-back:hover { border-color: var(--teal); color: var(--teal); }
+
+  /* ===== TABS ===== */
+  .tabs-bar {
+    background: #fff;
+    border-bottom: 1px solid var(--border);
+    padding: 0 24px;
+  }
+  .tabs-inner {
+    max-width: 1400px;
+    margin: 0 auto;
+    display: flex; gap: 4px;
+  }
+  .tab-btn {
+    padding: 12px 18px;
+    border: none; border-bottom: 3px solid transparent;
+    background: none; font-family: inherit; font-size: 14px;
+    font-weight: 500; color: var(--text-muted); cursor: pointer;
+    transition: all 0.15s; margin-bottom: -1px;
+  }
+  .tab-btn:hover { color: var(--text); }
+  .tab-btn.active { color: var(--orange); border-bottom-color: var(--orange); font-weight: 700; }
+  .tab-count {
+    display: inline-block;
+    background: var(--chip-bg);
+    padding: 1px 7px;
+    border-radius: 10px;
+    font-size: 11px;
+    margin-left: 4px;
+    vertical-align: middle;
+  }
+  .tab-btn.active .tab-count { background: #fff3ee; color: var(--orange); }
+
+  /* ===== MAIN ===== */
+  .main-wrap {
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 24px;
+  }
+
+  /* ===== CALENDAR GRID ===== */
+  .calendar-wrap {
+    background: var(--card);
+    border-radius: 12px;
+    border: 1px solid var(--border);
+    overflow: hidden;
+    margin-bottom: 24px;
+  }
+  .calendar-header {
+    display: grid;
+    grid-template-columns: 70px 1fr 1fr 1fr;
+    background: var(--bg);
+    border-bottom: 1px solid var(--border);
+  }
+  .cal-header-gutter { /* empty corner */ }
+  .cal-day-header {
+    padding: 14px 16px;
+    border-left: 1px solid var(--border);
+    text-align: center;
+  }
+  .cal-day-date {
+    font-size: 20px; font-weight: 700;
+  }
+  .cal-day-label {
+    font-size: 12px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px;
+    margin-top: 2px;
+  }
+  .cal-day-header.today .cal-day-date { color: var(--orange); }
+  .cal-day-header.today .cal-day-label { color: var(--orange); }
+
+  /* Calendar body */
+  .calendar-body {
+    display: grid;
+    grid-template-columns: 70px 1fr 1fr 1fr;
+    position: relative;
+  }
+  .time-gutter {
+    border-right: 1px solid var(--border);
+  }
+  .time-slot-label {
+    height: 40px;
+    display: flex;
+    align-items: flex-start;
+    justify-content: flex-end;
+    padding: 4px 10px 0 0;
+    font-size: 11px;
+    color: var(--text-muted);
+    font-weight: 500;
+    border-bottom: 1px solid #f0ece4;
+  }
+  .day-col {
+    border-left: 1px solid var(--border);
+    position: relative;
+  }
+  .day-slot {
+    height: 40px;
+    border-bottom: 1px solid #f0ece4;
+    position: relative;
+    cursor: pointer;
+    transition: background 0.12s;
+  }
+  .day-slot:hover { background: #f9f7f4; }
+  .day-slot.available:hover::after {
+    content: '+ Available';
+    position: absolute;
+    left: 50%; top: 50%; transform: translate(-50%,-50%);
+    font-size: 11px; color: var(--teal); font-weight: 600;
+    opacity: 0.8;
+  }
+
+  /* Meeting blocks */
+  .meeting-block {
+    position: absolute;
+    left: 3px; right: 3px;
+    border-radius: 6px;
+    padding: 4px 7px;
+    font-size: 11px;
+    cursor: pointer;
+    z-index: 2;
+    transition: filter 0.15s, transform 0.12s;
+    overflow: hidden;
+    line-height: 1.3;
+    border-left: 3px solid transparent;
+  }
+  .meeting-block:hover { filter: brightness(0.94); transform: scale(1.01); }
+  .meeting-block.confirmed {
+    background: var(--conf-bg);
+    border-color: var(--green);
+    color: var(--conf-text);
+  }
+  .meeting-block.pending {
+    background: var(--pend-bg);
+    border-color: #f59e0b;
+    color: var(--pend-text);
+  }
+  .meeting-block.declined {
+    background: var(--decl-bg);
+    border-color: #9ca3af;
+    color: var(--decl-text);
+    opacity: 0.6;
+    text-decoration: line-through;
+  }
+  .meeting-block-name { font-weight: 700; }
+  .meeting-block-company { opacity: 0.85; }
+  .meeting-block-time { opacity: 0.75; font-size: 10px; }
+
+  /* ===== SUMMARY CARDS ===== */
+  .bottom-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+  }
+  .summary-card {
+    background: var(--card);
+    border-radius: 12px;
+    border: 1px solid var(--border);
+    padding: 20px 24px;
+  }
+  .summary-card-title {
+    font-size: 14px; font-weight: 700; margin-bottom: 10px;
+    display: flex; align-items: center; gap: 8px;
+  }
+  .next-meeting {
+    display: flex; align-items: center; gap: 14px;
+    padding: 12px;
+    background: var(--conf-bg);
+    border-radius: 10px;
+    border: 1px solid var(--conf-border);
+    margin-bottom: 12px;
+  }
+  .next-meeting-avatar {
+    width: 42px; height: 42px; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-weight: 700; font-size: 16px; color: #fff;
+    flex-shrink: 0;
+  }
+  .next-meeting-info { flex: 1; }
+  .next-meeting-name { font-weight: 700; font-size: 14px; }
+  .next-meeting-time { font-size: 12px; color: var(--text-muted); margin-top: 2px; }
+  .countdown { font-size: 13px; color: var(--green); font-weight: 600; }
+  .quick-actions { display: flex; gap: 10px; flex-wrap: wrap; }
+  .btn-quick {
+    display: flex; align-items: center; gap: 6px;
+    padding: 9px 14px;
+    border-radius: 8px;
+    font-family: inherit; font-size: 13px; font-weight: 600;
+    cursor: pointer; transition: all 0.15s; border: none;
+  }
+  .btn-quick-primary { background: var(--orange); color: #fff; }
+  .btn-quick-primary:hover { opacity: 0.88; }
+  .btn-quick-outline { background: transparent; color: var(--teal); border: 1.5px solid var(--teal); }
+  .btn-quick-outline:hover { background: #eef8fc; }
+  .meetings-list { display: flex; flex-direction: column; gap: 8px; }
+  .meeting-list-item {
+    display: flex; align-items: center; gap: 10px;
+    padding: 10px 12px;
+    border-radius: 8px;
+    border: 1px solid var(--border);
+    font-size: 13px;
+    cursor: pointer;
+    transition: background 0.12s;
+  }
+  .meeting-list-item:hover { background: var(--bg); }
+  .mli-dot {
+    width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0;
+  }
+  .mli-dot.confirmed { background: var(--green); }
+  .mli-dot.pending { background: #f59e0b; }
+  .mli-dot.declined { background: #9ca3af; }
+  .mli-info { flex: 1; }
+  .mli-name { font-weight: 600; }
+  .mli-detail { color: var(--text-muted); font-size: 11px; }
+  .mli-time { font-size: 12px; color: var(--text-muted); white-space: nowrap; }
+  .mli-status {
+    font-size: 11px; font-weight: 600; padding: 2px 8px;
+    border-radius: 10px;
+  }
+  .mli-status.confirmed { background: var(--conf-bg); color: var(--green); }
+  .mli-status.pending { background: var(--pend-bg); color: #b45309; }
+  .mli-status.declined { background: var(--decl-bg); color: var(--text-muted); }
+
+  /* ===== DETAIL OVERLAY ===== */
+  .overlay-backdrop {
+    display: none;
+    position: fixed; inset: 0;
+    background: rgba(0,0,0,0.45);
+    z-index: 200;
+    align-items: center; justify-content: center;
+  }
+  .overlay-backdrop.active { display: flex; }
+  .overlay-modal {
+    background: #fff;
+    border-radius: 16px;
+    padding: 28px 32px;
+    width: 100%; max-width: 480px;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.2);
+    position: relative;
+    animation: slideUp 0.2s ease;
+  }
+  @keyframes slideUp {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  .overlay-close {
+    position: absolute; top: 16px; right: 16px;
+    background: none; border: none; font-size: 22px;
+    cursor: pointer; color: var(--text-muted); line-height: 1;
+  }
+  .overlay-status-badge {
+    display: inline-flex; align-items: center; gap: 6px;
+    padding: 4px 12px; border-radius: 20px;
+    font-size: 12px; font-weight: 700; margin-bottom: 14px;
+  }
+  .overlay-status-badge.confirmed { background: var(--conf-bg); color: var(--green); }
+  .overlay-status-badge.pending { background: var(--pend-bg); color: #b45309; }
+  .overlay-status-badge.declined { background: var(--decl-bg); color: var(--text-muted); }
+  .overlay-person {
+    display: flex; align-items: center; gap: 14px;
+    padding: 14px; background: var(--bg); border-radius: 10px;
+    margin-bottom: 16px;
+  }
+  .detail-avatar {
+    width: 52px; height: 52px; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-weight: 700; font-size: 20px; color: #fff; flex-shrink: 0;
+  }
+  .detail-name { font-weight: 700; font-size: 16px; }
+  .detail-role { font-size: 12px; color: var(--text-muted); margin-top: 2px; }
+  .detail-row {
+    display: flex; gap: 8px; align-items: flex-start;
+    margin-bottom: 10px; font-size: 13px;
+  }
+  .detail-row-icon { color: var(--text-muted); flex-shrink: 0; padding-top: 1px; }
+  .detail-row-label { color: var(--text-muted); font-size: 12px; min-width: 60px; }
+  .detail-row-value { font-weight: 500; }
+  .detail-messages {
+    background: var(--bg); border-radius: 8px; padding: 12px;
+    margin-bottom: 16px;
+  }
+  .detail-msg-label { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; color: var(--text-muted); margin-bottom: 6px; }
+  .detail-msg-text { font-size: 13px; line-height: 1.5; color: var(--text); }
+  .detail-actions {
+    display: flex; flex-wrap: wrap; gap: 8px; margin-top: 16px;
+  }
+  .btn-detail-cancel {
+    background: #fee2e2; color: #dc2626; border: none;
+    border-radius: 8px; padding: 9px 14px;
+    font-family: inherit; font-size: 13px; font-weight: 600; cursor: pointer;
+    transition: opacity 0.15s;
+  }
+  .btn-detail-cancel:hover { opacity: 0.88; }
+  .btn-detail-cal {
+    background: var(--bg); color: var(--teal);
+    border: 1.5px solid var(--teal); border-radius: 8px;
+    padding: 9px 14px; font-family: inherit; font-size: 13px;
+    font-weight: 600; cursor: pointer; transition: all 0.15s;
+  }
+  .btn-detail-cal:hover { background: #eef8fc; }
+  .btn-detail-ics {
+    background: var(--bg); color: var(--text-muted);
+    border: 1.5px solid var(--border); border-radius: 8px;
+    padding: 9px 14px; font-family: inherit; font-size: 13px;
+    font-weight: 600; cursor: pointer; transition: all 0.15s;
+  }
+  .btn-detail-ics:hover { border-color: var(--text-muted); color: var(--text); }
+  .divider { border: none; border-top: 1px solid var(--border); margin: 14px 0; }
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+  <div class="nav-inner">
+    <a href="#" class="logo">GAME <span>CONNECTION</span></a>
+    <div class="nav-search">
+      <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>
+      <input type="text" placeholder="Search people, companies...">
+    </div>
+    <div class="nav-links">
+      <a href="#">Home</a>
+      <a href="#">People</a>
+      <a href="#">Projects</a>
+      <a href="#">Events</a>
+      <a href="#">Market</a>
+      <a href="LetsMeet_Schedule_v1_openclaw.html" class="nav-letsmeet">🤝 Let's Meet</a>
+    </div>
+    <div class="nav-right">
+      <div class="nav-icon-btn">
+        <svg width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+        <div class="notif-badge"></div>
+      </div>
+      <div class="avatar-nav">YQ</div>
+    </div>
+  </div>
+</nav>
+
+<!-- PAGE HEADER -->
+<div class="page-header">
+  <div class="page-header-inner">
+    <div>
+      <div class="badge-event">📍 Indie Game Fest 2026 · Apr 15–17 · Berlin</div>
+      <h1 class="page-title">My Meeting Schedule</h1>
+      <div class="page-subtitle">
+        <span class="stat-chip stat-green">✅ 6 confirmed</span>
+        <span class="stat-chip stat-yellow">⏳ 2 pending</span>
+        <span class="stat-chip stat-gray">❌ 1 declined</span>
+        <span class="stat-chip stat-orange">0 slots remaining</span>
+      </div>
+    </div>
+    <div class="header-actions">
+      <button class="btn-export">📅 Export to Calendar</button>
+      <a href="LetsMeet_Browse_v1_openclaw.html" class="btn-back">← Browse Participants</a>
+    </div>
+  </div>
+</div>
+
+<!-- TABS -->
+<div class="tabs-bar">
+  <div class="tabs-inner">
+    <button class="tab-btn active" onclick="switchTab(this,'all')">All <span class="tab-count">9</span></button>
+    <button class="tab-btn" onclick="switchTab(this,'confirmed')">Confirmed <span class="tab-count">6</span></button>
+    <button class="tab-btn" onclick="switchTab(this,'pending')">Pending <span class="tab-count">2</span></button>
+    <button class="tab-btn" onclick="switchTab(this,'declined')">Declined <span class="tab-count">1</span></button>
+  </div>
+</div>
+
+<!-- MAIN -->
+<div class="main-wrap">
+
+  <!-- CALENDAR -->
+  <div class="calendar-wrap">
+    <div class="calendar-header">
+      <div class="cal-header-gutter"></div>
+      <div class="cal-day-header today">
+        <div class="cal-day-date">Mon Apr 15</div>
+        <div class="cal-day-label">Day 1</div>
+      </div>
+      <div class="cal-day-header">
+        <div class="cal-day-date">Tue Apr 16</div>
+        <div class="cal-day-label">Day 2</div>
+      </div>
+      <div class="cal-day-header">
+        <div class="cal-day-date">Wed Apr 17</div>
+        <div class="cal-day-label">Day 3</div>
+      </div>
+    </div>
+
+    <div class="calendar-body" id="calendar-body">
+      <!-- Time gutter + day columns generated by JS -->
+    </div>
+  </div>
+
+  <!-- BOTTOM ROW -->
+  <div class="bottom-row">
+
+    <!-- Today Reminder -->
+    <div class="summary-card">
+      <div class="summary-card-title">⏰ Today's Reminder – Apr 15</div>
+      <div class="next-meeting">
+        <div class="next-meeting-avatar" style="background:#0d9b72">ET</div>
+        <div class="next-meeting-info">
+          <div class="next-meeting-name">Emma Thompson · Indie Fund</div>
+          <div class="next-meeting-time">📍 Meeting Room A · 10:00 – 10:30 AM</div>
+        </div>
+        <div class="countdown">in ~2h</div>
+      </div>
+      <div style="font-size:13px;color:var(--text-muted);margin-bottom:10px;">You have <strong>3 meetings</strong> on Apr 15. Next up in approximately 2 hours.</div>
+      <div class="quick-actions">
+        <button class="btn-quick btn-quick-primary" onclick="alert('Exporting all meetings to calendar...')">📅 Export All to Calendar</button>
+        <button class="btn-quick btn-quick-outline" onclick="alert('Downloading .ics file...')">⬇ Download .ics</button>
+      </div>
+    </div>
+
+    <!-- All Meetings List -->
+    <div class="summary-card">
+      <div class="summary-card-title">📋 All Meetings</div>
+      <div class="meetings-list">
+        <div class="meeting-list-item" onclick="openDetail('Emma Thompson','Indie Fund','ET','#0d9b72','Investor','Apr 15 · 10:00–10:30','Meeting Room A','confirmed','Hi Emma, I\'d love to discuss early-stage funding for our upcoming RPG.','Great, looking forward to it!')">
+          <div class="mli-dot confirmed"></div>
+          <div class="mli-info">
+            <div class="mli-name">Emma Thompson</div>
+            <div class="mli-detail">Indie Fund · Meeting Room A</div>
+          </div>
+          <div class="mli-time">Apr 15, 10:00</div>
+          <div class="mli-status confirmed">✅ Confirmed</div>
+        </div>
+        <div class="meeting-list-item" onclick="openDetail('Sarah Chen','Devolver Digital','SC','#d95f2b','Publishing Dir','Apr 15 · 11:00–11:30','Meeting Room B','confirmed','Hi Sarah, excited to share our Indie RPG project with you!','Looking forward to hearing about it, see you there.')">
+          <div class="mli-dot confirmed"></div>
+          <div class="mli-info">
+            <div class="mli-name">Sarah Chen</div>
+            <div class="mli-detail">Devolver Digital · Meeting Room B</div>
+          </div>
+          <div class="mli-time">Apr 15, 11:00</div>
+          <div class="mli-status confirmed">✅ Confirmed</div>
+        </div>
+        <div class="meeting-list-item" onclick="openDetail('Tom Richards','Team17','TR','#92400e','Publishing Mgr','Apr 15 · 14:00–14:30','Meeting Room A','confirmed','Hi Tom, would love to discuss our new title with Team17.','Sounds great, see you then!')">
+          <div class="mli-dot confirmed"></div>
+          <div class="mli-info">
+            <div class="mli-name">Tom Richards</div>
+            <div class="mli-detail">Team17 · Meeting Room A</div>
+          </div>
+          <div class="mli-time">Apr 15, 14:00</div>
+          <div class="mli-status confirmed">✅ Confirmed</div>
+        </div>
+        <div class="meeting-list-item" onclick="openDetail('Marc Dubois','Ubisoft','MD','#4f46e5','VP Business Dev','Apr 15 · 16:00–16:30','TBD','pending','Hi Marc, I\'d love to explore potential collaboration between our studios.','')">
+          <div class="mli-dot pending"></div>
+          <div class="mli-info">
+            <div class="mli-name">Marc Dubois</div>
+            <div class="mli-detail">Ubisoft · Pending confirmation</div>
+          </div>
+          <div class="mli-time">Apr 15, 16:00</div>
+          <div class="mli-status pending">⏳ Pending</div>
+        </div>
+        <div class="meeting-list-item" onclick="openDetail('Li Wei','NetEase Games','LW','#7c3aed','BD Director','Apr 16 · 09:00–09:30','Meeting Room C','confirmed','Hi Li Wei, looking forward to discussing China publishing opportunities.','Great! I\'ll bring some market data to share.')">
+          <div class="mli-dot confirmed"></div>
+          <div class="mli-info">
+            <div class="mli-name">Li Wei</div>
+            <div class="mli-detail">NetEase · Meeting Room C</div>
+          </div>
+          <div class="mli-time">Apr 16, 09:00</div>
+          <div class="mli-status confirmed">✅ Confirmed</div>
+        </div>
+        <div class="meeting-list-item" onclick="openDetail('Jin Park','Riot Games','JP','#0a7fa8','Sr Producer','Apr 16 · 11:00–11:30','Meeting Room B','confirmed','Hi Jin, excited to explore co-development possibilities with Riot.','We have some interesting projects to discuss!')">
+          <div class="mli-dot confirmed"></div>
+          <div class="mli-info">
+            <div class="mli-name">Jin Park</div>
+            <div class="mli-detail">Riot Games · Meeting Room B</div>
+          </div>
+          <div class="mli-time">Apr 16, 11:00</div>
+          <div class="mli-status confirmed">✅ Confirmed</div>
+        </div>
+        <div class="meeting-list-item" onclick="openDetail('Zhang Min','Tencent Games','ZM','#0891b2','Publishing Lead','Apr 16 · 14:30–15:00','TBD','pending','Hi Zhang Min, I\'d love to discuss mobile publishing for Southeast Asia.','')">
+          <div class="mli-dot pending"></div>
+          <div class="mli-info">
+            <div class="mli-name">Zhang Min</div>
+            <div class="mli-detail">Tencent · Pending confirmation</div>
+          </div>
+          <div class="mli-time">Apr 16, 14:30</div>
+          <div class="mli-status pending">⏳ Pending</div>
+        </div>
+        <div class="meeting-list-item" onclick="openDetail('Yuki Tanaka','Square Enix','YT','#c2410c','Intl Licensing','Apr 16 · 16:00–16:30','N/A','declined','Hi Yuki, would love to explore IP licensing opportunities.','')">
+          <div class="mli-dot declined"></div>
+          <div class="mli-info">
+            <div class="mli-name">Yuki Tanaka</div>
+            <div class="mli-detail">Square Enix · Declined</div>
+          </div>
+          <div class="mli-time">Apr 16, 16:00</div>
+          <div class="mli-status declined">❌ Declined</div>
+        </div>
+        <div class="meeting-list-item" onclick="openDetail('Anna Kowalski','CD Projekt','AK','#be185d','Sr Producer','Apr 17 · 10:00–10:30','Virtual Room','confirmed','Hi Anna, I\'m a huge fan of CD Projekt\'s work and would love to discuss collaboration.','Happy to connect! See you in the virtual room.')">
+          <div class="mli-dot confirmed"></div>
+          <div class="mli-info">
+            <div class="mli-name">Anna Kowalski</div>
+            <div class="mli-detail">CD Projekt · Virtual Room</div>
+          </div>
+          <div class="mli-time">Apr 17, 10:00</div>
+          <div class="mli-status confirmed">✅ Confirmed</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- DETAIL OVERLAY -->
+<div class="overlay-backdrop" id="overlay" onclick="closeOverlayIfBackdrop(event)">
+  <div class="overlay-modal">
+    <button class="overlay-close" onclick="closeOverlay()">×</button>
+    <div class="overlay-status-badge" id="detail-status-badge">✅ Confirmed</div>
+    <div class="overlay-person">
+      <div class="detail-avatar" id="detail-avatar">--</div>
+      <div>
+        <div class="detail-name" id="detail-name">Name</div>
+        <div class="detail-role" id="detail-role">Role · Company</div>
+      </div>
+    </div>
+    <div class="detail-row">
+      <span class="detail-row-icon">🕐</span>
+      <div>
+        <div class="detail-row-label">Time</div>
+        <div class="detail-row-value" id="detail-time">–</div>
+      </div>
+    </div>
+    <div class="detail-row">
+      <span class="detail-row-icon">📍</span>
+      <div>
+        <div class="detail-row-label">Location</div>
+        <div class="detail-row-value" id="detail-location">–</div>
+      </div>
+    </div>
+    <hr class="divider">
+    <div class="detail-messages" id="detail-messages">
+      <div class="detail-msg-label">Your message</div>
+      <div class="detail-msg-text" id="detail-msg-mine">–</div>
+      <div class="detail-msg-label" style="margin-top:10px;" id="reply-label">Their reply</div>
+      <div class="detail-msg-text" id="detail-msg-reply">–</div>
+    </div>
+    <div class="detail-actions">
+      <button class="btn-detail-cancel" id="detail-cancel-btn" onclick="alert('Meeting cancellation request sent.')">🚫 Cancel Meeting</button>
+      <button class="btn-detail-cal" onclick="alert('Opening Google Calendar...')">📅 Add to Google Cal</button>
+      <button class="btn-detail-ics" onclick="alert('Downloading .ics file...')">⬇ Download .ics</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ====== CALENDAR RENDERING ======
+const HOUR_START = 9;
+const HOUR_END = 18;
+const SLOT_HEIGHT = 40; // px per 30 min
+
+// meetings: { day: 0/1/2, startH, startM, endH, endM, status, name, company }
+const meetings = [
+  // Apr 15
+  { day:0, startH:10, startM:0,  endH:10, endM:30, status:'confirmed', name:'Emma Thompson', company:'Indie Fund',      initials:'ET', color:'#0d9b72' },
+  { day:0, startH:11, startM:0,  endH:11, endM:30, status:'confirmed', name:'Sarah Chen',   company:'Devolver Digital', initials:'SC', color:'#d95f2b' },
+  { day:0, startH:14, startM:0,  endH:14, endM:30, status:'confirmed', name:'Tom Richards', company:'Team17',           initials:'TR', color:'#92400e' },
+  { day:0, startH:16, startM:0,  endH:16, endM:30, status:'pending',   name:'Marc Dubois',  company:'Ubisoft',          initials:'MD', color:'#4f46e5' },
+  // Apr 16
+  { day:1, startH:9,  startM:0,  endH:9,  endM:30, status:'confirmed', name:'Li Wei',       company:'NetEase',          initials:'LW', color:'#7c3aed' },
+  { day:1, startH:11, startM:0,  endH:11, endM:30, status:'confirmed', name:'Jin Park',     company:'Riot Games',       initials:'JP', color:'#0a7fa8' },
+  { day:1, startH:14, startM:30, endH:15, endM:0,  status:'pending',   name:'Zhang Min',    company:'Tencent',          initials:'ZM', color:'#0891b2' },
+  { day:1, startH:16, startM:0,  endH:16, endM:30, status:'declined',  name:'Yuki Tanaka',  company:'Square Enix',      initials:'YT', color:'#c2410c' },
+  // Apr 17
+  { day:2, startH:10, startM:0,  endH:10, endM:30, status:'confirmed', name:'Anna Kowalski',company:'CD Projekt',       initials:'AK', color:'#be185d' },
+];
+
+function timeToRow(h, m) {
+  return (h - HOUR_START) * 2 + m / 30;
+}
+function durationToRows(sh, sm, eh, em) {
+  return (eh * 60 + em - sh * 60 - sm) / 30;
+}
+
+function buildCalendar() {
+  const body = document.getElementById('calendar-body');
+  const totalSlots = (HOUR_END - HOUR_START) * 2;
+
+  // Time gutter
+  const gutter = document.createElement('div');
+  gutter.className = 'time-gutter';
+  for (let i = 0; i <= totalSlots; i++) {
+    const h = HOUR_START + Math.floor(i / 2);
+    const m = i % 2 === 0 ? '00' : '30';
+    const label = document.createElement('div');
+    label.className = 'time-slot-label';
+    label.textContent = i % 2 === 0 ? `${h}:00` : '';
+    gutter.appendChild(label);
+  }
+  body.appendChild(gutter);
+
+  // Day columns
+  for (let d = 0; d < 3; d++) {
+    const col = document.createElement('div');
+    col.className = 'day-col';
+    col.style.position = 'relative';
+
+    // Slots
+    for (let i = 0; i < totalSlots; i++) {
+      const slot = document.createElement('div');
+      slot.className = 'day-slot available';
+      col.appendChild(slot);
+    }
+
+    // Meeting blocks
+    const dayMeetings = meetings.filter(m => m.day === d);
+    dayMeetings.forEach(m => {
+      const row = timeToRow(m.startH, m.startM);
+      const rows = durationToRows(m.startH, m.startM, m.endH, m.endM);
+      const block = document.createElement('div');
+      block.className = `meeting-block ${m.status}`;
+      block.style.top = (row * SLOT_HEIGHT) + 'px';
+      block.style.height = (rows * SLOT_HEIGHT - 2) + 'px';
+
+      const icon = m.status === 'confirmed' ? '✅' : m.status === 'pending' ? '⏳' : '❌';
+      const timeStr = `${m.startH}:${String(m.startM).padStart(2,'0')}–${m.endH}:${String(m.endM).padStart(2,'0')}`;
+      block.innerHTML = `<div class="meeting-block-name">${icon} ${m.name}</div><div class="meeting-block-company">${m.company}</div><div class="meeting-block-time">${timeStr}</div>`;
+
+      const meetingData = getMeetingData(m.name);
+      block.onclick = () => {
+        if (meetingData) {
+          openDetail(meetingData.name, meetingData.company, meetingData.initials, meetingData.color,
+            meetingData.role, meetingData.time, meetingData.location, meetingData.status,
+            meetingData.myMsg, meetingData.reply);
+        }
+      };
+      col.appendChild(block);
+    });
+
+    body.appendChild(col);
+  }
+}
+
+const meetingDetails = {
+  'Emma Thompson': { name:'Emma Thompson', company:'Indie Fund', initials:'ET', color:'#0d9b72', role:'Investor', time:'Apr 15 · 10:00–10:30', location:'Meeting Room A', status:'confirmed', myMsg:"Hi Emma, I'd love to discuss early-stage funding for our upcoming RPG.", reply:"Great, looking forward to it!" },
+  'Sarah Chen':    { name:'Sarah Chen', company:'Devolver Digital', initials:'SC', color:'#d95f2b', role:'Publishing Dir', time:'Apr 15 · 11:00–11:30', location:'Meeting Room B', status:'confirmed', myMsg:"Hi Sarah, excited to share our Indie RPG project with you!", reply:"Looking forward to hearing about it, see you there." },
+  'Tom Richards':  { name:'Tom Richards', company:'Team17', initials:'TR', color:'#92400e', role:'Publishing Mgr', time:'Apr 15 · 14:00–14:30', location:'Meeting Room A', status:'confirmed', myMsg:"Hi Tom, would love to discuss our new title with Team17.", reply:"Sounds great, see you then!" },
+  'Marc Dubois':   { name:'Marc Dubois', company:'Ubisoft', initials:'MD', color:'#4f46e5', role:'VP Business Dev', time:'Apr 15 · 16:00–16:30', location:'TBD', status:'pending', myMsg:"Hi Marc, I'd love to explore potential collaboration between our studios.", reply:'' },
+  'Li Wei':        { name:'Li Wei', company:'NetEase', initials:'LW', color:'#7c3aed', role:'BD Director', time:'Apr 16 · 09:00–09:30', location:'Meeting Room C', status:'confirmed', myMsg:"Hi Li Wei, looking forward to discussing China publishing opportunities.", reply:"Great! I'll bring some market data to share." },
+  'Jin Park':      { name:'Jin Park', company:'Riot Games', initials:'JP', color:'#0a7fa8', role:'Sr Producer', time:'Apr 16 · 11:00–11:30', location:'Meeting Room B', status:'confirmed', myMsg:"Hi Jin, excited to explore co-development possibilities with Riot.", reply:"We have some interesting projects to discuss!" },
+  'Zhang Min':     { name:'Zhang Min', company:'Tencent', initials:'ZM', color:'#0891b2', role:'Publishing Lead', time:'Apr 16 · 14:30–15:00', location:'TBD', status:'pending', myMsg:"Hi Zhang Min, I'd love to discuss mobile publishing for Southeast Asia.", reply:'' },
+  'Yuki Tanaka':   { name:'Yuki Tanaka', company:'Square Enix', initials:'YT', color:'#c2410c', role:'Intl Licensing', time:'Apr 16 · 16:00–16:30', location:'N/A', status:'declined', myMsg:"Hi Yuki, would love to explore IP licensing opportunities.", reply:'' },
+  'Anna Kowalski': { name:'Anna Kowalski', company:'CD Projekt', initials:'AK', color:'#be185d', role:'Sr Producer', time:'Apr 17 · 10:00–10:30', location:'Virtual Room', status:'confirmed', myMsg:"Hi Anna, I'm a huge fan of CD Projekt's work and would love to discuss collaboration.", reply:"Happy to connect! See you in the virtual room." },
+};
+
+function getMeetingData(name) { return meetingDetails[name] || null; }
+
+function openDetail(name, company, initials, color, role, time, location, status, myMsg, reply) {
+  const statusMap = { confirmed: '✅ Confirmed', pending: '⏳ Pending', declined: '❌ Declined' };
+  const badge = document.getElementById('detail-status-badge');
+  badge.textContent = statusMap[status] || status;
+  badge.className = `overlay-status-badge ${status}`;
+
+  document.getElementById('detail-avatar').textContent = initials;
+  document.getElementById('detail-avatar').style.background = color;
+  document.getElementById('detail-name').textContent = name;
+  document.getElementById('detail-role').textContent = role + ' · ' + company;
+  document.getElementById('detail-time').textContent = time;
+  document.getElementById('detail-location').textContent = location;
+  document.getElementById('detail-msg-mine').textContent = myMsg || '–';
+
+  const replyLabel = document.getElementById('reply-label');
+  const replyText = document.getElementById('detail-msg-reply');
+  if (reply) {
+    replyLabel.style.display = 'block';
+    replyText.style.display = 'block';
+    replyText.textContent = reply;
+  } else {
+    replyLabel.style.display = 'none';
+    replyText.style.display = 'none';
+  }
+
+  const cancelBtn = document.getElementById('detail-cancel-btn');
+  cancelBtn.style.display = status === 'declined' ? 'none' : 'inline-flex';
+
+  document.getElementById('overlay').classList.add('active');
+}
+
+function closeOverlay() {
+  document.getElementById('overlay').classList.remove('active');
+}
+function closeOverlayIfBackdrop(e) {
+  if (e.target === document.getElementById('overlay')) closeOverlay();
+}
+
+function switchTab(el, tab) {
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  el.classList.add('active');
+  // In a real app, filter the meetings list. For prototype, just show a notification.
+  if (tab !== 'all') {
+    const names = { confirmed: '6 confirmed meetings', pending: '2 pending requests', declined: '1 declined meeting' };
+    console.log('Filter:', names[tab]);
+  }
+}
+
+// Build calendar on load
+document.addEventListener('DOMContentLoaded', buildCalendar);
+</script>
+</body>
+</html>

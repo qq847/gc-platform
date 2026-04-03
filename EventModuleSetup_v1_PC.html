@@ -1,0 +1,481 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Set Up Your Event — Game Connection Event HQ</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: #e8e4da;
+    color: #1c1a17;
+    min-height: 100vh;
+  }
+
+  /* ── NAV ── */
+  nav {
+    position: sticky; top: 0; z-index: 100;
+    background: #fff;
+    border-bottom: 1px solid #e0dbd2;
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 0 32px; height: 60px;
+    box-shadow: 0 1px 4px rgba(0,0,0,.06);
+  }
+  .nav-logo { font-weight: 700; font-size: 15px; letter-spacing: .4px; color: #1c1a17; }
+  .nav-logo span { color: #0a7fa8; }
+  .nav-links { display: flex; gap: 4px; }
+  .nav-links a {
+    text-decoration: none; color: #6b6660; font-size: 14px; font-weight: 500;
+    padding: 6px 14px; border-radius: 8px; transition: background .15s, color .15s;
+  }
+  .nav-links a:hover { background: #f0ede6; color: #1c1a17; }
+  .nav-links a.active { color: #0a7fa8; background: #eaf5fb; }
+  .nav-right { display: flex; align-items: center; gap: 16px; }
+  .nav-bell {
+    width: 36px; height: 36px; border-radius: 50%; background: #f0ede6;
+    display: flex; align-items: center; justify-content: center; cursor: pointer;
+    font-size: 16px; transition: background .15s;
+  }
+  .nav-bell:hover { background: #e0dbd2; }
+  .nav-user { display: flex; align-items: center; gap: 10px; cursor: pointer; }
+  .nav-avatar {
+    width: 34px; height: 34px; border-radius: 50%;
+    background: linear-gradient(135deg, #0a7fa8, #0d9b72);
+    display: flex; align-items: center; justify-content: center;
+    color: #fff; font-weight: 700; font-size: 13px;
+  }
+  .nav-company { font-size: 14px; font-weight: 600; color: #1c1a17; }
+
+  /* ── PAGE ── */
+  .page { max-width: 860px; margin: 0 auto; padding: 40px 24px 80px; }
+
+  /* ── PAGE HEADER ── */
+  .page-header { text-align: center; margin-bottom: 36px; }
+  .step-indicator {
+    display: inline-flex; align-items: center; gap: 8px;
+    background: #fff; border-radius: 20px; padding: 6px 16px;
+    font-size: 12px; font-weight: 600; color: #6b6660;
+    border: 1px solid #e0dbd2; margin-bottom: 16px;
+  }
+  .step-dot {
+    width: 20px; height: 20px; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 10px; font-weight: 700;
+  }
+  .step-dot.done { background: #0d9b72; color: #fff; }
+  .step-dot.active { background: #d95f2b; color: #fff; }
+  .step-dot.todo { background: #e0dbd2; color: #6b6660; }
+  .step-arrow { color: #c8c3b8; font-size: 10px; }
+
+  .page-title { font-size: 28px; font-weight: 700; color: #1c1a17; margin-bottom: 8px; }
+  .page-sub { font-size: 15px; color: #6b6660; max-width: 520px; margin: 0 auto 16px; line-height: 1.5; }
+
+  .event-chip {
+    display: inline-flex; align-items: center; gap: 8px;
+    background: #fff; border: 1px solid #e0dbd2; border-radius: 20px;
+    padding: 7px 18px; font-size: 13px; font-weight: 600; color: #1c1a17;
+  }
+  .event-chip span { color: #6b6660; font-weight: 400; }
+
+  /* ── MODULE GRID ── */
+  .module-grid {
+    display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px;
+    margin-bottom: 32px;
+  }
+
+  .module-card {
+    background: #fff; border-radius: 12px;
+    border: 2px solid #e8e4da;
+    padding: 20px 18px;
+    cursor: pointer;
+    transition: border-color .2s, box-shadow .2s, transform .1s;
+    position: relative;
+    display: flex; flex-direction: column; gap: 12px;
+  }
+  .module-card:hover {
+    border-color: #c8c3b8;
+    box-shadow: 0 4px 16px rgba(0,0,0,.06);
+    transform: translateY(-1px);
+  }
+  .module-card.enabled {
+    border-color: #0d9b72;
+    background: #fff;
+  }
+  .module-card.disabled {
+    background: #f8f6f2; border-color: #e0dbd2;
+    border-style: dashed;
+    opacity: .85;
+  }
+  .module-card.disabled:hover { border-color: #c8c3b8; }
+
+  .module-activate-badge {
+    position: absolute; top: 12px; right: 12px;
+    font-size: 9px; font-weight: 700; color: #a09890;
+    background: transparent; border: 1.5px dashed #c8c3b8;
+    border-radius: 4px; padding: 2px 7px; letter-spacing: .5px;
+  }
+
+  .module-icon { font-size: 32px; line-height: 1; }
+  .module-name { font-size: 14px; font-weight: 700; color: #1c1a17; margin-bottom: 2px; }
+  .module-desc { font-size: 12px; color: #6b6660; line-height: 1.4; }
+
+  .module-footer {
+    margin-top: auto; padding-top: 12px; border-top: 1px solid #f0ede6;
+    display: flex; flex-direction: column; gap: 6px;
+  }
+  .module-time {
+    display: flex; align-items: center; gap: 5px;
+    font-size: 11px; color: #a09890;
+  }
+  .module-sponsors {
+    display: flex; align-items: center; gap: 5px;
+    font-size: 11px; color: #d95f2b; font-weight: 500;
+  }
+  .module-no-sponsor { font-size: 11px; color: #a09890; }
+
+  /* TOGGLE */
+  .module-toggle-row {
+    display: flex; align-items: center; justify-content: space-between;
+  }
+  .toggle {
+    position: relative; width: 44px; height: 24px; flex-shrink: 0;
+  }
+  .toggle input { opacity: 0; width: 0; height: 0; }
+  .toggle-track {
+    position: absolute; top: 0; left: 0; right: 0; bottom: 0;
+    border-radius: 12px; background: #e0dbd2;
+    cursor: pointer; transition: background .2s;
+  }
+  .toggle input:checked + .toggle-track { background: #0d9b72; }
+  .toggle-thumb {
+    position: absolute; width: 18px; height: 18px; border-radius: 50%;
+    background: #fff; top: 3px; left: 3px;
+    transition: transform .2s;
+    box-shadow: 0 1px 3px rgba(0,0,0,.2);
+    pointer-events: none;
+  }
+  .toggle input:checked ~ .toggle-thumb { transform: translateX(20px); }
+  .toggle-label { font-size: 12px; font-weight: 600; }
+  .toggle-label.on { color: #0d9b72; }
+  .toggle-label.off { color: #a09890; }
+
+  /* ── SUMMARY SECTION ── */
+  .summary-section {
+    background: #fff; border-radius: 12px;
+    border: 1px solid #e8e4da;
+    padding: 24px 28px; margin-bottom: 24px;
+  }
+  .summary-title { font-size: 16px; font-weight: 700; color: #1c1a17; margin-bottom: 6px; }
+  .summary-sub { font-size: 13px; color: #6b6660; margin-bottom: 20px; line-height: 1.5; }
+  .summary-count { font-size: 24px; font-weight: 700; color: #d95f2b; display: inline; }
+  .product-chips { display: flex; flex-wrap: wrap; gap: 8px; margin: 16px 0; }
+  .product-chip {
+    background: #f0ede6; border-radius: 20px; padding: 5px 12px;
+    font-size: 12px; font-weight: 500; color: #1c1a17;
+    display: flex; align-items: center; gap: 6px;
+  }
+  .product-chip .count {
+    background: #d95f2b; color: #fff; border-radius: 20px;
+    padding: 1px 7px; font-size: 10px; font-weight: 700;
+  }
+  .catalog-link {
+    font-size: 13px; color: #0a7fa8; font-weight: 600; text-decoration: none;
+  }
+  .catalog-link:hover { color: #086a8e; }
+
+  /* ── NAV BUTTONS ── */
+  .nav-buttons {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 0;
+  }
+  .btn-back {
+    background: #fff; color: #1c1a17; border: 1px solid #e0dbd2;
+    border-radius: 10px; padding: 12px 28px; font-size: 14px; font-weight: 600;
+    cursor: pointer; font-family: 'DM Sans', sans-serif; transition: background .15s;
+  }
+  .btn-back:hover { background: #f0ede6; }
+  .btn-continue {
+    background: #d95f2b; color: #fff; border: none;
+    border-radius: 10px; padding: 12px 32px; font-size: 14px; font-weight: 700;
+    cursor: pointer; font-family: 'DM Sans', sans-serif; transition: background .15s;
+    display: flex; align-items: center; gap: 8px;
+  }
+  .btn-continue:hover { background: #bc4f22; }
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+  <div class="nav-logo">GAME CONNECTION <span>·</span> Event HQ</div>
+  <div class="nav-links">
+    <a href="#">My Events</a>
+    <a href="#" class="active">Setup</a>
+    <a href="#">Registrations</a>
+    <a href="#">Sponsorships</a>
+    <a href="#">Analytics</a>
+  </div>
+  <div class="nav-right">
+    <div class="nav-bell">🔔</div>
+    <div class="nav-user">
+      <div class="nav-avatar">IG</div>
+      <span class="nav-company">Indie Game Fest</span>
+    </div>
+  </div>
+</nav>
+
+<div class="page">
+
+  <!-- PAGE HEADER -->
+  <div class="page-header">
+    <!-- Step indicator -->
+    <div class="step-indicator">
+      <div class="step-dot done">✓</div>
+      <span>Event Info</span>
+      <span class="step-arrow">›</span>
+      <div class="step-dot active">2</div>
+      <span style="color:#1c1a17;font-weight:700">Modules</span>
+      <span class="step-arrow">›</span>
+      <div class="step-dot todo">3</div>
+      <span>Sponsorship Catalog</span>
+      <span class="step-arrow">›</span>
+      <div class="step-dot todo">4</div>
+      <span>Publish</span>
+    </div>
+
+    <h1 class="page-title">Set Up Your Event</h1>
+    <p class="page-sub">Choose the modules you want for your event. You can activate more modules at any time.</p>
+    <div class="event-chip">
+      🎪 Indie Game Fest 2026 <span>·</span> Berlin <span>·</span> Apr 15–17
+    </div>
+  </div>
+
+  <!-- MODULE GRID -->
+  <div class="module-grid" id="moduleGrid">
+
+    <!-- 1. Registration & Tickets — ON -->
+    <div class="module-card enabled" data-module="registration" data-on="true">
+      <div class="module-icon">🎟️</div>
+      <div>
+        <div class="module-name">Registration & Tickets</div>
+        <div class="module-desc">Manage attendee registration and ticket sales</div>
+      </div>
+      <div class="module-footer">
+        <div class="module-toggle-row">
+          <div class="module-time">⏱ 5 min setup</div>
+          <label class="toggle">
+            <input type="checkbox" checked onchange="toggleModule(this)">
+            <div class="toggle-track"></div>
+            <div class="toggle-thumb"></div>
+          </label>
+        </div>
+        <div class="module-sponsors">💰 Enables: Ticket Bundle Sponsorship</div>
+      </div>
+    </div>
+
+    <!-- 2. Game Showcase — ON -->
+    <div class="module-card enabled" data-module="showcase" data-on="true">
+      <div class="module-icon">🎮</div>
+      <div>
+        <div class="module-name">Game Showcase</div>
+        <div class="module-desc">Invite developers to submit and showcase their games</div>
+      </div>
+      <div class="module-footer">
+        <div class="module-toggle-row">
+          <div class="module-time">⏱ 10 min setup</div>
+          <label class="toggle">
+            <input type="checkbox" checked onchange="toggleModule(this)">
+            <div class="toggle-track"></div>
+            <div class="toggle-thumb"></div>
+          </label>
+        </div>
+        <div class="module-sponsors">💰 Enables: Showcase Zone Naming, Featured Game Slots</div>
+      </div>
+    </div>
+
+    <!-- 3. Awards — ON -->
+    <div class="module-card enabled" data-module="awards" data-on="true">
+      <div class="module-icon">🏆</div>
+      <div>
+        <div class="module-name">Awards</div>
+        <div class="module-desc">Run award nominations, jury selection, and public voting</div>
+      </div>
+      <div class="module-footer">
+        <div class="module-toggle-row">
+          <div class="module-time">⏱ 15 min setup</div>
+          <label class="toggle">
+            <input type="checkbox" checked onchange="toggleModule(this)">
+            <div class="toggle-track"></div>
+            <div class="toggle-thumb"></div>
+          </label>
+        </div>
+        <div class="module-sponsors">💰 Enables: Award Category Naming (×6)</div>
+      </div>
+    </div>
+
+    <!-- 4. Schedule & Sessions — ON -->
+    <div class="module-card enabled" data-module="schedule" data-on="true">
+      <div class="module-icon">📅</div>
+      <div>
+        <div class="module-name">Schedule & Sessions</div>
+        <div class="module-desc">Build your event program with panels, workshops, and keynotes</div>
+      </div>
+      <div class="module-footer">
+        <div class="module-toggle-row">
+          <div class="module-time">⏱ 20 min setup</div>
+          <label class="toggle">
+            <input type="checkbox" checked onchange="toggleModule(this)">
+            <div class="toggle-track"></div>
+            <div class="toggle-thumb"></div>
+          </label>
+        </div>
+        <div class="module-sponsors">💰 Enables: Session Presenting Sponsor, Speaking Slots</div>
+      </div>
+    </div>
+
+    <!-- 5. Buyer Invitations — ON -->
+    <div class="module-card enabled" data-module="buyers" data-on="true">
+      <div class="module-icon">👥</div>
+      <div>
+        <div class="module-name">Buyer Invitations</div>
+        <div class="module-desc">Access our database of 3,000 verified industry buyers</div>
+      </div>
+      <div class="module-footer">
+        <div class="module-toggle-row">
+          <div class="module-time">⏱ 5 min setup</div>
+          <label class="toggle">
+            <input type="checkbox" checked onchange="toggleModule(this)">
+            <div class="toggle-track"></div>
+            <div class="toggle-thumb"></div>
+          </label>
+        </div>
+        <div class="module-no-sponsor">No sponsorship products</div>
+      </div>
+    </div>
+
+    <!-- 6. Live Streaming — OFF -->
+    <div class="module-card disabled" data-module="streaming" data-on="false">
+      <div class="module-activate-badge">ACTIVATE</div>
+      <div class="module-icon">🎤</div>
+      <div>
+        <div class="module-name">Live Streaming</div>
+        <div class="module-desc">Stream your event online to global audiences</div>
+      </div>
+      <div class="module-footer">
+        <div class="module-toggle-row">
+          <div class="module-time">⏱ 30 min setup</div>
+          <label class="toggle">
+            <input type="checkbox" onchange="toggleModule(this)">
+            <div class="toggle-track"></div>
+            <div class="toggle-thumb"></div>
+          </label>
+        </div>
+        <div class="module-sponsors" style="color:#a09890">💰 Enables: Stream Sponsor, Virtual Booth</div>
+      </div>
+    </div>
+
+    <!-- 7. Networking & Meetings — OFF -->
+    <div class="module-card disabled" data-module="networking" data-on="false">
+      <div class="module-activate-badge">ACTIVATE</div>
+      <div class="module-icon">🤝</div>
+      <div>
+        <div class="module-name">Networking & Meetings</div>
+        <div class="module-desc">Enable 1-on-1 meeting scheduling between attendees</div>
+      </div>
+      <div class="module-footer">
+        <div class="module-toggle-row">
+          <div class="module-time">⏱ 10 min setup</div>
+          <label class="toggle">
+            <input type="checkbox" onchange="toggleModule(this)">
+            <div class="toggle-track"></div>
+            <div class="toggle-thumb"></div>
+          </label>
+        </div>
+        <div class="module-sponsors" style="color:#a09890">💰 Enables: Meeting Room Sponsor</div>
+      </div>
+    </div>
+
+    <!-- 8. Merchandise Store — OFF -->
+    <div class="module-card disabled" data-module="merch" data-on="false">
+      <div class="module-activate-badge">ACTIVATE</div>
+      <div class="module-icon">🛍️</div>
+      <div>
+        <div class="module-name">Merchandise Store</div>
+        <div class="module-desc">Sell branded merchandise and digital goods</div>
+      </div>
+      <div class="module-footer">
+        <div class="module-toggle-row">
+          <div class="module-time">⏱ 15 min setup</div>
+          <label class="toggle">
+            <input type="checkbox" onchange="toggleModule(this)">
+            <div class="toggle-track"></div>
+            <div class="toggle-thumb"></div>
+          </label>
+        </div>
+        <div class="module-sponsors" style="color:#a09890">💰 Enables: Official Merchandise Partner</div>
+      </div>
+    </div>
+
+  </div><!-- /module-grid -->
+
+  <!-- SUMMARY SECTION -->
+  <div class="summary-section">
+    <div class="summary-title">📦 Sponsorship Products Unlocked</div>
+    <p class="summary-sub">
+      Based on your selected modules, your event will offer
+      <span class="summary-count" id="productCount">18</span>
+      sponsorship products to attract sponsors.
+    </p>
+
+    <div class="product-chips" id="productChips">
+      <div class="product-chip">Award Category Naming <span class="count">×6</span></div>
+      <div class="product-chip">Session Presenting Sponsor <span class="count">×4</span></div>
+      <div class="product-chip">Speaking Slots <span class="count">×4</span></div>
+      <div class="product-chip">Logo Placement <span class="count">×1</span></div>
+      <div class="product-chip">Ticket Bundle Sponsorship <span class="count">×1</span></div>
+      <div class="product-chip">Showcase Zone Naming <span class="count">×1</span></div>
+      <div class="product-chip">Featured Game Slots <span class="count">×1</span></div>
+    </div>
+
+    <a href="#" class="catalog-link">View Sponsorship Catalog →</a>
+  </div>
+
+  <!-- NAV BUTTONS -->
+  <div class="nav-buttons">
+    <button class="btn-back">← Back</button>
+    <button class="btn-continue">Save & Continue →</button>
+  </div>
+
+</div><!-- /page -->
+
+<script>
+  function toggleModule(checkbox) {
+    const card = checkbox.closest('.module-card');
+    const isOn = checkbox.checked;
+    if (isOn) {
+      card.classList.remove('disabled');
+      card.classList.add('enabled');
+      card.dataset.on = 'true';
+      // Remove activate badge if present
+      const badge = card.querySelector('.module-activate-badge');
+      if (badge) badge.style.display = 'none';
+    } else {
+      card.classList.remove('enabled');
+      card.classList.add('disabled');
+      card.dataset.on = 'false';
+      const badge = card.querySelector('.module-activate-badge');
+      if (badge) badge.style.display = '';
+    }
+    // Update sponsor colors
+    const sponsorEl = card.querySelector('.module-sponsors');
+    if (sponsorEl) {
+      sponsorEl.style.color = isOn ? '' : '#a09890';
+    }
+  }
+</script>
+
+</body>
+</html>

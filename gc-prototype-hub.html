@@ -1,0 +1,479 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Game Connection — Prototype Hub</title>
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: -apple-system, 'Segoe UI', sans-serif; background: #0d0d1a; color: #fff; min-height: 100vh; }
+
+/* HEADER */
+.header {
+  padding: 32px 40px 0;
+  text-align: center;
+}
+.header-logo { font-size: 13px; font-weight: 700; letter-spacing: 3px; color: #555; margin-bottom: 8px; }
+.header-title { font-size: 28px; font-weight: 800; margin-bottom: 6px; }
+.header-title span { color: #ff4d6d; }
+.header-sub { font-size: 13px; color: #666; margin-bottom: 32px; }
+
+/* TABS */
+.tabs {
+  display: flex; justify-content: center; gap: 8px;
+  margin-bottom: 40px;
+}
+.tab {
+  padding: 8px 20px; border-radius: 20px;
+  font-size: 13px; font-weight: 600; cursor: pointer;
+  border: 1.5px solid #333; color: #666;
+  background: none; transition: all .2s;
+}
+.tab:hover { border-color: #555; color: #ccc; }
+.tab.active { background: #ff4d6d; border-color: #ff4d6d; color: #fff; }
+
+/* JOURNEY PANELS */
+.panel { display: none; padding: 0 40px 60px; }
+.panel.active { display: block; }
+
+/* SECTION TITLE */
+.section-label {
+  font-size: 11px; font-weight: 700; letter-spacing: 2px;
+  color: #555; text-transform: uppercase; margin-bottom: 20px;
+  display: flex; align-items: center; gap: 12px;
+}
+.section-label::after { content: ''; flex: 1; height: 1px; background: #1e1e2e; }
+
+/* FLOW ROW */
+.flow-row {
+  display: flex; align-items: center;
+  gap: 0; margin-bottom: 16px;
+  flex-wrap: wrap;
+}
+.flow-label {
+  font-size: 11px; font-weight: 700; letter-spacing: 1px;
+  color: #555; width: 80px; flex-shrink: 0;
+  text-transform: uppercase;
+}
+
+/* NODE */
+.node {
+  display: inline-flex; align-items: center; justify-content: center;
+  padding: 8px 16px; border-radius: 8px;
+  font-size: 13px; font-weight: 600;
+  cursor: pointer; text-decoration: none;
+  transition: all .15s; white-space: nowrap;
+  position: relative;
+}
+.node:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(0,0,0,.4); }
+.node-badge {
+  position: absolute; top: -6px; right: -6px;
+  background: #ff4d6d; color: #fff;
+  font-size: 9px; font-weight: 800;
+  padding: 1px 5px; border-radius: 6px;
+}
+
+/* NODE COLORS */
+.n-auth    { background: #1e1e2e; border: 1.5px solid #333; color: #aaa; }
+.n-home    { background: #0f3460; border: 1.5px solid #1a4a80; color: #fff; }
+.n-feed    { background: #0f3460; border: 1.5px solid #1a4a80; color: #fff; }
+.n-profile { background: #16213e; border: 1.5px solid #2a3a6a; color: #8ab4f8; }
+.n-project { background: #1a1040; border: 1.5px solid #3a2a70; color: #c084fc; }
+.n-market  { background: #0d2a1a; border: 1.5px solid #1a4a2a; color: #4ade80; }
+.n-event   { background: #2a1000; border: 1.5px solid #5a2a00; color: #fb923c; }
+.n-event-hq{ background: #3a0a0a; border: 1.5px solid #7a1a1a; color: #f87171; }
+.n-match   { background: #0a2a2a; border: 1.5px solid #1a5a5a; color: #22d3ee; }
+.n-done    { background: #0d2a1a; border: 1.5px solid #15803d; color: #4ade80; }
+.n-new     { background: #ff4d6d; border: 1.5px solid #ff6b85; color: #fff; }
+
+/* ARROW */
+.arrow {
+  color: #333; font-size: 16px; padding: 0 6px;
+  flex-shrink: 0;
+}
+
+/* NODE GRID (for overview) */
+.node-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  gap: 12px;
+  margin-bottom: 40px;
+}
+.grid-node {
+  background: #111122; border: 1px solid #1e1e3a;
+  border-radius: 10px; padding: 14px;
+  cursor: pointer; transition: all .15s;
+  text-decoration: none; display: block;
+}
+.grid-node:hover { border-color: #ff4d6d; background: #1a0a12; transform: translateY(-2px); }
+.gn-icon { font-size: 24px; margin-bottom: 8px; }
+.gn-name { font-size: 13px; font-weight: 700; color: #fff; margin-bottom: 3px; }
+.gn-desc { font-size: 11px; color: #555; }
+.gn-tag {
+  display: inline-block; margin-top: 8px;
+  padding: 2px 8px; border-radius: 4px;
+  font-size: 10px; font-weight: 700;
+}
+.tag-done { background: #0d2a1a; color: #4ade80; }
+.tag-wip  { background: #2a1a00; color: #fb923c; }
+.tag-plan { background: #1a1a2e; color: #666; }
+
+/* DIVIDER */
+.gap { height: 32px; }
+
+/* TOOLTIP hint */
+.hint {
+  text-align: center; font-size: 12px; color: #333;
+  margin-bottom: 32px;
+}
+.hint span { color: #ff4d6d; }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="header-logo">GAME CONNECTION PLATFORM</div>
+  <div class="header-title">Prototype <span>Navigation Hub</span></div>
+  <div class="header-sub">点击节点跳转页面 · Click any node to open that prototype</div>
+</div>
+
+<div class="tabs">
+  <button class="tab active" onclick="showPanel('overview')">📋 All Pages</button>
+  <button class="tab" onclick="showPanel('developer')">🎮 Developer Journey</button>
+  <button class="tab" onclick="showPanel('publisher')">🤝 Publisher Journey</button>
+  <button class="tab" onclick="showPanel('event')">📅 Event Organizer Journey</button>
+</div>
+
+<!-- ══════ OVERVIEW ══════ -->
+<div class="panel active" id="panel-overview">
+  <div class="hint">All prototype pages — <span>green = done</span> · orange = WIP · gray = planned</div>
+
+  <div class="section-label">Core Platform</div>
+  <div class="node-grid">
+    <a class="grid-node" href="gc-platform-feed.html">
+      <div class="gn-icon">🏠</div>
+      <div class="gn-name">Feed / Homepage</div>
+      <div class="gn-desc">Main content feed, post box, sidebar</div>
+      <span class="gn-tag tag-done">✓ Done</span>
+    </a>
+    <a class="grid-node" href="gc-person-profile-wireframe.html">
+      <div class="gn-icon">👤</div>
+      <div class="gn-name">Person Profile</div>
+      <div class="gn-desc">LinkedIn-style person page</div>
+      <span class="gn-tag tag-done">✓ Done</span>
+    </a>
+    <a class="grid-node" href="#">
+      <div class="gn-icon">🏢</div>
+      <div class="gn-name">Organization Profile</div>
+      <div class="gn-desc">Studio / publisher company page</div>
+      <span class="gn-tag tag-plan">Planned</span>
+    </a>
+    <a class="grid-node" href="#">
+      <div class="gn-icon">🎮</div>
+      <div class="gn-name">Game / Project Page</div>
+      <div class="gn-desc">Game detail, screenshots, seeking info</div>
+      <span class="gn-tag tag-plan">Planned</span>
+    </a>
+    <a class="grid-node" href="#">
+      <div class="gn-icon">🔍</div>
+      <div class="gn-name">Browse / Discover</div>
+      <div class="gn-desc">Search & filter games, people, companies</div>
+      <span class="gn-tag tag-plan">Planned</span>
+    </a>
+    <a class="grid-node" href="#">
+      <div class="gn-icon">💬</div>
+      <div class="gn-name">Messages</div>
+      <div class="gn-desc">Direct messaging between users</div>
+      <span class="gn-tag tag-plan">Planned</span>
+    </a>
+  </div>
+
+  <div class="section-label">Market / Deals</div>
+  <div class="node-grid">
+    <a class="grid-node" href="#">
+      <div class="gn-icon">🤝</div>
+      <div class="gn-name">Market</div>
+      <div class="gn-desc">Publishing deals, investment listings</div>
+      <span class="gn-tag tag-plan">Planned</span>
+    </a>
+    <a class="grid-node" href="#">
+      <div class="gn-icon">📊</div>
+      <div class="gn-name">Deal Pipeline</div>
+      <div class="gn-desc">Track ongoing deal conversations</div>
+      <span class="gn-tag tag-plan">Planned</span>
+    </a>
+    <a class="grid-node" href="#">
+      <div class="gn-icon">📋</div>
+      <div class="gn-name">Pitch Deck Submit</div>
+      <div class="gn-desc">Developer submits game for review</div>
+      <span class="gn-tag tag-plan">Planned</span>
+    </a>
+    <a class="grid-node" href="#">
+      <div class="gn-icon">🎯</div>
+      <div class="gn-name">Match</div>
+      <div class="gn-desc">AI-powered dev ↔ publisher matching</div>
+      <span class="gn-tag tag-plan">Planned</span>
+    </a>
+  </div>
+
+  <div class="section-label">Event HQ (展会方工具)</div>
+  <div class="node-grid">
+    <a class="grid-node" href="#">
+      <div class="gn-icon">🎪</div>
+      <div class="gn-name">EventHQ Dashboard</div>
+      <div class="gn-desc">Event organizer control center</div>
+      <span class="gn-tag tag-plan">Planned</span>
+    </a>
+    <a class="grid-node" href="#">
+      <div class="gn-icon">⚙️</div>
+      <div class="gn-name">Event Module Setup</div>
+      <div class="gn-desc">Configure event features & branding</div>
+      <span class="gn-tag tag-plan">Planned</span>
+    </a>
+    <a class="grid-node" href="#">
+      <div class="gn-icon">📨</div>
+      <div class="gn-name">Buyer Invitation</div>
+      <div class="gn-desc">Invite & manage buyer attendance</div>
+      <span class="gn-tag tag-plan">Planned</span>
+    </a>
+    <a class="grid-node" href="#">
+      <div class="gn-icon">🏆</div>
+      <div class="gn-name">Game Showcase</div>
+      <div class="gn-desc">Curated game display for the event</div>
+      <span class="gn-tag tag-plan">Planned</span>
+    </a>
+    <a class="grid-node" href="#">
+      <div class="gn-icon">🥇</div>
+      <div class="gn-name">Awards</div>
+      <div class="gn-desc">Event awards & voting system</div>
+      <span class="gn-tag tag-plan">Planned</span>
+    </a>
+    <a class="grid-node" href="#">
+      <div class="gn-icon">🗓</div>
+      <div class="gn-name">Schedule Builder</div>
+      <div class="gn-desc">Build event program & sessions</div>
+      <span class="gn-tag tag-plan">Planned</span>
+    </a>
+    <a class="grid-node" href="#">
+      <div class="gn-icon">🤝</div>
+      <div class="gn-name">Let's Meet Setup</div>
+      <div class="gn-desc">Matchmaking meeting system config</div>
+      <span class="gn-tag tag-plan">Planned</span>
+    </a>
+    <a class="grid-node" href="#">
+      <div class="gn-icon">🌐</div>
+      <div class="gn-name">Event Public Page</div>
+      <div class="gn-desc">External-facing event landing page</div>
+      <span class="gn-tag tag-plan">Planned</span>
+    </a>
+    <a class="grid-node" href="#">
+      <div class="gn-icon">💰</div>
+      <div class="gn-name">Commerce / Sponsorship</div>
+      <div class="gn-desc">Sponsor packages & purchasing</div>
+      <span class="gn-tag tag-plan">Planned</span>
+    </a>
+    <a class="grid-node" href="#">
+      <div class="gn-icon">📈</div>
+      <div class="gn-name">Buyer Dashboard</div>
+      <div class="gn-desc">Buyer's personal event portal</div>
+      <span class="gn-tag tag-plan">Planned</span>
+    </a>
+  </div>
+
+  <div class="section-label">Live Tools (现场工具)</div>
+  <div class="node-grid">
+    <a class="grid-node" href="GDC2026_v40.html">
+      <div class="gn-icon">📱</div>
+      <div class="gn-name">GDC 2026 Live</div>
+      <div class="gn-desc">Live event companion app (Mobile)</div>
+      <span class="gn-tag tag-done">✓ Done · 4000+ users</span>
+    </a>
+    <a class="grid-node" href="#">
+      <div class="gn-icon">🗺</div>
+      <div class="gn-name">Live Template</div>
+      <div class="gn-desc">Reusable live tool for any event</div>
+      <span class="gn-tag tag-wip">WIP</span>
+    </a>
+  </div>
+</div>
+
+<!-- ══════ DEVELOPER JOURNEY ══════ -->
+<div class="panel" id="panel-developer">
+  <div class="hint">开发者用户旅程 — 从注册到找到发行商</div>
+
+  <div class="section-label">Step 1 · Onboarding</div>
+  <div class="flow-row">
+    <div class="flow-label">START</div>
+    <a class="node n-auth" href="#">🔐 Login / Register</a>
+    <div class="arrow">→</div>
+    <a class="node n-profile" href="#">👤 Create Profile</a>
+    <div class="arrow">→</div>
+    <a class="node n-project" href="#">🎮 Add Your Game</a>
+    <div class="arrow">→</div>
+    <a class="node n-home" href="gc-platform-feed.html">🏠 Homepage Feed</a>
+  </div>
+
+  <div class="gap"></div>
+  <div class="section-label">Step 2 · Showcase Your Game</div>
+  <div class="flow-row">
+    <div class="flow-label">GAME</div>
+    <a class="node n-project" href="#">🎮 Game Page</a>
+    <div class="arrow">→</div>
+    <a class="node n-project" href="#">📋 Pitch Info</a>
+    <div class="arrow">→</div>
+    <a class="node n-project" href="#">📸 Screenshots / Trailer</a>
+    <div class="arrow">→</div>
+    <a class="node n-market" href="#">🌐 Go Public</a>
+  </div>
+
+  <div class="gap"></div>
+  <div class="section-label">Step 3 · Find a Publisher</div>
+  <div class="flow-row">
+    <div class="flow-label">MATCH</div>
+    <a class="node n-match" href="#">🎯 Match</a>
+    <div class="arrow">→</div>
+    <a class="node n-market" href="#">🤝 Browse Publishers</a>
+    <div class="arrow">→</div>
+    <a class="node n-match" href="#">💬 Send Pitch</a>
+    <div class="arrow">→</div>
+    <a class="node n-match" href="#">📊 Deal Pipeline</a>
+    <div class="arrow">→</div>
+    <a class="node n-done" href="#">✅ Deal Closed</a>
+  </div>
+
+  <div class="gap"></div>
+  <div class="section-label">Step 4 · Attend Events</div>
+  <div class="flow-row">
+    <div class="flow-label">EVENTS</div>
+    <a class="node n-event" href="#">📅 Browse Events</a>
+    <div class="arrow">→</div>
+    <a class="node n-event" href="#">📨 Register</a>
+    <div class="arrow">→</div>
+    <a class="node n-match" href="#">🤝 Let's Meet</a>
+    <div class="arrow">→</div>
+    <a class="node n-event" href="GDC2026_v40.html">📱 Live Tool</a>
+  </div>
+</div>
+
+<!-- ══════ PUBLISHER JOURNEY ══════ -->
+<div class="panel" id="panel-publisher">
+  <div class="hint">发行商用户旅程 — 从注册到找到优质游戏</div>
+
+  <div class="section-label">Step 1 · Onboarding</div>
+  <div class="flow-row">
+    <div class="flow-label">START</div>
+    <a class="node n-auth" href="#">🔐 Login / Register</a>
+    <div class="arrow">→</div>
+    <a class="node n-profile" href="#">🏢 Company Profile</a>
+    <div class="arrow">→</div>
+    <a class="node n-market" href="#">🎯 Set Preferences</a>
+    <div class="arrow">→</div>
+    <a class="node n-home" href="gc-platform-feed.html">🏠 Homepage Feed</a>
+  </div>
+
+  <div class="gap"></div>
+  <div class="section-label">Step 2 · Discover Games</div>
+  <div class="flow-row">
+    <div class="flow-label">BROWSE</div>
+    <a class="node n-market" href="#">🔍 Browse Market</a>
+    <div class="arrow">→</div>
+    <a class="node n-market" href="#">🎮 Filter by Genre / Platform</a>
+    <div class="arrow">→</div>
+    <a class="node n-project" href="#">📄 Game Detail Page</a>
+    <div class="arrow">→</div>
+    <a class="node n-match" href="#">💾 Save / Shortlist</a>
+  </div>
+
+  <div class="gap"></div>
+  <div class="section-label">Step 3 · Evaluate & Deal</div>
+  <div class="flow-row">
+    <div class="flow-label">DEAL</div>
+    <a class="node n-match" href="#">📋 Review Pitch Deck</a>
+    <div class="arrow">→</div>
+    <a class="node n-match" href="#">💬 Message Developer</a>
+    <div class="arrow">→</div>
+    <a class="node n-match" href="#">📊 Deal Pipeline</a>
+    <div class="arrow">→</div>
+    <a class="node n-done" href="#">✅ Sign Deal</a>
+  </div>
+
+  <div class="gap"></div>
+  <div class="section-label">Step 4 · Events</div>
+  <div class="flow-row">
+    <div class="flow-label">EVENTS</div>
+    <a class="node n-event" href="#">📅 GC Xi'an 2026</a>
+    <div class="arrow">→</div>
+    <a class="node n-event" href="#">📨 Buyer Registration</a>
+    <div class="arrow">→</div>
+    <a class="node n-match" href="#">🗓 Schedule Meetings</a>
+    <div class="arrow">→</div>
+    <a class="node n-event" href="GDC2026_v40.html">📱 Live App</a>
+  </div>
+</div>
+
+<!-- ══════ EVENT ORGANIZER JOURNEY ══════ -->
+<div class="panel" id="panel-event">
+  <div class="hint">展会方工具链 — EventHQ 完整流程</div>
+
+  <div class="section-label">Step 1 · Event Setup</div>
+  <div class="flow-row">
+    <div class="flow-label">START</div>
+    <a class="node n-auth" href="#">🔐 Login</a>
+    <div class="arrow">→</div>
+    <a class="node n-event-hq" href="#">🎪 EventHQ Dashboard</a>
+    <div class="arrow">→</div>
+    <a class="node n-event-hq" href="#">⚙️ Event Module Setup</a>
+    <div class="arrow">→</div>
+    <a class="node n-event-hq" href="#">🌐 Event Public Page</a>
+  </div>
+
+  <div class="gap"></div>
+  <div class="section-label">Step 2 · Content & Attendees</div>
+  <div class="flow-row">
+    <div class="flow-label">CONTENT</div>
+    <a class="node n-event-hq" href="#">🏆 Game Showcase</a>
+    <div class="arrow">→</div>
+    <a class="node n-event-hq" href="#">🥇 Awards Setup</a>
+    <div class="arrow">→</div>
+    <a class="node n-event-hq" href="#">📨 Buyer Invitation</a>
+    <div class="arrow">→</div>
+    <a class="node n-event-hq" href="#">📊 Attendee Dashboard</a>
+  </div>
+
+  <div class="gap"></div>
+  <div class="section-label">Step 3 · Meetings & Schedule</div>
+  <div class="flow-row">
+    <div class="flow-label">PROGRAM</div>
+    <a class="node n-event-hq" href="#">🗓 Schedule Builder</a>
+    <div class="arrow">→</div>
+    <a class="node n-event-hq" href="#">🤝 Let's Meet Setup</a>
+    <div class="arrow">→</div>
+    <a class="node n-match" href="#">📱 Buyer Dashboard</a>
+    <div class="arrow">→</div>
+    <a class="node n-event" href="GDC2026_v40.html">📱 Live Tool</a>
+  </div>
+
+  <div class="gap"></div>
+  <div class="section-label">Step 4 · Commerce</div>
+  <div class="flow-row">
+    <div class="flow-label">MONEY</div>
+    <a class="node n-event-hq" href="#">💰 Sponsorship Packages</a>
+    <div class="arrow">→</div>
+    <a class="node n-event-hq" href="#">🛒 Sponsor Purchase</a>
+    <div class="arrow">→</div>
+    <a class="node n-event-hq" href="#">📈 Revenue Dashboard</a>
+    <div class="arrow">→</div>
+    <a class="node n-done" href="#">✅ Event Complete</a>
+  </div>
+</div>
+
+<script>
+function showPanel(id) {
+  document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  document.getElementById('panel-' + id).classList.add('active');
+  event.target.classList.add('active');
+}
+</script>
+</body>
+</html>

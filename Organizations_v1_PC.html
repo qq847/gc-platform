@@ -1,0 +1,675 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Organizations – Game Connection</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'DM Sans',sans-serif;background:#e8e4da;color:#1c1a17;min-height:100vh}
+
+/* ── NAV ── */
+.nav{position:fixed;top:0;left:0;right:0;height:60px;background:#fff;border-bottom:1px solid #e0dbd2;display:flex;align-items:center;padding:0 24px;gap:16px;z-index:100}
+.nav-logo{font-size:17px;font-weight:700;color:#d95f2b;letter-spacing:.5px;white-space:nowrap}
+.nav-search{flex:1;max-width:320px;position:relative}
+.nav-search input{width:100%;padding:8px 14px 8px 36px;border:1px solid #e0dbd2;border-radius:20px;font-family:'DM Sans',sans-serif;font-size:14px;background:#f5f3ee;outline:none}
+.nav-search input:focus{border-color:#0a7fa8;background:#fff}
+.nav-search svg{position:absolute;left:10px;top:50%;transform:translateY(-50%);color:#a09890}
+.nav-links{display:flex;gap:4px;margin-left:8px}
+.nav-links a{padding:6px 14px;border-radius:20px;font-size:14px;font-weight:500;color:#6b6660;text-decoration:none;transition:.15s}
+.nav-links a:hover{background:#f5f3ee;color:#1c1a17}
+.nav-links a.active{background:#d95f2b;color:#fff}
+.nav-right{margin-left:auto;display:flex;align-items:center;gap:12px}
+.nav-bell{width:36px;height:36px;border-radius:50%;background:#f5f3ee;border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;position:relative;transition:.15s}
+.nav-bell:hover{background:#e0dbd2}
+.nav-bell .dot{position:absolute;top:6px;right:6px;width:8px;height:8px;background:#d95f2b;border-radius:50%;border:2px solid #fff}
+.nav-avatar{width:36px;height:36px;border-radius:50%;background:#0a7fa8;color:#fff;font-weight:600;font-size:14px;display:flex;align-items:center;justify-content:center;cursor:pointer}
+
+/* ── LAYOUT ── */
+.layout{display:flex;margin-top:60px;min-height:calc(100vh - 60px)}
+
+/* ── SIDEBAR ── */
+.sidebar{width:260px;flex-shrink:0;background:#fff;border-right:1px solid #e0dbd2;padding:20px 16px;position:sticky;top:60px;height:calc(100vh - 60px);overflow-y:auto}
+.filter-section{margin-bottom:20px}
+.filter-title{font-size:12px;font-weight:600;color:#a09890;text-transform:uppercase;letter-spacing:.8px;margin-bottom:10px}
+.filter-item{display:flex;align-items:center;padding:7px 10px;border-radius:8px;cursor:pointer;font-size:14px;color:#6b6660;transition:.15s;gap:8px}
+.filter-item:hover{background:#f5f3ee;color:#1c1a17}
+.filter-item.active{background:#fff3ee;color:#d95f2b;font-weight:500}
+.filter-count{margin-left:auto;font-size:12px;background:#f0ede7;padding:2px 7px;border-radius:10px;color:#6b6660}
+.filter-item.active .filter-count{background:#fde4d5;color:#d95f2b}
+.divider{height:1px;background:#f0ede7;margin:4px 0}
+
+.stats-box{background:#f5f3ee;border-radius:10px;padding:14px}
+.stat-row{display:flex;justify-content:space-between;align-items:center;padding:5px 0}
+.stat-row:not(:last-child){border-bottom:1px solid #e8e4da}
+.stat-label{font-size:13px;color:#6b6660}
+.stat-val{font-size:15px;font-weight:600;color:#1c1a17}
+
+/* ── MAIN CONTENT ── */
+.main{flex:1;padding:24px 20px;min-width:0}
+.content-search{display:flex;gap:10px;margin-bottom:20px}
+.content-search input{flex:1;padding:10px 16px;border:1px solid #e0dbd2;border-radius:10px;font-family:'DM Sans',sans-serif;font-size:14px;background:#fff;outline:none}
+.content-search input:focus{border-color:#0a7fa8}
+.content-search select{padding:10px 14px;border:1px solid #e0dbd2;border-radius:10px;font-family:'DM Sans',sans-serif;font-size:14px;background:#fff;outline:none;cursor:pointer;color:#6b6660}
+.result-count{font-size:13px;color:#6b6660;margin-bottom:14px}
+
+/* ── ORG CARD ── */
+.org-card{background:#fff;border-radius:12px;border:1px solid #e8e4da;padding:20px;margin-bottom:12px;cursor:pointer;transition:.15s}
+.org-card:hover{border-color:#c8c3bb;box-shadow:0 2px 12px rgba(0,0,0,.07)}
+.org-card-header{display:flex;gap:16px;align-items:flex-start}
+.org-logo{width:52px;height:52px;border-radius:10px;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:18px;color:#fff}
+.org-info{flex:1;min-width:0}
+.org-name{font-size:16px;font-weight:600;color:#1c1a17}
+.org-meta{display:flex;gap:8px;align-items:center;margin-top:3px;flex-wrap:wrap}
+.org-type{font-size:12px;padding:2px 8px;border-radius:6px;background:#fff3ee;color:#d95f2b;font-weight:500}
+.org-type.dev{background:#e6f4f1;color:#0d9b72}
+.org-type.inv{background:#e6f3f8;color:#0a7fa8}
+.org-type.svc{background:#f3f0fa;color:#7b5ea7}
+.org-type.dist{background:#fef9e7;color:#c7a200}
+.org-region{font-size:12px;color:#6b6660;display:flex;align-items:center;gap:3px}
+.org-desc{font-size:13px;color:#6b6660;margin-top:8px;line-height:1.5;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.org-tags{display:flex;gap:6px;flex-wrap:wrap;margin-top:10px}
+.tag{font-size:11px;padding:3px 9px;border-radius:6px;background:#f0ede7;color:#6b6660}
+.org-actions{display:flex;gap:8px;margin-top:12px}
+.btn-follow{padding:7px 18px;border-radius:8px;font-family:'DM Sans',sans-serif;font-size:13px;font-weight:500;cursor:pointer;transition:.15s;border:1.5px solid #d95f2b;color:#d95f2b;background:#fff}
+.btn-follow:hover{background:#d95f2b;color:#fff}
+.btn-connect{padding:7px 18px;border-radius:8px;font-family:'DM Sans',sans-serif;font-size:13px;font-weight:500;cursor:pointer;transition:.15s;border:1.5px solid #0a7fa8;color:#0a7fa8;background:#fff}
+.btn-connect:hover{background:#0a7fa8;color:#fff}
+.btn-expand{margin-left:auto;padding:7px 12px;border-radius:8px;font-family:'DM Sans',sans-serif;font-size:13px;cursor:pointer;transition:.15s;border:1px solid #e0dbd2;color:#6b6660;background:#fff}
+.btn-expand:hover{background:#f5f3ee}
+
+/* Expanded panel */
+.org-expand{display:none;margin-top:16px;padding-top:16px;border-top:1px solid #f0ede7}
+.org-expand.open{display:block}
+.expand-section{margin-bottom:14px}
+.expand-section h4{font-size:13px;font-weight:600;color:#a09890;text-transform:uppercase;letter-spacing:.6px;margin-bottom:8px}
+.expand-section p{font-size:14px;color:#6b6660;line-height:1.6}
+.team-list{display:flex;gap:10px;flex-wrap:wrap}
+.team-member{display:flex;align-items:center;gap:8px;background:#f5f3ee;padding:8px 12px;border-radius:8px}
+.team-avatar{width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:600;color:#fff}
+.team-name{font-size:13px;font-weight:500}
+.team-role{font-size:11px;color:#6b6660}
+.contact-row{display:flex;gap:16px;flex-wrap:wrap}
+.contact-item{font-size:13px;color:#0a7fa8;display:flex;align-items:center;gap:5px}
+
+/* ── RIGHT PANEL ── */
+.right-panel{width:280px;flex-shrink:0;padding:24px 16px;position:sticky;top:60px;height:calc(100vh - 60px);overflow-y:auto}
+.panel-card{background:#fff;border-radius:12px;border:1px solid #e8e4da;padding:16px;margin-bottom:16px}
+.panel-title{font-size:14px;font-weight:600;color:#1c1a17;margin-bottom:12px;display:flex;justify-content:space-between;align-items:center}
+.panel-title span{font-size:12px;font-weight:400;color:#0a7fa8;cursor:pointer}
+.rank-item{display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid #f5f3ee}
+.rank-item:last-child{border-bottom:none;padding-bottom:0}
+.rank-num{width:20px;font-size:13px;font-weight:700;color:#d95f2b}
+.rank-logo{width:32px;height:32px;border-radius:8px;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:12px;color:#fff}
+.rank-info{flex:1;min-width:0}
+.rank-name{font-size:13px;font-weight:500}
+.rank-sub{font-size:11px;color:#6b6660}
+.rank-action{font-size:11px;color:#d95f2b;cursor:pointer;font-weight:500}
+.rec-item{display:flex;align-items:center;gap:10px;padding:8px 0}
+.rec-item:not(:last-child){border-bottom:1px solid #f5f3ee}
+.rec-logo{width:36px;height:36px;border-radius:8px;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:13px;color:#fff}
+.rec-info{flex:1;min-width:0}
+.rec-name{font-size:13px;font-weight:500}
+.rec-sub{font-size:11px;color:#6b6660}
+.rec-btn{font-size:11px;padding:4px 10px;border-radius:6px;border:1.5px solid #0a7fa8;color:#0a7fa8;background:#fff;cursor:pointer;font-family:'DM Sans',sans-serif;font-weight:500;transition:.15s}
+.rec-btn:hover{background:#0a7fa8;color:#fff}
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav class="nav">
+  <div class="nav-logo">GAME CONNECTION</div>
+  <div class="nav-search">
+    <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+    <input placeholder="Search people, organizations…">
+  </div>
+  <nav class="nav-links">
+    <a href="#">Home</a>
+    <a href="#">People</a>
+    <a href="#" class="active">Organizations</a>
+    <a href="#">Events</a>
+    <a href="#">Messages</a>
+    <a href="#">Jobs</a>
+  </nav>
+  <div class="nav-right">
+    <button class="nav-bell">
+      <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+      <span class="dot"></span>
+    </button>
+    <div class="nav-avatar">QQ</div>
+  </div>
+</nav>
+
+<div class="layout">
+
+  <!-- SIDEBAR -->
+  <aside class="sidebar">
+    <div class="filter-section">
+      <div class="filter-title">Organization Type</div>
+      <div class="filter-item active" onclick="setFilter(this,'type')">
+        <span>All</span><span class="filter-count">12</span>
+      </div>
+      <div class="filter-item" onclick="setFilter(this,'type')">
+        <span>Publisher</span><span class="filter-count">5</span>
+      </div>
+      <div class="filter-item" onclick="setFilter(this,'type')">
+        <span>Developer</span><span class="filter-count">3</span>
+      </div>
+      <div class="filter-item" onclick="setFilter(this,'type')">
+        <span>Investor</span><span class="filter-count">2</span>
+      </div>
+      <div class="filter-item" onclick="setFilter(this,'type')">
+        <span>Service Provider</span><span class="filter-count">2</span>
+      </div>
+      <div class="filter-item" onclick="setFilter(this,'type')">
+        <span>Distributor</span><span class="filter-count">1</span>
+      </div>
+    </div>
+
+    <div class="divider"></div>
+
+    <div class="filter-section" style="margin-top:16px">
+      <div class="filter-title">Region</div>
+      <div class="filter-item active" onclick="setFilter(this,'region')">
+        <span>All Regions</span><span class="filter-count">12</span>
+      </div>
+      <div class="filter-item" onclick="setFilter(this,'region')">
+        <span>🌏 Asia</span><span class="filter-count">4</span>
+      </div>
+      <div class="filter-item" onclick="setFilter(this,'region')">
+        <span>🌍 Europe</span><span class="filter-count">4</span>
+      </div>
+      <div class="filter-item" onclick="setFilter(this,'region')">
+        <span>🌎 Americas</span><span class="filter-count">5</span>
+      </div>
+    </div>
+
+    <div class="divider"></div>
+
+    <div class="filter-section" style="margin-top:16px">
+      <div class="filter-title">Company Size</div>
+      <div class="filter-item active" onclick="setFilter(this,'size')">
+        <span>All Sizes</span><span class="filter-count">12</span>
+      </div>
+      <div class="filter-item" onclick="setFilter(this,'size')">
+        <span>1–10</span><span class="filter-count">2</span>
+      </div>
+      <div class="filter-item" onclick="setFilter(this,'size')">
+        <span>11–50</span><span class="filter-count">3</span>
+      </div>
+      <div class="filter-item" onclick="setFilter(this,'size')">
+        <span>51–200</span><span class="filter-count">4</span>
+      </div>
+      <div class="filter-item" onclick="setFilter(this,'size')">
+        <span>200+</span><span class="filter-count">3</span>
+      </div>
+    </div>
+
+    <div class="divider"></div>
+
+    <div class="filter-section" style="margin-top:16px">
+      <div class="filter-title">Statistics</div>
+      <div class="stats-box">
+        <div class="stat-row">
+          <span class="stat-label">Total Organizations</span>
+          <span class="stat-val">12</span>
+        </div>
+        <div class="stat-row">
+          <span class="stat-label">Publishers</span>
+          <span class="stat-val">5</span>
+        </div>
+        <div class="stat-row">
+          <span class="stat-label">Investors</span>
+          <span class="stat-val">2</span>
+        </div>
+        <div class="stat-row">
+          <span class="stat-label">Service Providers</span>
+          <span class="stat-val">2</span>
+        </div>
+      </div>
+    </div>
+  </aside>
+
+  <!-- MAIN -->
+  <main class="main">
+    <div class="content-search">
+      <input placeholder="Search organizations by name, genre, or keyword…">
+      <select><option>Sort: Relevance</option><option>A–Z</option><option>Most Followed</option><option>Newest</option></select>
+    </div>
+    <div class="result-count">Showing <strong>12</strong> organizations</div>
+
+    <!-- Card 1 -->
+    <div class="org-card">
+      <div class="org-card-header">
+        <div class="org-logo" style="background:linear-gradient(135deg,#c0392b,#f39c12)">DP</div>
+        <div class="org-info">
+          <div class="org-name">Dragon Phoenix Publishing</div>
+          <div class="org-meta">
+            <span class="org-type">Publisher</span>
+            <span class="org-region">🌏 China · 200+ employees</span>
+          </div>
+          <div class="org-desc">One of China's leading mobile game publishers with a strong portfolio across casual, mid-core, and MMORPG titles. Known for aggressive global expansion and cross-platform growth strategies.</div>
+        </div>
+      </div>
+      <div class="org-tags">
+        <span class="tag">Mobile RPG</span><span class="tag">Casual Games</span><span class="tag">MMORPG</span><span class="tag">Hyper-casual</span><span class="tag">Global Distribution</span>
+      </div>
+      <div class="org-actions">
+        <button class="btn-follow">+ Follow</button>
+        <button class="btn-connect">Connect</button>
+        <button class="btn-expand" onclick="toggleExpand(this)">Details ▾</button>
+      </div>
+      <div class="org-expand">
+        <div class="expand-section">
+          <h4>About</h4>
+          <p>Dragon Phoenix Publishing was founded in 2012 in Shanghai, China. With over 30 mobile titles published globally, the company focuses on localizing Eastern RPG experiences for Western markets. Their flagship titles have generated over $2B in cumulative revenue.</p>
+        </div>
+        <div class="expand-section">
+          <h4>Team</h4>
+          <div class="team-list">
+            <div class="team-member"><div class="team-avatar" style="background:#c0392b">LW</div><div><div class="team-name">Li Wenxuan</div><div class="team-role">CEO</div></div></div>
+            <div class="team-member"><div class="team-avatar" style="background:#e67e22">ZY</div><div><div class="team-name">Zhang Yue</div><div class="team-role">VP Publishing</div></div></div>
+            <div class="team-member"><div class="team-avatar" style="background:#27ae60">MC</div><div><div class="team-name">Mike Chen</div><div class="team-role">Head of BD</div></div></div>
+          </div>
+        </div>
+        <div class="expand-section">
+          <h4>Contact</h4>
+          <div class="contact-row">
+            <span class="contact-item">🌐 dragonphoenix.com</span>
+            <span class="contact-item">✉️ bd@dragonphoenix.com</span>
+            <span class="contact-item">📍 Shanghai, China</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Card 2 -->
+    <div class="org-card">
+      <div class="org-card-header">
+        <div class="org-logo" style="background:linear-gradient(135deg,#1a6b8a,#22a6c8)">ES</div>
+        <div class="org-info">
+          <div class="org-name">Eastern Star Games</div>
+          <div class="org-meta">
+            <span class="org-type">Publisher</span>
+            <span class="org-type dev">Developer</span>
+            <span class="org-region">🌏 China · 51–200 employees</span>
+          </div>
+          <div class="org-desc">A versatile game studio and publisher based in Beijing, specializing in strategy and simulation games for both PC and mobile. Partners extensively with indie developers for co-development deals.</div>
+        </div>
+      </div>
+      <div class="org-tags">
+        <span class="tag">Strategy</span><span class="tag">Simulation</span><span class="tag">Co-development</span><span class="tag">PC & Mobile</span>
+      </div>
+      <div class="org-actions">
+        <button class="btn-follow">+ Follow</button>
+        <button class="btn-connect">Connect</button>
+        <button class="btn-expand" onclick="toggleExpand(this)">Details ▾</button>
+      </div>
+      <div class="org-expand">
+        <div class="expand-section"><h4>About</h4><p>Eastern Star Games has been a key player in China's PC gaming market since 2009. Their in-house development team has shipped 8 original titles while the publishing arm has released over 20 third-party games. They are known for transparent revenue-sharing models with indie partners.</p></div>
+        <div class="expand-section"><h4>Team</h4><div class="team-list"><div class="team-member"><div class="team-avatar" style="background:#1a6b8a">WJ</div><div><div class="team-name">Wang Jingkai</div><div class="team-role">Co-founder & CEO</div></div></div><div class="team-member"><div class="team-avatar" style="background:#22a6c8">SL</div><div><div class="team-name">Sun Ling</div><div class="team-role">CTO</div></div></div></div></div>
+        <div class="expand-section"><h4>Contact</h4><div class="contact-row"><span class="contact-item">🌐 easternstargames.cn</span><span class="contact-item">✉️ partner@easternstar.cn</span></div></div>
+      </div>
+    </div>
+
+    <!-- Card 3 -->
+    <div class="org-card">
+      <div class="org-card-header">
+        <div class="org-logo" style="background:linear-gradient(135deg,#0d9b72,#0a7fa8)">JM</div>
+        <div class="org-info">
+          <div class="org-name">Jade Mountain Studios</div>
+          <div class="org-meta">
+            <span class="org-type dev">Developer</span>
+            <span class="org-region">🌏 China · 11–50 employees</span>
+          </div>
+          <div class="org-desc">An indie-spirited studio from Chengdu creating artisan narrative games infused with Chinese mythology and folklore. Their debut title "Jade Serpent" won Best Narrative at ChinaJoy 2023.</div>
+        </div>
+      </div>
+      <div class="org-tags">
+        <span class="tag">Narrative</span><span class="tag">Mythology</span><span class="tag">Indie</span><span class="tag">Awarded</span>
+      </div>
+      <div class="org-actions">
+        <button class="btn-follow">+ Follow</button>
+        <button class="btn-connect">Connect</button>
+        <button class="btn-expand" onclick="toggleExpand(this)">Details ▾</button>
+      </div>
+      <div class="org-expand">
+        <div class="expand-section"><h4>About</h4><p>Jade Mountain Studios was founded in 2019 by veterans from Tencent and NetEase. Their focus on handcrafted storytelling and traditional Chinese visual aesthetics has earned them recognition at international festivals. Currently seeking a global publishing partner for their upcoming title.</p></div>
+        <div class="expand-section"><h4>Contact</h4><div class="contact-row"><span class="contact-item">🌐 jademountain.studio</span><span class="contact-item">✉️ hello@jademountain.studio</span><span class="contact-item">📍 Chengdu, China</span></div></div>
+      </div>
+    </div>
+
+    <!-- Card 4 -->
+    <div class="org-card">
+      <div class="org-card-header">
+        <div class="org-logo" style="background:linear-gradient(135deg,#2c3e7a,#4a6cf7)">UB</div>
+        <div class="org-info">
+          <div class="org-name">Ubisoft</div>
+          <div class="org-meta">
+            <span class="org-type">Publisher</span>
+            <span class="org-type dev">Developer</span>
+            <span class="org-region">🌍 France · 200+ employees</span>
+          </div>
+          <div class="org-desc">One of the world's largest video game companies, with studios across 5 continents. Known for major AAA franchises including Assassin's Creed, Far Cry, Rainbow Six, and Watch Dogs.</div>
+        </div>
+      </div>
+      <div class="org-tags">
+        <span class="tag">AAA</span><span class="tag">Assassin's Creed</span><span class="tag">Far Cry</span><span class="tag">Open World</span><span class="tag">Action-Adventure</span>
+      </div>
+      <div class="org-actions">
+        <button class="btn-follow">+ Follow</button>
+        <button class="btn-connect">Connect</button>
+        <button class="btn-expand" onclick="toggleExpand(this)">Details ▾</button>
+      </div>
+      <div class="org-expand">
+        <div class="expand-section"><h4>About</h4><p>Founded in 1986 in Carentoir, France, Ubisoft has grown to become one of the most recognized names in interactive entertainment. With over 20,000 employees worldwide and major development studios in Montreal, Paris, Singapore, and Kyiv, Ubisoft continues to invest in new IP while expanding its live service games division.</p></div>
+        <div class="expand-section"><h4>Contact</h4><div class="contact-row"><span class="contact-item">🌐 ubisoft.com</span><span class="contact-item">📍 Paris, France</span></div></div>
+      </div>
+    </div>
+
+    <!-- Card 5 -->
+    <div class="org-card">
+      <div class="org-card-header">
+        <div class="org-logo" style="background:linear-gradient(135deg,#8b1a1a,#c0392b)">CDP</div>
+        <div class="org-info">
+          <div class="org-name">CD Projekt</div>
+          <div class="org-meta">
+            <span class="org-type">Publisher</span>
+            <span class="org-type dev">Developer</span>
+            <span class="org-region">🌍 Poland · 200+ employees</span>
+          </div>
+          <div class="org-desc">The Polish game developer and publisher behind The Witcher series and Cyberpunk 2077. Internationally praised for developer-friendly policies and premium gaming experiences without pay-to-win mechanics.</div>
+        </div>
+      </div>
+      <div class="org-tags">
+        <span class="tag">The Witcher</span><span class="tag">Cyberpunk 2077</span><span class="tag">AAA RPG</span><span class="tag">Open World</span>
+      </div>
+      <div class="org-actions">
+        <button class="btn-follow">+ Follow</button>
+        <button class="btn-connect">Connect</button>
+        <button class="btn-expand" onclick="toggleExpand(this)">Details ▾</button>
+      </div>
+      <div class="org-expand">
+        <div class="expand-section"><h4>About</h4><p>CD Projekt RED, the game development arm, is headquartered in Warsaw. Known for deep RPG mechanics, immersive storytelling, and strong anti-DRM stance through their GOG.com platform. Their titles have won over 800 awards combined.</p></div>
+        <div class="expand-section"><h4>Contact</h4><div class="contact-row"><span class="contact-item">🌐 cdprojekt.com</span><span class="contact-item">📍 Warsaw, Poland</span></div></div>
+      </div>
+    </div>
+
+    <!-- Card 6 -->
+    <div class="org-card">
+      <div class="org-card-header">
+        <div class="org-logo" style="background:linear-gradient(135deg,#2d2d2d,#555)">DD</div>
+        <div class="org-info">
+          <div class="org-name">Devolver Digital</div>
+          <div class="org-meta">
+            <span class="org-type">Publisher</span>
+            <span class="org-region">🌎 USA · 11–50 employees</span>
+          </div>
+          <div class="org-desc">The beloved indie publisher known for championing bold, weird, and unconventional game experiences. Home to indie hits like Hotline Miami, Fall Guys, Shadow Warrior, and Disc Room.</div>
+        </div>
+      </div>
+      <div class="org-tags">
+        <span class="tag">Hotline Miami</span><span class="tag">Fall Guys</span><span class="tag">Indie</span><span class="tag">Avant-garde</span><span class="tag">Action</span>
+      </div>
+      <div class="org-actions">
+        <button class="btn-follow">+ Follow</button>
+        <button class="btn-connect">Connect</button>
+        <button class="btn-expand" onclick="toggleExpand(this)">Details ▾</button>
+      </div>
+      <div class="org-expand">
+        <div class="expand-section"><h4>About</h4><p>Devolver Digital has been a force in indie publishing since 2009, operating out of Austin, Texas. They are famous for developer-first contracts, minimal creative interference, and their iconic E3 fake press conferences. Currently actively seeking new indie titles for 2025–2026.</p></div>
+        <div class="expand-section"><h4>Contact</h4><div class="contact-row"><span class="contact-item">🌐 devolverdigital.com</span><span class="contact-item">✉️ submissions@devolverdigital.com</span><span class="contact-item">📍 Austin, TX</span></div></div>
+      </div>
+    </div>
+
+    <!-- Card 7 -->
+    <div class="org-card">
+      <div class="org-card-header">
+        <div class="org-logo" style="background:linear-gradient(135deg,#1a3a6b,#2e6bc4)">T2</div>
+        <div class="org-info">
+          <div class="org-name">Take-Two Interactive</div>
+          <div class="org-meta">
+            <span class="org-type">Publisher</span>
+            <span class="org-region">🌎 USA · 200+ employees</span>
+          </div>
+          <div class="org-desc">A global AAA publisher and parent company of Rockstar Games, 2K Games, and Private Division. Home to Grand Theft Auto, NBA 2K, BioShock, Borderlands, and many other iconic franchises.</div>
+        </div>
+      </div>
+      <div class="org-tags">
+        <span class="tag">GTA</span><span class="tag">NBA 2K</span><span class="tag">BioShock</span><span class="tag">Rockstar</span><span class="tag">AAA</span>
+      </div>
+      <div class="org-actions">
+        <button class="btn-follow">+ Follow</button>
+        <button class="btn-connect">Connect</button>
+        <button class="btn-expand" onclick="toggleExpand(this)">Details ▾</button>
+      </div>
+      <div class="org-expand">
+        <div class="expand-section"><h4>About</h4><p>Take-Two Interactive is headquartered in New York City with a portfolio spanning major genres from open-world action to sports simulation. Their Private Division label actively acquires and publishes premium indie and AA titles globally.</p></div>
+        <div class="expand-section"><h4>Contact</h4><div class="contact-row"><span class="contact-item">🌐 take2games.com</span><span class="contact-item">📍 New York, NY</span></div></div>
+      </div>
+    </div>
+
+    <!-- Card 8 -->
+    <div class="org-card">
+      <div class="org-card-header">
+        <div class="org-logo" style="background:linear-gradient(135deg,#0d9b72,#064d39)">BV</div>
+        <div class="org-info">
+          <div class="org-name">Bitkraft Ventures</div>
+          <div class="org-meta">
+            <span class="org-type inv">Investor</span>
+            <span class="org-region">🌎 USA · 1–10 employees</span>
+          </div>
+          <div class="org-desc">A specialist gaming-focused venture capital firm investing across the entire gaming ecosystem — from early-stage game studios to gaming infrastructure, esports, and interactive media startups.</div>
+        </div>
+      </div>
+      <div class="org-tags">
+        <span class="tag">VC</span><span class="tag">Early Stage</span><span class="tag">Esports</span><span class="tag">Gaming Infrastructure</span>
+      </div>
+      <div class="org-actions">
+        <button class="btn-follow">+ Follow</button>
+        <button class="btn-connect">Connect</button>
+        <button class="btn-expand" onclick="toggleExpand(this)">Details ▾</button>
+      </div>
+      <div class="org-expand">
+        <div class="expand-section"><h4>About</h4><p>Bitkraft manages over $600M in committed capital and has invested in 70+ companies across the gaming ecosystem. Portfolio includes gaming studios, esports organizations, game engines, and AR/VR platforms. Typical investment range: $500K–$15M.</p></div>
+        <div class="expand-section"><h4>Contact</h4><div class="contact-row"><span class="contact-item">🌐 bitkraft.vc</span><span class="contact-item">✉️ ventures@bitkraft.vc</span><span class="contact-item">📍 New York / Berlin</span></div></div>
+      </div>
+    </div>
+
+    <!-- Card 9 -->
+    <div class="org-card">
+      <div class="org-card-header">
+        <div class="org-logo" style="background:linear-gradient(135deg,#7b5ea7,#9b59b6)">GGP</div>
+        <div class="org-info">
+          <div class="org-name">Griffin Gaming Partners</div>
+          <div class="org-meta">
+            <span class="org-type inv">Investor</span>
+            <span class="org-region">🌎 USA · 1–10 employees</span>
+          </div>
+          <div class="org-desc">A dedicated gaming venture fund backing exceptional founders building the next generation of gaming companies across PC, console, mobile, and emerging platforms.</div>
+        </div>
+      </div>
+      <div class="org-tags">
+        <span class="tag">Gaming VC</span><span class="tag">Seed</span><span class="tag">Series A</span><span class="tag">Founder-focused</span>
+      </div>
+      <div class="org-actions">
+        <button class="btn-follow">+ Follow</button>
+        <button class="btn-connect">Connect</button>
+        <button class="btn-expand" onclick="toggleExpand(this)">Details ▾</button>
+      </div>
+      <div class="org-expand">
+        <div class="expand-section"><h4>About</h4><p>Griffin Gaming Partners raised a $235M fund in 2021. They focus on building long-term relationships with founders and provide strategic guidance beyond capital — offering marketing, BD, and talent network support. Active in North America, Europe, and Southeast Asia.</p></div>
+        <div class="expand-section"><h4>Contact</h4><div class="contact-row"><span class="contact-item">🌐 griffingaming.com</span><span class="contact-item">✉️ pitch@griffingaming.com</span></div></div>
+      </div>
+    </div>
+
+    <!-- Card 10 -->
+    <div class="org-card">
+      <div class="org-card-header">
+        <div class="org-logo" style="background:linear-gradient(135deg,#0a7fa8,#0d9b72)">KW</div>
+        <div class="org-info">
+          <div class="org-name">Keywords Studios</div>
+          <div class="org-meta">
+            <span class="org-type svc">Service Provider</span>
+            <span class="org-region">🌍 Ireland · 200+ employees</span>
+          </div>
+          <div class="org-desc">The world's leading provider of technical and creative services to the global video games industry — including localization, QA, art production, audio, and player support.</div>
+        </div>
+      </div>
+      <div class="org-tags">
+        <span class="tag">Localization</span><span class="tag">QA Testing</span><span class="tag">Art Services</span><span class="tag">Audio</span><span class="tag">Player Support</span>
+      </div>
+      <div class="org-actions">
+        <button class="btn-follow">+ Follow</button>
+        <button class="btn-connect">Connect</button>
+        <button class="btn-expand" onclick="toggleExpand(this)">Details ▾</button>
+      </div>
+      <div class="org-expand">
+        <div class="expand-section"><h4>About</h4><p>Keywords Studios operates 70+ studios globally and has served over 23 of the top 25 games publishers. Their end-to-end service capabilities allow clients to scale development resources rapidly. Headquartered in Dublin with major hubs in the US, Europe, and Asia-Pacific.</p></div>
+        <div class="expand-section"><h4>Contact</h4><div class="contact-row"><span class="contact-item">🌐 keywordsstudios.com</span><span class="contact-item">📍 Dublin, Ireland</span></div></div>
+      </div>
+    </div>
+
+    <!-- Card 11 -->
+    <div class="org-card">
+      <div class="org-card-header">
+        <div class="org-logo" style="background:linear-gradient(135deg,#6b3a2a,#c0724a)">PTW</div>
+        <div class="org-info">
+          <div class="org-name">PTW</div>
+          <div class="org-meta">
+            <span class="org-type svc">Service Provider</span>
+            <span class="org-region">🌍 UK · 200+ employees</span>
+          </div>
+          <div class="org-desc">A global video game services company providing QA, player support, localization testing, and customer service outsourcing to major publishers and studios worldwide.</div>
+        </div>
+      </div>
+      <div class="org-tags">
+        <span class="tag">QA Testing</span><span class="tag">Customer Service</span><span class="tag">Localization</span><span class="tag">Outsourcing</span>
+      </div>
+      <div class="org-actions">
+        <button class="btn-follow">+ Follow</button>
+        <button class="btn-connect">Connect</button>
+        <button class="btn-expand" onclick="toggleExpand(this)">Details ▾</button>
+      </div>
+      <div class="org-expand">
+        <div class="expand-section"><h4>About</h4><p>PTW has been providing games services since 1994, operating from offices in the UK, USA, Japan, Canada, Poland, India, and China. They offer 24/7 player support and multi-language QA capabilities.</p></div>
+        <div class="expand-section"><h4>Contact</h4><div class="contact-row"><span class="contact-item">🌐 ptw.com</span><span class="contact-item">📍 London, UK</span></div></div>
+      </div>
+    </div>
+
+    <!-- Card 12 -->
+    <div class="org-card">
+      <div class="org-card-header">
+        <div class="org-logo" style="background:linear-gradient(135deg,#1b4a2a,#21a156)">ST</div>
+        <div class="org-info">
+          <div class="org-name">Steam / Valve</div>
+          <div class="org-meta">
+            <span class="org-type dist">Distributor</span>
+            <span class="org-region">🌎 USA · 51–200 employees</span>
+          </div>
+          <div class="org-desc">The world's dominant PC game distribution platform, operated by Valve Corporation. Steam connects over 132 million active users with games from thousands of developers and publishers globally.</div>
+        </div>
+      </div>
+      <div class="org-tags">
+        <span class="tag">PC Distribution</span><span class="tag">Steam</span><span class="tag">Digital Store</span><span class="tag">132M Users</span>
+      </div>
+      <div class="org-actions">
+        <button class="btn-follow">+ Follow</button>
+        <button class="btn-connect">Connect</button>
+        <button class="btn-expand" onclick="toggleExpand(this)">Details ▾</button>
+      </div>
+      <div class="org-expand">
+        <div class="expand-section"><h4>About</h4><p>Valve Corporation, based in Bellevue, Washington, developed Steam as the de-facto standard for PC game distribution. Steam hosts over 50,000 titles and processes millions of transactions daily. Valve also develops original games including the Half-Life series, Portal, Dota 2, and Counter-Strike.</p></div>
+        <div class="expand-section"><h4>Contact</h4><div class="contact-row"><span class="contact-item">🌐 store.steampowered.com</span><span class="contact-item">📍 Bellevue, WA</span></div></div>
+      </div>
+    </div>
+  </main>
+
+  <!-- RIGHT PANEL -->
+  <aside class="right-panel">
+    <div class="panel-card">
+      <div class="panel-title">🏆 Top Publishers <span>See all</span></div>
+      <div class="rank-item">
+        <span class="rank-num">1</span>
+        <div class="rank-logo" style="background:linear-gradient(135deg,#c0392b,#f39c12)">DP</div>
+        <div class="rank-info"><div class="rank-name">Dragon Phoenix</div><div class="rank-sub">5.2K followers</div></div>
+        <span class="rank-action">Follow</span>
+      </div>
+      <div class="rank-item">
+        <span class="rank-num">2</span>
+        <div class="rank-logo" style="background:linear-gradient(135deg,#2c3e7a,#4a6cf7)">UB</div>
+        <div class="rank-info"><div class="rank-name">Ubisoft</div><div class="rank-sub">4.8K followers</div></div>
+        <span class="rank-action">Follow</span>
+      </div>
+      <div class="rank-item">
+        <span class="rank-num">3</span>
+        <div class="rank-logo" style="background:linear-gradient(135deg,#2d2d2d,#555)">DD</div>
+        <div class="rank-info"><div class="rank-name">Devolver Digital</div><div class="rank-sub">4.1K followers</div></div>
+        <span class="rank-action">Follow</span>
+      </div>
+      <div class="rank-item">
+        <span class="rank-num">4</span>
+        <div class="rank-logo" style="background:linear-gradient(135deg,#8b1a1a,#c0392b)">CDP</div>
+        <div class="rank-info"><div class="rank-name">CD Projekt</div><div class="rank-sub">3.9K followers</div></div>
+        <span class="rank-action">Follow</span>
+      </div>
+      <div class="rank-item">
+        <span class="rank-num">5</span>
+        <div class="rank-logo" style="background:linear-gradient(135deg,#1a3a6b,#2e6bc4)">T2</div>
+        <div class="rank-info"><div class="rank-name">Take-Two</div><div class="rank-sub">3.5K followers</div></div>
+        <span class="rank-action">Follow</span>
+      </div>
+    </div>
+
+    <div class="panel-card">
+      <div class="panel-title">💰 Active Investors <span>View all</span></div>
+      <div class="rec-item">
+        <div class="rec-logo" style="background:linear-gradient(135deg,#0d9b72,#064d39)">BV</div>
+        <div class="rec-info"><div class="rec-name">Bitkraft Ventures</div><div class="rec-sub">$600M AUM · Early stage</div></div>
+        <button class="rec-btn">Connect</button>
+      </div>
+      <div class="rec-item">
+        <div class="rec-logo" style="background:linear-gradient(135deg,#7b5ea7,#9b59b6)">GGP</div>
+        <div class="rec-info"><div class="rec-name">Griffin Gaming</div><div class="rec-sub">$235M Fund · Seed-A</div></div>
+        <button class="rec-btn">Connect</button>
+      </div>
+    </div>
+
+    <div class="panel-card">
+      <div class="panel-title">✨ You May Know <span>See more</span></div>
+      <div class="rec-item">
+        <div class="rec-logo" style="background:linear-gradient(135deg,#1a6b8a,#22a6c8)">ES</div>
+        <div class="rec-info"><div class="rec-name">Eastern Star Games</div><div class="rec-sub">3 mutual connections</div></div>
+        <button class="rec-btn">Follow</button>
+      </div>
+      <div class="rec-item">
+        <div class="rec-logo" style="background:linear-gradient(135deg,#0d9b72,#0a7fa8)">JM</div>
+        <div class="rec-info"><div class="rec-name">Jade Mountain Studios</div><div class="rec-sub">2 mutual connections</div></div>
+        <button class="rec-btn">Follow</button>
+      </div>
+      <div class="rec-item">
+        <div class="rec-logo" style="background:linear-gradient(135deg,#0a7fa8,#0d9b72)">KW</div>
+        <div class="rec-info"><div class="rec-name">Keywords Studios</div><div class="rec-sub">5 mutual connections</div></div>
+        <button class="rec-btn">Follow</button>
+      </div>
+    </div>
+  </aside>
+</div>
+
+<script>
+function toggleExpand(btn){
+  const card=btn.closest('.org-card');
+  const panel=card.querySelector('.org-expand');
+  const isOpen=panel.classList.contains('open');
+  panel.classList.toggle('open');
+  btn.textContent=isOpen?'Details ▾':'Details ▴';
+}
+function setFilter(el,group){
+  el.closest('.filter-section').querySelectorAll('.filter-item').forEach(i=>i.classList.remove('active'));
+  el.classList.add('active');
+}
+</script>
+</body>
+</html>

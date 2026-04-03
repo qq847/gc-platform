@@ -1,0 +1,649 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Checkout — GAME CONNECTION Commerce</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: 'DM Sans', sans-serif; background: #e8e4da; color: #1c1a17; min-height: 100vh; }
+
+/* NAV */
+nav {
+  position: sticky; top: 0; z-index: 100;
+  background: #fff; border-bottom: 1px solid #e0dcd4;
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 0 32px; height: 60px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+}
+.nav-logo { font-size: 15px; font-weight: 700; color: #1c1a17; letter-spacing: 0.02em; }
+.nav-logo span { color: #d95f2b; }
+.nav-links { display: flex; gap: 4px; }
+.nav-links a {
+  padding: 6px 14px; font-size: 14px; font-weight: 500; color: #6b6660;
+  text-decoration: none; border-radius: 6px; cursor: pointer; transition: all 0.15s;
+}
+.nav-links a:hover { background: #f5f0eb; color: #1c1a17; }
+.nav-right { display: flex; align-items: center; gap: 12px; }
+.nav-bell { font-size: 18px; cursor: pointer; color: #6b6660; position: relative; }
+.nav-bell::after { content:'3'; position:absolute; top:-4px; right:-4px; background:#d95f2b; color:#fff; font-size:9px; font-weight:700; border-radius:99px; padding:1px 4px; }
+.nav-avatar { width:32px;height:32px;border-radius:50%;background:linear-gradient(135deg,#0a7fa8,#0d9b72);display:flex;align-items:center;justify-content:center;color:#fff;font-size:12px;font-weight:700;cursor:pointer; }
+.nav-company { font-size:14px;font-weight:600;color:#1c1a17;cursor:pointer; }
+
+/* PAGE HEADER */
+.page-header {
+  background: #fff; border-bottom: 1px solid #e0dcd4;
+  padding: 20px 32px;
+}
+.breadcrumb { font-size: 12px; color: #a09890; margin-bottom: 14px; }
+.breadcrumb a { color: #0a7fa8; cursor: pointer; text-decoration: none; }
+.breadcrumb a:hover { text-decoration: underline; }
+.breadcrumb span { margin: 0 6px; }
+
+/* Progress steps */
+.progress-steps { display: flex; align-items: center; gap: 0; }
+.prog-step { display: flex; align-items: center; gap: 8px; }
+.prog-icon {
+  width: 28px; height: 28px; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 12px; font-weight: 700; flex-shrink: 0;
+}
+.prog-icon.done { background: #0d9b72; color: #fff; }
+.prog-icon.current { background: #d95f2b; color: #fff; }
+.prog-icon.todo { background: #f0ece4; color: #a09890; border: 2px solid #e0dcd4; }
+.prog-label { font-size: 13px; font-weight: 600; }
+.prog-label.done { color: #0d9b72; }
+.prog-label.current { color: #d95f2b; }
+.prog-label.todo { color: #a09890; }
+.prog-line { width: 40px; height: 2px; margin: 0 10px; flex-shrink: 0; }
+.prog-line.done { background: #0d9b72; }
+.prog-line.todo { background: #e0dcd4; }
+
+/* LAYOUT */
+.page-body { display: flex; gap: 24px; padding: 24px 32px; align-items: flex-start; }
+
+/* LEFT CART */
+.cart-main { flex: 1; min-width: 0; }
+.section-title {
+  font-size: 16px; font-weight: 700; color: #1c1a17;
+  margin-bottom: 16px; display: flex; align-items: center; gap: 8px;
+}
+
+/* Event group */
+.event-group {
+  background: #fff; border-radius: 12px; border: 1px solid #e0dcd4;
+  overflow: hidden; margin-bottom: 16px;
+}
+.event-group-header {
+  padding: 14px 20px; background: #f7f4f0;
+  border-bottom: 1px solid #e0dcd4;
+  display: flex; align-items: center; justify-content: space-between;
+}
+.event-group-title { font-size: 14px; font-weight: 700; color: #1c1a17; }
+.event-group-meta { font-size: 12px; color: #a09890; margin-top: 2px; }
+.event-group-subtotal { font-size: 14px; font-weight: 700; color: #1c1a17; }
+
+/* Cart line items */
+.cart-item {
+  display: flex; align-items: center; gap: 16px;
+  padding: 14px 20px; border-bottom: 1px solid #f5f0eb;
+  transition: background 0.15s;
+}
+.cart-item:last-child { border-bottom: none; }
+.cart-item:hover { background: #fafaf8; }
+.cart-item-icon {
+  width: 36px; height: 36px; border-radius: 8px;
+  background: #f0ece4; display: flex; align-items: center;
+  justify-content: center; font-size: 16px; flex-shrink: 0;
+}
+.cart-item-name { flex: 1; font-size: 14px; font-weight: 500; color: #1c1a17; }
+.cart-item-desc { font-size: 12px; color: #a09890; margin-top: 2px; }
+.cart-item-price { font-size: 15px; font-weight: 700; color: #1c1a17; white-space: nowrap; }
+.cart-item-remove {
+  background: none; border: none; cursor: pointer;
+  color: #d0ccc4; font-size: 16px; padding: 4px 6px;
+  border-radius: 4px; transition: all 0.15s; line-height: 1;
+}
+.cart-item-remove:hover { background: #fff0eb; color: #d95f2b; }
+
+/* Group subtotal row */
+.group-subtotal-row {
+  display: flex; justify-content: flex-end; align-items: center;
+  padding: 12px 20px; background: #fafaf8; border-top: 1px solid #f0ece4;
+  gap: 8px;
+}
+.group-subtotal-label { font-size: 13px; color: #6b6660; }
+.group-subtotal-amount { font-size: 15px; font-weight: 700; color: #0d9b72; }
+
+/* Add / Promo */
+.cart-extras {
+  background: #fff; border-radius: 12px; border: 1px solid #e0dcd4;
+  padding: 16px 20px; margin-bottom: 0;
+  display: flex; align-items: center; gap: 16px; flex-wrap: wrap;
+}
+.add-events-link { font-size: 13px; color: #0a7fa8; cursor: pointer; text-decoration: underline; font-weight: 500; }
+.promo-wrap { display: flex; gap: 8px; flex: 1; min-width: 200px; }
+.promo-input {
+  flex: 1; padding: 9px 12px;
+  border: 1.5px solid #e0dcd4; border-radius: 8px;
+  font-family: 'DM Sans',sans-serif; font-size: 13px; color: #1c1a17;
+  outline: none; transition: border-color 0.15s;
+}
+.promo-input::placeholder { color: #a09890; }
+.promo-input:focus { border-color: #d95f2b; }
+.btn-promo {
+  padding: 9px 16px; background: #f0ece4;
+  border: 1.5px solid #e0dcd4; border-radius: 8px;
+  font-family: 'DM Sans',sans-serif; font-size: 13px; font-weight: 600;
+  color: #6b6660; cursor: pointer; transition: all 0.15s; white-space: nowrap;
+}
+.btn-promo:hover { border-color: #d95f2b; color: #d95f2b; background: #fff; }
+
+/* RIGHT PANEL */
+.checkout-right { width: 380px; flex-shrink: 0; position: sticky; top: 80px; }
+
+.panel-card {
+  background: #fff; border-radius: 12px; border: 1px solid #e0dcd4;
+  margin-bottom: 16px; overflow: hidden;
+}
+.panel-card-header {
+  padding: 16px 20px; border-bottom: 1px solid #f0ece4;
+  font-size: 14px; font-weight: 700; color: #1c1a17;
+  background: #f7f4f0;
+}
+.panel-card-body { padding: 16px 20px; }
+
+/* Order summary */
+.order-line {
+  display: flex; justify-content: space-between; align-items: center;
+  padding: 7px 0; font-size: 14px;
+}
+.order-line.muted { color: #6b6660; }
+.order-line.fee { color: #6b6660; }
+.order-divider { height: 1px; background: #f0ece4; margin: 8px 0; }
+.order-total {
+  display: flex; justify-content: space-between; align-items: center;
+  padding: 12px 0 0;
+}
+.order-total-label { font-size: 16px; font-weight: 700; color: #1c1a17; }
+.order-total-amount { font-size: 22px; font-weight: 700; color: #d95f2b; }
+.order-reach {
+  margin-top: 12px; padding: 10px 14px;
+  background: #ecfdf5; border-radius: 8px; border: 1px solid #bbf7d0;
+  font-size: 13px; color: #0d9b72; font-weight: 600;
+  display: flex; align-items: center; gap: 8px;
+}
+
+/* Payment methods */
+.payment-methods { display: flex; flex-direction: column; gap: 8px; }
+.pay-option {
+  border: 2px solid #e0dcd4; border-radius: 10px;
+  cursor: pointer; overflow: hidden; transition: border-color 0.15s;
+}
+.pay-option.selected { border-color: #d95f2b; }
+.pay-option-header {
+  display: flex; align-items: center; gap: 10px;
+  padding: 12px 16px;
+}
+.pay-option-header input[type=radio] { accent-color: #d95f2b; }
+.pay-option-label { font-size: 14px; font-weight: 600; color: #1c1a17; }
+.pay-option-sub { font-size: 12px; color: #a09890; margin-left: auto; }
+.pay-details {
+  padding: 0 16px 16px; display: none;
+}
+.pay-option.selected .pay-details { display: block; }
+
+/* Form inputs */
+.form-row { display: flex; gap: 10px; margin-bottom: 10px; }
+.form-group { flex: 1; }
+.form-label { font-size: 11px; font-weight: 600; color: #6b6660; text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 4px; display: block; }
+.form-input {
+  width: 100%; padding: 9px 12px;
+  border: 1.5px solid #e0dcd4; border-radius: 8px;
+  font-family: 'DM Sans',sans-serif; font-size: 13px; color: #1c1a17;
+  outline: none; transition: border-color 0.15s; background: #fafaf8;
+}
+.form-input:focus { border-color: #d95f2b; background: #fff; }
+.card-mock {
+  background: linear-gradient(135deg, #1a1a2e, #0f3460);
+  border-radius: 10px; padding: 16px; margin-bottom: 12px;
+  color: #fff;
+}
+.card-mock-num { font-size: 16px; letter-spacing: 0.15em; margin-bottom: 10px; font-family: monospace; }
+.card-mock-row { display: flex; justify-content: space-between; font-size: 11px; color: rgba(255,255,255,0.6); }
+
+/* Invoice info */
+.invoice-info { background: #f7f4f0; border-radius: 8px; padding: 14px; }
+.invoice-info p { font-size: 13px; color: #6b6660; margin-bottom: 12px; line-height: 1.5; }
+.invoice-fields { display: flex; flex-direction: column; gap: 8px; }
+
+/* Billing */
+.billing-card { }
+.billing-row { display: flex; gap: 6px; padding: 8px 0; border-bottom: 1px solid #f0ece4; }
+.billing-row:last-child { border-bottom: none; }
+.billing-key { font-size: 12px; color: #a09890; width: 90px; flex-shrink: 0; }
+.billing-val { font-size: 13px; color: #1c1a17; font-weight: 500; }
+
+/* Terms */
+.terms-text { font-size: 11px; color: #a09890; line-height: 1.6; margin: 14px 0; }
+.terms-text a { color: #0a7fa8; text-decoration: underline; cursor: pointer; }
+
+/* CTA */
+.btn-purchase {
+  width: 100%; padding: 16px;
+  background: #d95f2b; color: #fff;
+  border: none; border-radius: 10px;
+  font-family: 'DM Sans',sans-serif; font-size: 16px; font-weight: 700;
+  cursor: pointer; transition: background 0.15s; letter-spacing: 0.01em;
+}
+.btn-purchase:hover { background: #c24e1e; }
+.secure-note {
+  text-align: center; font-size: 11px; color: #a09890;
+  margin-top: 10px; display: flex; align-items: center; justify-content: center; gap: 12px;
+}
+.secure-note span { display: flex; align-items: center; gap: 4px; }
+
+/* Help */
+.help-card {
+  background: #fff; border-radius: 12px; border: 1px solid #e0dcd4;
+  padding: 16px 20px; text-align: center;
+}
+.help-title { font-size: 13px; font-weight: 600; color: #1c1a17; margin-bottom: 6px; }
+.help-desc { font-size: 12px; color: #6b6660; margin-bottom: 10px; }
+.help-email { font-size: 13px; font-weight: 600; color: #0a7fa8; text-decoration: none; }
+.help-email:hover { text-decoration: underline; }
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+  <div class="nav-logo">GAME CONNECTION · <span>Commerce</span></div>
+  <div class="nav-links">
+    <a href="#">Explore</a>
+    <a href="#">My Sponsorships</a>
+    <a href="#" class="active" style="color:#d95f2b;font-weight:600">Orders</a>
+    <a href="#">Analytics</a>
+  </div>
+  <div class="nav-right">
+    <div class="nav-bell">🔔</div>
+    <div class="nav-avatar">X</div>
+    <div class="nav-company">Xsolla ▾</div>
+  </div>
+</nav>
+
+<!-- PAGE HEADER -->
+<div class="page-header">
+  <div class="breadcrumb">
+    <a href="#">Commerce</a><span>›</span>
+    <a href="#">Cart</a><span>›</span>
+    <span style="color:#1c1a17">Checkout</span>
+  </div>
+  <div class="progress-steps">
+    <div class="prog-step">
+      <div class="prog-icon done">✓</div>
+      <span class="prog-label done">1. Review</span>
+    </div>
+    <div class="prog-line done"></div>
+    <div class="prog-step">
+      <div class="prog-icon current">2</div>
+      <span class="prog-label current">2. Payment</span>
+    </div>
+    <div class="prog-line todo"></div>
+    <div class="prog-step">
+      <div class="prog-icon todo">3</div>
+      <span class="prog-label todo">3. Confirm</span>
+    </div>
+  </div>
+</div>
+
+<div class="page-body">
+
+  <!-- LEFT: CART -->
+  <div class="cart-main">
+    <div class="section-title">🛒 Your Cart <span style="font-size:13px;color:#a09890;font-weight:400">— 3 events, 8 packages</span></div>
+
+    <!-- Group 1: Berlin -->
+    <div class="event-group">
+      <div class="event-group-header">
+        <div>
+          <div class="event-group-title">🇩🇪 Indie Game Fest 2026</div>
+          <div class="event-group-meta">Berlin · Apr 15–17 · 500 attendees</div>
+        </div>
+        <div style="font-size:13px;color:#6b6660">Subtotal: <strong style="color:#1c1a17">$3,800</strong></div>
+      </div>
+
+      <div class="cart-item">
+        <div class="cart-item-icon">🌐</div>
+        <div style="flex:1">
+          <div class="cart-item-name">Logo on Event Website</div>
+          <div class="cart-item-desc">Homepage + all event pages, duration of event</div>
+        </div>
+        <div class="cart-item-price">$500</div>
+        <button class="cart-item-remove" onclick="removeItem(this)">✕</button>
+      </div>
+
+      <div class="cart-item">
+        <div class="cart-item-icon">👑</div>
+        <div style="flex:1">
+          <div class="cart-item-name">Award Category Naming</div>
+          <div class="cart-item-desc">"Best Game by Xsolla" — full ceremony branding</div>
+        </div>
+        <div class="cart-item-price">$3,000</div>
+        <button class="cart-item-remove" onclick="removeItem(this)">✕</button>
+      </div>
+
+      <div class="cart-item">
+        <div class="cart-item-icon">📧</div>
+        <div style="flex:1">
+          <div class="cart-item-name">Newsletter Feature</div>
+          <div class="cart-item-desc">Dedicated section in pre-event newsletter, 3 issues</div>
+        </div>
+        <div class="cart-item-price">$300</div>
+        <button class="cart-item-remove" onclick="removeItem(this)">✕</button>
+      </div>
+
+      <div class="group-subtotal-row">
+        <span class="group-subtotal-label">Event subtotal</span>
+        <span class="group-subtotal-amount">$3,800</span>
+      </div>
+    </div>
+
+    <!-- Group 2: Tokyo -->
+    <div class="event-group">
+      <div class="event-group-header">
+        <div>
+          <div class="event-group-title">🇯🇵 Tokyo Indies Showcase</div>
+          <div class="event-group-meta">Tokyo · May 8–9 · 800 attendees</div>
+        </div>
+        <div style="font-size:13px;color:#6b6660">Subtotal: <strong style="color:#1c1a17">$1,600</strong></div>
+      </div>
+
+      <div class="cart-item">
+        <div class="cart-item-icon">🌐</div>
+        <div style="flex:1">
+          <div class="cart-item-name">Logo on Event Website</div>
+          <div class="cart-item-desc">Homepage + all event pages, duration of event</div>
+        </div>
+        <div class="cart-item-price">$400</div>
+        <button class="cart-item-remove" onclick="removeItem(this)">✕</button>
+      </div>
+
+      <div class="cart-item">
+        <div class="cart-item-icon">🎤</div>
+        <div style="flex:1">
+          <div class="cart-item-name">Speaking Slot (20 min)</div>
+          <div class="cart-item-desc">Mainstage presentation slot, AV support included</div>
+        </div>
+        <div class="cart-item-price">$1,200</div>
+        <button class="cart-item-remove" onclick="removeItem(this)">✕</button>
+      </div>
+
+      <div class="group-subtotal-row">
+        <span class="group-subtotal-label">Event subtotal</span>
+        <span class="group-subtotal-amount">$1,600</span>
+      </div>
+    </div>
+
+    <!-- Group 3: Seoul -->
+    <div class="event-group">
+      <div class="event-group-header">
+        <div>
+          <div class="event-group-title">🇰🇷 Seoul Dev Conference</div>
+          <div class="event-group-meta">Seoul · Apr 28–30 · 1,200 attendees</div>
+        </div>
+        <div style="font-size:13px;color:#6b6660">Subtotal: <strong style="color:#1c1a17">$1,600</strong></div>
+      </div>
+
+      <div class="cart-item">
+        <div class="cart-item-icon">🏟️</div>
+        <div style="flex:1">
+          <div class="cart-item-name">Standard Exhibition Booth (3×3m)</div>
+          <div class="cart-item-desc">Prime hall location, furniture, electricity included</div>
+        </div>
+        <div class="cart-item-price">$1,000</div>
+        <button class="cart-item-remove" onclick="removeItem(this)">✕</button>
+      </div>
+
+      <div class="cart-item">
+        <div class="cart-item-icon">🌐</div>
+        <div style="flex:1">
+          <div class="cart-item-name">Logo on Event Website</div>
+          <div class="cart-item-desc">Homepage + all event pages, duration of event</div>
+        </div>
+        <div class="cart-item-price">$600</div>
+        <button class="cart-item-remove" onclick="removeItem(this)">✕</button>
+      </div>
+
+      <div class="group-subtotal-row">
+        <span class="group-subtotal-label">Event subtotal</span>
+        <span class="group-subtotal-amount">$1,600</span>
+      </div>
+    </div>
+
+    <!-- Extras -->
+    <div class="cart-extras">
+      <a class="add-events-link" href="#">+ Add more events</a>
+      <div class="promo-wrap">
+        <input class="promo-input" type="text" placeholder="Promo / voucher code">
+        <button class="btn-promo">Apply</button>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- RIGHT: CHECKOUT -->
+  <div class="checkout-right">
+
+    <!-- Order Summary -->
+    <div class="panel-card">
+      <div class="panel-card-header">📋 Order Summary</div>
+      <div class="panel-card-body">
+        <div class="order-line muted"><span>3 events</span></div>
+        <div class="order-line muted"><span>8 packages</span></div>
+        <div class="order-divider"></div>
+        <div class="order-line"><span>Subtotal</span><span>$7,000</span></div>
+        <div class="order-line fee"><span>Platform service fee (10%)</span><span>$700</span></div>
+        <div class="order-divider"></div>
+        <div class="order-total">
+          <div class="order-total-label">Total</div>
+          <div class="order-total-amount">$7,700</div>
+        </div>
+        <div class="order-reach">
+          👥 Est. reach: <strong>2,500+ attendees</strong>
+        </div>
+      </div>
+    </div>
+
+    <!-- Payment -->
+    <div class="panel-card">
+      <div class="panel-card-header">💳 Payment Method</div>
+      <div class="panel-card-body">
+        <div class="payment-methods">
+
+          <!-- Credit Card -->
+          <div class="pay-option selected" id="payCreditCard" onclick="selectPayment('creditCard')">
+            <div class="pay-option-header">
+              <input type="radio" name="payMethod" checked>
+              <span style="font-size:18px">💳</span>
+              <span class="pay-option-label">Credit Card</span>
+              <span class="pay-option-sub">Visa / MC / Amex</span>
+            </div>
+            <div class="pay-details">
+              <div class="card-mock">
+                <div class="card-mock-num">•••• •••• •••• 4242</div>
+                <div class="card-mock-row">
+                  <span>XSOLLA INC.</span>
+                  <span>12 / 27</span>
+                  <span>VISA</span>
+                </div>
+              </div>
+              <div class="form-row">
+                <div class="form-group">
+                  <label class="form-label">Card Number</label>
+                  <input class="form-input" type="text" placeholder="1234 5678 9012 3456" value="4242 4242 4242 4242">
+                </div>
+              </div>
+              <div class="form-row">
+                <div class="form-group">
+                  <label class="form-label">Expiry Date</label>
+                  <input class="form-input" type="text" placeholder="MM / YY" value="12 / 27">
+                </div>
+                <div class="form-group">
+                  <label class="form-label">CVV</label>
+                  <input class="form-input" type="text" placeholder="•••" value="•••">
+                </div>
+              </div>
+              <div class="form-row">
+                <div class="form-group">
+                  <label class="form-label">Cardholder Name</label>
+                  <input class="form-input" type="text" placeholder="Full name on card" value="Xsolla Inc.">
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Bank Transfer -->
+          <div class="pay-option" id="payBank" onclick="selectPayment('bank')">
+            <div class="pay-option-header">
+              <input type="radio" name="payMethod">
+              <span style="font-size:18px">🏦</span>
+              <span class="pay-option-label">Bank Transfer / Invoice</span>
+              <span class="pay-option-sub">Net 30</span>
+            </div>
+            <div class="pay-details">
+              <div class="invoice-info">
+                <p>We'll generate a formal invoice and send it to your registered billing email. Payment due within 30 days of event confirmation.</p>
+                <div class="invoice-fields">
+                  <div>
+                    <label class="form-label">Company Legal Name</label>
+                    <input class="form-input" type="text" value="Xsolla Inc.">
+                  </div>
+                  <div>
+                    <label class="form-label">Billing Email</label>
+                    <input class="form-input" type="text" value="billing@xsolla.com">
+                  </div>
+                  <div>
+                    <label class="form-label">PO Number (optional)</label>
+                    <input class="form-input" type="text" placeholder="PO-2026-001">
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- PayPal -->
+          <div class="pay-option" id="payPaypal" onclick="selectPayment('paypal')">
+            <div class="pay-option-header">
+              <input type="radio" name="payMethod">
+              <span style="font-size:18px">📧</span>
+              <span class="pay-option-label">PayPal</span>
+              <span class="pay-option-sub">Business accounts</span>
+            </div>
+            <div class="pay-details">
+              <div style="padding:8px;background:#f7f4f0;border-radius:8px;text-align:center">
+                <div style="font-size:13px;color:#6b6660;margin-bottom:8px">You'll be redirected to PayPal to complete payment</div>
+                <div style="font-size:12px;color:#a09890">billing@xsolla.com</div>
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </div>
+
+    <!-- Billing Info -->
+    <div class="panel-card">
+      <div class="panel-card-header">🏢 Billing Information</div>
+      <div class="panel-card-body billing-card">
+        <div class="billing-row">
+          <div class="billing-key">Company</div>
+          <div class="billing-val">Xsolla Inc.</div>
+        </div>
+        <div class="billing-row">
+          <div class="billing-key">Tax / VAT ID</div>
+          <div class="billing-val">US-47-3381813</div>
+        </div>
+        <div class="billing-row">
+          <div class="billing-key">Address</div>
+          <div class="billing-val">15260 Ventura Blvd, Sherman Oaks, CA 91403, USA</div>
+        </div>
+        <div class="billing-row">
+          <div class="billing-key">Contact</div>
+          <div class="billing-val">billing@xsolla.com</div>
+        </div>
+        <div style="margin-top:10px">
+          <a href="#" style="font-size:12px;color:#0a7fa8;text-decoration:underline;cursor:pointer">Edit billing information</a>
+        </div>
+      </div>
+    </div>
+
+    <!-- CTA -->
+    <div class="panel-card">
+      <div class="panel-card-body">
+        <div class="terms-text">
+          By completing this purchase, you agree to the
+          <a href="#">Game Connection Sponsorship Terms</a>.
+          A contract will be automatically generated and sent to your email.
+        </div>
+        <button class="btn-purchase" onclick="handlePurchase()">
+          Complete Purchase — $7,700
+        </button>
+        <div class="secure-note">
+          <span>🔒 Secured by Stripe</span>
+          <span>🛡️ SSL Encrypted</span>
+          <span>📄 Contract auto-generated</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Help -->
+    <div class="help-card">
+      <div class="help-title">Need help?</div>
+      <div class="help-desc">Our sponsorship team is here to assist you with your order.</div>
+      <a class="help-email" href="mailto:sponsor@gameconnection.com">sponsor@gameconnection.com</a>
+      <div style="margin-top:8px;font-size:12px;color:#a09890">Mon–Fri · 9:00–18:00 CET</div>
+    </div>
+
+  </div>
+
+</div>
+
+<script>
+function selectPayment(method) {
+  const methods = ['creditCard', 'bank', 'paypal'];
+  const ids = { creditCard: 'payCreditCard', bank: 'payBank', paypal: 'payPaypal' };
+  methods.forEach(m => {
+    const el = document.getElementById(ids[m]);
+    if (m === method) {
+      el.classList.add('selected');
+      el.querySelector('input[type=radio]').checked = true;
+    } else {
+      el.classList.remove('selected');
+      el.querySelector('input[type=radio]').checked = false;
+    }
+  });
+}
+
+function removeItem(btn) {
+  const item = btn.closest('.cart-item');
+  item.style.opacity = '0';
+  item.style.transform = 'translateX(20px)';
+  item.style.transition = 'all 0.3s';
+  setTimeout(() => item.remove(), 300);
+}
+
+function handlePurchase() {
+  const btn = document.querySelector('.btn-purchase');
+  btn.textContent = '⏳ Processing...';
+  btn.style.background = '#6b6660';
+  setTimeout(() => {
+    btn.textContent = '✓ Purchase Complete!';
+    btn.style.background = '#0d9b72';
+    setTimeout(() => alert('🎉 Order confirmed! Your contract has been sent to billing@xsolla.com'), 200);
+  }, 2000);
+}
+</script>
+</body>
+</html>

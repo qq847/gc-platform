@@ -1,0 +1,517 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Awards Management — Event HQ</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'DM Sans',sans-serif;background:#e8e4da;color:#1c1a17;min-height:100vh}
+
+.topnav{position:sticky;top:0;z-index:100;height:56px;background:#fff;border-bottom:1px solid #e0dbd0;display:flex;align-items:center;justify-content:space-between;padding:0 24px 0 220px}
+.topnav-logo{font-weight:700;font-size:15px;color:#1c1a17}
+.topnav-logo span{color:#d95f2b}
+.topnav-right{display:flex;align-items:center;gap:16px}
+.notif-btn{width:36px;height:36px;border:none;background:#f5f3ef;border-radius:8px;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:16px;position:relative}
+.notif-dot{position:absolute;top:6px;right:6px;width:8px;height:8px;background:#d95f2b;border-radius:50%;border:2px solid #fff}
+.org-info{display:flex;align-items:center;gap:10px}
+.org-avatar{width:32px;height:32px;border-radius:50%;background:linear-gradient(135deg,#d95f2b,#f08040);display:flex;align-items:center;justify-content:center;color:#fff;font-weight:700;font-size:13px}
+.org-name{font-size:13px;font-weight:600}
+
+.sidebar{position:fixed;top:0;left:0;width:200px;height:100vh;background:#1c1a17;padding-top:56px;z-index:99;overflow-y:auto}
+.sidebar-nav{padding:16px 0}
+.nav-item{display:flex;align-items:center;gap:10px;padding:10px 16px;font-size:13.5px;font-weight:500;color:#a09890;cursor:pointer;transition:all .15s;text-decoration:none}
+.nav-item:hover{color:#fff;background:rgba(255,255,255,.06)}
+.nav-item.active{color:#fff;background:rgba(217,95,43,.2);border-right:3px solid #d95f2b}
+.nav-item .icon{font-size:15px;width:20px;text-align:center}
+
+.main{margin-left:200px;padding-top:56px;min-height:100vh}
+.content{padding:24px}
+
+.page-header{margin-bottom:20px}
+.page-header-top{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:12px}
+.page-title h1{font-size:24px;font-weight:700;margin-bottom:4px}
+.page-title p{font-size:14px;color:#6b6660}
+.status-chip{display:inline-flex;align-items:center;gap:6px;padding:6px 14px;border-radius:20px;background:#fef3e2;color:#d97706;font-size:13px;font-weight:600;border:1px solid #fcd34d}
+
+.tabs{display:flex;gap:2px;background:#f0ece4;border-radius:8px;padding:4px;display:inline-flex}
+.tab{padding:7px 18px;border-radius:6px;font-size:13px;font-weight:500;color:#6b6660;cursor:pointer;transition:all .15s;border:none;background:none;font-family:'DM Sans',sans-serif}
+.tab.active{background:#fff;color:#1c1a17;font-weight:600;box-shadow:0 1px 3px rgba(0,0,0,.1)}
+
+.btn{padding:9px 18px;border-radius:8px;font-size:13.5px;font-weight:600;cursor:pointer;border:none;font-family:'DM Sans',sans-serif;transition:all .15s;display:inline-flex;align-items:center;gap:6px}
+.btn-primary{background:#d95f2b;color:#fff}
+.btn-primary:hover{background:#c4521f}
+.btn-outline{background:#fff;color:#1c1a17;border:1px solid #d0cbc0}
+.btn-outline:hover{background:#f5f3ef}
+.btn-danger{background:#fff;color:#dc2626;border:1px solid #dc2626}
+.btn-sm{padding:5px 12px;font-size:12px;border-radius:6px;cursor:pointer;font-family:'DM Sans',sans-serif;font-weight:600}
+
+/* Award Cards */
+.award-grid{display:flex;flex-direction:column;gap:14px}
+.award-card{background:#fff;border-radius:12px;padding:20px 22px;box-shadow:0 1px 3px rgba(0,0,0,.06);display:flex;align-items:center;gap:20px}
+.award-emoji{font-size:32px;width:50px;text-align:center;flex-shrink:0}
+.award-info{flex:1;min-width:0}
+.award-name{font-size:16px;font-weight:700;margin-bottom:4px}
+.award-desc{font-size:13px;color:#6b6660;margin-bottom:10px}
+.award-meta{display:flex;align-items:center;gap:16px}
+.award-noms{font-size:13px;color:#6b6660}
+.award-noms strong{color:#1c1a17}
+.judge-type-badge{padding:3px 10px;border-radius:12px;font-size:11px;font-weight:600}
+.badge-jury{background:#e0f0ff;color:#0a7fa8}
+.badge-public{background:#d4f5e7;color:#0d9b72}
+.badge-mixed{background:#fde8dc;color:#d95f2b}
+.vote-bar-wrap{margin-top:10px}
+.vote-bar-label{display:flex;justify-content:space-between;font-size:11px;color:#6b6660;margin-bottom:4px}
+.vote-bar-track{height:8px;background:#f0ece4;border-radius:4px;overflow:hidden;display:flex}
+.vote-bar-jury{background:#0a7fa8;height:8px}
+.vote-bar-public{background:#0d9b72;height:8px}
+.award-actions{display:flex;gap:6px;flex-shrink:0}
+.add-category-btn{margin-top:16px;background:#fff;border:2px dashed #d0cbc0;border-radius:12px;width:100%;padding:16px;font-size:14px;font-weight:600;color:#6b6660;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;transition:all .15s;font-family:'DM Sans',sans-serif}
+.add-category-btn:hover{border-color:#d95f2b;color:#d95f2b;background:#fdf5f1}
+
+/* Jury Tab */
+.jury-tab{display:none}
+.jury-tab.visible{display:block}
+.section-title{font-size:16px;font-weight:700;margin-bottom:16px;display:flex;align-items:center;gap:10px}
+.jury-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:24px}
+.jury-card{background:#fff;border-radius:10px;padding:16px;text-align:center;box-shadow:0 1px 3px rgba(0,0,0,.06)}
+.jury-avatar{width:52px;height:52px;border-radius:50%;margin:0 auto 10px;display:flex;align-items:center;justify-content:center;font-size:20px;font-weight:700;color:#fff}
+.jury-name{font-size:13px;font-weight:700;margin-bottom:3px}
+.jury-company{font-size:11px;color:#6b6660;margin-bottom:4px}
+.jury-spec{font-size:11px;color:#a09890;margin-bottom:8px}
+.jury-status{font-size:11px;font-weight:600;padding:2px 10px;border-radius:10px;background:#d4f5e7;color:#0d9b72}
+.jury-status.pending{background:#fef3e2;color:#d97706}
+.jury-status.sent{background:#e0f0ff;color:#0a7fa8}
+.pending-list{display:flex;flex-direction:column;gap:10px;margin-bottom:20px}
+.pending-item{background:#fff;border-radius:10px;padding:14px 16px;display:flex;align-items:center;gap:14px;box-shadow:0 1px 3px rgba(0,0,0,.06)}
+.pending-avatar{width:40px;height:40px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:16px;font-weight:700;color:#fff;flex-shrink:0}
+.pending-info{flex:1}
+.pending-name{font-size:14px;font-weight:600}
+.pending-company{font-size:12px;color:#6b6660}
+.pending-status{font-size:11px;font-weight:600;padding:3px 10px;border-radius:10px;margin-right:8px}
+.status-tag-pending{background:#fef3e2;color:#d97706}
+.status-tag-sent{background:#e0f0ff;color:#0a7fa8}
+
+/* Overlay */
+.overlay-bg{position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,.4);z-index:200;display:none;align-items:center;justify-content:center}
+.overlay-bg.open{display:flex}
+.modal{background:#fff;border-radius:14px;width:520px;max-width:90vw;max-height:80vh;overflow-y:auto;box-shadow:0 8px 32px rgba(0,0,0,.18)}
+.modal-header{padding:20px 24px;border-bottom:1px solid #f0ece4;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;background:#fff}
+.modal-header h3{font-size:16px;font-weight:700}
+.close-btn{width:32px;height:32px;border:none;background:#f5f3ef;border-radius:8px;cursor:pointer;font-size:16px}
+.modal-body{padding:20px 24px}
+.search-input{width:100%;padding:10px 14px;border:1px solid #d0cbc0;border-radius:8px;font-size:14px;font-family:'DM Sans',sans-serif;outline:none;margin-bottom:16px}
+.search-input:focus{border-color:#d95f2b}
+.jury-db-item{display:flex;align-items:center;gap:12px;padding:12px 0;border-bottom:1px solid #f5f3ef}
+.jury-db-item:last-child{border-bottom:none}
+.jdb-avatar{width:36px;height:36px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:700;color:#fff;font-size:14px;flex-shrink:0}
+.jdb-info{flex:1}
+.jdb-name{font-size:14px;font-weight:600}
+.jdb-company{font-size:12px;color:#6b6660}
+</style>
+</head>
+<body>
+
+<nav class="topnav">
+  <div class="topnav-logo"><span>GAME CONNECTION</span> · Event HQ</div>
+  <div class="topnav-right">
+    <button class="notif-btn">🔔<span class="notif-dot"></span></button>
+    <div class="org-info">
+      <div class="org-avatar">I</div>
+      <div class="org-name">Indie Game Fest 2026</div>
+    </div>
+  </div>
+</nav>
+
+<aside class="sidebar">
+  <nav class="sidebar-nav">
+    <a class="nav-item" href="#"><span class="icon">📊</span>Dashboard</a>
+    <a class="nav-item" href="#"><span class="icon">🎪</span>My Events</a>
+    <a class="nav-item" href="#"><span class="icon">👥</span>Buyer Invitations</a>
+    <a class="nav-item" href="#"><span class="icon">🎮</span>Game Showcase</a>
+    <a class="nav-item active" href="#"><span class="icon">🏆</span>Awards</a>
+    <a class="nav-item" href="#"><span class="icon">📅</span>Schedule</a>
+    <a class="nav-item" href="#"><span class="icon">📧</span>Communications</a>
+    <a class="nav-item" href="#"><span class="icon">📈</span>Analytics</a>
+    <a class="nav-item" href="#"><span class="icon">⚙️</span>Settings</a>
+  </nav>
+</aside>
+
+<main class="main">
+  <div class="content">
+    <div class="page-header">
+      <div class="page-header-top">
+        <div class="page-title">
+          <h1>Awards Management</h1>
+          <p>Indie Game Fest 2026 Awards</p>
+        </div>
+        <div style="display:flex;align-items:center;gap:12px">
+          <div class="status-chip">🟡 Nominations Open · Voting starts in 12 days</div>
+          <button class="btn btn-primary">+ Add Category</button>
+        </div>
+      </div>
+      <div class="tabs">
+        <button class="tab active" onclick="showTab('categories',this)">Categories</button>
+        <button class="tab" onclick="showTab('jury',this)">Jury Management</button>
+        <button class="tab" onclick="showTab('voting',this)">Voting Settings</button>
+        <button class="tab" onclick="showTab('results',this)">Results</button>
+      </div>
+    </div>
+
+    <!-- Categories Tab -->
+    <div id="tab-categories" class="award-grid">
+      <!-- Award Card 1 -->
+      <div class="award-card">
+        <div class="award-emoji">🏆</div>
+        <div class="award-info">
+          <div class="award-name">Best Game Overall</div>
+          <div class="award-desc">The standout game of Indie Game Fest 2026 across all criteria</div>
+          <div class="award-meta">
+            <span class="award-noms">Nominations: <strong>23</strong> / 30</span>
+            <span class="judge-type-badge badge-mixed">Mixed (60/40)</span>
+          </div>
+          <div class="vote-bar-wrap">
+            <div class="vote-bar-label"><span>Jury 60%</span><span>Public 40%</span></div>
+            <div class="vote-bar-track">
+              <div class="vote-bar-jury" style="width:60%"></div>
+              <div class="vote-bar-public" style="width:40%"></div>
+            </div>
+          </div>
+        </div>
+        <div class="award-actions">
+          <button class="btn btn-outline btn-sm">Edit</button>
+          <button class="btn btn-outline btn-sm">View Nominees</button>
+          <button class="btn btn-danger btn-sm">Delete</button>
+        </div>
+      </div>
+
+      <!-- Award Card 2 -->
+      <div class="award-card">
+        <div class="award-emoji">🎮</div>
+        <div class="award-info">
+          <div class="award-name">Best Indie Game</div>
+          <div class="award-desc">Excellence in independent game development and creative vision</div>
+          <div class="award-meta">
+            <span class="award-noms">Nominations: <strong>18</strong> / 25</span>
+            <span class="judge-type-badge badge-mixed">Mixed (50/50)</span>
+          </div>
+          <div class="vote-bar-wrap">
+            <div class="vote-bar-label"><span>Jury 50%</span><span>Public 50%</span></div>
+            <div class="vote-bar-track">
+              <div class="vote-bar-jury" style="width:50%"></div>
+              <div class="vote-bar-public" style="width:50%"></div>
+            </div>
+          </div>
+        </div>
+        <div class="award-actions">
+          <button class="btn btn-outline btn-sm">Edit</button>
+          <button class="btn btn-outline btn-sm">View Nominees</button>
+          <button class="btn btn-danger btn-sm">Delete</button>
+        </div>
+      </div>
+
+      <!-- Award Card 3 -->
+      <div class="award-card">
+        <div class="award-emoji">🎨</div>
+        <div class="award-info">
+          <div class="award-name">Best Art Direction</div>
+          <div class="award-desc">Outstanding visual design, aesthetics, and artistic coherence</div>
+          <div class="award-meta">
+            <span class="award-noms">Nominations: <strong>12</strong> / 20</span>
+            <span class="judge-type-badge badge-jury">Jury Only</span>
+          </div>
+          <div class="vote-bar-wrap">
+            <div class="vote-bar-label"><span>Jury 100%</span><span>Public 0%</span></div>
+            <div class="vote-bar-track">
+              <div class="vote-bar-jury" style="width:100%"></div>
+            </div>
+          </div>
+        </div>
+        <div class="award-actions">
+          <button class="btn btn-outline btn-sm">Edit</button>
+          <button class="btn btn-outline btn-sm">View Nominees</button>
+          <button class="btn btn-danger btn-sm">Delete</button>
+        </div>
+      </div>
+
+      <!-- Award Card 4 -->
+      <div class="award-card">
+        <div class="award-emoji">🎵</div>
+        <div class="award-info">
+          <div class="award-name">Best Audio</div>
+          <div class="award-desc">Exceptional soundtrack, sound design, and audio direction</div>
+          <div class="award-meta">
+            <span class="award-noms">Nominations: <strong>8</strong> / 20</span>
+            <span class="judge-type-badge badge-jury">Jury Only</span>
+          </div>
+          <div class="vote-bar-wrap">
+            <div class="vote-bar-label"><span>Jury 100%</span><span>Public 0%</span></div>
+            <div class="vote-bar-track">
+              <div class="vote-bar-jury" style="width:100%"></div>
+            </div>
+          </div>
+        </div>
+        <div class="award-actions">
+          <button class="btn btn-outline btn-sm">Edit</button>
+          <button class="btn btn-outline btn-sm">View Nominees</button>
+          <button class="btn btn-danger btn-sm">Delete</button>
+        </div>
+      </div>
+
+      <!-- Award Card 5 -->
+      <div class="award-card">
+        <div class="award-emoji">💡</div>
+        <div class="award-info">
+          <div class="award-name">Most Innovative</div>
+          <div class="award-desc">Groundbreaking mechanics, concepts, or approaches to game design</div>
+          <div class="award-meta">
+            <span class="award-noms">Nominations: <strong>15</strong> / 25</span>
+            <span class="judge-type-badge badge-mixed">Mixed (40/60)</span>
+          </div>
+          <div class="vote-bar-wrap">
+            <div class="vote-bar-label"><span>Jury 40%</span><span>Public 60%</span></div>
+            <div class="vote-bar-track">
+              <div class="vote-bar-jury" style="width:40%"></div>
+              <div class="vote-bar-public" style="width:60%"></div>
+            </div>
+          </div>
+        </div>
+        <div class="award-actions">
+          <button class="btn btn-outline btn-sm">Edit</button>
+          <button class="btn btn-outline btn-sm">View Nominees</button>
+          <button class="btn btn-danger btn-sm">Delete</button>
+        </div>
+      </div>
+
+      <!-- Award Card 6 -->
+      <div class="award-card" style="border:2px solid #0d9b72">
+        <div class="award-emoji">🌟</div>
+        <div class="award-info">
+          <div class="award-name">Community Choice <span style="font-size:11px;background:#d4f5e7;color:#0d9b72;padding:2px 8px;border-radius:10px;margin-left:8px;font-weight:600">Most Popular</span></div>
+          <div class="award-desc">Voted entirely by the community — the people's favourite of the festival</div>
+          <div class="award-meta">
+            <span class="award-noms">Nominations: <strong>31</strong> / 50</span>
+            <span class="judge-type-badge badge-public">Public Vote Only</span>
+          </div>
+          <div class="vote-bar-wrap">
+            <div class="vote-bar-label"><span>Jury 0%</span><span>Public 100%</span></div>
+            <div class="vote-bar-track">
+              <div class="vote-bar-public" style="width:100%"></div>
+            </div>
+          </div>
+        </div>
+        <div class="award-actions">
+          <button class="btn btn-outline btn-sm">Edit</button>
+          <button class="btn btn-outline btn-sm">View Nominees</button>
+          <button class="btn btn-danger btn-sm">Delete</button>
+        </div>
+      </div>
+
+      <button class="add-category-btn" onclick="alert('Add new award category')">
+        + Add Category
+      </button>
+    </div>
+
+    <!-- Jury Management Tab -->
+    <div id="tab-jury" style="display:none">
+      <div class="section-title">Jury Panel <span style="background:#f0ece4;border-radius:12px;padding:3px 12px;font-size:13px;font-weight:500;color:#6b6660">12 Members</span></div>
+
+      <div style="font-size:13px;font-weight:700;color:#6b6660;text-transform:uppercase;letter-spacing:.5px;margin-bottom:12px">✅ Confirmed (8)</div>
+      <div class="jury-grid">
+        <div class="jury-card">
+          <div class="jury-avatar" style="background:linear-gradient(135deg,#d95f2b,#f08040)">SC</div>
+          <div class="jury-name">Sarah Chen</div>
+          <div class="jury-company">Devolver Digital</div>
+          <div class="jury-spec">Publishing</div>
+          <div class="jury-status">✅ Confirmed</div>
+        </div>
+        <div class="jury-card">
+          <div class="jury-avatar" style="background:linear-gradient(135deg,#0a7fa8,#2eb5e0)">MD</div>
+          <div class="jury-name">Marc Dubois</div>
+          <div class="jury-company">Ubisoft</div>
+          <div class="jury-spec">Game Design</div>
+          <div class="jury-status">✅ Confirmed</div>
+        </div>
+        <div class="jury-card">
+          <div class="jury-avatar" style="background:linear-gradient(135deg,#8b5cf6,#a78bfa)">JP</div>
+          <div class="jury-name">Jin Park</div>
+          <div class="jury-company">Riot Games</div>
+          <div class="jury-spec">Production</div>
+          <div class="jury-status">✅ Confirmed</div>
+        </div>
+        <div class="jury-card">
+          <div class="jury-avatar" style="background:linear-gradient(135deg,#e05a8a,#f78fb3)">YT</div>
+          <div class="jury-name">Yuki Tanaka</div>
+          <div class="jury-company">Square Enix</div>
+          <div class="jury-spec">Art</div>
+          <div class="jury-status">✅ Confirmed</div>
+        </div>
+        <div class="jury-card">
+          <div class="jury-avatar" style="background:linear-gradient(135deg,#0d9b72,#2dd4a0)">AK</div>
+          <div class="jury-name">Anna Kowalski</div>
+          <div class="jury-company">CD Projekt</div>
+          <div class="jury-spec">Narrative</div>
+          <div class="jury-status">✅ Confirmed</div>
+        </div>
+        <div class="jury-card">
+          <div class="jury-avatar" style="background:linear-gradient(135deg,#6b48c0,#9b6fd4)">FW</div>
+          <div class="jury-name">Felix Wagner</div>
+          <div class="jury-company">Daedalic</div>
+          <div class="jury-spec">Indie Expert</div>
+          <div class="jury-status">✅ Confirmed</div>
+        </div>
+        <div class="jury-card">
+          <div class="jury-avatar" style="background:linear-gradient(135deg,#c4892b,#e0b060)">PS</div>
+          <div class="jury-name">Priya Sharma</div>
+          <div class="jury-company">nCore Games</div>
+          <div class="jury-spec">Mobile</div>
+          <div class="jury-status">✅ Confirmed</div>
+        </div>
+        <div class="jury-card">
+          <div class="jury-avatar" style="background:linear-gradient(135deg,#2d7a4a,#55b070)">TR</div>
+          <div class="jury-name">Tom Richards</div>
+          <div class="jury-company">Team17</div>
+          <div class="jury-spec">Publishing</div>
+          <div class="jury-status">✅ Confirmed</div>
+        </div>
+      </div>
+
+      <div style="font-size:13px;font-weight:700;color:#6b6660;text-transform:uppercase;letter-spacing:.5px;margin-bottom:12px">⏳ Pending Confirmation (4)</div>
+      <div class="pending-list">
+        <div class="pending-item">
+          <div class="pending-avatar" style="background:linear-gradient(135deg,#a0a0a0,#c0c0c0)">ET</div>
+          <div class="pending-info">
+            <div class="pending-name">Emma Thompson</div>
+            <div class="pending-company">Indie Fund · Investor & Producer</div>
+          </div>
+          <span class="pending-status status-tag-pending">⏳ Pending</span>
+          <button class="btn btn-outline btn-sm">Resend</button>
+          <button class="btn btn-sm" style="background:#fee2e2;color:#dc2626;border:none">Remove</button>
+        </div>
+        <div class="pending-item">
+          <div class="pending-avatar" style="background:linear-gradient(135deg,#a0a0a0,#c0c0c0)">MJ</div>
+          <div class="pending-info">
+            <div class="pending-name">Mike Johnson</div>
+            <div class="pending-company">Epic Games · Developer Relations</div>
+          </div>
+          <span class="pending-status status-tag-pending">⏳ Pending</span>
+          <button class="btn btn-outline btn-sm">Resend</button>
+          <button class="btn btn-sm" style="background:#fee2e2;color:#dc2626;border:none">Remove</button>
+        </div>
+        <div class="pending-item">
+          <div class="pending-avatar" style="background:linear-gradient(135deg,#a0a0a0,#c0c0c0)">KJ</div>
+          <div class="pending-info">
+            <div class="pending-name">Kwon Ji-ho</div>
+            <div class="pending-company">Smilegate · Game Director</div>
+          </div>
+          <span class="pending-status status-tag-sent">📧 Sent Mar 19</span>
+          <button class="btn btn-outline btn-sm">Resend</button>
+          <button class="btn btn-sm" style="background:#fee2e2;color:#dc2626;border:none">Remove</button>
+        </div>
+        <div class="pending-item">
+          <div class="pending-avatar" style="background:linear-gradient(135deg,#a0a0a0,#c0c0c0)">CM</div>
+          <div class="pending-info">
+            <div class="pending-name">Carlos Mendez</div>
+            <div class="pending-company">THQ Nordic · Publishing Director</div>
+          </div>
+          <span class="pending-status status-tag-sent">📧 Sent Mar 18</span>
+          <button class="btn btn-outline btn-sm">Resend</button>
+          <button class="btn btn-sm" style="background:#fee2e2;color:#dc2626;border:none">Remove</button>
+        </div>
+      </div>
+
+      <div style="display:flex;gap:12px;margin-top:8px">
+        <button class="btn btn-primary" onclick="openJuryDB()">🔍 Browse Jury Database</button>
+        <button class="btn btn-outline">+ Invite by Email</button>
+      </div>
+    </div>
+
+    <!-- Voting Settings Tab (placeholder) -->
+    <div id="tab-voting" style="display:none">
+      <div style="background:#fff;border-radius:12px;padding:40px;text-align:center;color:#6b6660">
+        <div style="font-size:48px;margin-bottom:16px">⚙️</div>
+        <div style="font-size:18px;font-weight:600;color:#1c1a17;margin-bottom:8px">Voting Settings</div>
+        <div style="font-size:14px">Configure voting windows, eligibility rules, and public voting settings.</div>
+      </div>
+    </div>
+
+    <!-- Results Tab (placeholder) -->
+    <div id="tab-results" style="display:none">
+      <div style="background:#fff;border-radius:12px;padding:40px;text-align:center;color:#6b6660">
+        <div style="font-size:48px;margin-bottom:16px">🏆</div>
+        <div style="font-size:18px;font-weight:600;color:#1c1a17;margin-bottom:8px">Results</div>
+        <div style="font-size:14px">Voting hasn't closed yet. Results will appear here once voting ends.</div>
+      </div>
+    </div>
+  </div>
+</main>
+
+<!-- Jury Database Overlay -->
+<div class="overlay-bg" id="juryDBOverlay">
+  <div class="modal">
+    <div class="modal-header">
+      <h3>🔍 Browse Jury Database</h3>
+      <button class="close-btn" onclick="closeJuryDB()">✕</button>
+    </div>
+    <div class="modal-body">
+      <input type="text" class="search-input" placeholder="Search by name, company, or expertise...">
+      <div style="font-size:12px;color:#6b6660;margin-bottom:12px">Showing 6 of 248 profiles · Filter: All Industries</div>
+      <div class="jury-db-item">
+        <div class="jdb-avatar" style="background:linear-gradient(135deg,#d95f2b,#f08040)">LW</div>
+        <div class="jdb-info"><div class="jdb-name">Li Wei</div><div class="jdb-company">NetEase · Publishing Director</div></div>
+        <button class="btn btn-primary btn-sm" style="padding:6px 14px">+ Invite</button>
+      </div>
+      <div class="jury-db-item">
+        <div class="jdb-avatar" style="background:linear-gradient(135deg,#0a7fa8,#2eb5e0)">RK</div>
+        <div class="jdb-info"><div class="jdb-name">Rachel Kim</div><div class="jdb-company">505 Games · Acquisitions</div></div>
+        <button class="btn btn-primary btn-sm" style="padding:6px 14px">+ Invite</button>
+      </div>
+      <div class="jury-db-item">
+        <div class="jdb-avatar" style="background:linear-gradient(135deg,#0d9b72,#2dd4a0)">HB</div>
+        <div class="jdb-info"><div class="jdb-name">Hans Becker</div><div class="jdb-company">Astragon Entertainment · CEO</div></div>
+        <button class="btn btn-primary btn-sm" style="padding:6px 14px">+ Invite</button>
+      </div>
+      <div class="jury-db-item">
+        <div class="jdb-avatar" style="background:linear-gradient(135deg,#6b48c0,#9b6fd4)">MO</div>
+        <div class="jdb-info"><div class="jdb-name">Maria Ortega</div><div class="jdb-company">Devolver Digital · Narrative Lead</div></div>
+        <button class="btn btn-primary btn-sm" style="padding:6px 14px">+ Invite</button>
+      </div>
+      <div class="jury-db-item">
+        <div class="jdb-avatar" style="background:linear-gradient(135deg,#e05a8a,#f78fb3)">JS</div>
+        <div class="jdb-info"><div class="jdb-name">James Sullivan</div><div class="jdb-company">Raw Fury · Partner</div></div>
+        <button class="btn btn-primary btn-sm" style="padding:6px 14px">+ Invite</button>
+      </div>
+      <div class="jury-db-item">
+        <div class="jdb-avatar" style="background:linear-gradient(135deg,#c4892b,#e0b060)">AY</div>
+        <div class="jdb-info"><div class="jdb-name">Aiko Yamamoto</div><div class="jdb-company">Marvelous Inc · Producer</div></div>
+        <button class="btn btn-primary btn-sm" style="padding:6px 14px">+ Invite</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+function showTab(tabName, el) {
+  const tabs = ['categories','jury','voting','results'];
+  tabs.forEach(t => {
+    const el2 = document.getElementById('tab-'+t);
+    if(el2) el2.style.display = t === tabName ? (t === 'categories' ? 'flex' : 'block') : 'none';
+  });
+  if(tabName === 'categories') document.getElementById('tab-categories').style.display = 'flex';
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  el.classList.add('active');
+  // Fix categories flex direction
+  if(tabName === 'categories'){
+    document.getElementById('tab-categories').style.flexDirection = 'column';
+  }
+}
+function openJuryDB() {
+  document.getElementById('juryDBOverlay').classList.add('open');
+}
+function closeJuryDB() {
+  document.getElementById('juryDBOverlay').classList.remove('open');
+}
+</script>
+</body>
+</html>

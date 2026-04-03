@@ -1,0 +1,1016 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>Echoes of Jade Dynasty — Game Market</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: #e8e4da;
+    min-height: 100vh;
+    display: flex;
+    justify-content: center;
+  }
+  .app {
+    width: 100%;
+    max-width: 480px;
+    min-height: 100vh;
+    background: #e8e4da;
+    position: relative;
+    overflow-x: hidden;
+  }
+
+  /* Top Nav */
+  .top-nav {
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    background: #fff;
+    display: flex;
+    align-items: center;
+    padding: 14px 16px;
+    border-bottom: 1px solid #e8e4da;
+  }
+  .nav-back {
+    font-size: 20px;
+    color: #333;
+    cursor: pointer;
+    width: 36px;
+    text-decoration: none;
+    display: flex;
+    align-items: center;
+  }
+  .nav-title {
+    flex: 1;
+    text-align: center;
+    font-size: 16px;
+    font-weight: 600;
+    color: #1a1a1a;
+  }
+  .nav-actions {
+    display: flex;
+    gap: 8px;
+  }
+  .nav-btn {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    border: 1.5px solid #ddd;
+    background: #fff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 16px;
+    cursor: pointer;
+    color: #555;
+  }
+
+  /* Hero */
+  .hero {
+    width: 100%;
+    height: 160px;
+    position: relative;
+    overflow: hidden;
+  }
+  .hero svg.bg {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+  }
+  .hero-overlay {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(to bottom, rgba(0,0,0,0.1) 0%, rgba(0,0,0,0.55) 100%);
+  }
+  .hero-content {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+    padding: 12px 14px;
+  }
+  .hero-title {
+    font-size: 20px;
+    font-weight: 700;
+    color: #fff;
+    margin-bottom: 8px;
+    text-shadow: 0 1px 4px rgba(0,0,0,0.4);
+  }
+  .hero-bottom {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+  }
+  .hero-tags {
+    display: flex;
+    gap: 6px;
+    flex-wrap: wrap;
+  }
+  .hero-tag {
+    background: rgba(255,255,255,0.2);
+    border: 1px solid rgba(255,255,255,0.4);
+    color: #fff;
+    font-size: 11px;
+    font-weight: 500;
+    padding: 3px 8px;
+    border-radius: 20px;
+    backdrop-filter: blur(4px);
+  }
+  .deal-badge-hero {
+    background: #d95f2b;
+    color: #fff;
+    font-size: 12px;
+    font-weight: 700;
+    padding: 5px 12px;
+    border-radius: 20px;
+    letter-spacing: 0.3px;
+  }
+
+  /* Content area */
+  .content {
+    padding: 14px 14px 180px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  /* Cards */
+  .card {
+    background: #fff;
+    border-radius: 12px;
+    padding: 16px;
+  }
+  .card-title {
+    font-size: 14px;
+    font-weight: 700;
+    color: #1a1a1a;
+    margin-bottom: 12px;
+    letter-spacing: 0.2px;
+  }
+
+  /* Basic Info Card */
+  .game-name {
+    font-size: 18px;
+    font-weight: 700;
+    color: #1a1a1a;
+    margin-bottom: 4px;
+  }
+  .game-dev {
+    font-size: 13px;
+    color: #666;
+    margin-bottom: 4px;
+  }
+  .game-genre {
+    font-size: 13px;
+    color: #0a7fa8;
+    font-weight: 500;
+    margin-bottom: 14px;
+  }
+  .progress-section {
+    margin-bottom: 14px;
+  }
+  .progress-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 6px;
+  }
+  .progress-label {
+    font-size: 12px;
+    font-weight: 600;
+    color: #555;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+  .progress-pct {
+    font-size: 12px;
+    font-weight: 700;
+    color: #0d9b72;
+  }
+  .progress-bar {
+    height: 7px;
+    background: #eee;
+    border-radius: 6px;
+    overflow: hidden;
+  }
+  .progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, #0d9b72, #0a7fa8);
+    border-radius: 6px;
+  }
+  .key-stats {
+    display: flex;
+    gap: 0;
+    border: 1px solid #eee;
+    border-radius: 10px;
+    overflow: hidden;
+  }
+  .key-stat {
+    flex: 1;
+    text-align: center;
+    padding: 10px 4px;
+    border-right: 1px solid #eee;
+  }
+  .key-stat:last-child { border-right: none; }
+  .key-stat-value {
+    font-size: 15px;
+    font-weight: 700;
+    color: #1a1a1a;
+    display: block;
+  }
+  .key-stat-label {
+    font-size: 11px;
+    color: #888;
+    display: block;
+    margin-top: 2px;
+  }
+
+  /* Deal Terms */
+  .terms-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+  }
+  .term-row {
+    display: flex;
+    align-items: center;
+    padding: 10px 0;
+    border-bottom: 1px solid #f5f5f5;
+    gap: 10px;
+  }
+  .term-row:last-child { border-bottom: none; }
+  .term-icon { font-size: 16px; width: 22px; text-align: center; flex-shrink: 0; }
+  .term-label {
+    font-size: 13px;
+    color: #888;
+    font-weight: 500;
+    width: 110px;
+    flex-shrink: 0;
+  }
+  .term-value {
+    font-size: 13px;
+    color: #1a1a1a;
+    font-weight: 600;
+    flex: 1;
+  }
+
+  /* Looking For */
+  .looking-list {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+  .looking-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+  }
+  .looking-icon {
+    width: 34px;
+    height: 34px;
+    background: #f0f9ff;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 17px;
+    flex-shrink: 0;
+  }
+  .looking-text {
+    flex: 1;
+  }
+  .looking-title {
+    font-size: 13px;
+    font-weight: 600;
+    color: #1a1a1a;
+  }
+  .looking-desc {
+    font-size: 12px;
+    color: #888;
+    margin-top: 1px;
+  }
+
+  /* Game Highlights Grid */
+  .highlights-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+  }
+  .highlight-cell {
+    background: #f7f8fa;
+    border-radius: 10px;
+    padding: 14px 12px;
+    text-align: center;
+  }
+  .highlight-value {
+    font-size: 20px;
+    font-weight: 700;
+    color: #0a7fa8;
+    display: block;
+  }
+  .highlight-label {
+    font-size: 12px;
+    color: #888;
+    margin-top: 3px;
+    display: block;
+  }
+
+  /* Timeline */
+  .timeline {
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+  }
+  .timeline-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    padding-bottom: 16px;
+    position: relative;
+  }
+  .timeline-item:last-child { padding-bottom: 0; }
+  .timeline-dot-wrap {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 28px;
+    flex-shrink: 0;
+  }
+  .timeline-dot {
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 13px;
+    flex-shrink: 0;
+    z-index: 1;
+  }
+  .dot-done { background: #e6f9f2; }
+  .dot-current { background: #fff3e6; border: 2px solid #d95f2b; }
+  .dot-pending { background: #f5f5f5; }
+  .timeline-line {
+    width: 2px;
+    flex: 1;
+    background: #eee;
+    min-height: 16px;
+  }
+  .timeline-item:last-child .timeline-line { display: none; }
+  .timeline-info {
+    padding-top: 4px;
+    flex: 1;
+  }
+  .timeline-name {
+    font-size: 14px;
+    font-weight: 600;
+    color: #1a1a1a;
+  }
+  .timeline-name.current { color: #d95f2b; }
+  .timeline-name.pending { color: #aaa; }
+  .timeline-sub {
+    font-size: 12px;
+    color: #888;
+    margin-top: 1px;
+  }
+
+  /* Proposals notice */
+  .proposals-notice {
+    background: #fff;
+    border-radius: 12px;
+    padding: 14px 16px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    border: 1.5px dashed #ddd;
+  }
+  .proposals-icon {
+    width: 40px;
+    height: 40px;
+    background: #f5f5f5;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 18px;
+    flex-shrink: 0;
+  }
+  .proposals-text {
+    flex: 1;
+  }
+  .proposals-count {
+    font-size: 15px;
+    font-weight: 700;
+    color: #1a1a1a;
+  }
+  .proposals-sub {
+    font-size: 12px;
+    color: #aaa;
+    margin-top: 2px;
+  }
+
+  /* About Dev */
+  .dev-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 12px;
+  }
+  .dev-avatar {
+    width: 46px;
+    height: 46px;
+    border-radius: 10px;
+    background: linear-gradient(135deg, #0a7fa8, #0d9b72);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #fff;
+    font-size: 18px;
+    font-weight: 700;
+    flex-shrink: 0;
+  }
+  .dev-name {
+    font-size: 15px;
+    font-weight: 700;
+    color: #1a1a1a;
+  }
+  .dev-location {
+    font-size: 12px;
+    color: #888;
+    margin-top: 2px;
+  }
+  .dev-bio {
+    font-size: 13px;
+    color: #555;
+    line-height: 1.5;
+    margin-bottom: 12px;
+  }
+  .dev-stats {
+    display: flex;
+    gap: 16px;
+  }
+  .dev-stat {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .dev-stat-value {
+    font-size: 13px;
+    font-weight: 700;
+    color: #1a1a1a;
+  }
+  .dev-stat-label {
+    font-size: 12px;
+    color: #888;
+  }
+
+  /* CTA Bar */
+  .cta-bar {
+    position: fixed;
+    bottom: 64px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 100%;
+    max-width: 480px;
+    background: #fff;
+    border-top: 1px solid #eee;
+    padding: 10px 16px;
+    z-index: 200;
+  }
+  .cta-btn {
+    width: 100%;
+    height: 48px;
+    background: #d95f2b;
+    color: #fff;
+    border: none;
+    border-radius: 12px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 16px;
+    font-weight: 700;
+    cursor: pointer;
+    letter-spacing: 0.2px;
+    transition: background 0.15s;
+  }
+  .cta-btn:active { background: #c0521f; }
+
+  /* Overlay */
+  .overlay-backdrop {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.45);
+    z-index: 300;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.25s;
+  }
+  .overlay-backdrop.open {
+    opacity: 1;
+    pointer-events: all;
+  }
+  .overlay-sheet {
+    position: fixed;
+    bottom: 0;
+    left: 50%;
+    transform: translateX(-50%) translateY(100%);
+    width: 100%;
+    max-width: 480px;
+    background: #fff;
+    border-radius: 20px 20px 0 0;
+    z-index: 301;
+    padding: 0 0 20px;
+    transition: transform 0.3s cubic-bezier(0.32,0.72,0,1);
+    max-height: 90vh;
+    overflow-y: auto;
+  }
+  .overlay-sheet.open {
+    transform: translateX(-50%) translateY(0);
+  }
+  .overlay-handle {
+    width: 40px;
+    height: 4px;
+    background: #ddd;
+    border-radius: 2px;
+    margin: 12px auto 0;
+  }
+  .overlay-header {
+    padding: 16px 16px 8px;
+    border-bottom: 1px solid #f0f0f0;
+  }
+  .overlay-title {
+    font-size: 17px;
+    font-weight: 700;
+    color: #1a1a1a;
+    text-align: center;
+  }
+  .overlay-body {
+    padding: 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+  }
+  .form-group label {
+    display: block;
+    font-size: 12px;
+    font-weight: 600;
+    color: #888;
+    text-transform: uppercase;
+    letter-spacing: 0.4px;
+    margin-bottom: 6px;
+  }
+  .form-group select,
+  .form-group input,
+  .form-group textarea {
+    width: 100%;
+    padding: 12px;
+    border: 1.5px solid #e0e0e0;
+    border-radius: 10px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 14px;
+    color: #1a1a1a;
+    background: #fafafa;
+    outline: none;
+    transition: border-color 0.2s;
+  }
+  .form-group select:focus,
+  .form-group input:focus,
+  .form-group textarea:focus {
+    border-color: #0a7fa8;
+    background: #fff;
+  }
+  .form-group textarea {
+    resize: none;
+    height: 100px;
+  }
+  .overlay-submit {
+    margin: 4px 16px 0;
+    width: calc(100% - 32px);
+    height: 48px;
+    background: #d95f2b;
+    color: #fff;
+    border: none;
+    border-radius: 12px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 16px;
+    font-weight: 700;
+    cursor: pointer;
+  }
+
+  /* Bottom Tab Bar */
+  .tab-bar {
+    position: fixed;
+    bottom: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 100%;
+    max-width: 480px;
+    height: 64px;
+    background: #fff;
+    border-top: 1px solid #e8e4da;
+    display: flex;
+    z-index: 200;
+  }
+  .tab-item {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 3px;
+    cursor: pointer;
+    text-decoration: none;
+  }
+  .tab-icon { font-size: 20px; }
+  .tab-label {
+    font-size: 10px;
+    font-weight: 500;
+    color: #aaa;
+  }
+  .tab-item.active .tab-label { color: #d95f2b; }
+  .tab-item.active .tab-icon { filter: none; }
+  .tab-dot {
+    width: 4px;
+    height: 4px;
+    background: #d95f2b;
+    border-radius: 50%;
+    margin-top: -2px;
+  }
+</style>
+</head>
+<body>
+<div class="app">
+
+  <!-- Top Nav -->
+  <nav class="top-nav">
+    <a class="nav-back" href="#">←</a>
+    <span class="nav-title">Game Market</span>
+    <div class="nav-actions">
+      <button class="nav-btn">☆</button>
+      <button class="nav-btn">↗</button>
+    </div>
+  </nav>
+
+  <!-- Hero -->
+  <div class="hero">
+    <svg class="bg" viewBox="0 0 480 160" preserveAspectRatio="xMidYMid slice" xmlns="http://www.w3.org/2000/svg">
+      <defs>
+        <linearGradient id="heroGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+          <stop offset="0%" style="stop-color:#1a1060"/>
+          <stop offset="40%" style="stop-color:#2d1b6e"/>
+          <stop offset="100%" style="stop-color:#0d4a7a"/>
+        </linearGradient>
+        <radialGradient id="glow1" cx="30%" cy="50%" r="50%">
+          <stop offset="0%" style="stop-color:#6b3fa0;stop-opacity:0.6"/>
+          <stop offset="100%" style="stop-color:transparent;stop-opacity:0"/>
+        </radialGradient>
+        <radialGradient id="glow2" cx="80%" cy="30%" r="40%">
+          <stop offset="0%" style="stop-color:#0a7fa8;stop-opacity:0.4"/>
+          <stop offset="100%" style="stop-color:transparent;stop-opacity:0"/>
+        </radialGradient>
+      </defs>
+      <rect width="480" height="160" fill="url(#heroGrad)"/>
+      <rect width="480" height="160" fill="url(#glow1)"/>
+      <rect width="480" height="160" fill="url(#glow2)"/>
+      <!-- Decorative circles -->
+      <circle cx="360" cy="40" r="60" fill="rgba(255,255,255,0.03)"/>
+      <circle cx="60" cy="120" r="80" fill="rgba(255,255,255,0.02)"/>
+      <!-- Jade ornament hint -->
+      <polygon points="240,10 260,30 240,50 220,30" fill="rgba(13,155,114,0.2)" transform="rotate(15,240,30)"/>
+      <polygon points="400,60 415,80 400,100 385,80" fill="rgba(10,127,168,0.15)"/>
+    </svg>
+    <div class="hero-overlay"></div>
+    <div class="hero-content">
+      <div class="hero-title">Echoes of Jade Dynasty</div>
+      <div class="hero-bottom">
+        <div class="hero-tags">
+          <span class="hero-tag">🖥 PC</span>
+          <span class="hero-tag">🎮 Console</span>
+          <span class="hero-tag">⚔️ RPG</span>
+        </div>
+        <span class="deal-badge-hero">Publishing Deal</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Content -->
+  <div class="content">
+
+    <!-- Basic Info -->
+    <div class="card">
+      <div class="game-name">Echoes of Jade Dynasty</div>
+      <div class="game-dev">CloudPeak Games · Shanghai, China 🇨🇳</div>
+      <div class="game-genre">Open World RPG · Unreal 5</div>
+
+      <div class="progress-section">
+        <div class="progress-header">
+          <span class="progress-label">Development — Beta</span>
+          <span class="progress-pct">75%</span>
+        </div>
+        <div class="progress-bar">
+          <div class="progress-fill" style="width:75%"></div>
+        </div>
+      </div>
+
+      <div class="key-stats">
+        <div class="key-stat">
+          <span class="key-stat-value">12</span>
+          <span class="key-stat-label">Team Size</span>
+        </div>
+        <div class="key-stat">
+          <span class="key-stat-value">3 yrs</span>
+          <span class="key-stat-label">In Dev</span>
+        </div>
+        <div class="key-stat">
+          <span class="key-stat-value" style="color:#d95f2b;">Beta</span>
+          <span class="key-stat-label">Stage</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Deal Terms -->
+    <div class="card">
+      <div class="card-title">Deal Terms</div>
+      <div class="terms-list">
+        <div class="term-row">
+          <span class="term-icon">🤝</span>
+          <span class="term-label">Deal Type</span>
+          <span class="term-value">Publishing Deal</span>
+        </div>
+        <div class="term-row">
+          <span class="term-icon">🌍</span>
+          <span class="term-label">Rights</span>
+          <span class="term-value">Global (ex. China)</span>
+        </div>
+        <div class="term-row">
+          <span class="term-icon">💰</span>
+          <span class="term-label">Revenue Share</span>
+          <span class="term-value">70/30 <span style="color:#aaa;font-weight:400;font-size:12px;">(negotiable)</span></span>
+        </div>
+        <div class="term-row">
+          <span class="term-icon">💵</span>
+          <span class="term-label">Min Guarantee</span>
+          <span class="term-value" style="color:#0d9b72;">$200K – $500K</span>
+        </div>
+        <div class="term-row">
+          <span class="term-icon">📅</span>
+          <span class="term-label">Duration</span>
+          <span class="term-value">5 years</span>
+        </div>
+        <div class="term-row">
+          <span class="term-icon">🎮</span>
+          <span class="term-label">Platforms</span>
+          <span class="term-value">PC Steam / PS5 / Xbox</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- What We're Looking For -->
+    <div class="card">
+      <div class="card-title">What We're Looking For</div>
+      <div class="looking-list">
+        <div class="looking-item">
+          <div class="looking-icon">📣</div>
+          <div class="looking-text">
+            <div class="looking-title">Global Marketing Support</div>
+            <div class="looking-desc">Publisher with proven track record in AAA / AA indie games globally</div>
+          </div>
+        </div>
+        <div class="looking-item">
+          <div class="looking-icon">🌐</div>
+          <div class="looking-text">
+            <div class="looking-title">Localization Network</div>
+            <div class="looking-desc">Support for 10+ languages, especially EN/JP/KR/DE/FR</div>
+          </div>
+        </div>
+        <div class="looking-item">
+          <div class="looking-icon">🚀</div>
+          <div class="looking-text">
+            <div class="looking-title">Console Platform Relations</div>
+            <div class="looking-desc">Strong existing relationships with Sony, Microsoft, and Steam</div>
+          </div>
+        </div>
+        <div class="looking-item">
+          <div class="looking-icon">💼</div>
+          <div class="looking-text">
+            <div class="looking-title">Post-Launch Live Ops</div>
+            <div class="looking-desc">Ongoing support, DLC strategy, and community management</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Game Highlights -->
+    <div class="card">
+      <div class="card-title">Game Highlights</div>
+      <div class="highlights-grid">
+        <div class="highlight-cell">
+          <span class="highlight-value">40+</span>
+          <span class="highlight-label">hrs gameplay</span>
+        </div>
+        <div class="highlight-cell">
+          <span class="highlight-value">30+</span>
+          <span class="highlight-label">characters</span>
+        </div>
+        <div class="highlight-cell">
+          <span class="highlight-value">8km²</span>
+          <span class="highlight-label">open world</span>
+        </div>
+        <div class="highlight-cell">
+          <span class="highlight-value">4K</span>
+          <span class="highlight-label">support</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Development Timeline -->
+    <div class="card">
+      <div class="card-title">Development Timeline</div>
+      <div class="timeline">
+        <div class="timeline-item">
+          <div class="timeline-dot-wrap">
+            <div class="timeline-dot dot-done">✅</div>
+            <div class="timeline-line"></div>
+          </div>
+          <div class="timeline-info">
+            <div class="timeline-name">Concept</div>
+            <div class="timeline-sub">Completed · Q1 2021</div>
+          </div>
+        </div>
+        <div class="timeline-item">
+          <div class="timeline-dot-wrap">
+            <div class="timeline-dot dot-done">✅</div>
+            <div class="timeline-line"></div>
+          </div>
+          <div class="timeline-info">
+            <div class="timeline-name">Prototype</div>
+            <div class="timeline-sub">Completed · Q3 2021</div>
+          </div>
+        </div>
+        <div class="timeline-item">
+          <div class="timeline-dot-wrap">
+            <div class="timeline-dot dot-done">✅</div>
+            <div class="timeline-line"></div>
+          </div>
+          <div class="timeline-info">
+            <div class="timeline-name">Alpha</div>
+            <div class="timeline-sub">Completed · Q2 2023</div>
+          </div>
+        </div>
+        <div class="timeline-item">
+          <div class="timeline-dot-wrap">
+            <div class="timeline-dot dot-current">🔄</div>
+            <div class="timeline-line"></div>
+          </div>
+          <div class="timeline-info">
+            <div class="timeline-name current">Beta <span style="background:#fff3e6;color:#d95f2b;font-size:11px;padding:2px 7px;border-radius:10px;margin-left:4px;font-weight:700;">Current</span></div>
+            <div class="timeline-sub">In Progress · 75% complete</div>
+          </div>
+        </div>
+        <div class="timeline-item">
+          <div class="timeline-dot-wrap">
+            <div class="timeline-dot dot-pending">⬜</div>
+            <div class="timeline-line"></div>
+          </div>
+          <div class="timeline-info">
+            <div class="timeline-name pending">Gold</div>
+            <div class="timeline-sub">Planned · Q3 2026</div>
+          </div>
+        </div>
+        <div class="timeline-item">
+          <div class="timeline-dot-wrap">
+            <div class="timeline-dot dot-pending">⬜</div>
+          </div>
+          <div class="timeline-info">
+            <div class="timeline-name pending">Release</div>
+            <div class="timeline-sub">Planned · Q4 2026</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Proposals Notice -->
+    <div class="proposals-notice">
+      <div class="proposals-icon">📬</div>
+      <div class="proposals-text">
+        <div class="proposals-count">3 Proposals Received</div>
+        <div class="proposals-sub">Publisher account required to view details</div>
+      </div>
+      <div style="font-size:12px;color:#0a7fa8;font-weight:600;cursor:pointer;">Sign in →</div>
+    </div>
+
+    <!-- About Developer -->
+    <div class="card">
+      <div class="card-title">About the Developer</div>
+      <div class="dev-header">
+        <div class="dev-avatar">CP</div>
+        <div>
+          <div class="dev-name">CloudPeak Games</div>
+          <div class="dev-location">📍 Shanghai, China · Est. 2019</div>
+        </div>
+      </div>
+      <div class="dev-bio">
+        CloudPeak Games is an independent studio specializing in narrative-driven open world RPGs inspired by East Asian mythology and culture. Founded by veterans from NetEase and miHoYo, the team brings AAA sensibilities to indie-scale productions.
+      </div>
+      <div class="dev-stats">
+        <div class="dev-stat">
+          <span class="dev-stat-value">2</span>
+          <span class="dev-stat-label">Games Published</span>
+        </div>
+        <div class="dev-stat">
+          <span class="dev-stat-value">12</span>
+          <span class="dev-stat-label">Team Members</span>
+        </div>
+        <div class="dev-stat">
+          <span class="dev-stat-value">4.6★</span>
+          <span class="dev-stat-label">Avg. Rating</span>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- /content -->
+
+  <!-- CTA Bar -->
+  <div class="cta-bar">
+    <button class="cta-btn" onclick="openOverlay()">Submit Proposal</button>
+  </div>
+
+  <!-- Overlay Backdrop -->
+  <div class="overlay-backdrop" id="backdrop" onclick="closeOverlay()"></div>
+
+  <!-- Overlay Sheet -->
+  <div class="overlay-sheet" id="overlay">
+    <div class="overlay-handle"></div>
+    <div class="overlay-header">
+      <div class="overlay-title">Submit a Proposal</div>
+    </div>
+    <div class="overlay-body">
+      <div class="form-group">
+        <label>Deal Type</label>
+        <select>
+          <option>Publishing Deal</option>
+          <option>Distribution Only</option>
+          <option>Co-Development</option>
+          <option>Licensing</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>Revenue Share (Publisher %)</label>
+        <input type="text" placeholder="e.g. 30 (publisher keeps 30%)">
+      </div>
+      <div class="form-group">
+        <label>Min Guarantee Offer</label>
+        <input type="text" placeholder="e.g. $300,000">
+      </div>
+      <div class="form-group">
+        <label>Cover Letter</label>
+        <textarea placeholder="Introduce your company, your vision for this title, and why you're the right publishing partner..."></textarea>
+      </div>
+    </div>
+    <button class="overlay-submit" onclick="closeOverlay()">Submit Proposal</button>
+  </div>
+
+  <!-- Bottom Tab Bar -->
+  <nav class="tab-bar">
+    <a class="tab-item" href="#">
+      <span class="tab-icon">🏠</span>
+      <span class="tab-label">Home</span>
+    </a>
+    <a class="tab-item" href="#">
+      <span class="tab-icon">👥</span>
+      <span class="tab-label">People</span>
+    </a>
+    <a class="tab-item" href="#">
+      <span class="tab-icon">📋</span>
+      <span class="tab-label">Projects</span>
+    </a>
+    <a class="tab-item active" href="#">
+      <span class="tab-icon">🏪</span>
+      <span class="tab-label">Market</span>
+      <div class="tab-dot"></div>
+    </a>
+    <a class="tab-item" href="#">
+      <span class="tab-icon">💬</span>
+      <span class="tab-label">Messages</span>
+    </a>
+  </nav>
+
+</div><!-- /app -->
+
+<script>
+  function openOverlay() {
+    document.getElementById('backdrop').classList.add('open');
+    document.getElementById('overlay').classList.add('open');
+    document.body.style.overflow = 'hidden';
+  }
+  function closeOverlay() {
+    document.getElementById('backdrop').classList.remove('open');
+    document.getElementById('overlay').classList.remove('open');
+    document.body.style.overflow = '';
+  }
+</script>
+</body>
+</html>
