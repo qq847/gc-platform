@@ -1,0 +1,876 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Game Connection</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0;}
+html,body{height:100%;overflow-x:hidden}
+body{background:#e8e4da;font-family:"DM Sans","PingFang SC",sans-serif;color:#1c1a17}
+
+:root{
+  --teal:#0a7fa8;
+  --teal-dim:rgba(10,127,168,0.1);
+  --teal-border:rgba(10,127,168,0.22);
+  --green:#0d9b72;
+  --green-dim:rgba(13,155,114,0.1);
+  --green-border:rgba(13,155,114,0.25);
+  --orange:#d95f2b;
+  --orange-dim:rgba(217,95,43,0.1);
+  --orange-border:rgba(217,95,43,0.25);
+  --card:#ffffff;
+  --border:rgba(0,0,0,0.09);
+  --border2:rgba(0,0,0,0.05);
+  --text1:#1c1a17;
+  --text2:#6b6660;
+  --text3:#a09890;
+  --red:#d92b2b;
+  --s1:0 1px 3px rgba(0,0,0,0.07),0 0 1px rgba(0,0,0,0.04);
+  --s2:0 2px 8px rgba(0,0,0,0.09),0 1px 2px rgba(0,0,0,0.05);
+  --nav-h:56px;
+}
+
+/* ══════════════════════
+   TOP NAV — PC horizontal
+══════════════════════ */
+.topnav{
+  position:sticky;top:0;z-index:200;
+  background:#e8e4da;
+  border-bottom:1px solid var(--border);
+  height:var(--nav-h);
+  display:flex;align-items:center;
+  padding:0 24px;
+  gap:0;
+}
+.tn-logo{
+  font-size:16px;font-weight:900;color:var(--text1);letter-spacing:-.3px;
+  white-space:nowrap;margin-right:16px;cursor:pointer;flex-shrink:0;
+}
+.tn-logo span{color:var(--teal)}
+
+/* Search bar */
+.tn-search{
+  height:36px;min-width:220px;max-width:320px;
+  background:var(--card);border:1px solid var(--border);
+  border-radius:6px;
+  display:flex;align-items:center;gap:8px;
+  padding:0 12px;cursor:text;box-shadow:var(--s1);flex-shrink:0;
+}
+.tn-search svg{flex-shrink:0;opacity:.4}
+.tn-search span{font-size:13px;color:var(--text3);font-weight:400}
+
+/* Spacer */
+.tn-gap{flex:1}
+
+/* Nav links */
+.tn-links{display:flex;align-items:stretch;height:var(--nav-h);gap:4px;margin:0 8px}
+.tn-link{
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  gap:3px;padding:0 14px;cursor:pointer;position:relative;
+  text-decoration:none;border-bottom:2px solid transparent;
+  transition:border-color .15s;
+}
+.tn-link:hover{border-bottom-color:rgba(0,0,0,0.15)}
+.tn-link.active{border-bottom-color:var(--teal)}
+.tn-link svg{flex-shrink:0}
+.tn-link span{font-size:11px;font-weight:700;color:var(--text3);letter-spacing:.3px;text-transform:uppercase;white-space:nowrap}
+.tn-link.active span{color:var(--teal)}
+.tn-link.active svg{stroke:var(--teal)}
+
+/* LIVE pill */
+.tn-live{
+  flex-shrink:0;
+  height:34px;padding:0 13px;
+  border-radius:6px;
+  background:var(--orange-dim);border:1px solid var(--orange-border);
+  display:flex;align-items:center;gap:6px;cursor:pointer;margin-right:12px;
+}
+.tn-pulse{width:7px;height:7px;border-radius:50%;background:var(--orange);flex-shrink:0;animation:pulse 1.8s ease-in-out infinite}
+@keyframes pulse{0%,100%{box-shadow:0 0 0 0 rgba(217,95,43,0.6)}60%{box-shadow:0 0 0 6px rgba(217,95,43,0)}}
+.tn-live span{font-size:11px;font-weight:800;color:var(--orange);letter-spacing:.5px}
+
+/* Post button */
+.tn-post{
+  flex-shrink:0;height:34px;padding:0 16px;border-radius:6px;
+  background:var(--teal);color:#fff;font-size:13px;font-weight:700;
+  border:none;cursor:pointer;font-family:inherit;display:flex;align-items:center;gap:6px;
+  margin-right:12px;
+}
+
+/* Notification + avatar */
+.tn-right{display:flex;align-items:center;gap:10px;flex-shrink:0}
+.tn-notif-wrap{position:relative;cursor:pointer}
+.tn-notif-ico{width:34px;height:34px;border-radius:50%;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,0.04)}
+.tn-notif-ico:hover{background:rgba(0,0,0,0.08)}
+.tn-badge{position:absolute;top:-2px;right:-2px;width:16px;height:16px;border-radius:50%;background:var(--red);border:2px solid #e8e4da;font-size:8px;font-weight:800;color:#fff;display:flex;align-items:center;justify-content:center;}
+.tn-av{width:34px;height:34px;border-radius:50%;overflow:hidden;border:1.5px solid var(--border);box-shadow:var(--s1);cursor:pointer;}
+
+/* ══════════════════════
+   PAGE LAYOUT — 3 columns
+══════════════════════ */
+.page{
+  max-width:1160px;margin:0 auto;
+  padding:20px 20px;
+  display:grid;
+  grid-template-columns:240px 1fr 280px;
+  gap:20px;
+  align-items:start;
+}
+
+/* ══════════════════════
+   LEFT SIDEBAR
+══════════════════════ */
+.left-sidebar{display:flex;flex-direction:column;gap:12px;position:sticky;top:calc(var(--nav-h) + 16px)}
+
+.ls-profile{
+  background:var(--card);border-radius:10px;overflow:hidden;border:1px solid var(--border);
+}
+.ls-profile-banner{height:60px;background:linear-gradient(135deg,#0a3a5a,#0a5a7a);}
+.ls-profile-body{padding:0 16px 16px;}
+.ls-av-wrap{margin-top:-24px;margin-bottom:8px;}
+.ls-av{width:48px;height:48px;border-radius:50%;border:3px solid #fff;overflow:hidden;box-shadow:var(--s1);}
+.ls-name{font-size:14px;font-weight:700;color:var(--text1);cursor:pointer;}
+.ls-name:hover{text-decoration:underline;}
+.ls-role{font-size:11px;color:var(--text2);margin-top:2px;}
+.ls-divider{height:1px;background:var(--border);margin:12px 0;}
+.ls-stat{display:flex;justify-content:space-between;font-size:12px;padding:3px 0;cursor:pointer;}
+.ls-stat:hover .ls-stat-n{color:var(--teal);}
+.ls-stat-l{color:var(--text2);}
+.ls-stat-n{color:var(--teal);font-weight:700;}
+.ls-premium{margin-top:12px;display:flex;align-items:center;gap:7px;font-size:12px;color:var(--text2);cursor:pointer;}
+.ls-premium:hover{color:var(--teal);}
+
+.ls-card{background:var(--card);border-radius:10px;padding:16px;border:1px solid var(--border);}
+.ls-card-title{font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:.8px;color:var(--text3);margin-bottom:10px;}
+.ls-nav-item{display:flex;align-items:center;gap:10px;padding:7px 6px;border-radius:6px;cursor:pointer;font-size:13px;color:var(--text2);font-weight:500;}
+.ls-nav-item:hover{background:rgba(0,0,0,0.04);color:var(--text1);}
+.ls-nav-item.active{color:var(--teal);font-weight:700;}
+.ls-nav-item svg{flex-shrink:0;width:18px;height:18px;}
+
+/* ══════════════════════
+   CENTER FEED
+══════════════════════ */
+.feed-col{display:flex;flex-direction:column;gap:12px;min-width:0;}
+
+/* ── EDITORIAL BANNER ── */
+.editorial{
+  background:var(--card);border-radius:10px;overflow:hidden;cursor:pointer;border:1px solid var(--border);
+}
+.ed-img{width:100%;height:180px;position:relative;overflow:hidden}
+.ed-overlay{position:absolute;inset:0;background:linear-gradient(to bottom,rgba(0,0,0,0.05),rgba(0,0,0,0.55))}
+.ed-label{position:absolute;top:12px;left:14px;background:var(--orange);border-radius:5px;padding:3px 10px;font-size:9px;font-weight:800;color:#fff;letter-spacing:1px}
+.ed-body{padding:14px 18px 16px;border-top:1px solid var(--border2);display:flex;align-items:center;gap:16px;}
+.ed-text{flex:1;}
+.ed-eyebrow{font-size:9px;letter-spacing:1.5px;font-weight:800;color:var(--orange);text-transform:uppercase;margin-bottom:3px;display:flex;align-items:center;gap:6px}
+.ed-title{font-size:17px;font-weight:800;color:var(--text1);letter-spacing:-.3px;margin-bottom:2px}
+.ed-sub{font-size:12px;color:var(--text2)}
+.ed-foot{display:flex;align-items:center;gap:16px;margin-top:10px;}
+.ed-stats{font-size:11px;color:var(--text3)}
+.ed-cta{padding:8px 20px;border-radius:6px;background:var(--teal);color:#fff;font-size:12px;font-weight:700;border:none;cursor:pointer;font-family:inherit;white-space:nowrap;flex-shrink:0;}
+
+/* ── FEED CARDS ── */
+.feed-card{
+  background:var(--card);border-radius:10px;overflow:hidden;border:1px solid var(--border);
+}
+
+.fc-head{padding:14px 18px 0;display:flex;align-items:flex-start;gap:12px}
+.fc-av{width:46px;height:46px;border-radius:50%;overflow:hidden;flex-shrink:0;border:1px solid var(--border);cursor:pointer}
+.fc-av.square{border-radius:10px}
+.fc-meta{flex:1;min-width:0}
+.fc-name{font-size:14px;font-weight:700;color:var(--text1);display:flex;align-items:center;gap:5px;line-height:1.3;cursor:pointer}
+.fc-name:hover{text-decoration:underline}
+.fc-badge{font-size:8px;font-weight:800;padding:1px 6px;border-radius:20px;letter-spacing:.5px}
+.fc-badge.teal{background:var(--teal-dim);border:1px solid var(--teal-border);color:var(--teal)}
+.fc-badge.orange{background:var(--orange-dim);border:1px solid var(--orange-border);color:var(--orange)}
+.fc-badge.green{background:var(--green-dim);border:1px solid var(--green-border);color:var(--green)}
+.fc-sub{font-size:12px;color:var(--text2);margin-top:1px;line-height:1.4;}
+.fc-time{font-size:11px;color:var(--text3);margin-top:1px;display:flex;align-items:center;gap:3px}
+.fc-actions{display:flex;gap:6px;margin-left:auto;flex-shrink:0;align-items:center;}
+.fc-follow{padding:6px 14px;border-radius:5px;background:transparent;border:1px solid var(--teal);color:var(--teal);font-size:12px;font-weight:700;cursor:pointer;font-family:inherit;display:flex;align-items:center;gap:4px;transition:background .15s;}
+.fc-follow:hover{background:var(--teal-dim);}
+.fc-more{width:32px;height:32px;display:flex;align-items:center;justify-content:center;cursor:pointer;color:var(--text3);font-size:20px;border-radius:50%;}
+.fc-more:hover{background:rgba(0,0,0,0.06);}
+
+.fc-body{padding:10px 18px 12px;font-size:14px;color:var(--text1);line-height:1.6}
+.fc-body .see-more{color:var(--teal);font-weight:600;cursor:pointer}
+
+/* ── PROJECT embed card ── */
+.proj-embed{
+  margin:0 18px 12px;
+  border:1px solid var(--border);border-radius:8px;overflow:hidden;cursor:pointer;
+  transition:box-shadow .15s;
+}
+.proj-embed:hover{box-shadow:var(--s2);}
+.proj-img{width:100%;height:200px;position:relative;overflow:hidden}
+.proj-img-overlay{position:absolute;inset:0;background:linear-gradient(to bottom,rgba(0,0,0,0) 35%,rgba(0,0,0,0.82) 100%)}
+.proj-badge{position:absolute;top:10px;left:11px;border-radius:5px;padding:2px 9px;font-size:9px;font-weight:800;color:#fff;backdrop-filter:blur(4px)}
+.proj-badge.red{background:rgba(217,43,43,0.88)}
+.proj-badge.amber{background:rgba(209,107,7,0.88)}
+.proj-title-area{position:absolute;bottom:10px;left:12px;right:12px}
+.proj-name{font-size:20px;font-weight:800;color:#fff;letter-spacing:-.3px;text-shadow:0 2px 6px rgba(0,0,0,0.5)}
+.proj-tags{display:flex;gap:5px;margin-top:4px;flex-wrap:wrap}
+.proj-tag{font-size:9px;font-weight:700;padding:2px 7px;border-radius:20px;background:rgba(255,255,255,0.13);border:1px solid rgba(255,255,255,0.2);color:rgba(255,255,255,0.95);backdrop-filter:blur(4px)}
+.proj-foot{padding:10px 12px;display:flex;align-items:center;justify-content:space-between;background:#faf9f6;border-top:1px solid var(--border)}
+.proj-studio{font-size:11px;color:var(--text3)}
+.proj-studio strong{color:var(--text2);font-weight:600}
+.proj-btns{display:flex;gap:6px}
+.proj-btn{padding:5px 13px;border-radius:5px;border:none;font-size:11px;font-weight:700;cursor:pointer;font-family:inherit;transition:opacity .15s;}
+.proj-btn:hover{opacity:.8;}
+.proj-btn.save{background:var(--teal-dim);border:1px solid var(--teal-border);color:var(--teal)}
+.proj-btn.view{background:var(--card);border:1px solid var(--border);color:var(--text2)}
+
+/* ── EVENT embed ── */
+.event-embed{
+  margin:0 18px 12px;
+  border:1px solid var(--border);border-radius:8px;overflow:hidden;cursor:pointer;
+  display:flex;transition:box-shadow .15s;
+}
+.event-embed:hover{box-shadow:var(--s2);}
+.ev-date{width:70px;flex-shrink:0;background:linear-gradient(160deg,rgba(13,155,114,0.15),rgba(13,155,114,0.05));border-right:1px solid rgba(13,155,114,0.15);display:flex;flex-direction:column;align-items:center;justify-content:center;padding:12px 4px}
+.ev-day{font-size:24px;font-weight:800;color:var(--green);line-height:1}
+.ev-month{font-size:9px;font-weight:700;color:rgba(13,155,114,0.7);text-transform:uppercase;letter-spacing:1px}
+.ev-time{font-size:9px;color:rgba(13,155,114,0.55);margin-top:4px;font-weight:600;text-align:center;line-height:1.3}
+.ev-body{flex:1;padding:12px 14px;background:#faf9f6}
+.ev-type{font-size:9px;letter-spacing:1.5px;font-weight:800;text-transform:uppercase;color:var(--green);margin-bottom:3px}
+.ev-name{font-size:14px;font-weight:800;color:var(--text1);margin-bottom:3px;letter-spacing:-.2px}
+.ev-meta{font-size:11px;color:var(--text2);margin-bottom:8px}
+.ev-row{display:flex;align-items:center;justify-content:space-between}
+.ev-badge{font-size:9px;font-weight:800;padding:3px 8px;border-radius:20px}
+.ev-badge.free{background:var(--green-dim);border:1px solid var(--green-border);color:var(--green)}
+.ev-badge.paid{background:var(--orange-dim);border:1px solid var(--orange-border);color:var(--orange)}
+.ev-rsvp{padding:6px 14px;border-radius:5px;background:var(--green-dim);border:1px solid var(--green-border);color:var(--green);font-size:11px;font-weight:700;cursor:pointer;font-family:inherit;transition:background .15s;}
+.ev-rsvp:hover{background:rgba(13,155,114,0.18);}
+
+/* ── NEWS embed ── */
+.news-embed{
+  margin:0 18px 12px;
+  border:1px solid var(--border);border-radius:8px;overflow:hidden;cursor:pointer;
+  display:flex;background:#faf9f6;transition:box-shadow .15s;
+}
+.news-embed:hover{box-shadow:var(--s2);}
+.news-img{width:100px;flex-shrink:0;background:linear-gradient(135deg,#0a3a5a,#0a5a7a);display:flex;align-items:center;justify-content:center}
+.news-body{flex:1;padding:11px 14px}
+.news-source{font-size:10px;color:var(--text3);font-weight:600;text-transform:uppercase;letter-spacing:1px;margin-bottom:3px}
+.news-title{font-size:13px;font-weight:700;color:var(--text1);line-height:1.4}
+.news-meta{font-size:11px;color:var(--text3);margin-top:4px}
+
+/* ── PEOPLE suggest ── */
+.people-embed{
+  margin:0 18px 12px;
+  border:1px solid var(--border);border-radius:8px;overflow:hidden;background:#faf9f6;
+}
+.pe-head{padding:10px 12px 6px;font-size:11px;font-weight:700;color:var(--text2);display:flex;align-items:center;gap:5px}
+.pe-list{display:flex;flex-direction:column}
+.pe-row{display:flex;align-items:center;gap:10px;padding:8px 12px;border-top:1px solid var(--border2)}
+.pe-av{width:38px;height:38px;border-radius:50%;overflow:hidden;flex-shrink:0;border:1px solid var(--border)}
+.pe-info{flex:1;min-width:0}
+.pe-name{font-size:13px;font-weight:700;color:var(--text1);cursor:pointer}
+.pe-name:hover{text-decoration:underline}
+.pe-role{font-size:11px;color:var(--text2)}
+.pe-mutual{font-size:10px;color:var(--text3);display:flex;align-items:center;gap:3px;margin-top:1px}
+.pe-connect{padding:5px 14px;border-radius:5px;background:transparent;border:1px solid var(--teal);color:var(--teal);font-size:12px;font-weight:700;cursor:pointer;font-family:inherit;flex-shrink:0;transition:background .15s;}
+.pe-connect:hover{background:var(--teal-dim);}
+
+/* ── COMPANY card ── */
+.co-embed{
+  margin:0 18px 12px;
+  border:1px solid var(--border);border-radius:8px;overflow:hidden;background:#faf9f6;
+  display:flex;align-items:center;gap:12px;padding:12px;cursor:pointer;transition:box-shadow .15s;
+}
+.co-embed:hover{box-shadow:var(--s2);}
+.co-logo{width:46px;height:46px;border-radius:8px;overflow:hidden;flex-shrink:0;border:1px solid var(--border);display:flex;align-items:center;justify-content:center}
+.co-info{flex:1;min-width:0}
+.co-name{font-size:13px;font-weight:700;color:var(--text1)}
+.co-meta{font-size:11px;color:var(--text2);margin-top:1px}
+.co-tag{display:inline-flex;font-size:9px;font-weight:700;padding:2px 7px;border-radius:20px;background:rgba(37,99,235,0.08);border:1px solid rgba(37,99,235,0.2);color:#1d6fd1;margin-top:4px}
+.co-follow{padding:6px 14px;border-radius:5px;border:1px solid var(--teal);color:var(--teal);font-size:12px;font-weight:700;cursor:pointer;font-family:inherit;background:transparent;flex-shrink:0;transition:background .15s;}
+.co-follow:hover{background:var(--teal-dim);}
+
+/* ── Engagement bar ── */
+.fc-engage{
+  border-top:1px solid var(--border2);
+  padding:4px 12px;
+  display:flex;align-items:center;justify-content:space-between;
+}
+.eng-reactions{display:flex;align-items:center;gap:4px;font-size:11px;color:var(--text3);padding:4px 6px}
+.eng-btns{display:flex}
+.eng-btn{flex:1;display:flex;align-items:center;justify-content:center;gap:6px;padding:8px 12px;border-radius:6px;cursor:pointer;transition:background .15s;font-size:12px;font-weight:600;color:var(--text2);border:none;background:none;font-family:inherit;}
+.eng-btn:hover{background:rgba(0,0,0,0.05)}
+.eng-divider{width:1px;background:var(--border);margin:6px 0}
+
+/* ── Repost context ── */
+.repost-ctx{padding:10px 18px 0;display:flex;align-items:center;gap:6px;font-size:12px;color:var(--text2);font-weight:600}
+
+/* ══════════════════════
+   RIGHT SIDEBAR
+══════════════════════ */
+.right-sidebar{display:flex;flex-direction:column;gap:12px;position:sticky;top:calc(var(--nav-h) + 16px)}
+
+.rs-card{background:var(--card);border-radius:10px;padding:16px;border:1px solid var(--border);}
+.rs-title{font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:.8px;color:var(--text3);margin-bottom:12px;display:flex;align-items:center;justify-content:space-between;}
+.rs-title a{font-size:11px;font-weight:700;color:var(--teal);text-transform:none;letter-spacing:0;text-decoration:none;cursor:pointer;}
+
+/* Upcoming events */
+.rs-event{display:flex;gap:10px;padding:8px 0;border-bottom:1px solid var(--border2);}
+.rs-event:last-child{border-bottom:none;padding-bottom:0;}
+.rs-ev-date{width:34px;height:34px;border-radius:6px;background:var(--green-dim);border:1px solid var(--green-border);display:flex;flex-direction:column;align-items:center;justify-content:center;flex-shrink:0;}
+.rs-ev-day{font-size:14px;font-weight:800;color:var(--green);line-height:1;}
+.rs-ev-mon{font-size:7px;font-weight:700;color:rgba(13,155,114,0.6);text-transform:uppercase;letter-spacing:.5px;}
+.rs-ev-info{flex:1;min-width:0;}
+.rs-ev-name{font-size:12px;font-weight:700;color:var(--text1);cursor:pointer;}
+.rs-ev-name:hover{text-decoration:underline;}
+.rs-ev-meta{font-size:10px;color:var(--text2);margin-top:1px;}
+
+/* Trending people */
+.rs-person{display:flex;align-items:center;gap:9px;padding:7px 0;border-bottom:1px solid var(--border2);}
+.rs-person:last-child{border-bottom:none;padding-bottom:0;}
+.rs-pav{width:34px;height:34px;border-radius:50%;overflow:hidden;flex-shrink:0;border:1px solid var(--border);}
+.rs-pinfo{flex:1;min-width:0;}
+.rs-pname{font-size:12px;font-weight:700;color:var(--text1);cursor:pointer;}
+.rs-pname:hover{text-decoration:underline;}
+.rs-prole{font-size:10px;color:var(--text2);}
+.rs-pconnect{padding:4px 10px;border-radius:4px;border:1px solid var(--teal);color:var(--teal);font-size:10px;font-weight:700;cursor:pointer;font-family:inherit;background:transparent;flex-shrink:0;transition:background .15s;}
+.rs-pconnect:hover{background:var(--teal-dim);}
+
+/* Trending topics */
+.rs-topic{padding:7px 0;border-bottom:1px solid var(--border2);cursor:pointer;}
+.rs-topic:last-child{border-bottom:none;padding-bottom:0;}
+.rs-topic:hover .rs-topic-name{color:var(--teal);}
+.rs-topic-cat{font-size:9px;font-weight:700;color:var(--text3);letter-spacing:.8px;text-transform:uppercase;}
+.rs-topic-name{font-size:12px;font-weight:700;color:var(--text1);margin-top:1px;}
+.rs-topic-count{font-size:10px;color:var(--text3);margin-top:1px;}
+
+/* Footer */
+.rs-footer{font-size:10px;color:var(--text3);line-height:1.6;}
+.rs-footer a{color:var(--text3);text-decoration:none;}
+.rs-footer a:hover{text-decoration:underline;color:var(--teal);}
+</style>
+</head>
+<body>
+
+<!-- ══ TOP NAV (PC) ══ -->
+<div class="topnav">
+  <div class="tn-logo">GAME<span>CONNECTION</span></div>
+
+  <div class="tn-search">
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#999" stroke-width="2.2"><circle cx="11" cy="11" r="7"/><line x1="16.5" y1="16.5" x2="22" y2="22"/></svg>
+    <span>People, projects, events…</span>
+  </div>
+
+  <div class="tn-gap"></div>
+
+  <div class="tn-links">
+    <div class="tn-link active">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--teal)" stroke-width="2"><path d="M3,12 L12,4 L21,12 V20 H15 V15 H9 V20 H3 Z"/></svg>
+      <span>Home</span>
+    </div>
+    <div class="tn-link">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--text3)" stroke-width="2"><path d="M17,21v-2a4,4,0,0,0-4-4H5a4,4,0,0,0-4,4v2"/><circle cx="9" cy="7" r="4"/><path d="M23,21v-2a4,4,0,0,0-3-3.87"/><path d="M16,3.13a4,4,0,0,1,0,7.75"/></svg>
+      <span>Network</span>
+    </div>
+    <div class="tn-link">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--text3)" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8,21 L16,21"/><path d="M12,17 L12,21"/></svg>
+      <span>Projects</span>
+    </div>
+    <div class="tn-link">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--text3)" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="3" y1="9" x2="21" y2="9"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="16" y1="2" x2="16" y2="6"/></svg>
+      <span>Events</span>
+    </div>
+    <div class="tn-link">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--text3)" stroke-width="2"><path d="M21,15a2,2,0,0,1-2,2H7l-4,4V5A2,2,0,0,1,5,3H19a2,2,0,0,1,2,2Z"/></svg>
+      <span>Messages</span>
+    </div>
+  </div>
+
+  <div class="tn-live">
+    <div class="tn-pulse"></div>
+    <span>LIVE</span>
+  </div>
+
+  <button class="tn-post">
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+    Post
+  </button>
+
+  <div class="tn-right">
+    <div class="tn-notif-wrap">
+      <div class="tn-notif-ico">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--text2)" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+      </div>
+      <div class="tn-badge">3</div>
+    </div>
+    <div class="tn-av">
+      <svg width="34" height="34" viewBox="0 0 34 34" xmlns="http://www.w3.org/2000/svg">
+        <rect width="34" height="34" fill="#e8f5fa"/>
+        <circle cx="17" cy="13" r="7" fill="#7dd3f0"/>
+        <ellipse cx="17" cy="29" rx="11" ry="7" fill="#7dd3f0"/>
+        <circle cx="17" cy="13" r="5.5" fill="#bae6f8"/>
+        <circle cx="14.5" cy="12.5" r="1.2" fill="#0a5a7a"/>
+        <circle cx="19.5" cy="12.5" r="1.2" fill="#0a5a7a"/>
+        <path d="M14.5,16 Q17,18 19.5,16" fill="none" stroke="#0a5a7a" stroke-width="1" stroke-linecap="round"/>
+      </svg>
+    </div>
+  </div>
+</div>
+
+<!-- ══ 3-COLUMN PAGE ══ -->
+<div class="page">
+
+  <!-- ══ LEFT SIDEBAR ══ -->
+  <div class="left-sidebar">
+
+    <!-- Profile mini card -->
+    <div class="ls-profile">
+      <div class="ls-profile-banner"></div>
+      <div class="ls-profile-body">
+        <div class="ls-av-wrap">
+          <div class="ls-av">
+            <svg width="48" height="48" viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg">
+              <rect width="48" height="48" fill="#e8f5fa"/>
+              <circle cx="24" cy="18" r="9" fill="#7dd3f0"/>
+              <ellipse cx="24" cy="40" rx="15" ry="10" fill="#7dd3f0"/>
+              <circle cx="24" cy="18" r="7" fill="#bae6f8"/>
+              <circle cx="21" cy="17" r="1.5" fill="#0a5a7a"/>
+              <circle cx="27" cy="17" r="1.5" fill="#0a5a7a"/>
+              <path d="M21,21 Q24,23 27,21" fill="none" stroke="#0a5a7a" stroke-width="1.2" stroke-linecap="round"/>
+            </svg>
+          </div>
+        </div>
+        <div class="ls-name">Your Name</div>
+        <div class="ls-role">Your Title · Your Company</div>
+        <div class="ls-divider"></div>
+        <div class="ls-stat"><span class="ls-stat-l">Profile views</span><span class="ls-stat-n">248</span></div>
+        <div class="ls-stat"><span class="ls-stat-l">Connections</span><span class="ls-stat-n">340</span></div>
+        <div class="ls-stat"><span class="ls-stat-l">Post impressions</span><span class="ls-stat-n">1.2K</span></div>
+        <div class="ls-divider"></div>
+        <div class="ls-premium">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12,2 15.09,8.26 22,9.27 17,14.14 18.18,21.02 12,17.77 5.82,21.02 7,14.14 2,9.27 8.91,8.26"/></svg>
+          Upgrade to Premium
+        </div>
+      </div>
+    </div>
+
+    <!-- Nav shortcuts -->
+    <div class="ls-card">
+      <div class="ls-card-title">Discover</div>
+      <div class="ls-nav-item active">
+        <svg viewBox="0 0 24 24" fill="none" stroke="var(--teal)" stroke-width="2"><path d="M3,12 L12,4 L21,12 V20 H15 V15 H9 V20 H3 Z"/></svg>
+        Feed
+      </div>
+      <div class="ls-nav-item">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17,21v-2a4,4,0,0,0-4-4H5a4,4,0,0,0-4,4v2"/><circle cx="9" cy="7" r="4"/></svg>
+        People
+      </div>
+      <div class="ls-nav-item">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8,21 L16,21"/><path d="M12,17 L12,21"/></svg>
+        Projects
+      </div>
+      <div class="ls-nav-item">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16,3 L16,7"/><path d="M8,3 L8,7"/><path d="M2,11 L22,11"/></svg>
+        Events
+      </div>
+      <div class="ls-nav-item">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>
+        Market
+      </div>
+    </div>
+
+  </div>
+
+  <!-- ══ CENTER FEED ══ -->
+  <div class="feed-col">
+
+    <!-- EDITORIAL BANNER -->
+    <div class="editorial">
+      <div class="ed-img">
+        <svg width="100%" height="180" viewBox="0 0 800 180" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid slice">
+          <rect width="800" height="180" fill="#0a3a5a"/>
+          <g fill="none" stroke="#1a6a9a" stroke-width="2" opacity=".4">
+            <ellipse cx="800" cy="90" rx="60" ry="60"/><ellipse cx="800" cy="90" rx="110" ry="110"/>
+            <ellipse cx="800" cy="90" rx="160" ry="160"/><ellipse cx="800" cy="90" rx="220" ry="220"/>
+            <ellipse cx="800" cy="90" rx="290" ry="290"/>
+          </g>
+          <g fill="none" stroke="#c9a84c" stroke-width="1" opacity=".25">
+            <ellipse cx="0" cy="180" rx="100" ry="100"/><ellipse cx="0" cy="180" rx="170" ry="170"/>
+          </g>
+          <text x="32" y="62" font-size="30" font-weight="900" fill="white" font-family="Arial" letter-spacing="1">GAME DEVELOPERS</text>
+          <text x="32" y="98" font-size="30" font-weight="900" fill="white" font-family="Arial" letter-spacing="1">CONFERENCE 2026</text>
+          <text x="32" y="126" font-size="12" fill="#c9a84c" font-family="Arial" letter-spacing="3">MARCH 17–21 · SAN FRANCISCO, CA</text>
+          <rect width="800" height="180" fill="rgba(0,0,0,0.2)"/>
+        </svg>
+        <div class="ed-label">● LIVE NOW</div>
+        <div class="ed-overlay"></div>
+      </div>
+      <div class="ed-body">
+        <div class="ed-text">
+          <div class="ed-eyebrow">
+            <div class="tn-pulse" style="width:6px;height:6px;background:var(--orange);border-radius:50%;animation:pulse 1.8s ease-in-out infinite;flex-shrink:0;"></div>
+            GDC 2026 · Side Activities · 225 events
+          </div>
+          <div class="ed-title">What's happening at GDC right now</div>
+          <div class="ed-sub">Mixers, demos, investor meetups · San Francisco · Mar 17–21</div>
+          <div class="ed-foot">
+            <span class="ed-stats">36 AI-picked for you</span>
+          </div>
+        </div>
+        <button class="ed-cta">Open LIVE →</button>
+      </div>
+    </div>
+
+    <!-- CARD 1: PROJECT post -->
+    <div class="feed-card">
+      <div class="fc-head">
+        <div class="fc-av">
+          <svg width="46" height="46" viewBox="0 0 44 44" xmlns="http://www.w3.org/2000/svg">
+            <rect width="44" height="44" fill="#fce7f3"/>
+            <ellipse cx="22" cy="14" rx="11" ry="9" fill="#1a0a00"/>
+            <rect x="11" y="14" width="22" height="5" fill="#1a0a00"/>
+            <ellipse cx="22" cy="24" rx="9.5" ry="10.5" fill="#f8d5b8"/>
+            <ellipse cx="13" cy="24" rx="2.5" ry="3.5" fill="#f8d5b8"/>
+            <ellipse cx="31" cy="24" rx="2.5" ry="3.5" fill="#f8d5b8"/>
+            <ellipse cx="18.5" cy="23" rx="1.8" ry="2" fill="#1a0800"/>
+            <ellipse cx="25.5" cy="23" rx="1.8" ry="2" fill="#1a0800"/>
+            <circle cx="19.1" cy="22.2" r=".6" fill="white"/>
+            <circle cx="26.1" cy="22.2" r=".6" fill="white"/>
+            <path d="M18.5,27.5 Q22,30.5 25.5,27.5" fill="none" stroke="#c04060" stroke-width="1.2" stroke-linecap="round"/>
+            <ellipse cx="22" cy="40" rx="13" ry="7" fill="#c04060"/>
+          </svg>
+        </div>
+        <div class="fc-meta">
+          <div class="fc-name">Alex Chen <span class="fc-badge teal">Dev</span></div>
+          <div class="fc-sub">Indie Developer · Alex Chen Studio · Berlin</div>
+          <div class="fc-time">
+            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12,6 12,12 16,14"/></svg>
+            2h ago · 🌐
+          </div>
+        </div>
+        <div class="fc-actions">
+          <button class="fc-follow">＋ Follow</button>
+          <div class="fc-more">···</div>
+        </div>
+      </div>
+      <div class="fc-body">
+        Just wrapped our vertical slice for NOVA after 14 months of dev. Seeking a publisher who believes in open-world RPGs with real emotional depth. If you're at GDC this week — come find me at Booth B-22. <span class="see-more">…more</span>
+      </div>
+      <div class="proj-embed">
+        <div class="proj-img">
+          <svg width="100%" height="200" viewBox="0 0 620 200" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid slice">
+            <rect width="620" height="200" fill="#060218"/>
+            <g fill="white"><circle cx="30" cy="18" r="1.2"/><circle cx="80" cy="40" r="1" opacity=".7"/><circle cx="160" cy="12" r=".9"/><circle cx="280" cy="28" r="1.1"/><circle cx="380" cy="10" r="1.3"/><circle cx="60" cy="65" r=".8"/><circle cx="320" cy="48" r="1"/><circle cx="420" cy="55" r=".8"/><circle cx="560" cy="30" r="1.1"/></g>
+            <circle cx="400" cy="90" r="60" fill="#120840" stroke="#2a1060" stroke-width="1.5"/>
+            <ellipse cx="400" cy="90" rx="88" ry="18" fill="none" stroke="#6040c0" stroke-width="1.5" opacity=".6"/>
+            <path d="M316,90 Q358,108 400,90" fill="#120840"/>
+            <g transform="translate(190,140)"><polygon points="0,-18 11,10 -11,10" fill="#c0c8ff" opacity=".9"/><rect x="-3.5" y="7" width="7" height="6" fill="#5050ff" opacity=".8"/><ellipse cx="0" cy="-15" rx="4" ry="4" fill="#80ffff" opacity=".8"/></g>
+            <defs><linearGradient id="ov2" x1="0" y1="0" x2="0" y2="1"><stop offset="25%" stop-color="transparent"/><stop offset="100%" stop-color="rgba(0,0,0,.85)"/></linearGradient></defs>
+            <rect width="620" height="200" fill="url(#ov2)"/>
+          </svg>
+          <div class="proj-img-overlay"></div>
+          <div class="proj-badge amber">🟡 SEEKING PUBLISHER</div>
+          <div class="proj-title-area">
+            <div class="proj-name">NOVA</div>
+            <div class="proj-tags"><span class="proj-tag">Open World RPG</span><span class="proj-tag">Unreal 5</span><span class="proj-tag">PC / Console</span></div>
+          </div>
+        </div>
+        <div class="proj-foot">
+          <div class="proj-studio">by <strong>Alex Chen Studio</strong> · Berlin · Demo @ GDC B-22</div>
+          <div class="proj-btns"><button class="proj-btn save">★ Save</button><button class="proj-btn view">View ›</button></div>
+        </div>
+      </div>
+      <div class="fc-engage">
+        <div class="eng-reactions"><span>🤝❤️🔥</span><span style="margin-left:4px">48 reactions · 12 comments</span></div>
+      </div>
+      <div style="border-top:1px solid var(--border2);display:flex">
+        <button class="eng-btn" style="flex:1"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14,9V5a3,3,0,0,0-3-3L7,14H3V21H7L11.5,21A2,2,0,0,0,13.5,19.5L15,12A2,2,0,0,0,13.2,9.9Z"/></svg>Like</button>
+        <div class="eng-divider"></div>
+        <button class="eng-btn" style="flex:1"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21,15a2,2,0,0,1-2,2H7l-4,4V5A2,2,0,0,1,5,3H19a2,2,0,0,1,2,2Z"/></svg>Comment</button>
+        <div class="eng-divider"></div>
+        <button class="eng-btn" style="flex:1"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="17,1 21,5 17,9"/><path d="M3,11V9a4,4,0,0,1,4-4h14"/><polyline points="7,23 3,19 7,15"/><path d="M21,13v2a4,4,0,0,1-4,4H3"/></svg>Repost</button>
+        <div class="eng-divider"></div>
+        <button class="eng-btn" style="flex:1"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22,2 15,22 11,13 2,9 22,2"/></svg>Send</button>
+      </div>
+    </div>
+
+    <!-- CARD 2: EVENT post -->
+    <div class="feed-card">
+      <div class="fc-head">
+        <div class="fc-av square" style="border-radius:10px">
+          <svg width="46" height="46" viewBox="0 0 44 44"><rect width="44" height="44" fill="#0a3a5a"/><text x="22" y="28" text-anchor="middle" font-size="12" font-weight="900" fill="white" font-family="Arial">GDC</text></svg>
+        </div>
+        <div class="fc-meta">
+          <div class="fc-name">GDC Side Events <span class="fc-badge orange">LIVE</span></div>
+          <div class="fc-sub">Official Side Activity Aggregator · GDC 2026</div>
+          <div class="fc-time">
+            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12,6 12,12 16,14"/></svg>
+            30 min ago
+          </div>
+        </div>
+        <div class="fc-actions">
+          <button class="fc-follow">＋ Follow</button>
+          <div class="fc-more">···</div>
+        </div>
+      </div>
+      <div class="fc-body">
+        🎮 Tonight's Indie Mixer is filling up fast — 142 people already going. Free entry, no GDC pass needed. Best way to meet fellow indie devs outside the convention floor.
+      </div>
+      <div class="event-embed">
+        <div class="ev-date">
+          <div class="ev-day">9</div>
+          <div class="ev-month">MAR</div>
+          <div class="ev-time">7pm–10pm</div>
+        </div>
+        <div class="ev-body">
+          <div class="ev-type">📅 Tonight · Community</div>
+          <div class="ev-name">Indie Mixer @ GDC</div>
+          <div class="ev-meta">Monarch · 101 6th St · 0.3 mi away</div>
+          <div class="ev-row">
+            <span class="ev-badge free">FREE · No GDC pass</span>
+            <button class="ev-rsvp">RSVP</button>
+          </div>
+        </div>
+      </div>
+      <div class="fc-engage">
+        <div class="eng-reactions"><span>🎉🎮👾</span><span style="margin-left:4px">23 reactions · 5 comments</span></div>
+      </div>
+      <div style="border-top:1px solid var(--border2);display:flex">
+        <button class="eng-btn" style="flex:1"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14,9V5a3,3,0,0,0-3-3L7,14H3V21H7L11.5,21A2,2,0,0,0,13.5,19.5L15,12A2,2,0,0,0,13.2,9.9Z"/></svg>Like</button>
+        <div class="eng-divider"></div>
+        <button class="eng-btn" style="flex:1"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21,15a2,2,0,0,1-2,2H7l-4,4V5A2,2,0,0,1,5,3H19a2,2,0,0,1,2,2Z"/></svg>Comment</button>
+        <div class="eng-divider"></div>
+        <button class="eng-btn" style="flex:1"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="17,1 21,5 17,9"/><path d="M3,11V9a4,4,0,0,1,4-4h14"/><polyline points="7,23 3,19 7,15"/><path d="M21,13v2a4,4,0,0,1-4,4H3"/></svg>Repost</button>
+        <div class="eng-divider"></div>
+        <button class="eng-btn" style="flex:1"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22,2 15,22 11,13 2,9 22,2"/></svg>Send</button>
+      </div>
+    </div>
+
+    <!-- CARD 3: PEOPLE suggestions -->
+    <div class="feed-card">
+      <div style="padding:14px 18px 8px;font-size:13px;font-weight:700;color:var(--text2);display:flex;align-items:center;gap:6px">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="var(--teal)" stroke-width="2.2"><path d="M17,21v-2a4,4,0,0,0-4-4H5a4,4,0,0,0-4,4v2"/><circle cx="9" cy="7" r="4"/><path d="M23,21v-2a4,4,0,0,0-3-3.87"/><path d="M16,3.13a4,4,0,0,1,0,7.75"/></svg>
+        People you may know at GDC
+      </div>
+      <div class="people-embed" style="margin:0 18px 14px">
+        <div class="pe-list">
+          <div class="pe-row">
+            <div class="pe-av">
+              <svg width="38" height="38" viewBox="0 0 36 36"><rect width="36" height="36" fill="#fef3c7"/><ellipse cx="18" cy="11" rx="8" ry="7" fill="#0a0a0a"/><rect x="10" y="11" width="16" height="4" fill="#0a0a0a"/><ellipse cx="18" cy="19" rx="7.5" ry="8.5" fill="#f0c88a"/><ellipse cx="11.5" cy="19" rx="2" ry="2.8" fill="#f0c88a"/><ellipse cx="24.5" cy="19" rx="2" ry="2.8" fill="#f0c88a"/><path d="M15,22 Q18,24.5 21,22 Q18,19.5 15,22Z" fill="#0a0a00"/><circle cx="15.5" cy="21.5" r=".5" fill="white"/><circle cx="20.5" cy="21.5" r=".5" fill="white"/><path d="M15.5,25.5 Q18,27.5 20.5,25.5" fill="none" stroke="#904030" stroke-width="1" stroke-linecap="round"/><ellipse cx="18" cy="34" rx="10" ry="5" fill="#cc1010"/></svg>
+            </div>
+            <div class="pe-info">
+              <div class="pe-name">Jin Park</div>
+              <div class="pe-role">Lead Designer · Riot Games</div>
+              <div class="pe-mutual"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17,21v-2a4,4,0,0,0-4-4H5a4,4,0,0,0-4,4v2"/><circle cx="9" cy="7" r="4"/></svg>3 mutual connections</div>
+            </div>
+            <button class="pe-connect">Connect</button>
+          </div>
+          <div class="pe-row">
+            <div class="pe-av">
+              <svg width="38" height="38" viewBox="0 0 36 36"><rect width="36" height="36" fill="#dbeafe"/><ellipse cx="18" cy="10" rx="9" ry="7" fill="#4a3010"/><ellipse cx="18" cy="19" rx="8" ry="9" fill="#f5c8a0"/><ellipse cx="10.5" cy="19" rx="2.2" ry="3" fill="#f5c8a0"/><ellipse cx="25.5" cy="19" rx="2.2" ry="3" fill="#f5c8a0"/><ellipse cx="15" cy="18" rx="1.6" ry="1.8" fill="#2c1a0a"/><ellipse cx="21" cy="18" rx="1.6" ry="1.8" fill="#2c1a0a"/><circle cx="15.5" cy="17.3" r=".6" fill="white"/><circle cx="21.5" cy="17.3" r=".6" fill="white"/><path d="M15,22.5 Q18,25 21,22.5" fill="none" stroke="#c06040" stroke-width="1.1" stroke-linecap="round"/><ellipse cx="18" cy="34" rx="10" ry="5" fill="#1a3a7a"/></svg>
+            </div>
+            <div class="pe-info">
+              <div class="pe-name">Marc Dubois</div>
+              <div class="pe-role">Publishing Director · Ubisoft</div>
+              <div class="pe-mutual"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17,21v-2a4,4,0,0,0-4-4H5a4,4,0,0,0-4,4v2"/><circle cx="9" cy="7" r="4"/></svg>7 mutual connections</div>
+            </div>
+            <button class="pe-connect">Connect</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- CARD 4: NEWS repost -->
+    <div class="feed-card">
+      <div class="repost-ctx">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="17,1 21,5 17,9"/><path d="M3,11V9a4,4,0,0,1,4-4h14"/><polyline points="7,23 3,19 7,15"/><path d="M21,13v2a4,4,0,0,1-4,4H3"/></svg>
+        Sarah Kim reposted this
+      </div>
+      <div class="fc-head">
+        <div class="fc-av square" style="border-radius:8px">
+          <svg width="46" height="46" viewBox="0 0 44 44"><rect width="44" height="44" fill="#0a1040"/><text x="22" y="28" text-anchor="middle" font-size="10" font-weight="900" fill="#6080ff" font-family="Arial">GI</text></svg>
+        </div>
+        <div class="fc-meta">
+          <div class="fc-name">Game Industry Biz <span class="fc-badge teal">News</span></div>
+          <div class="fc-sub">Industry Publication · 48K followers</div>
+          <div class="fc-time"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12,6 12,12 16,14"/></svg>5h ago</div>
+        </div>
+        <div class="fc-actions">
+          <button class="fc-follow">＋ Follow</button>
+          <div class="fc-more">···</div>
+        </div>
+      </div>
+      <div class="fc-body">
+        Epic Games announces a $50M publishing fund targeting early-stage indie studios for PC and Console titles. Applications open through April 2026. <span class="see-more">…more</span>
+      </div>
+      <div class="news-embed">
+        <div class="news-img">
+          <svg width="100" height="80" viewBox="0 0 100 80"><rect width="100" height="80" fill="#0a1040"/><text x="50" y="46" text-anchor="middle" font-size="26" fill="#6080ff" font-family="Arial" font-weight="900">E</text></svg>
+        </div>
+        <div class="news-body">
+          <div class="news-source">gamesindustry.biz</div>
+          <div class="news-title">Epic Games opens $50M indie publishing fund for 2026</div>
+          <div class="news-meta">Applications open · PC / Console · Q2 2026</div>
+        </div>
+      </div>
+      <div class="fc-engage">
+        <div class="eng-reactions"><span>🔥💡🤝</span><span style="margin-left:4px">134 reactions · 28 comments · 12 reposts</span></div>
+      </div>
+      <div style="border-top:1px solid var(--border2);display:flex">
+        <button class="eng-btn" style="flex:1"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14,9V5a3,3,0,0,0-3-3L7,14H3V21H7L11.5,21A2,2,0,0,0,13.5,19.5L15,12A2,2,0,0,0,13.2,9.9Z"/></svg>Like</button>
+        <div class="eng-divider"></div>
+        <button class="eng-btn" style="flex:1"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21,15a2,2,0,0,1-2,2H7l-4,4V5A2,2,0,0,1,5,3H19a2,2,0,0,1,2,2Z"/></svg>Comment</button>
+        <div class="eng-divider"></div>
+        <button class="eng-btn" style="flex:1"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="17,1 21,5 17,9"/><path d="M3,11V9a4,4,0,0,1,4-4h14"/><polyline points="7,23 3,19 7,15"/><path d="M21,13v2a4,4,0,0,1-4,4H3"/></svg>Repost</button>
+        <div class="eng-divider"></div>
+        <button class="eng-btn" style="flex:1"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22,2 15,22 11,13 2,9 22,2"/></svg>Send</button>
+      </div>
+    </div>
+
+    <!-- CARD 5: COMPANY -->
+    <div class="feed-card">
+      <div class="fc-head">
+        <div class="fc-av square" style="border-radius:10px">
+          <svg width="46" height="46" viewBox="0 0 44 44"><rect width="44" height="44" fill="#fff0e8"/><text x="22" y="28" text-anchor="middle" font-size="9" font-weight="900" fill="#d95f2b" font-family="Arial">Xsolla</text></svg>
+        </div>
+        <div class="fc-meta">
+          <div class="fc-name">Xsolla <span class="fc-badge orange">Sponsor</span></div>
+          <div class="fc-sub">Game Commerce Platform · At GDC · Booth #1234</div>
+          <div class="fc-time"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12,6 12,12 16,14"/></svg>Promoted</div>
+        </div>
+        <div class="fc-actions">
+          <div class="fc-more">···</div>
+        </div>
+      </div>
+      <div class="fc-body">
+        Meet our team at GDC Booth #1234. We're helping indie studios monetize globally — payments, subscriptions, and player engagement tools. 3 open roles for game commerce specialists. <span class="see-more">…more</span>
+      </div>
+      <div class="co-embed">
+        <div class="co-logo" style="background:#fff0e8">
+          <svg width="30" height="30" viewBox="0 0 30 30"><text x="15" y="20" text-anchor="middle" font-size="8" font-weight="900" fill="#d95f2b" font-family="Arial">Xsolla</text></svg>
+        </div>
+        <div class="co-info">
+          <div class="co-name">Xsolla</div>
+          <div class="co-meta">Game Commerce · 500+ employees · San Francisco</div>
+          <span class="co-tag">🔵 3 Open Roles</span>
+        </div>
+        <button class="co-follow">Follow</button>
+      </div>
+      <div style="border-top:1px solid var(--border2);display:flex">
+        <button class="eng-btn" style="flex:1"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14,9V5a3,3,0,0,0-3-3L7,14H3V21H7L11.5,21A2,2,0,0,0,13.5,19.5L15,12A2,2,0,0,0,13.2,9.9Z"/></svg>Like</button>
+        <div class="eng-divider"></div>
+        <button class="eng-btn" style="flex:1"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21,15a2,2,0,0,1-2,2H7l-4,4V5A2,2,0,0,1,5,3H19a2,2,0,0,1,2,2Z"/></svg>Comment</button>
+        <div class="eng-divider"></div>
+        <button class="eng-btn" style="flex:1"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="17,1 21,5 17,9"/><path d="M3,11V9a4,4,0,0,1,4-4h14"/><polyline points="7,23 3,19 7,15"/><path d="M21,13v2a4,4,0,0,1-4,4H3"/></svg>Repost</button>
+        <div class="eng-divider"></div>
+        <button class="eng-btn" style="flex:1"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22,2 15,22 11,13 2,9 22,2"/></svg>Send</button>
+      </div>
+    </div>
+
+  </div><!-- end feed-col -->
+
+  <!-- ══ RIGHT SIDEBAR ══ -->
+  <div class="right-sidebar">
+
+    <!-- Upcoming Events -->
+    <div class="rs-card">
+      <div class="rs-title">
+        Upcoming Events
+        <a>See all</a>
+      </div>
+      <div class="rs-event">
+        <div class="rs-ev-date"><div class="rs-ev-day">9</div><div class="rs-ev-mon">Mar</div></div>
+        <div class="rs-ev-info">
+          <div class="rs-ev-name">Indie Mixer @ GDC</div>
+          <div class="rs-ev-meta">Tonight · Free · Monarch SF</div>
+        </div>
+      </div>
+      <div class="rs-event">
+        <div class="rs-ev-date"><div class="rs-ev-day">10</div><div class="rs-ev-mon">Mar</div></div>
+        <div class="rs-ev-info">
+          <div class="rs-ev-name">Publisher Speed Dating</div>
+          <div class="rs-ev-meta">Tomorrow · $25 · Hotel Nikko</div>
+        </div>
+      </div>
+      <div class="rs-event">
+        <div class="rs-ev-date"><div class="rs-ev-day">17</div><div class="rs-ev-mon">Apr</div></div>
+        <div class="rs-ev-info">
+          <div class="rs-ev-name">Game Connection West</div>
+          <div class="rs-ev-meta">San Francisco · Paid</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Trending People -->
+    <div class="rs-card">
+      <div class="rs-title">
+        Trending at GDC
+        <a>See all</a>
+      </div>
+      <div class="rs-person">
+        <div class="rs-pav">
+          <svg width="34" height="34" viewBox="0 0 36 36"><rect width="36" height="36" fill="#fef3c7"/><ellipse cx="18" cy="11" rx="8" ry="7" fill="#0a0a0a"/><rect x="10" y="11" width="16" height="4" fill="#0a0a0a"/><ellipse cx="18" cy="19" rx="7.5" ry="8.5" fill="#f0c88a"/><path d="M15.5,25.5 Q18,27.5 20.5,25.5" fill="none" stroke="#904030" stroke-width="1" stroke-linecap="round"/><ellipse cx="18" cy="34" rx="10" ry="5" fill="#cc1010"/></svg>
+        </div>
+        <div class="rs-pinfo">
+          <div class="rs-pname">Jin Park</div>
+          <div class="rs-prole">Lead Designer · Riot Games</div>
+        </div>
+        <button class="rs-pconnect">+ Connect</button>
+      </div>
+      <div class="rs-person">
+        <div class="rs-pav">
+          <svg width="34" height="34" viewBox="0 0 36 36"><rect width="36" height="36" fill="#dbeafe"/><ellipse cx="18" cy="10" rx="9" ry="7" fill="#4a3010"/><ellipse cx="18" cy="19" rx="8" ry="9" fill="#f5c8a0"/><path d="M15,22.5 Q18,25 21,22.5" fill="none" stroke="#c06040" stroke-width="1.1" stroke-linecap="round"/><ellipse cx="18" cy="34" rx="10" ry="5" fill="#1a3a7a"/></svg>
+        </div>
+        <div class="rs-pinfo">
+          <div class="rs-pname">Marc Dubois</div>
+          <div class="rs-prole">Publishing Dir. · Ubisoft</div>
+        </div>
+        <button class="rs-pconnect">+ Connect</button>
+      </div>
+      <div class="rs-person">
+        <div class="rs-pav">
+          <svg width="34" height="34" viewBox="0 0 36 36"><rect width="36" height="36" fill="#f0fdf4"/><ellipse cx="18" cy="10" rx="8" ry="7" fill="#2c5a2c"/><ellipse cx="18" cy="19" rx="7.5" ry="8.5" fill="#d4a878"/><path d="M15.5,24.5 Q18,27 20.5,24.5" fill="none" stroke="#904030" stroke-width="1" stroke-linecap="round"/><ellipse cx="18" cy="34" rx="10" ry="5" fill="#1a5a1a"/></svg>
+        </div>
+        <div class="rs-pinfo">
+          <div class="rs-pname">Sarah Kim</div>
+          <div class="rs-prole">Investor · Bitkraft</div>
+        </div>
+        <button class="rs-pconnect">+ Connect</button>
+      </div>
+    </div>
+
+    <!-- Trending Topics -->
+    <div class="rs-card">
+      <div class="rs-title">Trending Topics</div>
+      <div class="rs-topic">
+        <div class="rs-topic-cat">Industry</div>
+        <div class="rs-topic-name">#GDC2026</div>
+        <div class="rs-topic-count">4,281 posts this week</div>
+      </div>
+      <div class="rs-topic">
+        <div class="rs-topic-cat">Technology</div>
+        <div class="rs-topic-name">#UnrealEngine5</div>
+        <div class="rs-topic-count">1,840 posts this week</div>
+      </div>
+      <div class="rs-topic">
+        <div class="rs-topic-cat">Business</div>
+        <div class="rs-topic-name">#IndiePublishing</div>
+        <div class="rs-topic-count">932 posts this week</div>
+      </div>
+      <div class="rs-topic">
+        <div class="rs-topic-cat">Market</div>
+        <div class="rs-topic-name">#MobileGaming</div>
+        <div class="rs-topic-count">714 posts this week</div>
+      </div>
+    </div>
+
+    <!-- Footer -->
+    <div class="rs-footer">
+      <a href="#">About</a> · <a href="#">Help</a> · <a href="#">Privacy</a> · <a href="#">Terms</a> · <a href="#">Advertising</a><br>
+      Game Connection © 2026
+    </div>
+
+  </div><!-- end right-sidebar -->
+
+</div><!-- end page -->
+
+</body>
+</html>

@@ -1,0 +1,831 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Game Connection — Feed</title>
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: -apple-system, 'Segoe UI', sans-serif; background: #f0f2f5; color: #1a1a2e; }
+
+/* ─── NAV ─── */
+.nav {
+  position: sticky; top: 0; z-index: 100;
+  background: #0d0d1a;
+  height: 56px;
+  display: flex; align-items: center;
+  padding: 0 20px;
+  border-bottom: 1px solid #222;
+  gap: 0;
+}
+.nav-logo {
+  font-size: 20px; font-weight: 800; letter-spacing: 1px;
+  color: #fff; white-space: nowrap; margin-right: 16px;
+}
+.nav-logo span { color: #ff4d6d; }
+.nav-search {
+  display: flex; align-items: center;
+  background: #1a1a2e; border: 1px solid #333;
+  border-radius: 6px; padding: 0 12px; height: 34px; width: 240px;
+  gap: 8px;
+}
+.nav-search input {
+  background: none; border: none; outline: none;
+  color: #ccc; font-size: 13px; width: 100%;
+}
+.nav-search input::placeholder { color: #555; }
+.nav-search .icon { color: #555; font-size: 14px; }
+.nav-tabs {
+  display: flex; align-items: center; gap: 2px;
+  margin: 0 auto;
+}
+.nav-tab {
+  display: flex; flex-direction: column; align-items: center;
+  padding: 0 18px; height: 56px; justify-content: center;
+  color: #777; font-size: 11px; gap: 4px; cursor: pointer;
+  border-bottom: 2px solid transparent;
+  text-decoration: none; transition: all .15s;
+}
+.nav-tab .tab-icon { font-size: 18px; }
+.nav-tab:hover { color: #ccc; }
+.nav-tab.active { color: #fff; border-bottom-color: #ff4d6d; }
+.nav-right {
+  display: flex; align-items: center; gap: 14px; margin-left: 16px;
+}
+.nav-btn {
+  padding: 6px 16px; border-radius: 20px;
+  background: #ff4d6d; color: #fff;
+  border: none; font-size: 12px; font-weight: 600; cursor: pointer;
+}
+.nav-notif { position: relative; cursor: pointer; }
+.nav-notif .badge {
+  position: absolute; top: -4px; right: -4px;
+  background: #ff4d6d; color: #fff;
+  font-size: 9px; font-weight: 700;
+  width: 16px; height: 16px; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+}
+.nav-avatar {
+  width: 32px; height: 32px; border-radius: 50%;
+  background: linear-gradient(135deg, #667eea, #764ba2);
+  cursor: pointer; border: 2px solid #444;
+  display: flex; align-items: center; justify-content: center;
+  color: #fff; font-size: 12px; font-weight: 700;
+}
+
+/* ─── LAYOUT ─── */
+.layout {
+  max-width: 1180px; margin: 0 auto;
+  padding: 20px 16px;
+  display: grid;
+  grid-template-columns: 280px 1fr 300px;
+  gap: 18px;
+  align-items: start;
+}
+
+/* ─── CARDS ─── */
+.card {
+  background: #fff;
+  border-radius: 10px;
+  overflow: hidden;
+  border: 1px solid #e8e8e8;
+  margin-bottom: 14px;
+}
+
+/* ─── LEFT: PROFILE CARD ─── */
+.profile-banner {
+  height: 64px;
+  background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+}
+.profile-body { padding: 0 16px 16px; }
+.profile-avatar-wrap { margin-top: -28px; margin-bottom: 8px; }
+.profile-avatar {
+  width: 58px; height: 58px; border-radius: 50%;
+  background: linear-gradient(135deg, #667eea, #764ba2);
+  border: 3px solid #fff;
+  display: flex; align-items: center; justify-content: center;
+  color: #fff; font-weight: 700; font-size: 20px;
+}
+.profile-name { font-size: 15px; font-weight: 700; }
+.profile-title { font-size: 12px; color: #666; margin-top: 2px; }
+.profile-title span { color: #ff4d6d; font-weight: 600; }
+.profile-divider { height: 1px; background: #f0f0f0; margin: 12px -16px; }
+.profile-stat {
+  display: flex; justify-content: space-between;
+  padding: 6px 0; font-size: 12px;
+}
+.profile-stat .label { color: #666; }
+.profile-stat .value { font-weight: 700; color: #0f3460; }
+.profile-cta {
+  margin-top: 12px; width: 100%;
+  padding: 8px; background: #0f3460; color: #fff;
+  border: none; border-radius: 6px; font-size: 12px;
+  font-weight: 600; cursor: pointer;
+}
+
+/* NAV MENU LEFT */
+.left-menu { list-style: none; padding: 12px 0; }
+.left-menu li a {
+  display: flex; align-items: center; gap: 10px;
+  padding: 9px 16px; font-size: 13px; color: #444;
+  text-decoration: none; transition: background .1s;
+  border-radius: 0;
+}
+.left-menu li a:hover { background: #f5f5f5; color: #0f3460; }
+.left-menu li a.active { color: #ff4d6d; font-weight: 600; }
+.left-menu li a .menu-icon { font-size: 16px; width: 20px; text-align: center; }
+.left-menu li a .menu-badge {
+  margin-left: auto; background: #ff4d6d; color: #fff;
+  font-size: 10px; font-weight: 700;
+  padding: 1px 6px; border-radius: 10px;
+}
+
+/* ─── CENTER: FEED ─── */
+
+/* POST BOX */
+.post-box { padding: 14px 16px; }
+.post-box-top { display: flex; gap: 10px; align-items: center; }
+.post-box-avatar {
+  width: 40px; height: 40px; border-radius: 50%; flex-shrink: 0;
+  background: linear-gradient(135deg, #667eea, #764ba2);
+  display: flex; align-items: center; justify-content: center;
+  color: #fff; font-weight: 700;
+}
+.post-box-input {
+  flex: 1; height: 40px; border: 1.5px solid #e0e0e0;
+  border-radius: 20px; padding: 0 16px;
+  font-size: 13px; color: #888; cursor: pointer;
+  display: flex; align-items: center;
+  background: #fafafa;
+}
+.post-box-input:hover { border-color: #bbb; background: #f5f5f5; }
+.post-box-actions {
+  display: flex; gap: 4px; margin-top: 10px; padding-top: 10px;
+  border-top: 1px solid #f0f0f0;
+}
+.post-action {
+  flex: 1; display: flex; align-items: center; justify-content: center;
+  gap: 6px; padding: 7px 4px; border-radius: 6px;
+  font-size: 12px; font-weight: 600; color: #555;
+  cursor: pointer; border: none; background: none;
+  transition: background .1s;
+}
+.post-action:hover { background: #f5f5f5; }
+.post-action .pa-icon { font-size: 16px; }
+
+/* FILTER BAR */
+.feed-filter {
+  display: flex; gap: 8px; padding: 10px 16px;
+  border-bottom: 1px solid #f0f0f0; overflow-x: auto;
+}
+.filter-chip {
+  padding: 5px 14px; border-radius: 20px;
+  font-size: 12px; font-weight: 600; cursor: pointer;
+  border: 1.5px solid #e0e0e0; background: #fff; color: #555;
+  white-space: nowrap; transition: all .15s;
+}
+.filter-chip.active {
+  background: #0f3460; color: #fff; border-color: #0f3460;
+}
+.filter-chip:hover:not(.active) { border-color: #aaa; color: #333; }
+
+/* POST CARD */
+.post { padding: 16px; }
+.post-header { display: flex; gap: 10px; align-items: flex-start; }
+.post-author-avatar {
+  width: 44px; height: 44px; border-radius: 50%; flex-shrink: 0;
+  display: flex; align-items: center; justify-content: center;
+  font-weight: 700; font-size: 16px; color: #fff;
+}
+.av-blue { background: linear-gradient(135deg, #4facfe, #00f2fe); }
+.av-red { background: linear-gradient(135deg, #f093fb, #f5576c); }
+.av-green { background: linear-gradient(135deg, #43e97b, #38f9d7); }
+.av-orange { background: linear-gradient(135deg, #fa709a, #fee140); }
+.av-purple { background: linear-gradient(135deg, #a18cd1, #fbc2eb); }
+.post-author-info { flex: 1; }
+.post-author-name { font-size: 14px; font-weight: 700; cursor: pointer; }
+.post-author-name:hover { color: #0f3460; text-decoration: underline; }
+.post-author-role { font-size: 12px; color: #777; }
+.post-meta { font-size: 11px; color: #aaa; margin-top: 2px; }
+.post-follow {
+  margin-left: auto; padding: 5px 14px;
+  border: 1.5px solid #0f3460; color: #0f3460;
+  background: #fff; border-radius: 20px;
+  font-size: 12px; font-weight: 600; cursor: pointer;
+  white-space: nowrap;
+}
+.post-follow:hover { background: #0f3460; color: #fff; }
+
+.post-body { margin-top: 12px; font-size: 14px; line-height: 1.6; color: #333; }
+.post-body .highlight { color: #0f3460; font-weight: 600; }
+.post-body .tag { color: #ff4d6d; cursor: pointer; }
+.post-body .tag:hover { text-decoration: underline; }
+
+/* POST IMAGE */
+.post-image {
+  margin-top: 12px; border-radius: 8px; overflow: hidden;
+  border: 1px solid #eee;
+}
+.post-image-inner {
+  height: 220px; display: flex; align-items: center; justify-content: center;
+  font-size: 13px; color: #aaa; font-style: italic;
+  position: relative;
+}
+.post-img-bg1 { background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%); color: #fff; }
+.post-img-bg2 { background: linear-gradient(135deg, #2d1b69 0%, #11998e 100%); color: #fff; }
+.post-img-bg3 { background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); color: #fff; }
+.post-img-label {
+  position: absolute; text-align: center;
+  font-size: 22px; font-weight: 800; letter-spacing: 2px;
+  text-shadow: 0 2px 8px rgba(0,0,0,0.4);
+}
+.post-img-sub { position: absolute; bottom: 16px; font-size: 12px; opacity: 0.8; }
+
+/* GAME PREVIEW CARD */
+.game-preview {
+  margin-top: 12px; border: 1px solid #eee; border-radius: 8px;
+  overflow: hidden; cursor: pointer; transition: border-color .15s;
+}
+.game-preview:hover { border-color: #0f3460; }
+.game-preview-thumb {
+  height: 140px; display: flex; align-items: center; justify-content: center;
+  font-weight: 800; font-size: 22px; color: #fff; letter-spacing: 1px;
+}
+.gp1 { background: linear-gradient(135deg, #1a1a2e, #e94560); }
+.gp2 { background: linear-gradient(135deg, #0f3460, #533483); }
+.game-preview-info { padding: 12px; }
+.game-preview-name { font-size: 15px; font-weight: 700; }
+.game-preview-meta { font-size: 12px; color: #777; margin-top: 3px; }
+.game-preview-tags { display: flex; gap: 6px; margin-top: 8px; flex-wrap: wrap; }
+.game-tag {
+  padding: 3px 8px; border-radius: 4px; font-size: 11px; font-weight: 600;
+}
+.gt-genre { background: #e8f0fe; color: #1a73e8; }
+.gt-platform { background: #fce8f1; color: #e94560; }
+.gt-status { background: #e6f4ea; color: #188038; }
+
+/* POST ACTIONS */
+.post-actions {
+  display: flex; margin-top: 12px; padding-top: 10px;
+  border-top: 1px solid #f0f0f0; gap: 4px;
+}
+.post-act {
+  flex: 1; display: flex; align-items: center; justify-content: center;
+  gap: 5px; padding: 6px; border-radius: 6px;
+  font-size: 12px; color: #666; cursor: pointer;
+  border: none; background: none;
+}
+.post-act:hover { background: #f5f5f5; }
+.post-act .act-icon { font-size: 15px; }
+
+/* REACTIONS */
+.post-reactions {
+  display: flex; justify-content: space-between;
+  margin-top: 8px; font-size: 12px; color: #777;
+  padding: 0 2px;
+}
+.reactions-left { display: flex; align-items: center; gap: 4px; }
+.reaction-emoji { font-size: 14px; }
+
+/* EVENT POST */
+.event-post {
+  margin-top: 12px; border: 1px solid #eee; border-radius: 8px;
+  overflow: hidden;
+}
+.event-post-banner {
+  height: 80px; background: linear-gradient(135deg, #0f3460, #533483);
+  display: flex; align-items: center; padding: 0 16px; gap: 14px;
+}
+.event-post-date {
+  background: #ff4d6d; color: #fff;
+  width: 48px; height: 52px; border-radius: 8px;
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  font-weight: 800; flex-shrink: 0;
+}
+.event-post-date .day { font-size: 22px; line-height: 1; }
+.event-post-date .month { font-size: 11px; text-transform: uppercase; }
+.event-post-banner-info { color: #fff; }
+.event-post-name { font-size: 15px; font-weight: 700; }
+.event-post-loc { font-size: 12px; opacity: .8; margin-top: 2px; }
+.event-post-body { padding: 12px; }
+.event-post-stats { display: flex; gap: 16px; font-size: 12px; color: #777; }
+.event-post-cta {
+  margin-top: 10px; display: flex; gap: 8px;
+}
+.btn-sm {
+  padding: 6px 16px; border-radius: 6px;
+  font-size: 12px; font-weight: 600; cursor: pointer;
+}
+.btn-primary { background: #0f3460; color: #fff; border: none; }
+.btn-outline { background: #fff; color: #0f3460; border: 1.5px solid #0f3460; }
+
+/* ─── RIGHT SIDEBAR ─── */
+.sidebar-section { padding: 14px 16px; }
+.sidebar-section + .sidebar-section { border-top: 1px solid #f0f0f0; }
+.sidebar-title {
+  font-size: 12px; font-weight: 700; text-transform: uppercase;
+  letter-spacing: .8px; color: #888; margin-bottom: 12px;
+}
+
+/* PEOPLE */
+.person-suggest { display: flex; gap: 10px; margin-bottom: 12px; align-items: center; }
+.ps-avatar {
+  width: 40px; height: 40px; border-radius: 50%; flex-shrink: 0;
+  display: flex; align-items: center; justify-content: center;
+  font-weight: 700; color: #fff; font-size: 14px;
+}
+.ps-info { flex: 1; min-width: 0; }
+.ps-name { font-size: 13px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.ps-role { font-size: 11px; color: #888; }
+.ps-mutual { font-size: 10px; color: #aaa; }
+.ps-btn {
+  padding: 4px 12px; border-radius: 20px;
+  border: 1.5px solid #0f3460; color: #0f3460;
+  background: #fff; font-size: 11px; font-weight: 600; cursor: pointer;
+  white-space: nowrap;
+}
+.ps-btn:hover { background: #0f3460; color: #fff; }
+
+/* TRENDING */
+.trending-item { margin-bottom: 12px; cursor: pointer; }
+.trending-item:hover .trend-tag { color: #0f3460; }
+.trend-tag { font-size: 13px; font-weight: 700; color: #333; }
+.trend-meta { font-size: 11px; color: #aaa; margin-top: 2px; }
+.trend-count { color: #ff4d6d; font-weight: 600; }
+
+/* UPCOMING EVENTS */
+.event-mini { display: flex; gap: 10px; margin-bottom: 12px; align-items: center; }
+.event-mini-date {
+  background: #0f3460; color: #fff;
+  width: 38px; height: 42px; border-radius: 6px;
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  font-weight: 800; flex-shrink: 0;
+}
+.event-mini-date .day { font-size: 17px; line-height: 1; }
+.event-mini-date .month { font-size: 9px; text-transform: uppercase; }
+.event-mini-info { flex: 1; }
+.event-mini-name { font-size: 13px; font-weight: 600; }
+.event-mini-loc { font-size: 11px; color: #888; }
+.event-mini-att { font-size: 10px; color: #aaa; margin-top: 2px; }
+
+/* MARKET PULSE */
+.market-row { display: flex; justify-content: space-between; margin-bottom: 10px; }
+.market-label { font-size: 13px; color: #555; display: flex; align-items: center; gap: 6px; }
+.market-dot { width: 8px; height: 8px; border-radius: 50%; }
+.md-green { background: #34a853; }
+.md-orange { background: #fa7b17; }
+.md-blue { background: #1a73e8; }
+.md-red { background: #ff4d6d; }
+.market-val { font-size: 12px; font-weight: 600; }
+.mv-up { color: #34a853; }
+.mv-hot { color: #ff4d6d; }
+.mv-neu { color: #888; }
+
+/* DIVIDER */
+.divider { height: 1px; background: #f0f0f0; }
+.show-more { text-align: center; padding: 10px; font-size: 13px; color: #0f3460; font-weight: 600; cursor: pointer; }
+.show-more:hover { background: #f5f5f5; }
+</style>
+</head>
+<body>
+
+<!-- ─── NAV ─── -->
+<nav class="nav">
+  <div class="nav-logo">GAME<span>CONNECTION</span></div>
+  <div class="nav-search">
+    <span class="icon">🔍</span>
+    <input type="text" placeholder="Search people, games, companies...">
+  </div>
+  <div class="nav-tabs">
+    <a href="#" class="nav-tab active">
+      <span class="tab-icon">🏠</span>Feed
+    </a>
+    <a href="#" class="nav-tab">
+      <span class="tab-icon">👥</span>People
+    </a>
+    <a href="#" class="nav-tab">
+      <span class="tab-icon">🎮</span>Projects
+    </a>
+    <a href="#" class="nav-tab">
+      <span class="tab-icon">🏢</span>Companies
+    </a>
+    <a href="#" class="nav-tab">
+      <span class="tab-icon">📅</span>Events
+    </a>
+    <a href="#" class="nav-tab">
+      <span class="tab-icon">🤝</span>Market
+    </a>
+  </div>
+  <div class="nav-right">
+    <button class="nav-btn">+ List a Game</button>
+    <div class="nav-notif">
+      <span style="font-size:20px;color:#777;">🔔</span>
+      <span class="badge">3</span>
+    </div>
+    <div class="nav-avatar">Q</div>
+  </div>
+</nav>
+
+<!-- ─── LAYOUT ─── -->
+<div class="layout">
+
+  <!-- ─── LEFT ─── -->
+  <div class="left">
+
+    <!-- Profile Card -->
+    <div class="card">
+      <div class="profile-banner"></div>
+      <div class="profile-body">
+        <div class="profile-avatar-wrap">
+          <div class="profile-avatar">Q</div>
+        </div>
+        <div class="profile-name">Qiang Qiang</div>
+        <div class="profile-title">Publisher · <span>Connection Events</span></div>
+        <div class="profile-divider"></div>
+        <div class="profile-stat">
+          <span class="label">Profile views</span>
+          <span class="value">247</span>
+        </div>
+        <div class="profile-stat">
+          <span class="label">Connections</span>
+          <span class="value">512</span>
+        </div>
+        <div class="profile-stat">
+          <span class="label">Games listed</span>
+          <span class="value">8</span>
+        </div>
+        <button class="profile-cta">View my profile →</button>
+      </div>
+    </div>
+
+    <!-- Menu -->
+    <div class="card">
+      <ul class="left-menu">
+        <li><a href="#" class="active"><span class="menu-icon">🏠</span> Feed</a></li>
+        <li><a href="#"><span class="menu-icon">🎮</span> My Games</a></li>
+        <li><a href="#"><span class="menu-icon">💬</span> Messages <span class="menu-badge">5</span></a></li>
+        <li><a href="#"><span class="menu-icon">🤝</span> Deal Pipeline</a></li>
+        <li><a href="#"><span class="menu-icon">📅</span> My Events</a></li>
+        <li><a href="#"><span class="menu-icon">⭐</span> Saved</a></li>
+        <li><a href="#"><span class="menu-icon">📊</span> Analytics</a></li>
+      </ul>
+    </div>
+
+    <!-- Upcoming Event -->
+    <div class="card">
+      <div class="sidebar-section">
+        <div class="sidebar-title">Your Next Event</div>
+        <div style="background:linear-gradient(135deg,#0f3460,#533483);border-radius:8px;padding:14px;color:#fff;">
+          <div style="font-size:11px;opacity:.7;margin-bottom:4px;">IN 9 DAYS</div>
+          <div style="font-size:16px;font-weight:800;">GC Xi'an 2026</div>
+          <div style="font-size:12px;opacity:.8;margin-top:4px;">📍 Xi'an, China · Apr 1-2</div>
+          <div style="margin-top:10px;font-size:12px;background:rgba(255,255,255,.15);padding:8px;border-radius:6px;">
+            🗓 You have <strong>3 meetings</strong> scheduled
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- /left -->
+
+  <!-- ─── CENTER: FEED ─── -->
+  <div class="center">
+
+    <!-- Post Box -->
+    <div class="card">
+      <div class="post-box">
+        <div class="post-box-top">
+          <div class="post-box-avatar">Q</div>
+          <div class="post-box-input">Share an update, game news, or opportunity...</div>
+        </div>
+        <div class="post-box-actions">
+          <button class="post-action"><span class="pa-icon">🎮</span> Game Update</button>
+          <button class="post-action"><span class="pa-icon">🤝</span> Seeking Deal</button>
+          <button class="post-action"><span class="pa-icon">💼</span> Hiring</button>
+          <button class="post-action"><span class="pa-icon">📅</span> Event</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Feed Filter -->
+    <div class="card" style="margin-bottom:14px;">
+      <div class="feed-filter">
+        <span class="filter-chip active">All</span>
+        <span class="filter-chip">Game Launches 🚀</span>
+        <span class="filter-chip">Deals & Publishing</span>
+        <span class="filter-chip">Hiring</span>
+        <span class="filter-chip">Events</span>
+        <span class="filter-chip">Funding</span>
+        <span class="filter-chip">Industry News</span>
+      </div>
+    </div>
+
+    <!-- POST 1: Game Announce -->
+    <div class="card">
+      <div class="post">
+        <div class="post-header">
+          <div class="post-author-avatar av-blue">M</div>
+          <div class="post-author-info">
+            <div class="post-author-name">Marcus Webb</div>
+            <div class="post-author-role">Game Director · Hollow Sun Studios</div>
+            <div class="post-meta">2 hours ago · 🌍 Public</div>
+          </div>
+          <button class="post-follow">+ Follow</button>
+        </div>
+        <div class="post-body">
+          Excited to officially announce <span class="highlight">Project Neon</span> — our new cyberpunk action-RPG. After 3 years in development, we're opening up to publishers and investors. 🎮<br><br>
+          We're looking for a <span class="highlight">China publishing partner</span> who understands mobile-first audiences. If that's you, let's talk.<br><br>
+          <span class="tag">#GameAnnouncement</span> <span class="tag">#LookingForPublisher</span> <span class="tag">#IndieGame</span>
+        </div>
+        <div class="game-preview">
+          <div class="game-preview-thumb gp1">PROJECT NEON</div>
+          <div class="game-preview-info">
+            <div class="game-preview-name">Project Neon</div>
+            <div class="game-preview-meta">Hollow Sun Studios · PC / Mobile · Unreal Engine 5</div>
+            <div class="game-preview-tags">
+              <span class="game-tag gt-genre">Action RPG</span>
+              <span class="game-tag gt-platform">PC · iOS · Android</span>
+              <span class="game-tag gt-status">Seeking Publisher</span>
+            </div>
+          </div>
+        </div>
+        <div class="post-reactions">
+          <div class="reactions-left">
+            <span class="reaction-emoji">🔥</span>
+            <span class="reaction-emoji">👍</span>
+            <span class="reaction-emoji">🎮</span>
+            <span style="margin-left:4px;">148 reactions</span>
+          </div>
+          <div>32 comments · 18 reposts</div>
+        </div>
+        <div class="post-actions">
+          <button class="post-act"><span class="act-icon">👍</span> Like</button>
+          <button class="post-act"><span class="act-icon">💬</span> Comment</button>
+          <button class="post-act"><span class="act-icon">🔁</span> Repost</button>
+          <button class="post-act"><span class="act-icon">🤝</span> Connect</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- POST 2: Event -->
+    <div class="card">
+      <div class="post">
+        <div class="post-header">
+          <div class="post-author-avatar av-red">GC</div>
+          <div class="post-author-info">
+            <div class="post-author-name">Game Connection</div>
+            <div class="post-author-role">Official · Platform</div>
+            <div class="post-meta">5 hours ago · 🌍 Public</div>
+          </div>
+        </div>
+        <div class="post-body">
+          📣 <span class="highlight">Game Connection Xi'an 2026</span> registration is now open!<br><br>
+          Join 500+ publishers, developers, and investors for two days of curated B2B meetings in Xi'an, China.<br><br>
+          <span class="tag">#GCXian2026</span> <span class="tag">#GameBusiness</span>
+        </div>
+        <div class="event-post">
+          <div class="event-post-banner">
+            <div class="event-post-date">
+              <span class="day">01</span>
+              <span class="month">APR</span>
+            </div>
+            <div class="event-post-banner-info">
+              <div class="event-post-name">Game Connection Xi'an 2026</div>
+              <div class="event-post-loc">📍 Xi'an International Convention Center</div>
+            </div>
+          </div>
+          <div class="event-post-body">
+            <div class="event-post-stats">
+              <span>👥 487 attending</span>
+              <span>🤝 1,200+ meetings</span>
+              <span>🎮 120 games</span>
+            </div>
+            <div class="event-post-cta">
+              <button class="btn-sm btn-primary">Register Now</button>
+              <button class="btn-sm btn-outline">View Program</button>
+            </div>
+          </div>
+        </div>
+        <div class="post-reactions">
+          <div class="reactions-left">
+            <span class="reaction-emoji">🎉</span>
+            <span class="reaction-emoji">👍</span>
+            <span style="margin-left:4px;">312 reactions</span>
+          </div>
+          <div>54 comments</div>
+        </div>
+        <div class="post-actions">
+          <button class="post-act"><span class="act-icon">👍</span> Like</button>
+          <button class="post-act"><span class="act-icon">💬</span> Comment</button>
+          <button class="post-act"><span class="act-icon">🔁</span> Repost</button>
+          <button class="post-act"><span class="act-icon">📌</span> Save</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- POST 3: Hiring -->
+    <div class="card">
+      <div class="post">
+        <div class="post-header">
+          <div class="post-author-avatar av-green">S</div>
+          <div class="post-author-info">
+            <div class="post-author-name">Sophie Larsson</div>
+            <div class="post-author-role">Studio Head · Arctic Game Lab</div>
+            <div class="post-meta">Yesterday · 🌍 Public</div>
+          </div>
+          <button class="post-follow">+ Follow</button>
+        </div>
+        <div class="post-body">
+          We're hiring! Arctic Game Lab is looking for a <span class="highlight">Senior Multiplayer Engineer</span> (remote-friendly) and a <span class="highlight">Game Producer</span> with mobile experience.<br><br>
+          Working on our next survival game — fully funded, 18 months runway. Come build something great 🏔️<br><br>
+          <span class="tag">#GameJobs</span> <span class="tag">#Hiring</span> <span class="tag">#RemoteWork</span>
+        </div>
+        <div class="post-reactions">
+          <div class="reactions-left">
+            <span class="reaction-emoji">👋</span>
+            <span class="reaction-emoji">💼</span>
+            <span style="margin-left:4px;">89 reactions</span>
+          </div>
+          <div>41 comments · 76 reposts</div>
+        </div>
+        <div class="post-actions">
+          <button class="post-act"><span class="act-icon">👍</span> Like</button>
+          <button class="post-act"><span class="act-icon">💬</span> Comment</button>
+          <button class="post-act"><span class="act-icon">🔁</span> Repost</button>
+          <button class="post-act"><span class="act-icon">🤝</span> Connect</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- POST 4: Deal closed -->
+    <div class="card">
+      <div class="post">
+        <div class="post-header">
+          <div class="post-author-avatar av-orange">D</div>
+          <div class="post-author-info">
+            <div class="post-author-name">David Kim</div>
+            <div class="post-author-role">Business Dev · Nexon</div>
+            <div class="post-meta">2 days ago · 🌍 Public</div>
+          </div>
+          <button class="post-follow">+ Follow</button>
+        </div>
+        <div class="post-body">
+          Thrilled to share that we've signed a <span class="highlight">China publishing deal</span> with an incredible indie studio we met at GC Europe last year. The Game Connection platform made it easy to stay in touch and move the deal forward. 🎉<br><br>
+          This is exactly why these B2B events matter. See you at Xi'an!<br><br>
+          <span class="tag">#DealClosed</span> <span class="tag">#GameBusiness</span> <span class="tag">#ChinaGaming</span>
+        </div>
+        <div class="post-reactions">
+          <div class="reactions-left">
+            <span class="reaction-emoji">🎉</span>
+            <span class="reaction-emoji">🔥</span>
+            <span class="reaction-emoji">🤝</span>
+            <span style="margin-left:4px;">203 reactions</span>
+          </div>
+          <div>67 comments · 34 reposts</div>
+        </div>
+        <div class="post-actions">
+          <button class="post-act"><span class="act-icon">👍</span> Like</button>
+          <button class="post-act"><span class="act-icon">💬</span> Comment</button>
+          <button class="post-act"><span class="act-icon">🔁</span> Repost</button>
+          <button class="post-act"><span class="act-icon">🤝</span> Connect</button>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- /center -->
+
+  <!-- ─── RIGHT SIDEBAR ─── -->
+  <div class="right">
+
+    <!-- People to Connect -->
+    <div class="card">
+      <div class="sidebar-section">
+        <div class="sidebar-title">People You May Know</div>
+        <div class="person-suggest">
+          <div class="ps-avatar av-purple">L</div>
+          <div class="ps-info">
+            <div class="ps-name">Lena Fischer</div>
+            <div class="ps-role">Producer · Embracer Group</div>
+            <div class="ps-mutual">3 mutual connections</div>
+          </div>
+          <button class="ps-btn">+ Connect</button>
+        </div>
+        <div class="person-suggest">
+          <div class="ps-avatar av-blue">J</div>
+          <div class="ps-info">
+            <div class="ps-name">Jason Wu</div>
+            <div class="ps-role">Investor · Bitkraft</div>
+            <div class="ps-mutual">GC Europe 2025</div>
+          </div>
+          <button class="ps-btn">+ Connect</button>
+        </div>
+        <div class="person-suggest">
+          <div class="ps-avatar av-green">A</div>
+          <div class="ps-info">
+            <div class="ps-name">Aisha Okonkwo</div>
+            <div class="ps-role">Dev · Ubisoft</div>
+            <div class="ps-mutual">5 mutual connections</div>
+          </div>
+          <button class="ps-btn">+ Connect</button>
+        </div>
+        <div class="show-more">Show more →</div>
+      </div>
+    </div>
+
+    <!-- Trending -->
+    <div class="card">
+      <div class="sidebar-section">
+        <div class="sidebar-title">Trending in Games</div>
+        <div class="trending-item">
+          <div class="trend-tag">#MobileGaming2026</div>
+          <div class="trend-meta"><span class="trend-count">2,841</span> posts this week</div>
+        </div>
+        <div class="trending-item">
+          <div class="trend-tag">#ChinaGameMarket</div>
+          <div class="trend-meta"><span class="trend-count">1,523</span> posts this week</div>
+        </div>
+        <div class="trending-item">
+          <div class="trend-tag">#IndieDevs</div>
+          <div class="trend-meta"><span class="trend-count">987</span> posts this week</div>
+        </div>
+        <div class="trending-item">
+          <div class="trend-tag">#GDC2026</div>
+          <div class="trend-meta"><span class="trend-count">4,120</span> posts · Hot 🔥</div>
+        </div>
+        <div class="trending-item">
+          <div class="trend-tag">#GameFunding</div>
+          <div class="trend-meta"><span class="trend-count">643</span> posts this week</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Upcoming Events -->
+    <div class="card">
+      <div class="sidebar-section">
+        <div class="sidebar-title">Upcoming Events</div>
+        <div class="event-mini">
+          <div class="event-mini-date">
+            <span class="day">01</span>
+            <span class="month">APR</span>
+          </div>
+          <div class="event-mini-info">
+            <div class="event-mini-name">GC Xi'an 2026</div>
+            <div class="event-mini-loc">📍 Xi'an, China</div>
+            <div class="event-mini-att">487 attending · You're going ✅</div>
+          </div>
+        </div>
+        <div class="event-mini">
+          <div class="event-mini-date">
+            <span class="day">21</span>
+            <span class="month">MAY</span>
+          </div>
+          <div class="event-mini-info">
+            <div class="event-mini-name">Gamescom Asia 2026</div>
+            <div class="event-mini-loc">📍 Singapore</div>
+            <div class="event-mini-att">1,240 attending</div>
+          </div>
+        </div>
+        <div class="event-mini">
+          <div class="event-mini-date" style="background:#533483;">
+            <span class="day">14</span>
+            <span class="month">AUG</span>
+          </div>
+          <div class="event-mini-info">
+            <div class="event-mini-name">Gamescom 2026</div>
+            <div class="event-mini-loc">📍 Cologne, Germany</div>
+            <div class="event-mini-att">45,000+ attending</div>
+          </div>
+        </div>
+        <div class="show-more">All events →</div>
+      </div>
+    </div>
+
+    <!-- Market Pulse -->
+    <div class="card">
+      <div class="sidebar-section">
+        <div class="sidebar-title">Market Pulse</div>
+        <div class="market-row">
+          <div class="market-label"><span class="market-dot md-green"></span>Publishing Deals</div>
+          <div class="market-val mv-up">↑ Active</div>
+        </div>
+        <div class="market-row">
+          <div class="market-label"><span class="market-dot md-red"></span>Mobile Titles</div>
+          <div class="market-val mv-hot">🔥 High demand</div>
+        </div>
+        <div class="market-row">
+          <div class="market-label"><span class="market-dot md-blue"></span>PC / Console</div>
+          <div class="market-val mv-up">↑ Growing</div>
+        </div>
+        <div class="market-row">
+          <div class="market-label"><span class="market-dot md-orange"></span>Investments</div>
+          <div class="market-val mv-neu">Steady</div>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- /right -->
+
+</div><!-- /layout -->
+
+</body>
+</html>
