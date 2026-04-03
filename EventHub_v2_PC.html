@@ -904,6 +904,14 @@ async function gcSignOut() {
     <button class="pd-btn-redo" onclick="redoMatching()">↺ Redo Matching</button>
     <button class="pd-btn-signout" onclick="signOutUser()">Sign Out</button>
   </div>
+  <!-- Admin Dashboard entry (admin only, shown via JS) -->
+  <div id="pd-admin-bar" style="display:none;padding:8px 20px 4px;flex-shrink:0;border-bottom:1px solid #f0f0f0">
+    <a href="_admin.html" target="_blank" id="pd-admin-link" style="display:flex;align-items:center;gap:8px;padding:9px 14px;border-radius:8px;background:rgba(229,57,53,0.07);border:1px solid rgba(229,57,53,0.22);color:#e53935;font-size:12px;font-weight:700;text-decoration:none;transition:all .15s">
+      <span style="font-size:15px">⚙</span>
+      <span>Admin Dashboard</span>
+      <span style="margin-left:auto;font-size:11px;opacity:.55">↗</span>
+    </a>
+  </div>
   <div class="pd-body" id="pd-body">
     <!-- AI Matches -->
     <div class="pd-section">
@@ -3983,6 +3991,12 @@ function gcUpdateNavForLoggedInUser() {
   }
   // Also set gc_session so profile panel shows logged-in state
   try { sessionStorage.setItem('gc_session', '1'); } catch(e) {}
+  // Show admin dashboard entry for admin accounts
+  const ADMIN_EMAILS = ['qq@connection-events.com'];
+  if (user.email && ADMIN_EMAILS.includes(user.email.toLowerCase())) {
+    const adminBar = document.getElementById('pd-admin-bar');
+    if (adminBar) adminBar.style.display = 'block';
+  }
 }
 
 // Show admin link on triple-click on logo
