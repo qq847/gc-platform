@@ -1,0 +1,324 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Game Connection — The Game Industry Platform</title>
+<style>
+:root {
+  --bg:#f5f5f3;--white:#fff;--border:#d8d7d3;
+  --text:#111;--muted:#444;--dim:#666;
+  --orange:#e8650a;--orange-light:#fdf0e9;--orange-dark:#c4540a;
+  --green:#15803d;--green-light:#f0fdf4;
+  --blue:#1d4ed8;--blue-light:#eff6ff;
+  --purple:#6d28d9;--purple-light:#f5f3ff;
+  --teal:#0d9488;--teal-light:#f0fdfa;
+  --gold:#b45309;--gold-light:#fffbeb;
+  --indigo:#3730a3;--indigo-light:#eef2ff;
+  --radius:10px;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;background:var(--bg);color:var(--text);font-size:14px;line-height:1.5;min-height:100vh}
+
+/* Topbar */
+.topbar{height:54px;background:var(--white);border-bottom:1.5px solid var(--border);display:flex;align-items:center;padding:0 36px;gap:16px;position:sticky;top:0;z-index:100}
+.logo{font-size:17px;font-weight:900;letter-spacing:-.5px;color:var(--text)}
+.logo span{color:var(--orange)}
+.topbar-gap{flex:1}
+.topbar-link{font-size:12px;font-weight:700;color:var(--muted);text-decoration:none;padding:6px 14px;border-radius:20px;border:1.5px solid var(--border);transition:all .15s}
+.topbar-link:hover{background:var(--orange-light);color:var(--orange);border-color:rgba(232,101,10,0.3)}
+.topbar-link.primary{background:var(--orange);color:#fff;border-color:var(--orange)}
+.topbar-link.primary:hover{background:var(--orange-dark);color:#fff}
+
+/* Hero */
+.hero{text-align:center;padding:64px 32px 48px;max-width:720px;margin:0 auto}
+.hero-eyebrow{display:inline-flex;align-items:center;gap:6px;padding:5px 14px;border-radius:20px;font-size:11px;font-weight:800;background:var(--orange-light);color:var(--orange);border:1px solid rgba(232,101,10,0.25);margin-bottom:20px;letter-spacing:.3px;text-transform:uppercase}
+.hero-title{font-size:40px;font-weight:900;letter-spacing:-.8px;line-height:1.15;margin-bottom:16px;color:var(--text)}
+.hero-title em{font-style:normal;color:var(--orange)}
+.hero-sub{font-size:16px;color:var(--muted);line-height:1.7;max-width:540px;margin:0 auto 32px;font-weight:400}
+.hero-btns{display:flex;gap:12px;justify-content:center}
+.btn{display:inline-flex;align-items:center;gap:8px;padding:12px 26px;border-radius:26px;font-size:14px;font-weight:700;cursor:pointer;border:none;text-decoration:none;transition:all .15s;font-family:inherit}
+.btn-primary{background:var(--orange);color:#fff}
+.btn-primary:hover{background:var(--orange-dark)}
+.btn-outline{background:var(--white);color:var(--text);border:1.5px solid var(--border)}
+.btn-outline:hover{border-color:var(--text);background:var(--white)}
+
+/* Stats */
+.stats-wrap{max-width:1120px;margin:0 auto;padding:0 36px 48px}
+.stats-bar{background:var(--white);border:1.5px solid var(--border);border-radius:var(--radius);padding:22px 32px;display:grid;grid-template-columns:repeat(5,1fr)}
+.stat-item{text-align:center;padding:0 16px;border-right:1px solid var(--border)}
+.stat-item:last-child{border-right:none}
+.stat-num{font-size:26px;font-weight:900;color:var(--orange)}
+.stat-lbl{font-size:11px;color:var(--muted);margin-top:3px;font-weight:700;letter-spacing:.3px}
+
+/* Sections */
+.section{max-width:1120px;margin:0 auto;padding:0 36px 52px}
+.sec-head{display:flex;align-items:center;gap:14px;margin-bottom:22px}
+.sec-title{font-size:18px;font-weight:800;color:var(--text);white-space:nowrap}
+.sec-sub{font-size:13px;color:var(--muted);font-weight:500}
+.sec-line{flex:1;height:1px;background:var(--border)}
+
+/* Deal Room Hero Block */
+.dealroom-hero{background:linear-gradient(135deg,#0f172a 0%,#1e1b4b 50%,#0f172a 100%);border-radius:16px;padding:48px;margin-bottom:20px;position:relative;overflow:hidden}
+.dealroom-hero::before{content:'';position:absolute;top:-60px;right:-60px;width:300px;height:300px;background:radial-gradient(circle,rgba(99,102,241,0.2) 0%,transparent 70%);pointer-events:none}
+.dealroom-hero::after{content:'';position:absolute;bottom:-40px;left:100px;width:200px;height:200px;background:radial-gradient(circle,rgba(232,101,10,0.15) 0%,transparent 70%);pointer-events:none}
+.dr-badge{display:inline-flex;align-items:center;gap:6px;padding:4px 12px;border-radius:20px;font-size:10px;font-weight:800;background:rgba(99,102,241,0.2);color:#a5b4fc;border:1px solid rgba(99,102,241,0.3);margin-bottom:16px;letter-spacing:.5px;text-transform:uppercase}
+.dr-title{font-size:32px;font-weight:900;color:#fff;letter-spacing:-.6px;line-height:1.2;margin-bottom:10px}
+.dr-title span{color:#a5b4fc}
+.dr-desc{font-size:15px;color:rgba(255,255,255,0.75);line-height:1.7;max-width:560px;margin-bottom:28px}
+.dr-features{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:32px}
+.dr-feat{background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.1);border-radius:10px;padding:16px}
+.dr-feat-icon{font-size:20px;margin-bottom:8px}
+.dr-feat-name{font-size:12px;font-weight:700;color:#fff;margin-bottom:3px}
+.dr-feat-desc{font-size:11px;color:rgba(255,255,255,0.55)}
+.dr-btns{display:flex;gap:12px}
+.btn-dr-primary{background:#6366f1;color:#fff;padding:12px 28px;border-radius:26px;font-size:14px;font-weight:700;text-decoration:none;display:inline-flex;align-items:center;gap:8px;transition:all .15s;border:none;cursor:pointer;font-family:inherit}
+.btn-dr-primary:hover{background:#4f46e5}
+.btn-dr-outline{background:rgba(255,255,255,0.08);color:#fff;padding:12px 24px;border-radius:26px;font-size:14px;font-weight:600;text-decoration:none;display:inline-flex;align-items:center;gap:8px;border:1px solid rgba(255,255,255,0.2);transition:all .15s;cursor:pointer;font-family:inherit}
+.btn-dr-outline:hover{background:rgba(255,255,255,0.14)}
+.dr-stats{display:grid;grid-template-columns:repeat(4,1fr);gap:0;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);border-radius:10px;overflow:hidden}
+.dr-stat{padding:16px 20px;border-right:1px solid rgba(255,255,255,0.08)}
+.dr-stat:last-child{border-right:none}
+.dr-stat-num{font-size:22px;font-weight:900;color:#a5b4fc}
+.dr-stat-lbl{font-size:11px;color:rgba(255,255,255,0.5);margin-top:2px;font-weight:600}
+
+/* Portal cards */
+.grid-2{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.grid-3{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
+.grid-4{display:grid;grid-template-columns:repeat(4,1fr);gap:14px}
+
+.portal-card{background:var(--white);border:1.5px solid var(--border);border-radius:var(--radius);padding:24px;text-decoration:none;color:var(--text);display:flex;flex-direction:column;gap:0;transition:all .18s}
+.portal-card:hover{border-color:#aaa;box-shadow:0 6px 20px rgba(0,0,0,0.09);transform:translateY(-2px)}
+.portal-card-head{display:flex;align-items:center;gap:12px;margin-bottom:14px}
+.portal-icon{width:44px;height:44px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0}
+.portal-name{font-size:15px;font-weight:800;color:var(--text)}
+.portal-role{font-size:11px;color:var(--muted);font-weight:600;margin-top:1px}
+.portal-desc{font-size:13px;color:var(--muted);line-height:1.6;margin-bottom:14px}
+.portal-pills{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:16px}
+.pill{font-size:11px;font-weight:600;padding:3px 10px;border-radius:20px;background:var(--bg);color:var(--muted);border:1px solid var(--border)}
+.portal-footer{display:flex;align-items:center;justify-content:space-between;padding-top:14px;border-top:1px solid var(--border);margin-top:auto}
+.portal-tag{font-size:10px;font-weight:800;padding:3px 10px;border-radius:8px;letter-spacing:.3px;text-transform:uppercase}
+.portal-go{font-size:13px;color:var(--dim);font-weight:700;transition:all .15s}
+.portal-card:hover .portal-go{color:var(--orange);transform:translateX(3px)}
+
+/* Page list cards */
+.page-card{background:var(--white);border:1.5px solid var(--border);border-radius:var(--radius);padding:14px 18px;text-decoration:none;color:var(--text);display:flex;align-items:center;gap:12px;transition:all .15s;margin-bottom:10px}
+.page-card:last-child{margin-bottom:0}
+.page-card:hover{border-color:#aaa;box-shadow:0 2px 10px rgba(0,0,0,0.07)}
+.page-icon{font-size:18px;width:36px;height:36px;border-radius:8px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.page-name{font-size:13px;font-weight:700;color:var(--text)}
+.page-desc{font-size:11px;color:var(--muted);margin-top:2px;font-weight:500}
+.page-go{margin-left:auto;font-size:13px;color:var(--dim);font-weight:700}
+.page-card:hover .page-go{color:var(--orange)}
+
+/* EventHub big card */
+.hub-card{background:var(--white);border:1.5px solid var(--border);border-radius:var(--radius);padding:28px;text-decoration:none;color:var(--text);display:block;transition:all .18s;margin-bottom:16px}
+.hub-card:hover{border-color:#aaa;box-shadow:0 6px 20px rgba(0,0,0,0.09)}
+.hub-card-head{display:flex;align-items:center;gap:14px;margin-bottom:16px}
+.hub-icon{width:52px;height:52px;border-radius:12px;background:var(--orange-light);display:flex;align-items:center;justify-content:center;font-size:24px}
+.hub-name{font-size:18px;font-weight:900;color:var(--text)}
+.hub-sub{font-size:12px;color:var(--muted);font-weight:600;margin-top:2px}
+.hub-desc{font-size:14px;color:var(--muted);line-height:1.7;margin-bottom:18px}
+.hub-views{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+.hub-view{background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:12px 14px}
+.hub-view-name{font-size:12px;font-weight:700;color:var(--text)}
+.hub-view-desc{font-size:11px;color:var(--muted);margin-top:2px}
+
+footer{text-align:center;padding:36px;border-top:1.5px solid var(--border);font-size:12px;color:var(--muted);font-weight:500}
+footer strong{color:var(--orange)}
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="logo">GAME<span>CONNECTION</span></div>
+  <div class="topbar-gap"></div>
+  <a class="topbar-link" href="EventHub_v2_PC.html">🌐 EventHub</a>
+  <a class="topbar-link" href="EventHQ_Dashboard_v1_PC.html">⚡ Organizer</a>
+  <a class="topbar-link primary" href="DealFlow_v1_PC.html">🤝 Deal Room</a>
+</div>
+
+<div class="hero">
+  <div class="hero-eyebrow">🎮 Indie Game Fest 2026 · Paris · Mar 29–31</div>
+  <h1 class="hero-title">The Game Industry<br><em>All-in-One Platform</em></h1>
+  <p class="hero-sub">Connecting developers, publishers, investors, sponsors, media and associations — from discovery to signed deal.</p>
+  <div class="hero-btns">
+    <a class="btn btn-primary" href="EventHub_v2_PC.html">🌐 Browse Events</a>
+    <a class="btn btn-outline" href="EventHQ_Dashboard_v1_PC.html">⚡ Organizer Dashboard</a>
+  </div>
+</div>
+
+<div class="stats-wrap">
+  <div class="stats-bar">
+    <div class="stat-item"><div class="stat-num">15</div><div class="stat-lbl">Pages</div></div>
+    <div class="stat-item"><div class="stat-num">6</div><div class="stat-lbl">User Roles</div></div>
+    <div class="stat-item"><div class="stat-num">70+</div><div class="stat-lbl">UI Panels</div></div>
+    <div class="stat-item"><div class="stat-num">2</div><div class="stat-lbl">Products</div></div>
+    <div class="stat-item"><div class="stat-num">∞</div><div class="stat-lbl">Ambition</div></div>
+  </div>
+</div>
+
+<!-- Deal Room — Core Feature -->
+<div class="section">
+  <div class="sec-head">
+    <div class="sec-title">🤝 Deal Room</div>
+    <div class="sec-sub">For publishers, investors & studios</div>
+    <div class="sec-line"></div>
+  </div>
+  <div class="dealroom-hero">
+    <div class="dr-badge">🔥 Core Feature</div>
+    <div class="dr-title">Where Game Deals<br><span>Actually Get Done</span></div>
+    <p class="dr-desc">The industry's most complete deal management workspace. Discover games, run your pipeline, sign NDAs, negotiate term sheets — all in one place, built for the speed of a live event.</p>
+    <div class="dr-features">
+      <div class="dr-feat">
+        <div class="dr-feat-icon">🔍</div>
+        <div class="dr-feat-name">Discover</div>
+        <div class="dr-feat-desc">Browse all games with deep filters — genre, platform, team size, ask</div>
+      </div>
+      <div class="dr-feat">
+        <div class="dr-feat-icon">📁</div>
+        <div class="dr-feat-name">Pipeline</div>
+        <div class="dr-feat-desc">Kanban board: Shortlist → NDA → Term Sheet → Negotiation → Closed</div>
+      </div>
+      <div class="dr-feat">
+        <div class="dr-feat-icon">📋</div>
+        <div class="dr-feat-name">Documents</div>
+        <div class="dr-feat-desc">NDAs, term sheets and contracts — sent, signed and stored in one place</div>
+      </div>
+      <div class="dr-feat">
+        <div class="dr-feat-icon">📝</div>
+        <div class="dr-feat-name">CRM & Notes</div>
+        <div class="dr-feat-desc">Internal notes, relationship history and deal activity log per studio</div>
+      </div>
+    </div>
+    <div class="dr-btns" style="margin-bottom:28px">
+      <a class="btn-dr-primary" href="DealFlow_v1_PC.html">Open Deal Room →</a>
+      <a class="btn-dr-outline" href="DealFlow_v1_PC.html">View Pipeline Kanban</a>
+    </div>
+    <div class="dr-stats">
+      <div class="dr-stat"><div class="dr-stat-num">47</div><div class="dr-stat-lbl">Games Reviewed</div></div>
+      <div class="dr-stat"><div class="dr-stat-num">14</div><div class="dr-stat-lbl">In Pipeline</div></div>
+      <div class="dr-stat"><div class="dr-stat-num">5</div><div class="dr-stat-lbl">Active Deals</div></div>
+      <div class="dr-stat"><div class="dr-stat-num">€525K</div><div class="dr-stat-lbl">Closed This Event</div></div>
+    </div>
+  </div>
+</div>
+
+<!-- EventHub B2C -->
+<div class="section">
+  <div class="sec-head">
+    <div class="sec-title">🌐 EventHub</div>
+    <div class="sec-sub">Discovery platform for all attendees</div>
+    <div class="sec-line"></div>
+  </div>
+  <a class="hub-card" href="EventHub_v2_PC.html">
+    <div class="hub-card-head">
+      <div class="hub-icon">🌐</div>
+      <div><div class="hub-name">EventHub</div><div class="hub-sub">B2C · Main entry point</div></div>
+    </div>
+    <p class="hub-desc">Browse events, discover games, connect with companies and manage your schedule. The primary experience for all attendees — with a For Business menu giving direct access to every B2B portal.</p>
+    <div class="hub-views">
+      <div class="hub-view"><div class="hub-view-name">🏠 Home</div><div class="hub-view-desc">Feed · News · Announcements</div></div>
+      <div class="hub-view"><div class="hub-view-name">📅 Calendar</div><div class="hub-view-desc">Monthly view · Session planner</div></div>
+      <div class="hub-view"><div class="hub-view-name">🔴 Live</div><div class="hub-view-desc">Ongoing sessions · Streams</div></div>
+      <div class="hub-view"><div class="hub-view-name">🎮 Projects</div><div class="hub-view-desc">Game showcase · Filter</div></div>
+      <div class="hub-view"><div class="hub-view-name">🏢 Companies</div><div class="hub-view-desc">Directory · Profiles</div></div>
+      <div class="hub-view"><div class="hub-view-name">👤 Profile</div><div class="hub-view-desc">My schedule · Connections</div></div>
+    </div>
+  </a>
+</div>
+
+<!-- EventHQ Organizer -->
+<div class="section">
+  <div class="sec-head">
+    <div class="sec-title">⚡ EventHQ</div>
+    <div class="sec-sub">Organizer back-office</div>
+    <div class="sec-line"></div>
+  </div>
+  <div class="grid-2">
+    <a class="portal-card" href="EventHQ_Dashboard_v1_PC.html">
+      <div class="portal-card-head">
+        <div class="portal-icon" style="background:var(--orange-light)">⚡</div>
+        <div><div class="portal-name">EventHQ Dashboard</div><div class="portal-role">Command center for organizers</div></div>
+      </div>
+      <p class="portal-desc">KPIs, module status, pending approvals, health score, task list and activity log — everything at a glance.</p>
+      <div class="portal-pills">
+        <span class="pill">Dashboard</span><span class="pill">Event Setup</span><span class="pill">Products</span><span class="pill">Attendees</span><span class="pill">Projects</span><span class="pill">Conference</span><span class="pill">Awards</span><span class="pill">Let's Meet</span>
+      </div>
+      <div class="portal-footer">
+        <span class="portal-tag" style="background:var(--orange-light);color:var(--orange)">B2B · Organizer</span>
+        <span class="portal-go">Open →</span>
+      </div>
+    </a>
+    <div>
+      <a class="page-card" href="EventSetup_v1_PC.html"><div class="page-icon" style="background:var(--orange-light)">🛠️</div><div><div class="page-name">Event Setup</div><div class="page-desc">Info · Modules · Page preview</div></div><span class="page-go">→</span></a>
+      <a class="page-card" href="Products_v1_PC.html"><div class="page-icon" style="background:var(--green-light)">🎫</div><div><div class="page-name">Products</div><div class="page-desc">Tickets · Booths · Sponsorship</div></div><span class="page-go">→</span></a>
+      <a class="page-card" href="Attendees_v1_PC.html"><div class="page-icon" style="background:var(--blue-light)">👥</div><div><div class="page-name">Attendees</div><div class="page-desc">Registrations · Buyers · Press</div></div><span class="page-go">→</span></a>
+      <a class="page-card" href="GameShowcase_v1_PC.html"><div class="page-icon" style="background:var(--purple-light)">🎮</div><div><div class="page-name">Game Showcase</div><div class="page-desc">Submissions · Review · Analytics</div></div><span class="page-go">→</span></a>
+      <a class="page-card" href="Conference_v1_PC.html"><div class="page-icon" style="background:var(--blue-light)">🎤</div><div><div class="page-name">Conference</div><div class="page-desc">Sessions · Speakers · Schedule</div></div><span class="page-go">→</span></a>
+      <a class="page-card" href="Awards_v2_PC.html"><div class="page-icon" style="background:var(--gold-light)">🏆</div><div><div class="page-name">Awards</div><div class="page-desc">Categories · Nominations · Jury</div></div><span class="page-go">→</span></a>
+      <a class="page-card" href="LetsMeet_Setup_v1_PC.html"><div class="page-icon" style="background:var(--teal-light)">🤝</div><div><div class="page-name">Let's Meet</div><div class="page-desc">1-on-1 meeting configuration</div></div><span class="page-go">→</span></a>
+      <a class="page-card" href="Settings_v1_PC.html"><div class="page-icon" style="background:var(--bg)">⚙️</div><div><div class="page-name">Settings</div><div class="page-desc">Account · Team · Integrations · Billing</div></div><span class="page-go">→</span></a>
+    </div>
+  </div>
+</div>
+
+<!-- B2B Portals -->
+<div class="section">
+  <div class="sec-head">
+    <div class="sec-title">🏢 Business Portals</div>
+    <div class="sec-sub">Role-specific workspaces</div>
+    <div class="sec-line"></div>
+  </div>
+  <div class="grid-3">
+    <a class="portal-card" href="Sponsor_Portal_v1_PC.html">
+      <div class="portal-card-head">
+        <div class="portal-icon" style="background:var(--gold-light)">💼</div>
+        <div><div class="portal-name">Sponsor Portal</div><div class="portal-role">For sponsors</div></div>
+      </div>
+      <p class="portal-desc">Purchase packages, track benefit fulfillment, manage brand assets, booth, speaking slots, contracts and invoices.</p>
+      <div class="portal-pills">
+        <span class="pill">Packages</span><span class="pill">Benefits</span><span class="pill">Booth</span><span class="pill">Speaking</span><span class="pill">Contracts</span>
+      </div>
+      <div class="portal-footer">
+        <span class="portal-tag" style="background:var(--gold-light);color:var(--gold)">Sponsor</span>
+        <span class="portal-go">Open →</span>
+      </div>
+    </a>
+    <a class="portal-card" href="Media_Portal_v1_PC.html">
+      <div class="portal-card-head">
+        <div class="portal-icon" style="background:var(--blue-light)">📰</div>
+        <div><div class="portal-name">Media Center</div><div class="portal-role">For press & journalists</div></div>
+      </div>
+      <p class="portal-desc">Apply for press pass, build personal schedule, book interviews with studios, download official press kits.</p>
+      <div class="portal-pills">
+        <span class="pill">Press Pass</span><span class="pill">Schedule</span><span class="pill">Interviews</span><span class="pill">Press Kit</span>
+      </div>
+      <div class="portal-footer">
+        <span class="portal-tag" style="background:var(--blue-light);color:var(--blue)">Media</span>
+        <span class="portal-go">Open →</span>
+      </div>
+    </a>
+    <a class="portal-card" href="Association_Portal_v1_PC.html">
+      <div class="portal-card-head">
+        <div class="portal-icon" style="background:var(--purple-light)">🏛️</div>
+        <div><div class="portal-name">Association Hub</div><div class="portal-role">For associations & delegations</div></div>
+      </div>
+      <p class="portal-desc">Invite and manage members, allocate passes and booths, track participation status, handle group billing.</p>
+      <div class="portal-pills">
+        <span class="pill">Members</span><span class="pill">Group Passes</span><span class="pill">Booths</span><span class="pill">Billing</span>
+      </div>
+      <div class="portal-footer">
+        <span class="portal-tag" style="background:var(--purple-light);color:var(--purple)">Association</span>
+        <span class="portal-go">Open →</span>
+      </div>
+    </a>
+  </div>
+</div>
+
+<footer>
+  <strong>Game Connection</strong> &nbsp;·&nbsp; The Game Industry Platform &nbsp;·&nbsp; Indie Game Fest 2026 · Paris, Mar 29–31
+</footer>
+
+</body>
+</html>
