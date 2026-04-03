@@ -218,6 +218,12 @@ html,body{height:100%;font-family:"DM Sans","PingFang SC",sans-serif;color:#111;
         <span class="sidebar-cnt" id="cnt-pages">207</span>
       </div>
     </div>
+    <div class="sidebar-section">
+      <div class="sidebar-item" onclick="showPanel('banners')">
+        <span class="icon">🏞️</span> Banners
+        <span class="sidebar-cnt" id="cnt-banners">—</span>
+      </div>
+    </div>
   </div>
 
   <!-- MAIN -->
@@ -564,6 +570,89 @@ html,body{height:100%;font-family:"DM Sans","PingFang SC",sans-serif;color:#111;
       <div id="pages-container"></div>
     </div>
 
+    <!-- ═════════════════════════════════════════════════════
+         BANNERS PANEL
+         ═════════════════════════════════════════════════════ -->
+    <div class="panel" id="panel-banners">
+      <div class="page-hdr">
+        <div>
+          <div class="page-title">🏞️ Home Banners</div>
+          <div class="page-sub">Configure the rotating banner carousel on the Home page. Changes are saved to browser storage and take effect immediately.</div>
+        </div>
+        <button class="btn btn-primary" onclick="bannerAdminAdd()">+ Add Banner</button>
+      </div>
+
+      <!-- Quick-add from data -->
+      <div style="background:#f8f9fa;border-radius:12px;padding:20px;margin-bottom:24px;border:1px solid #e4e6ea">
+        <div style="font-size:13px;font-weight:700;color:var(--text1);margin-bottom:12px">⚡ Quick-add from Database</div>
+        <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:flex-end">
+          <div>
+            <div style="font-size:11px;color:var(--text3);margin-bottom:4px">Type</div>
+            <select id="banner-quick-type" class="form-select" style="min-width:130px" onchange="bannerQuickSearch()">
+              <option value="event">📅 Event</option>
+              <option value="project">🎮 Project</option>
+              <option value="company">🏢 Company</option>
+              <option value="news">📰 News</option>
+            </select>
+          </div>
+          <div style="flex:1;min-width:200px">
+            <div style="font-size:11px;color:var(--text3);margin-bottom:4px">Search</div>
+            <input type="text" id="banner-quick-search" class="form-input" placeholder="Type to search..." oninput="bannerQuickSearch()" style="width:100%">
+          </div>
+        </div>
+        <div id="banner-quick-results" style="margin-top:12px;display:flex;flex-direction:column;gap:6px"></div>
+      </div>
+
+      <!-- Current banners list -->
+      <div style="font-size:13px;font-weight:700;color:var(--text1);margin-bottom:12px">Current Banners <span id="banner-count" style="color:var(--text3);font-weight:400"></span></div>
+      <div id="banner-list" style="display:flex;flex-direction:column;gap:10px"></div>
+
+      <!-- Manual add form (hidden by default) -->
+      <div id="banner-add-form" style="display:none;background:#f8f9fa;border-radius:12px;padding:20px;margin-top:20px;border:1px solid #e4e6ea">
+        <div style="font-size:13px;font-weight:700;margin-bottom:14px">New Banner</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px">
+          <div>
+            <div style="font-size:11px;color:var(--text3);margin-bottom:4px">Title *</div>
+            <input type="text" id="bnr-title" class="form-input" placeholder="Banner headline">
+          </div>
+          <div>
+            <div style="font-size:11px;color:var(--text3);margin-bottom:4px">Label (e.g. 🔴 LIVE NOW)</div>
+            <input type="text" id="bnr-label" class="form-input" placeholder="🔴 LIVE NOW">
+          </div>
+        </div>
+        <div style="margin-bottom:12px">
+          <div style="font-size:11px;color:var(--text3);margin-bottom:4px">Subtitle</div>
+          <input type="text" id="bnr-subtitle" class="form-input" placeholder="Short description" style="width:100%">
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin-bottom:12px">
+          <div>
+            <div style="font-size:11px;color:var(--text3);margin-bottom:4px">CTA Button Text</div>
+            <input type="text" id="bnr-cta" class="form-input" placeholder="Learn More →">
+          </div>
+          <div>
+            <div style="font-size:11px;color:var(--text3);margin-bottom:4px">CTA Action (JS)</div>
+            <input type="text" id="bnr-action" class="form-input" placeholder="switchMode('calendar')">
+          </div>
+          <div>
+            <div style="font-size:11px;color:var(--text3);margin-bottom:4px">Label Color</div>
+            <input type="color" id="bnr-color" value="#e53935" style="height:36px;width:100%;border-radius:6px;border:1px solid #ddd;cursor:pointer">
+          </div>
+        </div>
+        <div style="margin-bottom:12px">
+          <div style="font-size:11px;color:var(--text3);margin-bottom:4px">Background Gradient (CSS)</div>
+          <input type="text" id="bnr-bg" class="form-input" placeholder="linear-gradient(135deg,#1a1a2e,#0f3460)" style="width:100%">
+        </div>
+        <div style="margin-bottom:16px">
+          <div style="font-size:11px;color:var(--text3);margin-bottom:4px">Image URL (optional, overrides gradient)</div>
+          <input type="text" id="bnr-img" class="form-input" placeholder="https://..." style="width:100%">
+        </div>
+        <div style="display:flex;gap:10px">
+          <button class="btn btn-primary" onclick="bannerAdminSave()">Save Banner</button>
+          <button class="btn btn-ghost" onclick="document.getElementById('banner-add-form').style.display='none'">Cancel</button>
+        </div>
+      </div>
+    </div>
+
   </div><!-- /main -->
 </div><!-- /layout -->
 
@@ -669,6 +758,7 @@ function showPanel(id) {
   if (id === 'projects') projLoad();
   if (id === 'companies') coLoad();
   if (id === 'pages') pagesRender();
+  if (id === 'banners') bannerAdminLoad();
 }
 
 // ── TOAST ──
@@ -1276,6 +1366,153 @@ function pagesFilter() {
     </div>
   `).join('');
   document.getElementById('pages-container').innerHTML = html || '<div class="loading-state">No pages found.</div>';
+}
+
+// ── BANNERS ADMIN ──
+const _ADMIN_DEFAULT_BANNERS = [
+  {type:'event',title:'Game Connection Live 2026',subtitle:'The premier game industry event · Helsinki & Tallinn · Mar 29 – Apr 3, 2026',label:'🔴 LIVE NOW',labelColor:'#e53935',cta:'Watch Live →',ctaAction:"switchMode('live')",bg:'linear-gradient(135deg,#1a1a2e 0%,#0f3460 60%,#e53935 100%)',img:null},
+  {type:'platform',title:'The Game Industry All-in-One Platform',subtitle:'Events, deals, connections — everything the global game industry needs, in one place.',label:'🌍 PLATFORM',labelColor:'#0a7fa8',cta:'Explore Events →',ctaAction:"switchMode('calendar')",bg:'linear-gradient(135deg,#0d2137 0%,#0a7fa8 100%)',img:null},
+  {type:'projects',title:'9,780+ Game Projects',subtitle:'Discover indie games, AAA projects, and everything in between.',label:'🎮 PROJECTS',labelColor:'#7c3aed',cta:'Browse Projects →',ctaAction:"switchMode('projects')",bg:'linear-gradient(135deg,#2d1a4a 0%,#7c3aed 100%)',img:null}
+];
+
+function bannerAdminLoad() {
+  let items;
+  try { items = JSON.parse(localStorage.getItem('gc_banners')) || _ADMIN_DEFAULT_BANNERS; }
+  catch(e) { items = _ADMIN_DEFAULT_BANNERS; }
+  document.getElementById('banner-count').textContent = `(${items.length})`;
+  document.getElementById('cnt-banners').textContent = items.length;
+  const list = document.getElementById('banner-list');
+  if (!list) return;
+  list.innerHTML = items.map((b, i) => `
+    <div style="display:flex;align-items:center;gap:12px;padding:14px 16px;background:#fff;border:1px solid #e4e6ea;border-radius:10px">
+      <div style="width:48px;height:36px;border-radius:6px;background:${b.bg||'#1a1a2e'};flex-shrink:0;${b.img?'background-image:url('+b.img+');background-size:cover':''}">
+      </div>
+      <div style="flex:1;min-width:0">
+        <div style="font-size:13px;font-weight:700;color:var(--text1);overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${b.title}</div>
+        <div style="font-size:11px;color:var(--text3);margin-top:2px">${b.subtitle||''}</div>
+      </div>
+      <span style="font-size:10px;padding:2px 8px;border-radius:4px;background:${b.labelColor||'#666'}22;color:${b.labelColor||'#666'};font-weight:700;flex-shrink:0">${b.label||''}</span>
+      <div style="display:flex;gap:6px;flex-shrink:0">
+        ${i > 0 ? `<button onclick="bannerAdminMove(${i},-1)" style="padding:4px 8px;border:1px solid #ddd;border-radius:5px;background:#fff;cursor:pointer;font-size:12px">↑</button>` : ''}
+        ${i < items.length-1 ? `<button onclick="bannerAdminMove(${i},1)" style="padding:4px 8px;border:1px solid #ddd;border-radius:5px;background:#fff;cursor:pointer;font-size:12px">↓</button>` : ''}
+        <button onclick="bannerAdminDelete(${i})" style="padding:4px 10px;border:1px solid #fca5a5;border-radius:5px;background:#fff;cursor:pointer;font-size:12px;color:#dc2626">✕</button>
+      </div>
+    </div>
+  `).join('');
+}
+
+function bannerAdminGetItems() {
+  try { return JSON.parse(localStorage.getItem('gc_banners')) || _ADMIN_DEFAULT_BANNERS; }
+  catch(e) { return _ADMIN_DEFAULT_BANNERS; }
+}
+
+function bannerAdminSaveItems(items) {
+  localStorage.setItem('gc_banners', JSON.stringify(items));
+  bannerAdminLoad();
+  showToast('Banner saved! Refresh Home to see changes.');
+}
+
+function bannerAdminDelete(i) {
+  const items = bannerAdminGetItems();
+  items.splice(i, 1);
+  bannerAdminSaveItems(items);
+}
+
+function bannerAdminMove(i, dir) {
+  const items = bannerAdminGetItems();
+  const j = i + dir;
+  if (j < 0 || j >= items.length) return;
+  [items[i], items[j]] = [items[j], items[i]];
+  bannerAdminSaveItems(items);
+}
+
+function bannerAdminAdd() {
+  const f = document.getElementById('banner-add-form');
+  if (f) f.style.display = f.style.display === 'none' ? 'block' : 'none';
+}
+
+function bannerAdminSave() {
+  const title = document.getElementById('bnr-title').value.trim();
+  if (!title) { showToast('Title is required'); return; }
+  const item = {
+    type: 'custom',
+    title,
+    subtitle: document.getElementById('bnr-subtitle').value.trim(),
+    label: document.getElementById('bnr-label').value.trim(),
+    labelColor: document.getElementById('bnr-color').value,
+    cta: document.getElementById('bnr-cta').value.trim(),
+    ctaAction: document.getElementById('bnr-action').value.trim(),
+    bg: document.getElementById('bnr-bg').value.trim() || 'linear-gradient(135deg,#1a1a2e,#0f3460)',
+    img: document.getElementById('bnr-img').value.trim() || null
+  };
+  const items = bannerAdminGetItems();
+  items.push(item);
+  bannerAdminSaveItems(items);
+  document.getElementById('banner-add-form').style.display = 'none';
+  ['bnr-title','bnr-subtitle','bnr-label','bnr-cta','bnr-action','bnr-bg','bnr-img'].forEach(id => { const el=document.getElementById(id); if(el) el.value=''; });
+}
+
+const _BG_PRESETS = {
+  event: 'linear-gradient(135deg,#1a1a2e 0%,#0f3460 60%,#e53935 100%)',
+  project: 'linear-gradient(135deg,#2d1a4a 0%,#7c3aed 100%)',
+  company: 'linear-gradient(135deg,#0d2137 0%,#0a7fa8 100%)',
+  news: 'linear-gradient(135deg,#1a2e1a 0%,#2e7d32 100%)'
+};
+const _LABEL_COLORS = {event:'#e53935',project:'#7c3aed',company:'#0a7fa8',news:'#2e7d32'};
+const _LABEL_TEXT = {event:'📅 EVENT',project:'🎮 PROJECT',company:'🏢 COMPANY',news:'📰 NEWS'};
+
+async function bannerQuickSearch() {
+  const type = document.getElementById('banner-quick-type').value;
+  const q = (document.getElementById('banner-quick-search').value||'').trim();
+  const res = document.getElementById('banner-quick-results');
+  if (!q || q.length < 2) { res.innerHTML = ''; return; }
+  res.innerHTML = '<div style="font-size:12px;color:var(--text3)">Searching...</div>';
+  try {
+    let url, items = [];
+    if (type === 'event') {
+      url = `${SB_URL}/rest/v1/events?select=id,title,type,city,country,start_date&title=ilike.*${encodeURIComponent(q)}*&limit=5`;
+      const r = await fetch(url, {headers: SB_HEADERS});
+      const data = await r.json();
+      items = (data||[]).map(e => ({
+        label: `${e.title} · ${e.city||''} ${e.country||''}`.trim(),
+        banner: {type:'event',title:e.title,subtitle:`${e.city||''}, ${e.country||''} · ${e.start_date||''}`.trim().replace(/^,\s*/,''),label:_LABEL_TEXT.event,labelColor:_LABEL_COLORS.event,cta:'View Event →',ctaAction:"switchMode('calendar')",bg:_BG_PRESETS.event,img:null}
+      }));
+    } else if (type === 'project') {
+      url = `${SB_URL}/rest/v1/game_projects?select=id,title,tagline,genre&title=ilike.*${encodeURIComponent(q)}*&limit=5`;
+      const r = await fetch(url, {headers: SB_HEADERS});
+      const data = await r.json();
+      items = (data||[]).map(p => ({
+        label: `${p.title} · ${p.genre||p.tagline||''}`,
+        banner: {type:'project',title:p.title,subtitle:p.tagline||p.genre||'',label:_LABEL_TEXT.project,labelColor:_LABEL_COLORS.project,cta:'Browse Projects →',ctaAction:"switchMode('projects')",bg:_BG_PRESETS.project,img:null}
+      }));
+    } else if (type === 'company') {
+      url = `${SB_URL}/rest/v1/companies?select=id,name,type,country&name=ilike.*${encodeURIComponent(q)}*&limit=5`;
+      const r = await fetch(url, {headers: SB_HEADERS});
+      const data = await r.json();
+      items = (data||[]).map(c => ({
+        label: `${c.name} · ${c.type||''} · ${c.country||''}`,
+        banner: {type:'company',title:c.name,subtitle:`${c.type||''} · ${c.country||''}`.trim().replace(/^·\s*/,''),label:_LABEL_TEXT.company,labelColor:_LABEL_COLORS.company,cta:'Browse Companies →',ctaAction:"switchMode('companies')",bg:_BG_PRESETS.company,img:null}
+      }));
+    } else {
+      // news: search from cached RSS (not available in admin, show manual entry prompt)
+      res.innerHTML = '<div style="font-size:12px;color:var(--text3)">For news banners, use the manual form below.</div>';
+      return;
+    }
+    if (!items.length) { res.innerHTML = '<div style="font-size:12px;color:var(--text3)">No results found.</div>'; return; }
+    res.innerHTML = items.map(item => `
+      <div style="display:flex;align-items:center;justify-content:space-between;padding:8px 12px;background:#fff;border:1px solid #e4e6ea;border-radius:7px">
+        <span style="font-size:12px;color:var(--text1)">${item.label}</span>
+        <button onclick='bannerAdminAddItem(${JSON.stringify(item.banner).replace(/'/g,"\\'")})' style="padding:4px 12px;border:1px solid var(--orange);border-radius:5px;background:transparent;color:var(--orange);font-size:11px;font-weight:700;cursor:pointer">➕ Add to Banner</button>
+      </div>
+    `).join('');
+  } catch(e) { res.innerHTML = '<div style="font-size:12px;color:#dc2626">Search failed.</div>'; }
+}
+
+function bannerAdminAddItem(banner) {
+  const items = bannerAdminGetItems();
+  items.push(banner);
+  bannerAdminSaveItems(items);
+  document.getElementById('banner-quick-results').innerHTML = '<div style="font-size:12px;color:var(--green);font-weight:600">✓ Added! Refresh Home to see changes.</div>';
 }
 
 // ── INIT ──

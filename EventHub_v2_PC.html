@@ -1136,23 +1136,22 @@ async function gcSignOut() {
 
 <!-- HOME PANEL -->
 <div id="home-panel">
-  <!-- Hero -->
-  <div class="hero">
-    <div class="hero-deco"></div>
-    <div class="hero-deco2"></div>
-    <div class="hero-inner">
-      <div class="hero-eyebrow" onclick="switchMode('live')">
-        <div class="hero-live-dot"></div>
-        Game Connection Live 2026 is happening now · Helsinki &amp; Tallinn
-      </div>
-      <h1 class="hero-title">The <span>Game Industry</span><br>All-in-One Platform</h1>
-      <p class="hero-subtitle">Events, deals, connections — everything the global game industry needs, in one place.</p>
-      <div class="hero-stats">
-        <div class="hero-stat"><div class="hstat-num" id="hstat-events">—</div><div class="hstat-label">Events</div></div>
-        <div class="hero-stat"><div class="hstat-num" id="hstat-projects">—</div><div class="hstat-label">Game Projects</div></div>
-        <div class="hero-stat"><div class="hstat-num" id="hstat-companies">—</div><div class="hstat-label">Companies</div></div>
-        <div class="hero-stat"><div class="hstat-num" id="hstat-upcoming">—</div><div class="hstat-label">Upcoming Events</div></div>
-      </div>
+  <!-- Hero Banner Carousel -->
+  <div class="hero" id="hero-banner" style="position:relative;overflow:hidden;min-height:260px">
+    <!-- Slides track -->
+    <div id="banner-track" style="display:flex;transition:transform .45s cubic-bezier(.4,0,.2,1);height:100%"></div>
+    <!-- Left arrow -->
+    <button id="banner-prev" onclick="bannerMove(-1)" style="position:absolute;left:16px;top:50%;transform:translateY(-50%);z-index:10;background:rgba(255,255,255,.15);border:none;color:#fff;width:40px;height:40px;border-radius:50%;font-size:18px;cursor:pointer;backdrop-filter:blur(4px);transition:.2s" onmouseover="this.style.background='rgba(255,255,255,.3)'" onmouseout="this.style.background='rgba(255,255,255,.15)'">&#8249;</button>
+    <!-- Right arrow -->
+    <button id="banner-next" onclick="bannerMove(1)" style="position:absolute;right:16px;top:50%;transform:translateY(-50%);z-index:10;background:rgba(255,255,255,.15);border:none;color:#fff;width:40px;height:40px;border-radius:50%;font-size:18px;cursor:pointer;backdrop-filter:blur(4px);transition:.2s" onmouseover="this.style.background='rgba(255,255,255,.3)'" onmouseout="this.style.background='rgba(255,255,255,.15)'">&#8250;</button>
+    <!-- Dots -->
+    <div id="banner-dots" style="position:absolute;bottom:14px;left:50%;transform:translateX(-50%);display:flex;gap:6px;z-index:10"></div>
+    <!-- Hero stats overlay -->
+    <div style="position:absolute;bottom:0;left:0;right:0;background:linear-gradient(to top,rgba(0,0,0,.55) 0%,transparent 100%);padding:18px 32px 14px;display:flex;gap:36px;flex-wrap:wrap;z-index:5">
+      <div class="hero-stat"><div class="hstat-num" id="hstat-events">&mdash;</div><div class="hstat-label">Events</div></div>
+      <div class="hero-stat"><div class="hstat-num" id="hstat-projects">&mdash;</div><div class="hstat-label">Game Projects</div></div>
+      <div class="hero-stat"><div class="hstat-num" id="hstat-companies">&mdash;</div><div class="hstat-label">Companies</div></div>
+      <div class="hero-stat"><div class="hstat-num" id="hstat-upcoming">&mdash;</div><div class="hstat-label">Upcoming Events</div></div>
     </div>
   </div>
 
@@ -2230,6 +2229,7 @@ function switchMode(mode) {
     confBar.style.display = 'none';
     layout.style.display = 'none';
     if (!window._homeFeedInited) { window._homeFeedInited = true; loadHomeFeed(); }
+    if (!window._bannerInited) { window._bannerInited = true; setTimeout(bannerInit, 50); }
   } else if (mode === 'projects') {
     tabs[3].classList.add('active');
     homePanel.style.display = 'none';
@@ -2351,6 +2351,121 @@ function filterFeed(type, btn) {
     }
   });
 }
+
+// ═══════════════════════════════════════════════════════════════════════════
+// BANNER CAROUSEL
+// ═══════════════════════════════════════════════════════════════════════════
+const _DEFAULT_BANNERS = [
+  {
+    type: 'event',
+    title: 'Game Connection Live 2026',
+    subtitle: 'The premier game industry event · Helsinki & Tallinn · Mar 29 – Apr 3, 2026',
+    label: '🔴 LIVE NOW',
+    labelColor: '#e53935',
+    cta: 'Watch Live →',
+    ctaAction: "switchMode('live')",
+    bg: 'linear-gradient(135deg,#1a1a2e 0%,#0f3460 60%,#e53935 100%)',
+    img: null
+  },
+  {
+    type: 'platform',
+    title: 'The Game Industry All-in-One Platform',
+    subtitle: 'Events, deals, connections — everything the global game industry needs, in one place.',
+    label: '🌍 PLATFORM',
+    labelColor: '#0a7fa8',
+    cta: 'Explore Events →',
+    ctaAction: "switchMode('calendar')",
+    bg: 'linear-gradient(135deg,#0d2137 0%,#0a7fa8 100%)',
+    img: null
+  },
+  {
+    type: 'projects',
+    title: '9,780+ Game Projects',
+    subtitle: 'Discover indie games, AAA projects, and everything in between. Connect with developers worldwide.',
+    label: '🎮 PROJECTS',
+    labelColor: '#7c3aed',
+    cta: 'Browse Projects →',
+    ctaAction: "switchMode('projects')",
+    bg: 'linear-gradient(135deg,#2d1a4a 0%,#7c3aed 100%)',
+    img: null
+  }
+];
+
+let _bannerIdx = 0;
+let _bannerTimer = null;
+let _bannerItems = [];
+
+function bannerInit() {
+  // Load from localStorage (admin config) or use defaults
+  try {
+    const saved = localStorage.getItem('gc_banners');
+    _bannerItems = saved ? JSON.parse(saved) : _DEFAULT_BANNERS;
+  } catch(e) { _bannerItems = _DEFAULT_BANNERS; }
+  if (!_bannerItems || !_bannerItems.length) _bannerItems = _DEFAULT_BANNERS;
+  bannerRender();
+  bannerAutoPlay();
+}
+
+function bannerRender() {
+  const track = document.getElementById('banner-track');
+  const dots = document.getElementById('banner-dots');
+  const hero = document.getElementById('hero-banner');
+  if (!track || !dots || !hero) return;
+
+  // Set track width
+  const w = hero.offsetWidth || window.innerWidth;
+  track.style.width = (w * _bannerItems.length) + 'px';
+
+  track.innerHTML = _bannerItems.map((b, i) => {
+    const bg = b.bg || 'linear-gradient(135deg,#1a1a2e,#0f3460)';
+    const imgStyle = b.img ? `background-image:url('${b.img}');background-size:cover;background-position:center;` : '';
+    return `<div style="width:${w}px;min-height:260px;${bg};${imgStyle}position:relative;display:flex;align-items:center;flex-shrink:0">
+      <div style="position:absolute;inset:0;background:linear-gradient(to right,rgba(0,0,0,.65) 0%,rgba(0,0,0,.2) 60%,transparent 100%)"></div>
+      <div style="position:relative;z-index:2;padding:48px 80px 80px 48px;max-width:700px">
+        <div style="display:inline-flex;align-items:center;gap:8px;background:${b.labelColor}22;border:1px solid ${b.labelColor}55;border-radius:6px;padding:5px 12px;margin-bottom:16px;font-size:12px;font-weight:700;color:#fff">${b.label||''}</div>
+        <h1 style="font-size:38px;font-weight:800;color:#fff;line-height:1.15;margin-bottom:12px;letter-spacing:-1px">${b.title}</h1>
+        <p style="font-size:15px;color:rgba(255,255,255,.8);line-height:1.6;margin-bottom:24px;max-width:520px">${b.subtitle}</p>
+        ${b.cta ? `<button onclick="${b.ctaAction}" style="padding:12px 28px;background:var(--orange);color:#fff;border:none;border-radius:8px;font-size:14px;font-weight:700;cursor:pointer;transition:.2s" onmouseover="this.style.opacity='.85'" onmouseout="this.style.opacity='1'">${b.cta}</button>` : ''}
+      </div>
+    </div>`;
+  }).join('');
+
+  // Dots
+  dots.innerHTML = _bannerItems.map((_, i) =>
+    `<div onclick="bannerGoto(${i})" style="width:${i===_bannerIdx?20:8}px;height:8px;border-radius:4px;background:${i===_bannerIdx?'#fff':'rgba(255,255,255,.4)'};cursor:pointer;transition:.3s"></div>`
+  ).join('');
+
+  bannerGoto(_bannerIdx, false);
+}
+
+function bannerGoto(idx, animate=true) {
+  const track = document.getElementById('banner-track');
+  const hero = document.getElementById('hero-banner');
+  if (!track || !hero) return;
+  _bannerIdx = Math.max(0, Math.min(idx, _bannerItems.length - 1));
+  const w = hero.offsetWidth || window.innerWidth;
+  track.style.transition = animate ? 'transform .45s cubic-bezier(.4,0,.2,1)' : 'none';
+  track.style.transform = `translateX(-${_bannerIdx * w}px)`;
+  // Update dots
+  const dots = document.getElementById('banner-dots');
+  if (dots) dots.querySelectorAll('div').forEach((d, i) => {
+    d.style.width = i === _bannerIdx ? '20px' : '8px';
+    d.style.background = i === _bannerIdx ? '#fff' : 'rgba(255,255,255,.4)';
+  });
+}
+
+function bannerMove(dir) {
+  bannerGoto((_bannerIdx + dir + _bannerItems.length) % _bannerItems.length);
+  bannerAutoPlay(); // reset timer
+}
+
+function bannerAutoPlay() {
+  if (_bannerTimer) clearInterval(_bannerTimer);
+  _bannerTimer = setInterval(() => bannerMove(1), 5000);
+}
+
+// Recalculate on resize
+window.addEventListener('resize', () => { if (_bannerItems.length) bannerRender(); });
 
 // ═══════════════════════════════════════════════════════════════════════════
 // HOME FEED — REAL DATA FROM SUPABASE
