@@ -762,6 +762,60 @@ body{background:#f3f2ef}
 .leg-i{display:flex;align-items:center;gap:5px;font-size:10px;color:var(--text2);font-weight:500}
 .leg-d{width:8px;height:8px;border-radius:50%;flex-shrink:0}
 </style>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+<script>
+// ── Supabase Auth Client ──────────────────────────────────────────────────────
+const _gcSupabase = window.supabase.createClient(
+  'https://gucqyrorgtsukqgnfjor.supabase.co',
+  'sb_publishable_-BkWoyQCBVhagJQIgR_zdw_qHvhYZpG'
+);
+// Handle OAuth callback (hash fragment with access_token)
+(async function() {
+  const hash = window.location.hash;
+  if (hash && hash.includes('access_token')) {
+    const { data, error } = await _gcSupabase.auth.getSession();
+    if (data && data.session) {
+      localStorage.setItem('gc_auth_token', data.session.access_token);
+      localStorage.setItem('gc_auth_user', JSON.stringify({
+        id: data.session.user.id,
+        email: data.session.user.email,
+        name: data.session.user.user_metadata?.full_name || data.session.user.email,
+        avatar: data.session.user.user_metadata?.avatar_url || null
+      }));
+      // Set legacy session flag so profile panel shows logged-in state
+      try { sessionStorage.setItem('gc_session', '1'); } catch(e) {}
+      // Clean up URL hash
+      history.replaceState(null, '', window.location.pathname + window.location.search);
+    }
+  }
+})();
+function gcGetToken() {
+  return localStorage.getItem('gc_auth_token') || null;
+}
+function gcGetUser() {
+  try { return JSON.parse(localStorage.getItem('gc_auth_user')); } catch(e) { return null; }
+}
+function gcIsLoggedIn() {
+  return !!(gcGetToken() && gcGetUser());
+}
+async function gcSignInWithGoogle() {
+  const redirectTo = window.location.href.split('#')[0];
+  const { data, error } = await _gcSupabase.auth.signInWithOAuth({
+    provider: 'google',
+    options: { redirectTo }
+  });
+  if (error) {
+    alert('Sign in failed: ' + error.message);
+  }
+}
+async function gcSignOut() {
+  await _gcSupabase.auth.signOut();
+  localStorage.removeItem('gc_auth_token');
+  localStorage.removeItem('gc_auth_user');
+  localStorage.removeItem('gc_wizard');
+  try { sessionStorage.removeItem('gc_session'); } catch(e) {}
+}
+</script>
 </head>
 <body>
 
@@ -2064,7 +2118,7 @@ body{background:#f3f2ef}
     <div style="width:80px;height:80px;border-radius:50%;background:#f0ede8;display:flex;align-items:center;justify-content:center;font-size:36px;margin-bottom:20px">?</div>
     <div style="font-size:22px;font-weight:800;color:var(--text1);margin-bottom:8px">Sign in to view your profile</div>
     <div style="font-size:14px;color:var(--text2);margin-bottom:28px">Connect with publishers, investors, and developers worldwide.</div>
-    <a href="Identity_Login_v1.0_PC.html" style="padding:14px 36px;border-radius:30px;background:linear-gradient(135deg,#e8640a,#f59e0b);color:#fff;font-size:15px;font-weight:700;text-decoration:none">Sign In with Google &#8594;</a>
+    <button onclick="gcSignInWithGoogle()" style="padding:14px 36px;border-radius:30px;background:linear-gradient(135deg,#e8640a,#f59e0b);color:#fff;font-size:15px;font-weight:700;border:none;cursor:pointer">Sign In with Google &#8594;</button>
   </div>
 
   <!-- Logged-in state -->
@@ -2346,7 +2400,8 @@ function switchMode(mode) {
     // Show guest or logged-in state
     const hasSession = (function(){ try{ return !!sessionStorage.getItem('gc_session'); }catch(e){ return false; } })();
     const hasData = (function(){ try{ return !!localStorage.getItem('gc_wizard'); }catch(e){ return false; } })();
-    if(hasSession && hasData){
+    const hasSupabaseAuth = gcIsLoggedIn();
+    if((hasSession && hasData) || hasSupabaseAuth){
       document.getElementById('pp-guest').style.display = 'none';
       document.getElementById('pp-loggedin').style.display = 'block';
       try{
@@ -2508,9 +2563,9 @@ function redoMatching(){
   window.location.href = 'Onboarding_Wizard_v1.0_PC.html';
 }
 function signOutUser(){
-  localStorage.removeItem('gc_wizard');
-  try{ sessionStorage.removeItem('gc_session'); } catch(e){}
-  window.location.href = 'Identity_Login_v1.0_PC.html';
+  gcSignOut().then(() => {
+    window.location.reload();
+  });
 }
 
 // ── Populate Profile Drawer from wizard data ──
@@ -3100,7 +3155,7 @@ function calRenderCard(ev) {
       '<div class="card-meta">' + location + venue + ' ' + attendees + '</div>' +
       (desc ? '<div class="card-desc">' + desc + '</div>' : '') +
       '<div class="card-actions">' +        '<button class="action-btn" data-evid="' + (ev.id||'') + '" data-title="' + (ev.title||'').replace(/"/g,'&quot;') + '" data-start="' + (ev.start_date||'') + '" data-end="' + (ev.end_date||'') + '" data-loc="' + (ev.is_online ? 'Online' : [ev.city,ev.country].filter(Boolean).join(', ')).replace(/"/g,'&quot;') + '" data-url="' + (ev.online_url||'') + '" onclick="calAddToIcsByEl(event,this)">📅 Add to Cal</button>' +        '<button class="action-btn" onclick="fdShowToast(&quot;Saved!&quot;)">🔖 Save</button>' +
-        '<button class="action-btn primary" onclick="fdShowToast(&quot;Marked as going!&quot;)">✅ I\'m Going</button>' +
+        '<button class="action-btn primary going-btn" id="going-btn-' + (ev.id||'') + '" data-evid="' + (ev.id||'') + '" data-going="false" onclick="calGoingToggle(this)">✅ I\'m Going</button>' +
         websiteBtn +
       '</div>' +
     '</div>' +
@@ -3171,9 +3226,11 @@ async function calLoadEvents(reset) {
     document.getElementById('cal-loading').innerHTML = '<div style="text-align:center;padding:40px 0;color:#ef4444"><div style="font-size:24px;margin-bottom:8px">⚠️</div><div style="font-size:13px">Failed to load events. Please try again.</div></div>';
   }
   
-  window._calState.loading = false;
+   window._calState.loading = false;
+  // Load going status for newly rendered cards
+  clearTimeout(window._goingStatusTimer);
+  window._goingStatusTimer = setTimeout(calLoadGoingStatus, 800);
 }
-
 function calLoadMore() {
   calLoadEvents(false);
 }
@@ -3775,6 +3832,8 @@ document.addEventListener('DOMContentLoaded', function() {
   miniCalRender();
   setTimeout(miniCalLoadEventDays, 2000);
   setTimeout(calLoadTagCounts, 1500);
+  // Init Supabase auth state
+  gcUpdateNavForLoggedInUser();
 });
 </script>
 <!-- Internal nav: module overview -->
@@ -3784,6 +3843,141 @@ document.addEventListener('DOMContentLoaded', function() {
   <a href="_admin.html" target="_blank" style="font-size:10px;color:rgba(255,255,255,0.7);text-decoration:none;font-weight:600">⚙ Admin</a>
 </div>
 <script>
+// ── I'm Going Feature ─────────────────────────────────────────────────────────
+const _GOING_API = 'https://gc-platform-api.vercel.app/api/events';
+
+// Toggle Going status for an event
+async function calGoingToggle(btn) {
+  const evId = btn.dataset.evid;
+  if (!evId) return;
+
+  // Check login
+  if (!gcIsLoggedIn()) {
+    // Not logged in → go to Profile page to trigger Google sign-in
+    switchMode('profile');
+    // Show a subtle toast
+    fdShowToast('Please sign in to mark events as Going');
+    return;
+  }
+
+  const token = gcGetToken();
+  const isGoing = btn.dataset.going === 'true';
+
+  // Optimistic UI update
+  btn.disabled = true;
+  btn.style.opacity = '0.7';
+
+  try {
+    let resp;
+    if (isGoing) {
+      // Cancel going
+      resp = await fetch(_GOING_API + '/' + evId + '/going', {
+        method: 'DELETE',
+        headers: { 'Authorization': 'Bearer ' + token }
+      });
+    } else {
+      // Mark as going
+      resp = await fetch(_GOING_API + '/' + evId + '/going', {
+        method: 'POST',
+        headers: { 'Authorization': 'Bearer ' + token, 'Content-Type': 'application/json' }
+      });
+    }
+
+    const data = await resp.json();
+    if (data.success) {
+      const count = data.going_count || 0;
+      const nowGoing = data.user_going;
+      btn.dataset.going = nowGoing ? 'true' : 'false';
+      if (nowGoing) {
+        btn.innerHTML = '✅ Going' + (count > 0 ? ' · ' + _fmtCount(count) : '');
+        btn.style.background = 'var(--green-dim)';
+        btn.style.borderColor = 'var(--green-border)';
+        btn.style.color = 'var(--green)';
+        fdShowToast('Marked as Going! 🎉');
+      } else {
+        btn.innerHTML = "✅ I'm Going";
+        btn.style.background = '';
+        btn.style.borderColor = '';
+        btn.style.color = '';
+        fdShowToast('Removed from Going');
+      }
+    } else {
+      fdShowToast('Error: ' + (data.error || 'Unknown error'));
+    }
+  } catch(err) {
+    fdShowToast('Network error, please try again');
+    console.error('Going toggle error:', err);
+  } finally {
+    btn.disabled = false;
+    btn.style.opacity = '';
+  }
+}
+
+// Load going status for all visible event cards
+async function calLoadGoingStatus() {
+  const btns = document.querySelectorAll('.going-btn[data-evid]');
+  if (!btns.length) return;
+
+  const token = gcGetToken();
+  const isLoggedIn = gcIsLoggedIn();
+
+  // Collect all event IDs
+  const ids = Array.from(btns).map(b => b.dataset.evid).filter(Boolean);
+
+  // Load going counts for all events (batch via stats or individual)
+  // For now, load individually (can be optimized with a batch endpoint later)
+  for (const btn of btns) {
+    const evId = btn.dataset.evid;
+    if (!evId) continue;
+    try {
+      const headers = {};
+      if (token) headers['Authorization'] = 'Bearer ' + token;
+      const resp = await fetch(_GOING_API + '/' + evId + '/going', { headers });
+      if (!resp.ok) continue;
+      const data = await resp.json();
+      if (!data.success) continue;
+      const count = data.going_count || 0;
+      const userGoing = isLoggedIn && data.user_going;
+      btn.dataset.going = userGoing ? 'true' : 'false';
+      if (userGoing) {
+        btn.innerHTML = '✅ Going' + (count > 0 ? ' · ' + _fmtCount(count) : '');
+        btn.style.background = 'var(--green-dim)';
+        btn.style.borderColor = 'var(--green-border)';
+        btn.style.color = 'var(--green)';
+      } else if (count > 0) {
+        btn.innerHTML = "✅ I'm Going · " + _fmtCount(count);
+      }
+    } catch(e) { /* ignore */ }
+  }
+}
+
+function _fmtCount(n) {
+  if (n >= 1000) return (n/1000).toFixed(1).replace('.0','') + 'K';
+  return n.toString();
+}
+
+// Update nav avatar if user is logged in via Supabase
+function gcUpdateNavForLoggedInUser() {
+  const user = gcGetUser();
+  if (!user) return;
+  const signinBtn = document.getElementById('nav-signin-btn');
+  const avatarBtn = document.getElementById('nav-avatar-btn');
+  if (signinBtn) signinBtn.style.display = 'none';
+  if (avatarBtn) {
+    const name = user.name || user.email || '';
+    const initials = name.split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase() || '?';
+    avatarBtn.textContent = initials;
+    avatarBtn.style.display = 'flex';
+    if (user.avatar) {
+      avatarBtn.style.backgroundImage = 'url(' + user.avatar + ')';
+      avatarBtn.style.backgroundSize = 'cover';
+      avatarBtn.textContent = '';
+    }
+  }
+  // Also set gc_session so profile panel shows logged-in state
+  try { sessionStorage.setItem('gc_session', '1'); } catch(e) {}
+}
+
 // Show admin link on triple-click on logo
 document.addEventListener('DOMContentLoaded', function() {
   let clicks = 0, timer;
