@@ -11,7 +11,7 @@ html,body{height:100%;font-family:"DM Sans","PingFang SC",sans-serif;color:#0000
 body{background:#f3f2ef}
 
 :root{
-  --orange:#d95f2b;--orange-dim:rgba(217,95,43,0.1);--orange-border:rgba(217,95,43,0.25);
+  --orange:#0A66C2;--orange-dim:rgba(10,102,194,0.1);--orange-border:rgba(10,102,194,0.25);
   --teal:#0a7fa8;--teal-dim:rgba(10,127,168,0.1);--teal-border:rgba(10,127,168,0.22);
   --green:#0d9b72;--green-dim:rgba(13,155,114,0.1);--green-border:rgba(13,155,114,0.25);
   --purple:#7c3aed;--purple-dim:rgba(124,58,237,0.1);--purple-border:rgba(124,58,237,0.25);
@@ -36,14 +36,14 @@ body{background:#f3f2ef}
 .nav-logo span{color:var(--orange)}
 .nav-live-badge{
   display:flex;align-items:center;gap:5px;
-  background:rgba(217,95,43,0.1);border:1px solid rgba(217,95,43,0.25);
+  background:rgba(10,102,194,0.1);border:1px solid rgba(10,102,194,0.25);
   border-radius:6px;padding:3px 10px;flex-shrink:0;
 }
 .live-dot{
   width:6px;height:6px;border-radius:50%;background:var(--orange);
   animation:pulse 1.8s ease-in-out infinite;
 }
-@keyframes pulse{0%,100%{box-shadow:0 0 0 0 rgba(217,95,43,0.6)}60%{box-shadow:0 0 0 5px rgba(217,95,43,0)}}
+@keyframes pulse{0%,100%{box-shadow:0 0 0 0 rgba(10,102,194,0.6)}60%{box-shadow:0 0 0 5px rgba(10,102,194,0)}}
 @keyframes pulse-dot{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.4;transform:scale(1.3)}}
 @keyframes pulse-badge{0%,100%{opacity:1}50%{opacity:.6}}
 @keyframes border-pulse{0%,100%{opacity:1}50%{opacity:.6}}
@@ -1343,9 +1343,8 @@ body{background:#f3f2ef}
     <div class="left-section" id="calendar-dates">
       <div class="left-title" style="margin-top:12px">Year</div>
       <div class="year-btns">
-        <button class="year-btn-tab" onclick="selYear(this,2024)">2024</button>
-        <button class="year-btn-tab" onclick="selYear(this,2025)">2025</button>
         <button class="year-btn-tab active" onclick="selYear(this,2026)">2026</button>
+        <button class="year-btn-tab" onclick="selYear(this,2027)">2027</button>
       </div>
       <div class="left-title">Month</div>
       <div class="date-list" id="month-filter-list">
@@ -1388,12 +1387,23 @@ body{background:#f3f2ef}
 
     <div class="center-tags" id="center-tags">
       <button class="ctag active" onclick="filterTag(this,'all')">All</button>
-      <button class="ctag" onclick="filterTag(this,'free')">🟢 Free</button>
-      <button class="ctag" onclick="filterTag(this,'networking')">🤝 Networking</button>
-      <button class="ctag" onclick="filterTag(this,'showcase')">🎮 Showcase</button>
       <button class="ctag" onclick="filterTag(this,'conference')">🎤 Conference</button>
+      <button class="ctag" onclick="filterTag(this,'tradeshow')">🏢 Trade Show</button>
       <button class="ctag" onclick="filterTag(this,'awards')">🏆 Awards</button>
-      <button class="ctag" onclick="filterTag(this,'workshop')">🛠 Workshop</button>
+      <button class="ctag" onclick="filterTag(this,'b2b')">🤝 B2B</button>
+      <button class="ctag" onclick="filterTag(this,'indie')">🎮 Indie</button>
+      <button class="ctag" onclick="filterTag(this,'igaming')">🎰 iGaming</button>
+      <button class="ctag" onclick="filterTag(this,'esports')">⚡ Esports</button>
+      <button class="ctag" onclick="filterTag(this,'mobile')">📱 Mobile</button>
+      <button class="ctag" onclick="filterTag(this,'vr_ar')">🥽 VR/AR/XR</button>
+      <button class="ctag" onclick="filterTag(this,'online')">🌐 Online</button>
+      <button class="ctag" onclick="filterTag(this,'free')">🟢 Free</button>
+      <button class="ctag" onclick="filterTag(this,'large')">🔥 10K+</button>
+      <button class="ctag" onclick="filterTag(this,'north_america')">🌎 N. America</button>
+      <button class="ctag" onclick="filterTag(this,'europe')">🌍 Europe</button>
+      <button class="ctag" onclick="filterTag(this,'asia')">🌏 Asia Pacific</button>
+      <button class="ctag" onclick="filterTag(this,'latam')">🌎 LatAm</button>
+      <button class="ctag" onclick="filterTag(this,'mea')">🌍 ME & Africa</button>
     </div>
 
     <!-- CALENDAR CARDS -->
@@ -1415,7 +1425,7 @@ body{background:#f3f2ef}
     <!-- LIVE CARDS -->
     <div class="elist" id="live-cards" style="display:none">
 
-      <div class="event-card" style="border-color:rgba(217,95,43,0.32)">
+      <div class="event-card" style="border-color:rgba(10,102,194,0.32)">
         <div class="card-date">
           <div class="card-month">MAR</div>
           <div class="card-day">9</div>
@@ -2838,23 +2848,29 @@ function cpRender() {
 const CAL_API = 'https://gc-platform-api.vercel.app/api/events';
 const CAL_PAGE_SIZE = 30;
 
+const STATS_API = 'https://gc-platform-api.vercel.app/api/events/stats';
 window._calState = {
   year: 2026,
   month: 0,        // 0 = all months
   typeFilter: 'all',
+  regionFilter: null,
+  isOnlineFilter: null,
+  attendeeMinFilter: null,
+  hasBuyersFilter: null,
+  searchKeyword: null,
   offset: 0,
   total: 0,
   loading: false,
-  allEvents: [],   // cache for month counts
-  monthCounts: {}  // { 1: 18, 2: 29, ... }
+  allEvents: [],
+  monthCounts: {}
 };
 
 const MONTH_ABBR = ['JAN','FEB','MAR','APR','MAY','JUN','JUL','AUG','SEP','OCT','NOV','DEC'];
-const DOT_COLORS = ['#d95f2b','#0a7fa8','#0d9b72','#7c3aed','#1d4ed8','#e8640a','#06b6d4','#059669','#dc2626','#7c3aed','#0891b2','#16a34a'];
+const DOT_COLORS = ['#0A66C2','#0a7fa8','#0d9b72','#7c3aed','#1d4ed8','#057642','#06b6d4','#059669','#dc2626','#7c3aed','#0891b2','#16a34a'];
 
 function calGetTypeTag(type, status) {
   if (status === 'ended') return '<span class="card-tag" style="background:#f3f4f6;color:#9ca3af">ENDED</span>';
-  if (status === 'live') return '<span class="card-tag" style="background:rgba(217,95,43,0.1);color:var(--orange)">LIVE</span>';
+  if (status === 'live') return '<span class="card-tag" style="background:rgba(10,102,194,0.1);color:var(--orange)">LIVE</span>';
   if (type === 'conference') return '<span class="card-tag ct-conf">CONFERENCE</span>';
   if (type === 'tradeshow') return '<span class="card-tag ct-show">TRADE SHOW</span>';
   return '<span class="card-tag ct-b2b">EVENT</span>';
@@ -2890,7 +2906,7 @@ function calRenderCard(ev) {
   const typeTag = calGetTypeTag(ev.type, ev.status);
   const location = ev.is_online ? '🌐 Online' : ('📍 ' + [ev.city, ev.country].filter(Boolean).join(', '));
   const venue = ev.venue_name ? ' · ' + ev.venue_name : '';
-  const attendees = ev.attendee_count > 0 ? '<span style="background:rgba(217,95,43,0.1);color:var(--orange);padding:1px 7px;border-radius:10px;font-size:10px;font-weight:700">' + (ev.attendee_count >= 1000 ? Math.round(ev.attendee_count/1000) + 'K+' : ev.attendee_count + '+') + '</span>' : '';
+  const attendees = ev.attendee_count > 0 ? '<span style="background:rgba(10,102,194,0.1);color:var(--orange);padding:1px 7px;border-radius:10px;font-size:10px;font-weight:700">' + (ev.attendee_count >= 1000 ? Math.round(ev.attendee_count/1000) + 'K+' : ev.attendee_count + '+') + '</span>' : '';
   const desc = ev.description ? ev.description.substring(0, 160) + (ev.description.length > 160 ? '…' : '') : '';
   const websiteBtn = ev.online_url ? '<a class="action-link" href="' + ev.online_url + '" target="_blank">↗ Website</a>' : '';
   const isEnded = ev.status === 'ended';
@@ -2930,13 +2946,25 @@ async function calLoadEvents(reset) {
   }
   
   const { year, month, typeFilter, offset } = window._calState;
+  // Default: start from today if no month filter
+  const today = new Date().toISOString().split('T')[0];
   const params = new URLSearchParams({
     limit: CAL_PAGE_SIZE,
     offset: offset,
     year: year
   });
-  if (month > 0) params.set('month', month);
+  if (month > 0) {
+    params.set('month', month);
+  } else {
+    // When showing all months, start from today (skip past events)
+    params.set('from_date', today);
+  }
   if (typeFilter && typeFilter !== 'all') params.set('type', typeFilter);
+  if (window._calState.regionFilter) params.set('region', window._calState.regionFilter);
+  if (window._calState.isOnlineFilter) params.set('is_online', 'true');
+  if (window._calState.attendeeMinFilter) params.set('attendee_min', window._calState.attendeeMinFilter);
+  if (window._calState.hasBuyersFilter) params.set('has_buyers', 'true');
+  if (window._calState.searchKeyword) params.set('search', window._calState.searchKeyword);
   
   try {
     const resp = await fetch(CAL_API + '?' + params.toString());
@@ -2978,56 +3006,68 @@ function calLoadMore() {
 
 async function calLoadMonthCounts() {
   const year = window._calState.year;
-  // Load all events for the year to count by month
   try {
-    const resp = await fetch(CAL_API + '?limit=1000&year=' + year);
+    // Use the dedicated stats endpoint for accurate server-side aggregation
+    const resp = await fetch(STATS_API + '?year=' + year);
     const json = await resp.json();
     if (json.success) {
-      const events = json.data || [];
-      window._calState.allEvents = events;
-      
-      // Count by month
-      const counts = {};
-      let total = 0;
-      events.forEach(ev => {
-        if (ev.start_date) {
-          const m = parseInt(ev.start_date.substring(5, 7));
-          counts[m] = (counts[m] || 0) + 1;
-          total++;
-        }
-      });
+      const counts = json.months || {};
       window._calState.monthCounts = counts;
       
       // Update month count badges
+      const total = json.total || 0;
       document.getElementById('mcnt-0').textContent = total;
       for (let m = 1; m <= 12; m++) {
         const el = document.getElementById('mcnt-' + m);
         if (el) el.textContent = counts[m] || 0;
       }
       
-      // Update stats
+      // Update stats panel
       const statTotal = document.getElementById('stat-total');
-      if (statTotal) statTotal.textContent = json.total || total;
+      if (statTotal) statTotal.textContent = total.toLocaleString();
       
-      // Count unique countries
-      const countries = new Set(events.map(e => e.country).filter(Boolean));
       const statCountries = document.getElementById('stat-countries');
-      if (statCountries) statCountries.textContent = countries.size;
+      if (statCountries) statCountries.textContent = Object.keys(json.countries || {}).length;
       
-      // Count upcoming
-      const today = new Date().toISOString().split('T')[0];
-      const upcoming = events.filter(e => e.start_date >= today && e.status !== 'ended').length;
       const statUpcoming = document.getElementById('stat-upcoming');
-      if (statUpcoming) statUpcoming.textContent = upcoming;
+      if (statUpcoming) statUpcoming.textContent = json.upcoming || 0;
       
-      // Load upcoming events for right panel
-      calLoadUpcoming(events);
-      // Load region distribution
-      calLoadRegions(events);
+      // Load upcoming events for right panel (separate lightweight call)
+      calLoadUpcomingFromAPI();
+      // Load region distribution from stats
+      calLoadRegionsFromStats(json.regions || {});
     }
   } catch(e) {
-    console.error('Failed to load month counts:', e);
+    console.error('Failed to load stats:', e);
   }
+}
+
+async function calLoadUpcomingFromAPI() {
+  const today = new Date().toISOString().split('T')[0];
+  try {
+    const resp = await fetch(CAL_API + '?limit=10&from_date=' + today + '&year=' + window._calState.year);
+    const json = await resp.json();
+    if (json.success) calLoadUpcoming(json.data || []);
+  } catch(e) { console.error('Failed to load upcoming:', e); }
+}
+
+function calLoadRegionsFromStats(regions) {
+  const sorted = Object.entries(regions).sort((a,b) => b[1]-a[1]).slice(0, 6);
+  const max = sorted[0] ? sorted[0][1] : 1;
+  const regionColors = ['var(--orange)', 'var(--teal)', 'var(--green)', 'var(--purple)', '#1d4ed8', '#be123c'];
+  const regionIcons = { 'North America': '🌎', 'Europe': '🌍', 'Asia Pacific': '🌏', 'Online / Global': '🌐', 'Middle East & Africa': '🌍', 'Latin America': '🌎', 'Other': '🌐' };
+  
+  const el = document.getElementById('region-distribution');
+  if (!el) return;
+  
+  el.innerHTML = sorted.map(([region, count], i) => {
+    const pct = Math.round((count / max) * 100);
+    const icon = regionIcons[region] || '🌐';
+    return '<div class="region-row">' +
+      '<div class="region-row-hdr"><span class="region-row-name">' + icon + ' ' + region + '</span><span class="region-row-val">' + count + '</span></div>' +
+      '<div class="region-track"><div class="region-fill" style="width:' + pct + '%;background:' + regionColors[i] + '"></div></div>' +
+    '</div>';
+  }).join('');
 }
 
 function calLoadUpcoming(events) {
@@ -3131,9 +3171,35 @@ function calSelMonth(btn, month) {
 function filterTag(btn, tag) {
   document.querySelectorAll('.ctag').forEach(b => b.classList.remove('active'));
   btn.classList.add('active');
-  // Map UI tag to API type
-  const typeMap = { 'all': 'all', 'conference': 'conference', 'showcase': 'tradeshow' };
-  window._calState.typeFilter = typeMap[tag] || 'all';
+  // Reset all filters first
+  window._calState.typeFilter = 'all';
+  window._calState.regionFilter = null;
+  window._calState.isOnlineFilter = null;
+  window._calState.attendeeMinFilter = null;
+  window._calState.hasBuyersFilter = null;
+  window._calState.searchKeyword = null;
+  // Map tag to filter params
+  const typeMap = {
+    'all': () => {},
+    'conference': () => { window._calState.typeFilter = 'conference'; },
+    'tradeshow': () => { window._calState.typeFilter = 'tradeshow'; },
+    'awards': () => { window._calState.typeFilter = 'awards'; },
+    'esports': () => { window._calState.typeFilter = 'esports'; },
+    'b2b': () => { window._calState.hasBuyersFilter = true; },
+    'indie': () => { window._calState.searchKeyword = 'indie'; },
+    'igaming': () => { window._calState.searchKeyword = 'igaming'; },
+    'mobile': () => { window._calState.searchKeyword = 'mobile'; },
+    'vr_ar': () => { window._calState.searchKeyword = 'vr'; },
+    'online': () => { window._calState.isOnlineFilter = true; },
+    'free': () => { window._calState.typeFilter = 'free'; },
+    'large': () => { window._calState.attendeeMinFilter = 10000; },
+    'north_america': () => { window._calState.regionFilter = 'North America'; },
+    'europe': () => { window._calState.regionFilter = 'Europe'; },
+    'asia': () => { window._calState.regionFilter = 'Asia Pacific'; },
+    'latam': () => { window._calState.regionFilter = 'Latin America'; },
+    'mea': () => { window._calState.regionFilter = 'Middle East & Africa'; },
+  };
+  if (typeMap[tag]) typeMap[tag]();
   calLoadEvents(true);
 }
 
