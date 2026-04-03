@@ -1530,8 +1530,8 @@ async function projLoadPage() {
   const wrap = document.getElementById('proj-table-wrap');
   wrap.innerHTML = '<div class="loading-state">Loading…</div>';
   try {
-    let url = `${SB_URL}/rest/v1/game_projects?select=id,title,company_name,genre,source,status,looking_for&limit=${PROJ_LIMIT}&offset=${projOffset}&order=id.asc`;
-    if (search) url += `&or=(title.ilike.*${encodeURIComponent(search)}*,company_name.ilike.*${encodeURIComponent(search)}*,description.ilike.*${encodeURIComponent(search)})` ;
+    let url = `${SB_URL}/rest/v1/game_projects?select=id,title,tagline,genre,source,status,looking_for&limit=${PROJ_LIMIT}&offset=${projOffset}&order=id.asc`;
+    if (search) url += `&or=(title.ilike.*${encodeURIComponent(search)}*,tagline.ilike.*${encodeURIComponent(search)}*,description.ilike.*${encodeURIComponent(search)})` ;
     if (source) url += `&source=eq.${encodeURIComponent(source)}`;
     if (status) url += `&status=eq.${encodeURIComponent(status)}`;
     const r = await fetch(url, { headers: {...SB_HEADERS, 'Prefer': 'count=exact'} });
@@ -1542,7 +1542,7 @@ async function projLoadPage() {
     wrap.innerHTML = '<table class="admin-table"><thead><tr><th>Title</th><th>Company</th><th>Genre</th><th>Source</th><th>Status</th><th>Looking For</th></tr></thead><tbody>' +
       data.map(p => `<tr>
         <td style="max-width:200px;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--text1)">${p.title || '—'}</td>
-        <td style="font-size:11px;max-width:140px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${p.company_name || '—'}</td>
+        <td style="font-size:11px;max-width:140px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${p.tagline || '—'}</td>
         <td style="font-size:10px">${Array.isArray(p.genre) ? p.genre.slice(0,2).join(', ') : (p.genre || '—')}</td>
         <td><span style="background:rgba(10,102,194,0.08);color:var(--blue);padding:1px 6px;border-radius:8px;font-size:9px;font-weight:700">${p.source || '—'}</span></td>
         <td style="font-size:10px">${p.status || '—'}</td>
@@ -1580,21 +1580,22 @@ async function coLoadPage() {
   const wrap = document.getElementById('co-table-wrap');
   wrap.innerHTML = '<div class="loading-state">Loading…</div>';
   try {
-    let url = `${SB_URL}/rest/v1/companies?select=id,name,type,country,contact_name,contact_email,website&limit=${CO_LIMIT}&offset=${coOffset}&order=name.asc`;
-    if (search) url += `&or=(name.ilike.*${encodeURIComponent(search)}*,contact_name.ilike.*${encodeURIComponent(search)}*,country.ilike.*${encodeURIComponent(search)})` ;
+    let url = `${SB_URL}/rest/v1/companies?select=id,name,type,country,primary_email,website,gc_staff,priority&limit=${CO_LIMIT}&offset=${coOffset}&order=name.asc`;
+    if (search) url += `&or=(name.ilike.*${encodeURIComponent(search)}*,country.ilike.*${encodeURIComponent(search)}*,primary_email.ilike.*${encodeURIComponent(search)})` ;
     if (type) url += `&type=eq.${encodeURIComponent(type)}`;
     const r = await fetch(url, { headers: {...SB_HEADERS, 'Prefer': 'count=exact'} });
     const data = await r.json();
     const cr = r.headers.get('content-range');
     if (cr) coTotal = parseInt(cr.split('/')[1]);
     if (!data.length) { wrap.innerHTML = '<div class="loading-state">No companies found</div>'; return; }
-    wrap.innerHTML = '<table class="admin-table"><thead><tr><th>Company</th><th>Type</th><th>Country</th><th>Contact</th><th>Email</th><th>Website</th></tr></thead><tbody>' +
+    wrap.innerHTML = '<table class="admin-table"><thead><tr><th>Company</th><th>Type</th><th>Country</th><th>GC Staff</th><th>Email</th><th>Priority</th><th>Website</th></tr></thead><tbody>' +
       data.map(c => `<tr>
         <td style="font-weight:600;color:var(--text1);max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${c.name || '—'}</td>
         <td><span style="background:rgba(10,102,194,0.08);color:var(--blue);padding:1px 6px;border-radius:8px;font-size:9px;font-weight:700">${c.type || '—'}</span></td>
         <td style="font-size:11px">${c.country || '—'}</td>
-        <td style="font-size:11px">${c.contact_name || '—'}</td>
-        <td style="font-size:10px;color:var(--blue)">${c.contact_email ? `<a href="mailto:${c.contact_email}" style="color:var(--blue)">${c.contact_email}</a>` : '—'}</td>
+        <td style="font-size:11px">${c.gc_staff || '—'}</td>
+        <td style="font-size:10px;color:var(--blue)">${c.primary_email ? `<a href="mailto:${c.primary_email}" style="color:var(--blue)">${c.primary_email}</a>` : '—'}</td>
+        <td style="font-size:10px">${c.priority ? `<span style="background:${c.priority==='high'?'rgba(229,57,53,0.1)':c.priority==='medium'?'rgba(249,115,22,0.1)':'rgba(0,0,0,0.05)'};color:${c.priority==='high'?'var(--red)':c.priority==='medium'?'var(--orange)':'var(--text3)'};padding:1px 6px;border-radius:8px;font-size:9px;font-weight:700">${c.priority}</span>` : '—'}</td>
         <td style="font-size:10px">${c.website ? `<a href="${c.website}" target="_blank" style="color:var(--blue)">Link ↗</a>` : '—'}</td>
       </tr>`).join('') + '</tbody></table>';
     const s = coOffset + 1, e = Math.min(coOffset + CO_LIMIT, coTotal);
