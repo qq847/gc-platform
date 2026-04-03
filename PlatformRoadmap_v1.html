@@ -1,0 +1,919 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Game Connection Platform Roadmap</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg: #e8e4da;
+    --primary: #d95f2b;
+    --primary-light: #f5ddd1;
+    --card-bg: #f4f1eb;
+    --card-border: #d8d3c8;
+    --text: #1a1a1a;
+    --text-muted: #6b6760;
+    --text-light: #9a9590;
+    --white: #ffffff;
+
+    --phase1: #22c55e;
+    --phase2: #3b82f6;
+    --phase3: #a855f7;
+    --phase4: #f97316;
+    --phase5: #ef4444;
+    --phase6: #eab308;
+    --phase7: #374151;
+  }
+
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    padding: 0 0 80px;
+  }
+
+  /* ─── HEADER ─── */
+  .site-header {
+    background: var(--white);
+    border-bottom: 1.5px solid var(--card-border);
+    padding: 28px 48px 0;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    box-shadow: 0 2px 12px rgba(0,0,0,.06);
+  }
+
+  .header-top {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 16px;
+    margin-bottom: 20px;
+  }
+
+  .header-brand {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .brand-icon {
+    width: 40px; height: 40px;
+    background: var(--primary);
+    border-radius: 10px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 20px;
+    flex-shrink: 0;
+  }
+
+  .header-title h1 {
+    font-size: 22px;
+    font-weight: 700;
+    color: var(--text);
+    letter-spacing: -0.3px;
+    line-height: 1.2;
+  }
+
+  .header-title p {
+    font-size: 13px;
+    color: var(--text-muted);
+    font-weight: 400;
+    margin-top: 2px;
+  }
+
+  .header-stats {
+    display: flex;
+    gap: 20px;
+    flex-wrap: wrap;
+  }
+
+  .stat-pill {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 8px 20px;
+    background: var(--bg);
+    border: 1.5px solid var(--card-border);
+    border-radius: 10px;
+    min-width: 80px;
+  }
+
+  .stat-pill .num {
+    font-size: 20px;
+    font-weight: 700;
+    color: var(--primary);
+    line-height: 1.1;
+  }
+
+  .stat-pill .lbl {
+    font-size: 11px;
+    color: var(--text-muted);
+    font-weight: 500;
+    letter-spacing: 0.3px;
+    white-space: nowrap;
+  }
+
+  .progress-pill {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 8px 20px;
+    background: var(--bg);
+    border: 1.5px solid var(--card-border);
+    border-radius: 10px;
+    min-width: 100px;
+    gap: 4px;
+  }
+
+  .progress-bar-wrap {
+    width: 100%;
+    height: 5px;
+    background: var(--card-border);
+    border-radius: 99px;
+    overflow: hidden;
+  }
+
+  .progress-bar-fill {
+    height: 100%;
+    background: var(--primary);
+    border-radius: 99px;
+    width: 57%;
+  }
+
+  .progress-pill .lbl {
+    font-size: 11px;
+    color: var(--text-muted);
+    font-weight: 500;
+  }
+
+  .progress-pill .num {
+    font-size: 18px;
+    font-weight: 700;
+    color: var(--primary);
+    line-height: 1.1;
+  }
+
+  /* ─── TABS ─── */
+  .tabs {
+    display: flex;
+    gap: 0;
+  }
+
+  .tab {
+    padding: 11px 22px;
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--text-muted);
+    cursor: pointer;
+    border-bottom: 2.5px solid transparent;
+    transition: all .18s;
+    text-decoration: none;
+    user-select: none;
+    white-space: nowrap;
+  }
+
+  .tab:hover { color: var(--text); }
+  .tab.active {
+    color: var(--primary);
+    border-bottom-color: var(--primary);
+    font-weight: 600;
+  }
+
+  /* ─── MAIN CONTENT ─── */
+  .main {
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 40px 24px 0;
+  }
+
+  /* ─── CONNECTOR ARROW ─── */
+  .phase-connector {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 40px;
+    position: relative;
+  }
+
+  .connector-line {
+    width: 2px;
+    height: 100%;
+    background: linear-gradient(to bottom, var(--card-border), var(--card-border));
+    position: absolute;
+    left: 50%;
+    transform: translateX(-50%);
+  }
+
+  .connector-arrow {
+    background: var(--white);
+    border: 1.5px solid var(--card-border);
+    border-radius: 50%;
+    width: 28px;
+    height: 28px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 13px;
+    color: var(--text-muted);
+    position: relative;
+    z-index: 1;
+    font-weight: 700;
+  }
+
+  /* ─── PHASE CARD ─── */
+  .phase-card {
+    background: var(--card-bg);
+    border: 1.5px solid var(--card-border);
+    border-radius: 16px;
+    overflow: hidden;
+    display: flex;
+    transition: box-shadow .2s;
+  }
+
+  .phase-card:hover {
+    box-shadow: 0 6px 24px rgba(0,0,0,.09);
+  }
+
+  .phase-stripe {
+    width: 6px;
+    flex-shrink: 0;
+  }
+
+  .phase-body {
+    flex: 1;
+    padding: 24px 28px;
+  }
+
+  /* ─── PHASE HEADER ─── */
+  .phase-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 16px;
+    margin-bottom: 16px;
+  }
+
+  .phase-header-left {
+    display: flex;
+    align-items: flex-start;
+    gap: 16px;
+  }
+
+  .phase-num {
+    font-size: 52px;
+    font-weight: 700;
+    line-height: 1;
+    opacity: .15;
+    flex-shrink: 0;
+    letter-spacing: -2px;
+  }
+
+  .phase-meta { flex: 1; }
+
+  .phase-tag {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.8px;
+    text-transform: uppercase;
+    padding: 3px 10px;
+    border-radius: 99px;
+    margin-bottom: 6px;
+    opacity: .85;
+  }
+
+  .phase-name {
+    font-size: 20px;
+    font-weight: 700;
+    letter-spacing: -0.3px;
+    line-height: 1.2;
+    margin-bottom: 6px;
+  }
+
+  .phase-desc {
+    font-size: 13px;
+    color: var(--text-muted);
+    line-height: 1.5;
+    max-width: 480px;
+  }
+
+  /* ─── STATUS BADGE ─── */
+  .status-badge {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    flex-shrink: 0;
+    padding: 10px 14px;
+    background: var(--white);
+    border: 1.5px solid var(--card-border);
+    border-radius: 10px;
+    min-width: 90px;
+  }
+
+  .status-icon { font-size: 20px; line-height: 1; }
+
+  .status-text {
+    font-size: 10.5px;
+    font-weight: 600;
+    text-align: center;
+    letter-spacing: 0.2px;
+    color: var(--text-muted);
+    line-height: 1.3;
+    white-space: nowrap;
+  }
+
+  /* ─── DIVIDER ─── */
+  .phase-divider {
+    border: none;
+    border-top: 1px solid var(--card-border);
+    margin: 16px 0;
+  }
+
+  /* ─── MODULE GRID ─── */
+  .module-grid {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  .module-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 7px 13px;
+    background: var(--white);
+    border: 1.5px solid var(--card-border);
+    border-radius: 8px;
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--text);
+    transition: border-color .15s;
+  }
+
+  .module-chip:hover { border-color: #bbb; }
+
+  .module-icon {
+    font-size: 14px;
+    flex-shrink: 0;
+  }
+
+  /* ─── DUAL TABLE (Phase 5 & 6) ─── */
+  .dual-table-wrap {
+    overflow-x: auto;
+    border-radius: 10px;
+    border: 1.5px solid var(--card-border);
+  }
+
+  .dual-table {
+    width: 100%;
+    border-collapse: collapse;
+    background: var(--white);
+    font-size: 13px;
+  }
+
+  .dual-table thead tr {
+    border-bottom: 2px solid var(--card-border);
+  }
+
+  .dual-table thead th {
+    padding: 12px 16px;
+    text-align: left;
+    font-weight: 600;
+    font-size: 12.5px;
+    letter-spacing: 0.2px;
+    background: var(--bg);
+  }
+
+  .dual-table thead th:first-child {
+    border-right: 1.5px solid var(--card-border);
+  }
+
+  .dual-table tbody tr {
+    border-bottom: 1px solid #ede9e0;
+    transition: background .12s;
+  }
+
+  .dual-table tbody tr:last-child { border-bottom: none; }
+  .dual-table tbody tr:hover { background: #faf8f4; }
+
+  .dual-table tbody td {
+    padding: 10px 16px;
+    vertical-align: middle;
+    line-height: 1.4;
+  }
+
+  .dual-table tbody td:first-child {
+    border-right: 1.5px solid var(--card-border);
+    font-weight: 500;
+  }
+
+  .td-icon {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+  }
+
+  /* ─── SECTION LABEL ─── */
+  .section-label {
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.8px;
+    text-transform: uppercase;
+    color: var(--text-light);
+    margin-bottom: 10px;
+  }
+
+  /* ─── PHASE COLOR SCHEMES ─── */
+  .p1 .phase-stripe { background: var(--phase1); }
+  .p1 .phase-num { color: var(--phase1); }
+  .p1 .phase-tag { background: #dcfce7; color: #166534; }
+  .p1 .phase-name { color: #166534; }
+
+  .p2 .phase-stripe { background: var(--phase2); }
+  .p2 .phase-num { color: var(--phase2); }
+  .p2 .phase-tag { background: #dbeafe; color: #1e40af; }
+  .p2 .phase-name { color: #1e3a8a; }
+
+  .p3 .phase-stripe { background: var(--phase3); }
+  .p3 .phase-num { color: var(--phase3); }
+  .p3 .phase-tag { background: #f3e8ff; color: #6b21a8; }
+  .p3 .phase-name { color: #581c87; }
+
+  .p4 .phase-stripe { background: var(--phase4); }
+  .p4 .phase-num { color: var(--phase4); }
+  .p4 .phase-tag { background: #ffedd5; color: #9a3412; }
+  .p4 .phase-name { color: #7c2d12; }
+
+  .p5 .phase-stripe { background: var(--phase5); }
+  .p5 .phase-num { color: var(--phase5); }
+  .p5 .phase-tag { background: #fee2e2; color: #991b1b; }
+  .p5 .phase-name { color: #7f1d1d; }
+
+  .p6 .phase-stripe { background: var(--phase6); }
+  .p6 .phase-num { color: var(--phase6); }
+  .p6 .phase-tag { background: #fef9c3; color: #713f12; }
+  .p6 .phase-name { color: #78350f; }
+
+  .p7 .phase-stripe { background: var(--phase7); }
+  .p7 .phase-num { color: var(--phase7); }
+  .p7 .phase-tag { background: #f3f4f6; color: #374151; }
+  .p7 .phase-name { color: #111827; }
+
+  /* Status colors */
+  .status-done .status-text { color: #16a34a; }
+  .status-wip .status-text { color: #d97706; }
+  .status-todo .status-text { color: #6b7280; }
+
+  /* ─── MODULE VIEW (hidden by default) ─── */
+  #module-view { display: none; }
+  #roadmap-view { display: block; }
+
+  .module-view-note {
+    background: var(--white);
+    border: 1.5px dashed var(--card-border);
+    border-radius: 12px;
+    padding: 40px;
+    text-align: center;
+    color: var(--text-muted);
+  }
+
+  .module-view-note h2 { font-size: 18px; color: var(--text); margin-bottom: 8px; }
+  .module-view-note p { font-size: 14px; line-height: 1.6; }
+
+  /* ─── FOOTER BAR ─── */
+  .footer-bar {
+    position: fixed;
+    bottom: 0; left: 0; right: 0;
+    background: rgba(255,255,255,.92);
+    backdrop-filter: blur(8px);
+    border-top: 1px solid var(--card-border);
+    padding: 10px 48px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    font-size: 12px;
+    color: var(--text-muted);
+    z-index: 99;
+  }
+
+  .footer-bar strong { color: var(--text); }
+  .footer-legend { display: flex; gap: 20px; }
+  .legend-item { display: flex; align-items: center; gap: 5px; }
+
+  /* ─── RESPONSIVE ─── */
+  @media (max-width: 640px) {
+    .site-header { padding: 20px 16px 0; }
+    .header-top { flex-direction: column; }
+    .main { padding: 24px 12px 0; }
+    .phase-body { padding: 16px 14px; }
+    .phase-num { font-size: 36px; }
+    .phase-name { font-size: 16px; }
+    .header-stats { gap: 8px; }
+    .stat-pill, .progress-pill { padding: 6px 12px; }
+    .footer-bar { padding: 10px 16px; }
+    .footer-legend { display: none; }
+    .dual-table thead th, .dual-table tbody td { padding: 8px 10px; font-size: 12px; }
+  }
+</style>
+</head>
+<body>
+
+<!-- ══════════════════ HEADER ══════════════════ -->
+<header class="site-header">
+  <div class="header-top">
+    <div class="header-brand">
+      <div class="brand-icon">🎮</div>
+      <div class="header-title">
+        <h1>Game Connection Platform Roadmap</h1>
+        <p>7 Phases · From Zero to Full Commerce</p>
+      </div>
+    </div>
+
+    <div class="header-stats">
+      <div class="stat-pill">
+        <span class="num">7</span>
+        <span class="lbl">Phases</span>
+      </div>
+      <div class="stat-pill">
+        <span class="num">60+</span>
+        <span class="lbl">Pages</span>
+      </div>
+      <div class="progress-pill">
+        <span class="num">57%</span>
+        <div class="progress-bar-wrap">
+          <div class="progress-bar-fill"></div>
+        </div>
+        <span class="lbl">Complete</span>
+      </div>
+    </div>
+  </div>
+
+  <nav class="tabs">
+    <a class="tab active" id="tab-roadmap" onclick="switchTab('roadmap')">📍 Roadmap View</a>
+    <a class="tab" id="tab-module" onclick="switchTab('module')">🧩 Module View</a>
+  </nav>
+</header>
+
+<!-- ══════════════════ MAIN ══════════════════ -->
+<main class="main">
+
+  <!-- ────── ROADMAP VIEW ────── -->
+  <div id="roadmap-view">
+
+    <!-- ═══ PHASE 1 ═══ -->
+    <div class="phase-card p1">
+      <div class="phase-stripe"></div>
+      <div class="phase-body">
+        <div class="phase-header">
+          <div class="phase-header-left">
+            <div class="phase-num">1</div>
+            <div class="phase-meta">
+              <div class="phase-tag">🌐 Phase 1</div>
+              <div class="phase-name">Discovery</div>
+              <div class="phase-desc">任何人打开即有价值，无需注册。SEO 入口，平台冷启动的核心流量来源。</div>
+            </div>
+          </div>
+          <div class="status-badge status-done">
+            <div class="status-icon">✅</div>
+            <div class="status-text">已有原型</div>
+          </div>
+        </div>
+
+        <hr class="phase-divider">
+        <div class="section-label">Modules</div>
+        <div class="module-grid">
+          <div class="module-chip"><span class="module-icon">🏠</span> Homepage Feed</div>
+          <div class="module-chip"><span class="module-icon">📅</span> Conference Calendar</div>
+          <div class="module-chip"><span class="module-icon">🗺️</span> Live Event Guide</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- connector -->
+    <div class="phase-connector">
+      <div class="connector-line"></div>
+      <div class="connector-arrow">↓</div>
+    </div>
+
+    <!-- ═══ PHASE 2 ═══ -->
+    <div class="phase-card p2">
+      <div class="phase-stripe"></div>
+      <div class="phase-body">
+        <div class="phase-header">
+          <div class="phase-header-left">
+            <div class="phase-num">2</div>
+            <div class="phase-meta">
+              <div class="phase-tag">🪪 Phase 2</div>
+              <div class="phase-name">Identity</div>
+              <div class="phase-desc">建立用户体系，平台开始有数据。用户从匿名访客变为有身份的社区成员。</div>
+            </div>
+          </div>
+          <div class="status-badge status-done">
+            <div class="status-icon">✅</div>
+            <div class="status-text">已有原型</div>
+          </div>
+        </div>
+
+        <hr class="phase-divider">
+        <div class="section-label">Modules</div>
+        <div class="module-grid">
+          <div class="module-chip"><span class="module-icon">🔐</span> Auth — Login / Register</div>
+          <div class="module-chip"><span class="module-icon">🧭</span> Onboarding</div>
+          <div class="module-chip"><span class="module-icon">👤</span> Profile 基础版</div>
+          <div class="module-chip"><span class="module-icon">⚙️</span> Settings 基础版</div>
+          <div class="module-chip"><span class="module-icon">🎮</span> Project（游戏/项目展示）</div>
+          <div class="module-chip"><span class="module-icon">🏢</span> Organization（公司/团队）</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="phase-connector">
+      <div class="connector-line"></div>
+      <div class="connector-arrow">↓</div>
+    </div>
+
+    <!-- ═══ PHASE 3 ═══ -->
+    <div class="phase-card p3">
+      <div class="phase-stripe"></div>
+      <div class="phase-body">
+        <div class="phase-header">
+          <div class="phase-header-left">
+            <div class="phase-num">3</div>
+            <div class="phase-meta">
+              <div class="phase-tag">💬 Phase 3</div>
+              <div class="phase-name">Connection</div>
+              <div class="phase-desc">用户之间能连接，从内容平台升级为社交平台。私信与通知构成社交互动的基础设施。</div>
+            </div>
+          </div>
+          <div class="status-badge status-done">
+            <div class="status-icon">✅</div>
+            <div class="status-text">已有原型</div>
+          </div>
+        </div>
+
+        <hr class="phase-divider">
+        <div class="section-label">Modules</div>
+        <div class="module-grid">
+          <div class="module-chip"><span class="module-icon">✉️</span> Messages 私信</div>
+          <div class="module-chip"><span class="module-icon">🔔</span> Notification 通知系统</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="phase-connector">
+      <div class="connector-line"></div>
+      <div class="connector-arrow">↓</div>
+    </div>
+
+    <!-- ═══ PHASE 4 ═══ -->
+    <div class="phase-card p4">
+      <div class="phase-stripe"></div>
+      <div class="phase-body">
+        <div class="phase-header">
+          <div class="phase-header-left">
+            <div class="phase-num">4</div>
+            <div class="phase-meta">
+              <div class="phase-tag">☕ Phase 4</div>
+              <div class="phase-name">Meetup</div>
+              <div class="phase-desc">最轻量的活动功能，任何人都能发布。降低活动创建门槛，激活社区线下连接。</div>
+            </div>
+          </div>
+          <div class="status-badge status-wip">
+            <div class="status-icon">🔄</div>
+            <div class="status-text">部分完成</div>
+          </div>
+        </div>
+
+        <hr class="phase-divider">
+        <div class="section-label">Modules</div>
+        <div class="module-grid">
+          <div class="module-chip"><span class="module-icon">📝</span> 发布小型活动</div>
+          <div class="module-chip"><span class="module-icon">🙋</span> 免费报名参与</div>
+          <div class="module-chip"><span class="module-icon">🔍</span> 活动发现与推荐</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="phase-connector">
+      <div class="connector-line"></div>
+      <div class="connector-arrow">↓</div>
+    </div>
+
+    <!-- ═══ PHASE 5 ═══ -->
+    <div class="phase-card p5">
+      <div class="phase-stripe"></div>
+      <div class="phase-body">
+        <div class="phase-header">
+          <div class="phase-header-left">
+            <div class="phase-num">5</div>
+            <div class="phase-meta">
+              <div class="phase-tag">🎪 Phase 5</div>
+              <div class="phase-name">Events</div>
+              <div class="phase-desc">完整展会功能，B2B 主办方与 B2C 参会者一一对应。覆盖展会全生命周期管理。</div>
+            </div>
+          </div>
+          <div class="status-badge status-wip">
+            <div class="status-icon">🔄</div>
+            <div class="status-text">部分完成</div>
+          </div>
+        </div>
+
+        <hr class="phase-divider">
+        <div class="section-label">B2B ↔ B2C Feature Mapping</div>
+        <div class="dual-table-wrap">
+          <table class="dual-table">
+            <thead>
+              <tr>
+                <th>🏢 Organizer (B2B)</th>
+                <th>👤 Attendee (B2C)</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><span class="td-icon">📋 活动发布</span></td>
+                <td><span class="td-icon">📄 展会详情页</span></td>
+              </tr>
+              <tr>
+                <td><span class="td-icon">✅ 免费报名管理</span></td>
+                <td><span class="td-icon">📬 报名表单</span></td>
+              </tr>
+              <tr>
+                <td><span class="td-icon">🎟️ 付费票务配置</span></td>
+                <td><span class="td-icon">💳 购票页面</span></td>
+              </tr>
+              <tr>
+                <td><span class="td-icon">🏗️ Pod / Booth 管理</span></td>
+                <td><span class="td-icon">🔎 展位浏览</span></td>
+              </tr>
+              <tr>
+                <td><span class="td-icon">🏆 Awards 配置</span></td>
+                <td><span class="td-icon">🗳️ Awards 投票</span></td>
+              </tr>
+              <tr>
+                <td><span class="td-icon">🎙️ Session 管理</span></td>
+                <td><span class="td-icon">📆 个人日程规划</span></td>
+              </tr>
+              <tr>
+                <td><span class="td-icon">🤝 Let's Meet 配置</span></td>
+                <td><span class="td-icon">💡 配对与会议管理</span></td>
+              </tr>
+              <tr>
+                <td><span class="td-icon">🕹️ Game Showcase 管理</span></td>
+                <td><span class="td-icon">👾 游戏浏览</span></td>
+              </tr>
+              <tr>
+                <td><span class="td-icon">💼 买家邀请管理</span></td>
+                <td><span class="td-icon">🔒 买家专区</span></td>
+              </tr>
+              <tr>
+                <td><span class="td-icon">🗺️ 展会地图配置</span></td>
+                <td><span class="td-icon">📍 展会地图导航</span></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <div class="phase-connector">
+      <div class="connector-line"></div>
+      <div class="connector-arrow">↓</div>
+    </div>
+
+    <!-- ═══ PHASE 6 ═══ -->
+    <div class="phase-card p6">
+      <div class="phase-stripe"></div>
+      <div class="phase-body">
+        <div class="phase-header">
+          <div class="phase-header-left">
+            <div class="phase-num">6</div>
+            <div class="phase-meta">
+              <div class="phase-tag">💰 Phase 6</div>
+              <div class="phase-name">Sponsorship</div>
+              <div class="phase-desc">平台商业化核心，赞助商收入。主办方灵活配置赞助产品，赞助商自助购买并追踪 ROI。</div>
+            </div>
+          </div>
+          <div class="status-badge status-wip">
+            <div class="status-icon">🔄</div>
+            <div class="status-text">部分完成</div>
+          </div>
+        </div>
+
+        <hr class="phase-divider">
+        <div class="section-label">Organizer Config (6.1) ↔ Sponsor Purchase (6.2)</div>
+        <div class="dual-table-wrap">
+          <table class="dual-table">
+            <thead>
+              <tr>
+                <th>🏢 主办方配置 (6.1)</th>
+                <th>💼 赞助商购买 (6.2)</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><span class="td-icon">📦 赞助套餐设计</span></td>
+                <td><span class="td-icon">🛍️ 浏览赞助产品</span></td>
+              </tr>
+              <tr>
+                <td><span class="td-icon">⚙️ 单项赞助配置</span></td>
+                <td><span class="td-icon">💳 购买 / 结账</span></td>
+              </tr>
+              <tr>
+                <td><span class="td-icon">🎁 权益管理</span></td>
+                <td><span class="td-icon">✔️ 权益交付确认</span></td>
+              </tr>
+              <tr>
+                <td><span class="td-icon">📊 赞助数据报表</span></td>
+                <td><span class="td-icon">📈 赞助商后台 ROI</span></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <div class="phase-connector">
+      <div class="connector-line"></div>
+      <div class="connector-arrow">↓</div>
+    </div>
+
+    <!-- ═══ PHASE 7 ═══ -->
+    <div class="phase-card p7">
+      <div class="phase-stripe"></div>
+      <div class="phase-body">
+        <div class="phase-header">
+          <div class="phase-header-left">
+            <div class="phase-num">7</div>
+            <div class="phase-meta">
+              <div class="phase-tag">🔒 Phase 7</div>
+              <div class="phase-name">Commerce</div>
+              <div class="phase-desc">平台护城河，游戏行业 B2B 交易闭环。从意向到签约，全流程在平台内完成。</div>
+            </div>
+          </div>
+          <div class="status-badge status-todo">
+            <div class="status-icon">⏳</div>
+            <div class="status-text">待开发</div>
+          </div>
+        </div>
+
+        <hr class="phase-divider">
+        <div class="section-label">Modules</div>
+        <div class="module-grid">
+          <div class="module-chip"><span class="module-icon">📁</span> Project 商务版（发行条件 / 授权）</div>
+          <div class="module-chip"><span class="module-icon">🤝</span> 商务磋商（合作意向发起）</div>
+          <div class="module-chip"><span class="module-icon">🏦</span> Deal Room（谈判 / 文件共享）</div>
+          <div class="module-chip"><span class="module-icon">✍️</span> 电子合同签署</div>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- /roadmap-view -->
+
+  <!-- ────── MODULE VIEW ────── -->
+  <div id="module-view">
+    <div class="module-view-note">
+      <h2>🧩 Module View</h2>
+      <p>按功能模块分类的详细视图。<br>请切换至各模块的独立原型页面查看完整交互稿。</p>
+      <br>
+      <p style="font-size:13px;color:#aaa;">Module-level wireframe files are linked from the project index.</p>
+    </div>
+  </div>
+
+</main>
+
+<!-- ══════════════════ FOOTER ══════════════════ -->
+<footer class="footer-bar">
+  <span><strong>Game Connection Platform</strong> · Internal Roadmap v1 · 2026</span>
+  <div class="footer-legend">
+    <div class="legend-item">✅ <span>已有原型</span></div>
+    <div class="legend-item">🔄 <span>部分完成</span></div>
+    <div class="legend-item">⏳ <span>待开发</span></div>
+  </div>
+</footer>
+
+<script>
+  function switchTab(view) {
+    document.getElementById('roadmap-view').style.display = view === 'roadmap' ? 'block' : 'none';
+    document.getElementById('module-view').style.display  = view === 'module'  ? 'block' : 'none';
+    document.getElementById('tab-roadmap').classList.toggle('active', view === 'roadmap');
+    document.getElementById('tab-module').classList.toggle('active', view === 'module');
+  }
+
+  // Animate progress bar on load
+  window.addEventListener('load', function() {
+    setTimeout(function() {
+      document.querySelector('.progress-bar-fill').style.transition = 'width 1s ease';
+    }, 300);
+  });
+</script>
+
+</body>
+</html>

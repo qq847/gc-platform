@@ -1,0 +1,1274 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Session Management — Game Connection B2B</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --primary: #d95f2b;
+    --primary-dark: #b84d20;
+    --primary-light: #f5e8e0;
+    --bg: #e8e4da;
+    --surface: #f2efe8;
+    --surface2: #fff;
+    --border: #d8d4c8;
+    --text: #1a1a1a;
+    --text-2: #555;
+    --text-3: #888;
+    --sidebar-bg: #1e1b16;
+    --sidebar-text: #c8c4b8;
+    --sidebar-active: #d95f2b;
+    --green: #2e7d52;
+    --green-bg: #e8f5ee;
+    --yellow: #b45309;
+    --yellow-bg: #fef3c7;
+    --red: #b91c1c;
+    --red-bg: #fee2e2;
+    --blue: #1d4ed8;
+    --blue-bg: #dbeafe;
+    --purple: #6d28d9;
+    --purple-bg: #ede9fe;
+    --radius: 10px;
+    --shadow: 0 2px 8px rgba(0,0,0,.08);
+    --shadow-lg: 0 8px 24px rgba(0,0,0,.12);
+  }
+
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    display: flex;
+  }
+
+  /* ── SIDEBAR ── */
+  .sidebar {
+    width: 240px;
+    min-height: 100vh;
+    background: var(--sidebar-bg);
+    display: flex;
+    flex-direction: column;
+    flex-shrink: 0;
+    position: sticky;
+    top: 0;
+    height: 100vh;
+    overflow-y: auto;
+  }
+
+  .sidebar-logo {
+    padding: 28px 24px 20px;
+    border-bottom: 1px solid rgba(255,255,255,.08);
+  }
+  .sidebar-logo .brand {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--primary);
+    letter-spacing: .08em;
+    text-transform: uppercase;
+  }
+  .sidebar-logo .event-name {
+    font-size: 15px;
+    font-weight: 600;
+    color: #fff;
+    margin-top: 4px;
+    line-height: 1.3;
+  }
+  .sidebar-logo .event-date {
+    font-size: 12px;
+    color: var(--sidebar-text);
+    margin-top: 2px;
+  }
+
+  .sidebar-nav { padding: 12px 0; flex: 1; }
+
+  .nav-section-label {
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: .1em;
+    text-transform: uppercase;
+    color: rgba(200,196,184,.4);
+    padding: 12px 24px 4px;
+  }
+
+  .nav-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 24px;
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--sidebar-text);
+    cursor: pointer;
+    transition: all .2s;
+    border-left: 3px solid transparent;
+    text-decoration: none;
+  }
+  .nav-item:hover { color: #fff; background: rgba(255,255,255,.05); }
+  .nav-item.active { color: #fff; background: rgba(217,95,43,.12); border-left-color: var(--primary); }
+  .nav-item .nav-icon { width: 18px; text-align: center; font-size: 16px; }
+
+  .sidebar-footer {
+    padding: 16px 24px;
+    border-top: 1px solid rgba(255,255,255,.08);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .sidebar-footer .avatar {
+    width: 32px; height: 32px; border-radius: 50%;
+    background: var(--primary);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 13px; font-weight: 700; color: #fff;
+    flex-shrink: 0;
+  }
+  .sidebar-footer .name { font-size: 13px; font-weight: 500; color: #fff; }
+  .sidebar-footer .role { font-size: 11px; color: var(--sidebar-text); }
+
+  /* ── MAIN ── */
+  .main {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    max-width: 1160px;
+  }
+
+  .topbar {
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    padding: 0 32px;
+    height: 60px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-shrink: 0;
+    position: sticky;
+    top: 0;
+    z-index: 10;
+  }
+  .topbar-title { font-size: 18px; font-weight: 700; }
+  .topbar-actions { display: flex; align-items: center; gap: 12px; }
+
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 8px 16px;
+    border-radius: 8px;
+    font-family: inherit;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all .2s;
+    border: none;
+    text-decoration: none;
+    white-space: nowrap;
+  }
+  .btn-primary { background: var(--primary); color: #fff; }
+  .btn-primary:hover { background: var(--primary-dark); }
+  .btn-outline { background: transparent; color: var(--text); border: 1.5px solid var(--border); }
+  .btn-outline:hover { border-color: var(--primary); color: var(--primary); }
+  .btn-ghost { background: transparent; color: var(--text-2); padding: 6px 10px; }
+  .btn-ghost:hover { background: var(--border); color: var(--text); }
+  .btn-danger-ghost { background: transparent; color: var(--red); padding: 6px 10px; font-size: 13px; font-weight: 500; border: none; cursor: pointer; font-family: inherit; }
+  .btn-danger-ghost:hover { background: var(--red-bg); border-radius: 6px; }
+  .btn-sm { padding: 5px 12px; font-size: 12px; border-radius: 6px; }
+  .btn-icon { padding: 7px; border-radius: 7px; }
+
+  .content { padding: 28px 32px; flex: 1; }
+
+  /* ── TABS ── */
+  .tabs {
+    display: flex;
+    gap: 4px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 4px;
+    margin-bottom: 24px;
+    width: fit-content;
+  }
+  .tab-btn {
+    padding: 8px 20px;
+    font-family: inherit;
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--text-2);
+    background: transparent;
+    border: none;
+    border-radius: 7px;
+    cursor: pointer;
+    transition: all .2s;
+    display: flex; align-items: center; gap: 7px;
+  }
+  .tab-btn:hover { color: var(--text); background: var(--border); }
+  .tab-btn.active { background: var(--primary); color: #fff; font-weight: 600; }
+  .tab-btn .tab-count {
+    background: rgba(255,255,255,.25);
+    color: inherit;
+    font-size: 11px;
+    font-weight: 700;
+    padding: 1px 7px;
+    border-radius: 20px;
+  }
+  .tab-btn:not(.active) .tab-count { background: var(--border); color: var(--text-3); }
+
+  .tab-pane { display: none; }
+  .tab-pane.active { display: block; }
+
+  /* ── STATS ROW ── */
+  .stats-row {
+    display: flex;
+    gap: 16px;
+    margin-bottom: 24px;
+  }
+  .stat-card {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 16px 22px;
+    flex: 1;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    box-shadow: var(--shadow);
+  }
+  .stat-icon {
+    width: 40px; height: 40px;
+    border-radius: 10px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 18px;
+    flex-shrink: 0;
+  }
+  .stat-icon.orange { background: var(--primary-light); }
+  .stat-icon.green { background: var(--green-bg); }
+  .stat-icon.yellow { background: var(--yellow-bg); }
+  .stat-icon.red { background: var(--red-bg); }
+  .stat-num { font-size: 26px; font-weight: 700; line-height: 1; }
+  .stat-label { font-size: 12px; color: var(--text-3); margin-top: 2px; font-weight: 500; }
+
+  /* ── TOOLBAR ── */
+  .toolbar {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 20px;
+  }
+  .search-box {
+    display: flex; align-items: center; gap: 8px;
+    background: var(--surface2);
+    border: 1.5px solid var(--border);
+    border-radius: 8px;
+    padding: 8px 14px;
+    flex: 1; max-width: 340px;
+    transition: border-color .2s;
+  }
+  .search-box:focus-within { border-color: var(--primary); }
+  .search-box input {
+    border: none; outline: none; background: transparent;
+    font-family: inherit; font-size: 14px; color: var(--text);
+    width: 100%;
+  }
+  .search-box input::placeholder { color: var(--text-3); }
+  .filter-select {
+    background: var(--surface2);
+    border: 1.5px solid var(--border);
+    border-radius: 8px;
+    padding: 8px 14px;
+    font-family: inherit; font-size: 13px; color: var(--text);
+    cursor: pointer; outline: none;
+    transition: border-color .2s;
+  }
+  .filter-select:focus { border-color: var(--primary); }
+
+  /* ── SESSION CARDS ── */
+  .sessions-list { display: flex; flex-direction: column; gap: 12px; }
+
+  .session-card {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 18px 20px;
+    display: grid;
+    grid-template-columns: auto 1fr auto auto;
+    align-items: center;
+    gap: 16px;
+    box-shadow: var(--shadow);
+    transition: all .2s;
+  }
+  .session-card:hover { border-color: #c8c4b8; box-shadow: var(--shadow-lg); transform: translateY(-1px); }
+
+  .session-type-col { display: flex; flex-direction: column; align-items: center; gap: 6px; width: 86px; }
+  .type-badge {
+    font-size: 11px; font-weight: 700; padding: 3px 9px;
+    border-radius: 20px; text-transform: uppercase; letter-spacing: .05em;
+    white-space: nowrap;
+  }
+  .type-badge.keynote { background: #fde68a; color: #92400e; }
+  .type-badge.panel { background: #dbeafe; color: #1e40af; }
+  .type-badge.workshop { background: #d1fae5; color: #065f46; }
+  .type-badge.talk { background: #ede9fe; color: #4c1d95; }
+  .type-badge.demo { background: #fce7f3; color: #9d174d; }
+
+  .session-info { min-width: 0; }
+  .session-title { font-size: 15px; font-weight: 600; color: var(--text); margin-bottom: 8px; line-height: 1.3; }
+  .session-meta { display: flex; align-items: center; gap: 16px; flex-wrap: wrap; }
+  .speaker-info { display: flex; align-items: center; gap: 7px; }
+  .speaker-avatar {
+    width: 26px; height: 26px; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 11px; font-weight: 700; color: #fff;
+    flex-shrink: 0;
+  }
+  .speaker-name { font-size: 13px; color: var(--text-2); font-weight: 500; }
+  .duration-pill {
+    display: flex; align-items: center; gap: 4px;
+    font-size: 12px; color: var(--text-3); font-weight: 500;
+  }
+  .duration-pill svg { opacity: .6; }
+
+  .session-status-col { display: flex; align-items: center; }
+  .status-badge {
+    font-size: 12px; font-weight: 600; padding: 4px 12px;
+    border-radius: 20px; white-space: nowrap;
+  }
+  .status-badge.confirmed { background: var(--green-bg); color: var(--green); }
+  .status-badge.pending { background: var(--yellow-bg); color: var(--yellow); }
+  .status-badge.rejected { background: var(--red-bg); color: var(--red); }
+
+  .session-actions { display: flex; align-items: center; gap: 6px; }
+
+  /* ── SPEAKERS GRID ── */
+  .speakers-header {
+    display: flex; align-items: center; justify-content: space-between;
+    margin-bottom: 20px;
+  }
+  .speakers-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+    gap: 16px;
+  }
+  .speaker-card {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 22px 18px;
+    box-shadow: var(--shadow);
+    transition: all .2s;
+    display: flex; flex-direction: column; align-items: center; text-align: center; gap: 0;
+  }
+  .speaker-card:hover { border-color: #c8c4b8; box-shadow: var(--shadow-lg); transform: translateY(-2px); }
+
+  .speaker-card-avatar {
+    width: 56px; height: 56px; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 20px; font-weight: 700; color: #fff;
+    margin-bottom: 12px;
+  }
+  .speaker-card-name { font-size: 15px; font-weight: 700; color: var(--text); }
+  .speaker-card-role { font-size: 12px; color: var(--text-3); margin-top: 3px; line-height: 1.4; }
+  .speaker-card-sessions {
+    margin-top: 12px;
+    font-size: 12px; color: var(--text-2); font-weight: 500;
+    background: var(--bg); border-radius: 6px; padding: 4px 10px;
+  }
+  .speaker-card-status { margin-top: 10px; }
+  .speaker-card-actions {
+    margin-top: 14px;
+    display: flex; gap: 6px; width: 100%;
+  }
+  .speaker-card-actions .btn { flex: 1; justify-content: center; font-size: 11px; padding: 6px 8px; }
+
+  /* ── CFP TAB ── */
+  .cfp-grid {
+    display: grid;
+    grid-template-columns: 340px 1fr;
+    gap: 24px;
+    align-items: start;
+  }
+  .cfp-panel {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 24px;
+    box-shadow: var(--shadow);
+  }
+  .cfp-panel h3 { font-size: 15px; font-weight: 700; margin-bottom: 18px; }
+
+  .toggle-row {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 12px 16px;
+    background: var(--bg);
+    border-radius: 8px;
+    margin-bottom: 16px;
+  }
+  .toggle-label { font-size: 14px; font-weight: 600; }
+  .toggle-sub { font-size: 12px; color: var(--text-3); margin-top: 1px; }
+
+  .toggle-switch {
+    position: relative; width: 44px; height: 24px;
+    display: inline-block; cursor: pointer;
+  }
+  .toggle-switch input { opacity: 0; width: 0; height: 0; }
+  .toggle-slider {
+    position: absolute; inset: 0;
+    background: #ccc; border-radius: 24px;
+    transition: .3s;
+  }
+  .toggle-slider::before {
+    content: ''; position: absolute;
+    width: 18px; height: 18px;
+    left: 3px; bottom: 3px;
+    background: #fff; border-radius: 50%;
+    transition: .3s;
+    box-shadow: 0 1px 3px rgba(0,0,0,.2);
+  }
+  .toggle-switch input:checked + .toggle-slider { background: var(--primary); }
+  .toggle-switch input:checked + .toggle-slider::before { transform: translateX(20px); }
+
+  .cfp-status-badge {
+    display: inline-flex; align-items: center; gap: 6px;
+    font-size: 13px; font-weight: 600; padding: 5px 12px;
+    border-radius: 20px; margin-bottom: 16px;
+  }
+  .cfp-status-badge.open { background: var(--green-bg); color: var(--green); }
+  .cfp-status-badge.closed { background: var(--red-bg); color: var(--red); }
+  .cfp-status-badge::before { content: ''; width: 7px; height: 7px; border-radius: 50%; background: currentColor; }
+
+  .form-group { margin-bottom: 16px; }
+  .form-label { font-size: 12px; font-weight: 600; color: var(--text-2); margin-bottom: 6px; display: block; text-transform: uppercase; letter-spacing: .05em; }
+  .form-input {
+    width: 100%; padding: 9px 12px;
+    background: var(--bg); border: 1.5px solid var(--border); border-radius: 8px;
+    font-family: inherit; font-size: 14px; color: var(--text); outline: none;
+    transition: border-color .2s;
+  }
+  .form-input:focus { border-color: var(--primary); background: #fff; }
+  .form-input[type="date"] { cursor: pointer; }
+
+  .field-checklist { display: flex; flex-direction: column; gap: 8px; margin-top: 4px; }
+  .field-check-item {
+    display: flex; align-items: center; gap: 10px;
+    padding: 9px 12px; background: var(--bg); border-radius: 7px;
+    font-size: 13px; font-weight: 500; cursor: pointer;
+    transition: background .15s;
+  }
+  .field-check-item:hover { background: var(--border); }
+  .field-check-item input[type="checkbox"] {
+    width: 15px; height: 15px; accent-color: var(--primary); cursor: pointer;
+  }
+
+  /* Applications Table */
+  .applications-section { }
+  .section-header {
+    display: flex; align-items: center; justify-content: space-between;
+    margin-bottom: 16px;
+  }
+  .section-title { font-size: 16px; font-weight: 700; }
+  .section-count { font-size: 13px; color: var(--text-3); font-weight: 500; }
+
+  .table-wrap {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    overflow: hidden;
+    box-shadow: var(--shadow);
+  }
+  table { width: 100%; border-collapse: collapse; }
+  thead th {
+    background: var(--bg); padding: 11px 16px;
+    font-size: 11px; font-weight: 700; color: var(--text-3);
+    text-transform: uppercase; letter-spacing: .07em;
+    text-align: left; border-bottom: 1px solid var(--border);
+    white-space: nowrap;
+  }
+  tbody tr { border-bottom: 1px solid var(--border); transition: background .15s; }
+  tbody tr:last-child { border-bottom: none; }
+  tbody tr:hover { background: var(--surface); }
+  tbody td { padding: 12px 16px; font-size: 13px; color: var(--text); vertical-align: middle; }
+
+  .applicant-cell { display: flex; align-items: center; gap: 9px; }
+  .applicant-avatar {
+    width: 30px; height: 30px; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 12px; font-weight: 700; color: #fff; flex-shrink: 0;
+  }
+  .applicant-name { font-weight: 600; font-size: 13px; }
+  .applicant-company { font-size: 11px; color: var(--text-3); }
+
+  .table-actions { display: flex; align-items: center; gap: 6px; }
+  .action-btn {
+    padding: 5px 10px; border-radius: 6px;
+    font-size: 11px; font-weight: 600; border: none;
+    cursor: pointer; transition: all .2s; font-family: inherit;
+  }
+  .action-btn.accept { background: var(--green-bg); color: var(--green); }
+  .action-btn.accept:hover { background: #c6e8d8; }
+  .action-btn.reject { background: var(--red-bg); color: var(--red); }
+  .action-btn.reject:hover { background: #fcc; }
+  .action-btn.hold { background: var(--yellow-bg); color: var(--yellow); }
+  .action-btn.hold:hover { background: #fde499; }
+
+  /* ── MODAL ── */
+  .modal-overlay {
+    position: fixed; inset: 0;
+    background: rgba(0,0,0,.4);
+    backdrop-filter: blur(4px);
+    display: flex; align-items: center; justify-content: center;
+    z-index: 1000;
+    opacity: 0; pointer-events: none;
+    transition: opacity .2s;
+  }
+  .modal-overlay.open { opacity: 1; pointer-events: all; }
+  .modal {
+    background: #fff;
+    border-radius: 14px;
+    padding: 28px;
+    width: 480px;
+    max-width: calc(100vw - 40px);
+    box-shadow: var(--shadow-lg);
+    transform: scale(.95) translateY(10px);
+    transition: transform .25s, opacity .25s;
+  }
+  .modal-overlay.open .modal { transform: scale(1) translateY(0); }
+  .modal-header {
+    display: flex; align-items: center; justify-content: space-between;
+    margin-bottom: 22px;
+  }
+  .modal-title { font-size: 18px; font-weight: 700; }
+  .modal-close {
+    background: var(--bg); border: none; border-radius: 8px;
+    width: 32px; height: 32px;
+    display: flex; align-items: center; justify-content: center;
+    cursor: pointer; font-size: 18px; color: var(--text-2);
+    transition: background .2s;
+  }
+  .modal-close:hover { background: var(--border); }
+  .modal-footer { display: flex; gap: 10px; justify-content: flex-end; margin-top: 24px; }
+
+  /* ── TOAST ── */
+  .toast-container { position: fixed; top: 20px; right: 20px; z-index: 2000; display: flex; flex-direction: column; gap: 8px; }
+  .toast {
+    background: #1e1b16; color: #fff;
+    padding: 12px 18px; border-radius: 10px;
+    font-size: 13px; font-weight: 500;
+    display: flex; align-items: center; gap: 8px;
+    box-shadow: var(--shadow-lg);
+    transform: translateX(120%);
+    transition: transform .3s cubic-bezier(.34,1.56,.64,1);
+    max-width: 300px;
+  }
+  .toast.show { transform: translateX(0); }
+  .toast.success .toast-dot { color: #4ade80; }
+  .toast.info .toast-dot { color: #60a5fa; }
+
+  /* ── AVATAR COLORS ── */
+  .av-orange { background: #d95f2b; }
+  .av-blue { background: #2563eb; }
+  .av-green { background: #059669; }
+  .av-purple { background: #7c3aed; }
+  .av-pink { background: #db2777; }
+  .av-teal { background: #0891b2; }
+  .av-amber { background: #d97706; }
+  .av-rose { background: #e11d48; }
+  .av-indigo { background: #4338ca; }
+
+  /* ── EMPTY / DIVIDERS ── */
+  .divider { height: 1px; background: var(--border); margin: 20px 0; }
+
+  .edit-modal-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+  .edit-modal-grid .full { grid-column: 1 / -1; }
+</style>
+</head>
+<body>
+
+<!-- SIDEBAR -->
+<aside class="sidebar">
+  <div class="sidebar-logo">
+    <div class="brand">Game Connection</div>
+    <div class="event-name">B2B Organizer Portal</div>
+    <div class="event-date">GC Lyon · June 12–14, 2026</div>
+  </div>
+  <nav class="sidebar-nav">
+    <div class="nav-section-label">Overview</div>
+    <a class="nav-item" href="#"><span class="nav-icon">📊</span> Dashboard</a>
+    <a class="nav-item" href="#"><span class="nav-icon">📅</span> Schedule Builder</a>
+
+    <div class="nav-section-label">Content</div>
+    <a class="nav-item active" href="#"><span class="nav-icon">🎙️</span> Sessions & Panels</a>
+    <a class="nav-item" href="#"><span class="nav-icon">🎤</span> Speakers</a>
+    <a class="nav-item" href="#"><span class="nav-icon">🏢</span> Exhibitors</a>
+
+    <div class="nav-section-label">Attendees</div>
+    <a class="nav-item" href="#"><span class="nav-icon">👥</span> Registrations</a>
+    <a class="nav-item" href="#"><span class="nav-icon">🤝</span> Meetings</a>
+    <a class="nav-item" href="#"><span class="nav-icon">💬</span> Messages</a>
+
+    <div class="nav-section-label">Event</div>
+    <a class="nav-item" href="#"><span class="nav-icon">📍</span> Venue & Rooms</a>
+    <a class="nav-item" href="#"><span class="nav-icon">📣</span> Communications</a>
+    <a class="nav-item" href="#"><span class="nav-icon">⚙️</span> Settings</a>
+  </nav>
+  <div class="sidebar-footer">
+    <div class="avatar">QQ</div>
+    <div>
+      <div class="name">Qiang Qiang</div>
+      <div class="role">Event Admin</div>
+    </div>
+  </div>
+</aside>
+
+<!-- MAIN -->
+<main class="main">
+  <!-- TOPBAR -->
+  <div class="topbar">
+    <div class="topbar-title">Sessions & Panels</div>
+    <div class="topbar-actions">
+      <button class="btn btn-outline btn-sm" onclick="showToast('Export initiated', 'info')">
+        <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3"/></svg>
+        Export
+      </button>
+      <button class="btn btn-primary btn-sm" onclick="openAddSessionModal()">
+        <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>
+        Add Session
+      </button>
+    </div>
+  </div>
+
+  <!-- CONTENT -->
+  <div class="content">
+
+    <!-- TABS -->
+    <div class="tabs">
+      <button class="tab-btn active" onclick="switchTab('sessions', this)">
+        🎙️ Sessions
+        <span class="tab-count">24</span>
+      </button>
+      <button class="tab-btn" onclick="switchTab('speakers', this)">
+        🎤 Speakers
+        <span class="tab-count">8</span>
+      </button>
+      <button class="tab-btn" onclick="switchTab('cfp', this)">
+        📋 Call for Speakers
+        <span class="tab-count">5</span>
+      </button>
+    </div>
+
+    <!-- ═══════════════════════════════════════════════
+         TAB 1: SESSIONS
+    ════════════════════════════════════════════════ -->
+    <div id="tab-sessions" class="tab-pane active">
+
+      <!-- Stats -->
+      <div class="stats-row">
+        <div class="stat-card">
+          <div class="stat-icon orange">🎙️</div>
+          <div>
+            <div class="stat-num">24</div>
+            <div class="stat-label">Total Sessions</div>
+          </div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon green">✅</div>
+          <div>
+            <div class="stat-num" style="color: var(--green)">16</div>
+            <div class="stat-label">Confirmed</div>
+          </div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon yellow">⏳</div>
+          <div>
+            <div class="stat-num" style="color: var(--yellow)">5</div>
+            <div class="stat-label">Pending Review</div>
+          </div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon red">❌</div>
+          <div>
+            <div class="stat-num" style="color: var(--red)">3</div>
+            <div class="stat-label">Rejected</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Toolbar -->
+      <div class="toolbar">
+        <div class="search-box">
+          <svg width="15" height="15" fill="none" stroke="#aaa" stroke-width="2" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+          <input type="text" placeholder="Search sessions…" oninput="filterSessions(this.value)">
+        </div>
+        <select class="filter-select" onchange="filterByType(this.value)">
+          <option value="">All Types</option>
+          <option value="keynote">Keynote</option>
+          <option value="panel">Panel</option>
+          <option value="workshop">Workshop</option>
+          <option value="talk">Talk</option>
+          <option value="demo">Demo</option>
+        </select>
+        <select class="filter-select" onchange="filterByStatus(this.value)">
+          <option value="">All Statuses</option>
+          <option value="confirmed">Confirmed</option>
+          <option value="pending">Pending</option>
+          <option value="rejected">Rejected</option>
+        </select>
+        <div style="margin-left: auto; font-size: 13px; color: var(--text-3)">
+          Showing <strong id="session-count">8</strong> sessions
+        </div>
+      </div>
+
+      <!-- Session List -->
+      <div class="sessions-list" id="sessions-list">
+        <!-- Generated by JS -->
+      </div>
+
+    </div>
+
+    <!-- ═══════════════════════════════════════════════
+         TAB 2: SPEAKERS
+    ════════════════════════════════════════════════ -->
+    <div id="tab-speakers" class="tab-pane">
+      <div class="speakers-header">
+        <div>
+          <div style="font-size:16px;font-weight:700">Speaker Roster</div>
+          <div style="font-size:13px;color:var(--text-3);margin-top:2px">8 speakers across all sessions</div>
+        </div>
+        <button class="btn btn-primary" onclick="openInviteModal()">
+          <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>
+          Invite Speaker
+        </button>
+      </div>
+
+      <!-- Search -->
+      <div class="toolbar" style="margin-bottom: 20px;">
+        <div class="search-box">
+          <svg width="15" height="15" fill="none" stroke="#aaa" stroke-width="2" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+          <input type="text" placeholder="Search speakers…">
+        </div>
+        <select class="filter-select">
+          <option value="">All Statuses</option>
+          <option>Confirmed</option>
+          <option>Invited</option>
+          <option>Pending</option>
+        </select>
+      </div>
+
+      <div class="speakers-grid" id="speakers-grid">
+        <!-- Generated by JS -->
+      </div>
+    </div>
+
+    <!-- ═══════════════════════════════════════════════
+         TAB 3: CALL FOR SPEAKERS
+    ════════════════════════════════════════════════ -->
+    <div id="tab-cfp" class="tab-pane">
+      <div class="cfp-grid">
+
+        <!-- LEFT PANEL -->
+        <div>
+          <!-- CFP Settings -->
+          <div class="cfp-panel" style="margin-bottom:16px">
+            <h3>CFP Settings</h3>
+
+            <div id="cfp-status-badge" class="cfp-status-badge open">CFP is Open</div>
+
+            <div class="toggle-row">
+              <div>
+                <div class="toggle-label">CFP Status</div>
+                <div class="toggle-sub">Toggle to open or close submissions</div>
+              </div>
+              <label class="toggle-switch">
+                <input type="checkbox" checked onchange="toggleCFP(this)">
+                <span class="toggle-slider"></span>
+              </label>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label">Submission Deadline</label>
+              <input type="date" class="form-input" value="2026-04-30">
+            </div>
+
+            <div class="form-group">
+              <label class="form-label">Max Session Duration</label>
+              <select class="form-input">
+                <option>30 minutes</option>
+                <option selected>60 minutes</option>
+                <option>90 minutes</option>
+                <option>120 minutes</option>
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label">Notification Email</label>
+              <input type="email" class="form-input" value="sessions@gameconnection.com" placeholder="notifications@…">
+            </div>
+
+            <button class="btn btn-primary" style="width:100%" onclick="showToast('CFP settings saved', 'success')">
+              Save Settings
+            </button>
+          </div>
+
+          <!-- Form Fields Config -->
+          <div class="cfp-panel">
+            <h3>Application Form Fields</h3>
+            <div style="font-size:12px;color:var(--text-3);margin-bottom:14px">Select which fields to include in the speaker application form</div>
+            <div class="field-checklist">
+              <label class="field-check-item"><input type="checkbox" checked> Speaker Name *</label>
+              <label class="field-check-item"><input type="checkbox" checked> Email Address *</label>
+              <label class="field-check-item"><input type="checkbox" checked> Company / Organization *</label>
+              <label class="field-check-item"><input type="checkbox" checked> Job Title</label>
+              <label class="field-check-item"><input type="checkbox" checked> Session Title *</label>
+              <label class="field-check-item"><input type="checkbox" checked> Session Type *</label>
+              <label class="field-check-item"><input type="checkbox" checked> Session Description</label>
+              <label class="field-check-item"><input type="checkbox" checked> Preferred Duration</label>
+              <label class="field-check-item"><input type="checkbox"> Target Audience</label>
+              <label class="field-check-item"><input type="checkbox"> Speaker Bio</label>
+              <label class="field-check-item"><input type="checkbox"> Previous Speaking Experience</label>
+              <label class="field-check-item"><input type="checkbox"> LinkedIn Profile</label>
+              <label class="field-check-item"><input type="checkbox"> Headshot Upload</label>
+            </div>
+            <div style="margin-top:14px">
+              <button class="btn btn-outline" style="width:100%" onclick="showToast('Form configuration updated', 'success')">
+                Save Form Config
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- RIGHT: Applications -->
+        <div class="applications-section">
+          <div class="section-header">
+            <div>
+              <div class="section-title">Applications</div>
+              <div class="section-count">5 pending review</div>
+            </div>
+            <div style="display:flex;gap:10px;align-items:center">
+              <div class="search-box" style="max-width:200px">
+                <svg width="13" height="13" fill="none" stroke="#aaa" stroke-width="2" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+                <input type="text" placeholder="Search…">
+              </div>
+              <button class="btn btn-outline btn-sm" onclick="showToast('Exported applications', 'info')">Export</button>
+            </div>
+          </div>
+
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>Applicant</th>
+                  <th>Session Title</th>
+                  <th>Type</th>
+                  <th>Duration</th>
+                  <th>Status</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody id="cfp-applications-tbody">
+                <!-- Generated by JS -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+  </div><!-- /content -->
+</main>
+
+
+<!-- ═══════════════════════════════════════════════
+     MODAL: INVITE SPEAKER
+════════════════════════════════════════════════ -->
+<div class="modal-overlay" id="invite-modal" onclick="closeModalOnOverlay(event, 'invite-modal')">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-title">Invite Speaker</div>
+      <button class="modal-close" onclick="closeModal('invite-modal')">×</button>
+    </div>
+    <div class="edit-modal-grid">
+      <div class="form-group">
+        <label class="form-label">First Name</label>
+        <input type="text" class="form-input" placeholder="Jane">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Last Name</label>
+        <input type="text" class="form-input" placeholder="Doe">
+      </div>
+      <div class="form-group full">
+        <label class="form-label">Email Address</label>
+        <input type="email" class="form-input" placeholder="jane.doe@company.com">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Company</label>
+        <input type="text" class="form-input" placeholder="Acme Games">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Job Title</label>
+        <input type="text" class="form-input" placeholder="CEO / Lead Dev">
+      </div>
+      <div class="form-group full">
+        <label class="form-label">Personal Message (optional)</label>
+        <textarea class="form-input" rows="3" placeholder="We'd love to have you speak at Game Connection 2026…" style="resize:vertical"></textarea>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-outline" onclick="closeModal('invite-modal')">Cancel</button>
+      <button class="btn btn-primary" onclick="submitInvite()">
+        <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+        Send Invite
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════
+     MODAL: ADD / EDIT SESSION
+════════════════════════════════════════════════ -->
+<div class="modal-overlay" id="session-modal" onclick="closeModalOnOverlay(event, 'session-modal')">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-title" id="session-modal-title">Add Session</div>
+      <button class="modal-close" onclick="closeModal('session-modal')">×</button>
+    </div>
+    <div class="edit-modal-grid">
+      <div class="form-group full">
+        <label class="form-label">Session Title</label>
+        <input type="text" class="form-input" id="s-title" placeholder="Enter session title…">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Type</label>
+        <select class="form-input" id="s-type">
+          <option>Keynote</option>
+          <option>Panel</option>
+          <option>Workshop</option>
+          <option>Talk</option>
+          <option>Demo</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Duration</label>
+        <select class="form-input" id="s-duration">
+          <option>20 min</option>
+          <option>30 min</option>
+          <option>45 min</option>
+          <option>60 min</option>
+          <option>90 min</option>
+          <option>120 min</option>
+        </select>
+      </div>
+      <div class="form-group full">
+        <label class="form-label">Speaker(s)</label>
+        <input type="text" class="form-input" id="s-speakers" placeholder="Speaker name or 'Multiple'">
+      </div>
+      <div class="form-group full">
+        <label class="form-label">Description</label>
+        <textarea class="form-input" id="s-desc" rows="3" placeholder="Short description…" style="resize:vertical"></textarea>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Status</label>
+        <select class="form-input" id="s-status">
+          <option>Confirmed</option>
+          <option>Pending</option>
+          <option>Rejected</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Room (optional)</label>
+        <select class="form-input">
+          <option value="">— Unassigned —</option>
+          <option>Main Stage</option>
+          <option>Room A</option>
+          <option>Room B</option>
+          <option>Workshop Hall</option>
+        </select>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-outline" onclick="closeModal('session-modal')">Cancel</button>
+      <button class="btn btn-primary" onclick="saveSession()">Save Session</button>
+    </div>
+  </div>
+</div>
+
+<!-- TOAST CONTAINER -->
+<div class="toast-container" id="toast-container"></div>
+
+<script>
+// ─────────────────────────────────────────────────────────
+//  DATA
+// ─────────────────────────────────────────────────────────
+const SESSIONS = [
+  { id: 1, title: "The Future of Mobile Gaming with AI", type: "keynote",  speaker: "Sarah Chen",       company: "Tencent",           speakers: 1, duration: "45min", status: "confirmed", avatar: "SC", color: "av-orange" },
+  { id: 2, title: "Indie Publishing in 2026",            type: "panel",    speaker: "3 speakers",       company: "",                  speakers: 3, duration: "60min", status: "confirmed", avatar: "IP", color: "av-blue" },
+  { id: 3, title: "Unreal Engine 5 Workshop",            type: "workshop", speaker: "James Park",       company: "Epic Games",        speakers: 1, duration: "90min", status: "confirmed", avatar: "JP", color: "av-green" },
+  { id: 4, title: "From Prototype to Launch",            type: "talk",     speaker: "Emma Wilson",      company: "Indie Dev",         speakers: 1, duration: "30min", status: "pending",   avatar: "EW", color: "av-purple" },
+  { id: 5, title: "Live Demo: Our New Platformer",       type: "demo",     speaker: "PixelDream Studio",company: "",                  speakers: 2, duration: "20min", status: "confirmed", avatar: "PD", color: "av-pink" },
+  { id: 6, title: "Mobile Monetization Strategies",      type: "talk",     speaker: "Marcus Lee",       company: "AppLovin",          speakers: 1, duration: "45min", status: "pending",   avatar: "ML", color: "av-teal" },
+  { id: 7, title: "Women in Games Roundtable",           type: "panel",    speaker: "5 speakers",       company: "",                  speakers: 5, duration: "60min", status: "confirmed", avatar: "WG", color: "av-rose" },
+  { id: 8, title: "Game Localization Best Practices",    type: "talk",     speaker: "Yuki Tanaka",      company: "Localize Direct",   speakers: 1, duration: "30min", status: "pending",   avatar: "YT", color: "av-indigo" },
+];
+
+const SPEAKERS = [
+  { name: "Sarah Chen",     role: "VP of Gaming",         company: "Tencent",           sessions: 1, status: "confirmed", color: "av-orange", init: "SC" },
+  { name: "James Park",     role: "Technical Director",   company: "Epic Games",        sessions: 1, status: "confirmed", color: "av-green",  init: "JP" },
+  { name: "Emma Wilson",    role: "Indie Developer",      company: "Moonstone Games",   sessions: 1, status: "invited",   color: "av-purple", init: "EW" },
+  { name: "Marcus Lee",     role: "Head of Monetization", company: "AppLovin",          sessions: 1, status: "confirmed", color: "av-teal",   init: "ML" },
+  { name: "Yuki Tanaka",    role: "Localization Lead",    company: "Localize Direct",   sessions: 1, status: "pending",   color: "av-indigo", init: "YT" },
+  { name: "Alex Rivera",    role: "Game Designer",        company: "PixelDream Studio", sessions: 1, status: "confirmed", color: "av-pink",   init: "AR" },
+  { name: "Priya Sharma",   role: "Publishing Director",  company: "Devolver Digital",  sessions: 2, status: "confirmed", color: "av-amber",  init: "PS" },
+  { name: "Lena Müller",    role: "Community Manager",    company: "Paradox Interactive",sessions:1, status: "invited",   color: "av-rose",   init: "LM" },
+];
+
+const CFP_APPLICATIONS = [
+  { name: "Kevin Zhao",    company: "NetEase",        title: "Cloud Gaming Infrastructure", type: "talk",     duration: "45min", status: "pending",   color: "av-blue",   init: "KZ" },
+  { name: "Sofia Rossi",   company: "Milestone S.r.l",title: "Racing Games UX Trends",      type: "panel",    duration: "60min", status: "pending",   color: "av-pink",   init: "SR" },
+  { name: "Tom Bradley",   company: "Unity",          title: "Monetization in 2026",         type: "talk",     duration: "30min", status: "accepted",  color: "av-green",  init: "TB" },
+  { name: "Amara Nwosu",   company: "Gamescom",       title: "African Gaming Market",        type: "keynote",  duration: "45min", status: "pending",   color: "av-amber",  init: "AN" },
+  { name: "Jin-ho Park",   company: "Krafton",        title: "Battle Royale Design Post-Mortem", type: "talk", duration: "60min", status: "on-hold",   color: "av-teal",   init: "JP" },
+];
+
+// ─────────────────────────────────────────────────────────
+//  RENDER SESSIONS
+// ─────────────────────────────────────────────────────────
+function renderSessions(list) {
+  const container = document.getElementById('sessions-list');
+  document.getElementById('session-count').textContent = list.length;
+  if (list.length === 0) {
+    container.innerHTML = `<div style="text-align:center;padding:48px;color:var(--text-3);font-size:14px">No sessions found.</div>`;
+    return;
+  }
+  container.innerHTML = list.map(s => `
+    <div class="session-card" id="session-card-${s.id}">
+      <div class="session-type-col">
+        <span class="type-badge ${s.type}">${s.type}</span>
+      </div>
+      <div class="session-info">
+        <div class="session-title">${s.title}</div>
+        <div class="session-meta">
+          <div class="speaker-info">
+            <div class="speaker-avatar ${s.color}">${s.init}</div>
+            <span class="speaker-name">${s.speaker}${s.company ? ' · <span style="color:var(--text-3)">' + s.company + '</span>' : ''}</span>
+          </div>
+          <div class="duration-pill">
+            <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+            ${s.duration}
+          </div>
+          ${s.speakers > 1 ? `<div class="duration-pill">👥 ${s.speakers} speakers</div>` : ''}
+        </div>
+      </div>
+      <div class="session-status-col">
+        <span class="status-badge ${s.status}">${capitalize(s.status)}</span>
+      </div>
+      <div class="session-actions">
+        <button class="btn btn-ghost btn-sm" onclick="editSession(${s.id})">
+          <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+          Edit
+        </button>
+        <button class="btn btn-outline btn-sm" onclick="assignSession(${s.id})" style="color:var(--primary);border-color:var(--primary)">
+          <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+          Schedule
+        </button>
+        ${s.status !== 'rejected' ? `<button class="btn-danger-ghost" onclick="rejectSession(${s.id})">Reject</button>` : ''}
+      </div>
+    </div>
+  `).join('');
+}
+
+let filteredType = '';
+let filteredStatus = '';
+let filteredSearch = '';
+
+function applyFilters() {
+  let list = SESSIONS.filter(s => {
+    const matchType   = !filteredType   || s.type === filteredType;
+    const matchStatus = !filteredStatus || s.status === filteredStatus;
+    const matchSearch = !filteredSearch || s.title.toLowerCase().includes(filteredSearch) || s.speaker.toLowerCase().includes(filteredSearch);
+    return matchType && matchStatus && matchSearch;
+  });
+  renderSessions(list);
+}
+function filterSessions(v) { filteredSearch = v.toLowerCase(); applyFilters(); }
+function filterByType(v)    { filteredType = v.toLowerCase(); applyFilters(); }
+function filterByStatus(v)  { filteredStatus = v.toLowerCase(); applyFilters(); }
+
+function editSession(id) {
+  const s = SESSIONS.find(x => x.id === id);
+  document.getElementById('session-modal-title').textContent = 'Edit Session';
+  document.getElementById('s-title').value = s.title;
+  document.getElementById('s-type').value = capitalize(s.type);
+  document.getElementById('s-speakers').value = s.speaker;
+  document.getElementById('s-status').value = capitalize(s.status);
+  openModal('session-modal');
+}
+function assignSession(id) {
+  const s = SESSIONS.find(x => x.id === id);
+  showToast(`"${s.title}" added to Schedule Builder`, 'success');
+}
+function rejectSession(id) {
+  const s = SESSIONS.find(x => x.id === id);
+  s.status = 'rejected';
+  applyFilters();
+  showToast(`Session rejected`, 'info');
+}
+
+// ─────────────────────────────────────────────────────────
+//  RENDER SPEAKERS
+// ─────────────────────────────────────────────────────────
+function renderSpeakers() {
+  const grid = document.getElementById('speakers-grid');
+  grid.innerHTML = SPEAKERS.map(sp => `
+    <div class="speaker-card">
+      <div class="speaker-card-avatar ${sp.color}">${sp.init}</div>
+      <div class="speaker-card-name">${sp.name}</div>
+      <div class="speaker-card-role">${sp.role}<br><strong>${sp.company}</strong></div>
+      <div class="speaker-card-sessions">🎙️ ${sp.sessions} session${sp.sessions !== 1 ? 's' : ''}</div>
+      <div class="speaker-card-status">
+        <span class="status-badge ${sp.status}">${capitalize(sp.status)}</span>
+      </div>
+      <div class="speaker-card-actions">
+        <button class="btn btn-ghost btn-sm" onclick="showToast('Opening profile…','info')">Profile</button>
+        <button class="btn btn-outline btn-sm" onclick="showToast('Invite sent to ${sp.name}','success')" style="color:var(--primary);border-color:var(--primary)">Invite</button>
+        <button class="btn btn-ghost btn-sm btn-icon" onclick="showToast('Editing ${sp.name}','info')">
+          <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+        </button>
+      </div>
+    </div>
+  `).join('');
+}
+
+// ─────────────────────────────────────────────────────────
+//  RENDER CFP APPLICATIONS
+// ─────────────────────────────────────────────────────────
+function renderApplications() {
+  const tbody = document.getElementById('cfp-applications-tbody');
+  tbody.innerHTML = CFP_APPLICATIONS.map((a, i) => `
+    <tr>
+      <td>
+        <div class="applicant-cell">
+          <div class="applicant-avatar ${a.color}">${a.init}</div>
+          <div>
+            <div class="applicant-name">${a.name}</div>
+            <div class="applicant-company">${a.company}</div>
+          </div>
+        </div>
+      </td>
+      <td style="max-width:200px">
+        <div style="font-weight:500;font-size:13px;line-height:1.3">${a.title}</div>
+      </td>
+      <td><span class="type-badge ${a.type}" style="font-size:10px">${a.type}</span></td>
+      <td style="color:var(--text-3)">${a.duration}</td>
+      <td><span class="status-badge ${a.status === 'accepted' ? 'confirmed' : a.status === 'on-hold' ? 'pending' : 'pending'}">${a.status === 'accepted' ? 'Accepted' : a.status === 'on-hold' ? 'On Hold' : 'Pending'}</span></td>
+      <td>
+        <div class="table-actions">
+          ${a.status !== 'accepted' ? `<button class="action-btn accept" onclick="cfpAction(${i},'accept')">Accept</button>` : ''}
+          ${a.status !== 'rejected' ? `<button class="action-btn reject" onclick="cfpAction(${i},'reject')">Reject</button>` : ''}
+          ${a.status !== 'on-hold'  ? `<button class="action-btn hold"   onclick="cfpAction(${i},'hold')">Hold</button>`   : ''}
+        </div>
+      </td>
+    </tr>
+  `).join('');
+}
+
+function cfpAction(idx, action) {
+  const app = CFP_APPLICATIONS[idx];
+  if (action === 'accept') app.status = 'accepted';
+  else if (action === 'reject') app.status = 'rejected';
+  else if (action === 'hold')   app.status = 'on-hold';
+  renderApplications();
+  const labels = { accept: 'Application accepted ✓', reject: 'Application rejected', hold: 'Placed on hold' };
+  showToast(labels[action], action === 'accept' ? 'success' : 'info');
+}
+
+// ─────────────────────────────────────────────────────────
+//  CFP TOGGLE
+// ─────────────────────────────────────────────────────────
+function toggleCFP(el) {
+  const badge = document.getElementById('cfp-status-badge');
+  if (el.checked) {
+    badge.className = 'cfp-status-badge open';
+    badge.textContent = 'CFP is Open';
+    showToast('CFP is now open for submissions', 'success');
+  } else {
+    badge.className = 'cfp-status-badge closed';
+    badge.textContent = 'CFP is Closed';
+    showToast('CFP closed — no new submissions', 'info');
+  }
+}
+
+// ─────────────────────────────────────────────────────────
+//  TAB SWITCHING
+// ─────────────────────────────────────────────────────────
+function switchTab(id, btn) {
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  document.querySelectorAll('.tab-pane').forEach(p => p.classList.remove('active'));
+  btn.classList.add('active');
+  document.getElementById('tab-' + id).classList.add('active');
+}
+
+// ─────────────────────────────────────────────────────────
+//  MODAL HELPERS
+// ─────────────────────────────────────────────────────────
+function openModal(id) { document.getElementById(id).classList.add('open'); }
+function closeModal(id) { document.getElementById(id).classList.remove('open'); }
+function closeModalOnOverlay(e, id) { if (e.target.id === id) closeModal(id); }
+
+function openInviteModal() { openModal('invite-modal'); }
+function openAddSessionModal() {
+  document.getElementById('session-modal-title').textContent = 'Add Session';
+  document.getElementById('s-title').value = '';
+  document.getElementById('s-speakers').value = '';
+  document.getElementById('s-desc').value = '';
+  openModal('session-modal');
+}
+
+function submitInvite() {
+  closeModal('invite-modal');
+  showToast('Invite sent successfully!', 'success');
+}
+function saveSession() {
+  closeModal('session-modal');
+  showToast('Session saved', 'success');
+}
+
+// ─────────────────────────────────────────────────────────
+//  TOAST
+// ─────────────────────────────────────────────────────────
+function showToast(msg, type = 'info') {
+  const container = document.getElementById('toast-container');
+  const toast = document.createElement('div');
+  toast.className = `toast ${type}`;
+  const icon = type === 'success' ? '✓' : 'ℹ';
+  toast.innerHTML = `<span class="toast-dot">${icon}</span> ${msg}`;
+  container.appendChild(toast);
+  requestAnimationFrame(() => { requestAnimationFrame(() => { toast.classList.add('show'); }); });
+  setTimeout(() => {
+    toast.classList.remove('show');
+    setTimeout(() => toast.remove(), 400);
+  }, 2800);
+}
+
+// ─────────────────────────────────────────────────────────
+//  UTILS
+// ─────────────────────────────────────────────────────────
+function capitalize(s) { return s.charAt(0).toUpperCase() + s.slice(1); }
+
+// ─────────────────────────────────────────────────────────
+//  INIT
+// ─────────────────────────────────────────────────────────
+renderSessions(SESSIONS);
+renderSpeakers();
+renderApplications();
+
+// Close modal with Escape
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape') {
+    document.querySelectorAll('.modal-overlay.open').forEach(m => m.classList.remove('open'));
+  }
+});
+</script>
+</body>
+</html>

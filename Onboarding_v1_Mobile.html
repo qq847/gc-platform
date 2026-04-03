@@ -1,0 +1,1033 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Game Connection — Onboarding</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: #e8e4da;
+    min-height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+    padding: 0;
+  }
+
+  .app {
+    width: 100%;
+    max-width: 480px;
+    min-height: 100vh;
+    background: #e8e4da;
+    display: flex;
+    flex-direction: column;
+    position: relative;
+    overflow: hidden;
+  }
+
+  /* ── Header ── */
+  .header {
+    padding: 20px 24px 0;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+  }
+
+  .logo {
+    font-size: 13px;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: #1a1a1a;
+    opacity: 0.5;
+  }
+
+  /* ── Progress dots ── */
+  .progress {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: #c5bfb3;
+    transition: all 0.35s cubic-bezier(.4,0,.2,1);
+  }
+
+  .dot.active {
+    background: #d95f2b;
+    width: 24px;
+    border-radius: 4px;
+  }
+
+  .dot.done {
+    background: #d95f2b;
+    opacity: 0.35;
+  }
+
+  .progress-label {
+    margin-left: auto;
+    font-size: 12px;
+    font-weight: 500;
+    color: #1a1a1a;
+    opacity: 0.45;
+  }
+
+  /* ── Step container ── */
+  .steps-wrapper {
+    flex: 1;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .step {
+    position: absolute;
+    inset: 0;
+    padding: 28px 24px 100px;
+    overflow-y: auto;
+    opacity: 0;
+    transform: translateX(40px);
+    pointer-events: none;
+    transition: opacity 0.35s ease, transform 0.35s cubic-bezier(.4,0,.2,1);
+    scrollbar-width: none;
+  }
+  .step::-webkit-scrollbar { display: none; }
+
+  .step.active {
+    opacity: 1;
+    transform: translateX(0);
+    pointer-events: all;
+  }
+
+  .step.exit-left {
+    opacity: 0;
+    transform: translateX(-40px);
+  }
+
+  /* ── Typography ── */
+  .step-title {
+    font-size: 26px;
+    font-weight: 700;
+    color: #1a1a1a;
+    line-height: 1.2;
+    margin-bottom: 6px;
+  }
+
+  .step-sub {
+    font-size: 14px;
+    color: #6b6560;
+    font-weight: 400;
+    margin-bottom: 28px;
+    line-height: 1.5;
+  }
+
+  /* ── Role Cards ── */
+  .role-list {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .role-card {
+    background: #fff;
+    border: 2px solid transparent;
+    border-radius: 16px;
+    padding: 16px 18px;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    box-shadow: 0 1px 3px rgba(0,0,0,.06);
+    user-select: none;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  .role-card:active { transform: scale(0.98); }
+
+  .role-card.selected {
+    border-color: #d95f2b;
+    background: #fff5f0;
+    box-shadow: 0 2px 12px rgba(217,95,43,.15);
+  }
+
+  .role-emoji {
+    font-size: 28px;
+    width: 44px;
+    height: 44px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #f5f3ef;
+    border-radius: 12px;
+    flex-shrink: 0;
+    transition: background 0.2s;
+  }
+
+  .role-card.selected .role-emoji {
+    background: #ffe8dc;
+  }
+
+  .role-info { flex: 1; }
+
+  .role-name {
+    font-size: 15px;
+    font-weight: 600;
+    color: #1a1a1a;
+    margin-bottom: 2px;
+  }
+
+  .role-desc {
+    font-size: 12px;
+    color: #9e9890;
+    font-weight: 400;
+  }
+
+  .role-check {
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    border: 2px solid #d5cfc7;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    transition: all 0.2s ease;
+  }
+
+  .role-card.selected .role-check {
+    background: #d95f2b;
+    border-color: #d95f2b;
+  }
+
+  .role-check svg {
+    opacity: 0;
+    transition: opacity 0.15s;
+  }
+
+  .role-card.selected .role-check svg { opacity: 1; }
+
+  /* ── Profile Form ── */
+  .avatar-section {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin-bottom: 28px;
+    gap: 12px;
+  }
+
+  .avatar-circle {
+    width: 90px;
+    height: 90px;
+    border-radius: 50%;
+    background: #ddd9d2;
+    border: 3px solid #fff;
+    box-shadow: 0 2px 12px rgba(0,0,0,.1);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    cursor: pointer;
+    position: relative;
+    transition: all 0.2s;
+  }
+
+  .avatar-circle:hover { opacity: 0.85; }
+
+  .avatar-circle img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    border-radius: 50%;
+  }
+
+  .avatar-placeholder {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+  }
+
+  .avatar-placeholder svg { opacity: 0.4; }
+
+  .avatar-placeholder span {
+    font-size: 10px;
+    color: #9e9890;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+  }
+
+  .upload-btn {
+    font-size: 13px;
+    font-weight: 600;
+    color: #0a7fa8;
+    background: rgba(10,127,168,.08);
+    border: none;
+    border-radius: 20px;
+    padding: 7px 18px;
+    cursor: pointer;
+    transition: background 0.2s;
+    font-family: inherit;
+  }
+
+  .upload-btn:hover { background: rgba(10,127,168,.15); }
+
+  #avatar-input { display: none; }
+
+  .form-group {
+    margin-bottom: 16px;
+  }
+
+  .form-label {
+    font-size: 12px;
+    font-weight: 600;
+    color: #6b6560;
+    text-transform: uppercase;
+    letter-spacing: 0.07em;
+    margin-bottom: 7px;
+    display: block;
+  }
+
+  .form-input, .form-select {
+    width: 100%;
+    padding: 14px 16px;
+    border: 2px solid #e0dbd3;
+    border-radius: 12px;
+    font-size: 15px;
+    font-family: inherit;
+    color: #1a1a1a;
+    background: #fff;
+    outline: none;
+    transition: border-color 0.2s, box-shadow 0.2s;
+    appearance: none;
+    -webkit-appearance: none;
+  }
+
+  .form-input::placeholder { color: #b8b2aa; }
+
+  .form-input:focus, .form-select:focus {
+    border-color: #0a7fa8;
+    box-shadow: 0 0 0 4px rgba(10,127,168,.1);
+  }
+
+  .select-wrapper {
+    position: relative;
+  }
+
+  .select-wrapper::after {
+    content: '';
+    position: absolute;
+    right: 16px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 0;
+    height: 0;
+    border-left: 5px solid transparent;
+    border-right: 5px solid transparent;
+    border-top: 6px solid #9e9890;
+    pointer-events: none;
+  }
+
+  /* ── Interests / Tag cloud ── */
+  .interest-section {
+    margin-bottom: 24px;
+  }
+
+  .interest-label {
+    font-size: 12px;
+    font-weight: 700;
+    color: #9e9890;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    margin-bottom: 12px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .interest-label::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: #d5cfc7;
+  }
+
+  .tag-cloud {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  .tag {
+    padding: 8px 16px;
+    border-radius: 20px;
+    border: 2px solid #d5cfc7;
+    background: #fff;
+    font-size: 13px;
+    font-weight: 500;
+    color: #555;
+    cursor: pointer;
+    transition: all 0.18s ease;
+    user-select: none;
+    -webkit-tap-highlight-color: transparent;
+    font-family: inherit;
+  }
+
+  .tag:active { transform: scale(0.95); }
+
+  .tag.selected {
+    border-color: #d95f2b;
+    background: #d95f2b;
+    color: #fff;
+    box-shadow: 0 2px 8px rgba(217,95,43,.3);
+  }
+
+  /* ── Step 4 — Complete ── */
+  .complete-section {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    padding-top: 12px;
+  }
+
+  .check-circle {
+    width: 96px;
+    height: 96px;
+    border-radius: 50%;
+    background: #0d9b72;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 24px;
+    opacity: 0;
+    transform: scale(0.6);
+    transition: opacity 0.5s ease, transform 0.5s cubic-bezier(.34,1.56,.64,1);
+    box-shadow: 0 8px 32px rgba(13,155,114,.35);
+  }
+
+  .check-circle.animate {
+    opacity: 1;
+    transform: scale(1);
+  }
+
+  .check-circle svg {
+    opacity: 0;
+    transform: scale(0.5);
+    transition: opacity 0.3s ease 0.3s, transform 0.3s cubic-bezier(.34,1.56,.64,1) 0.3s;
+  }
+
+  .check-circle.animate svg {
+    opacity: 1;
+    transform: scale(1);
+  }
+
+  .complete-title {
+    font-size: 26px;
+    font-weight: 700;
+    color: #1a1a1a;
+    margin-bottom: 6px;
+  }
+
+  .complete-sub {
+    font-size: 14px;
+    color: #6b6560;
+    margin-bottom: 28px;
+    line-height: 1.5;
+  }
+
+  .summary-card {
+    background: #fff;
+    border-radius: 20px;
+    padding: 20px;
+    width: 100%;
+    text-align: left;
+    box-shadow: 0 2px 16px rgba(0,0,0,.07);
+    margin-bottom: 8px;
+  }
+
+  .summary-row {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    padding: 10px 0;
+    border-bottom: 1px solid #f0ece6;
+  }
+
+  .summary-row:last-child { border-bottom: none; padding-bottom: 0; }
+  .summary-row:first-child { padding-top: 0; }
+
+  .summary-icon {
+    font-size: 20px;
+    width: 36px;
+    height: 36px;
+    background: #f5f3ef;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+  }
+
+  .summary-content { flex: 1; }
+
+  .summary-key {
+    font-size: 11px;
+    font-weight: 600;
+    color: #9e9890;
+    text-transform: uppercase;
+    letter-spacing: 0.07em;
+    margin-bottom: 2px;
+  }
+
+  .summary-val {
+    font-size: 14px;
+    font-weight: 600;
+    color: #1a1a1a;
+    line-height: 1.4;
+  }
+
+  .summary-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
+    margin-top: 4px;
+  }
+
+  .summary-tag {
+    font-size: 11px;
+    font-weight: 500;
+    background: #f5f3ef;
+    color: #6b6560;
+    padding: 3px 8px;
+    border-radius: 6px;
+  }
+
+  /* ── Bottom Nav ── */
+  .bottom-nav {
+    position: fixed;
+    bottom: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 100%;
+    max-width: 480px;
+    padding: 16px 24px 28px;
+    background: linear-gradient(to top, #e8e4da 70%, transparent);
+    display: flex;
+    gap: 12px;
+    z-index: 100;
+  }
+
+  .btn {
+    flex: 1;
+    padding: 16px;
+    border-radius: 14px;
+    font-size: 15px;
+    font-weight: 700;
+    font-family: inherit;
+    border: none;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    letter-spacing: 0.01em;
+  }
+
+  .btn:active { transform: scale(0.97); }
+
+  .btn-back {
+    background: #fff;
+    color: #6b6560;
+    box-shadow: 0 1px 4px rgba(0,0,0,.08);
+    flex: 0 0 auto;
+    width: 52px;
+    padding: 16px 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .btn-next {
+    background: #d95f2b;
+    color: #fff;
+    box-shadow: 0 4px 16px rgba(217,95,43,.35);
+  }
+
+  .btn-next:hover { background: #c4521f; }
+
+  .btn-explore {
+    background: #d95f2b;
+    color: #fff;
+    box-shadow: 0 4px 16px rgba(217,95,43,.35);
+    width: 100%;
+  }
+
+  /* ── Ripple ── */
+  @keyframes ripple {
+    0% { transform: scale(0); opacity: 0.4; }
+    100% { transform: scale(4); opacity: 0; }
+  }
+
+  /* ── Responsive fine-tuning ── */
+  @media (max-width: 360px) {
+    .step-title { font-size: 22px; }
+    .role-emoji { font-size: 24px; width: 38px; height: 38px; }
+  }
+</style>
+</head>
+<body>
+<div class="app">
+
+  <!-- Header -->
+  <div class="header">
+    <div class="logo">Game Connection</div>
+    <div class="progress">
+      <div class="dot active" id="dot-1"></div>
+      <div class="dot" id="dot-2"></div>
+      <div class="dot" id="dot-3"></div>
+      <div class="dot" id="dot-4"></div>
+      <span class="progress-label" id="progress-label">Step 1 of 4</span>
+    </div>
+  </div>
+
+  <!-- Steps -->
+  <div class="steps-wrapper">
+
+    <!-- Step 1: Role -->
+    <div class="step active" id="step-1">
+      <h1 class="step-title">What's your role?</h1>
+      <p class="step-sub">This helps us personalize your experience</p>
+      <div class="role-list">
+        <div class="role-card" data-role="Game Developer" onclick="selectRole(this)">
+          <div class="role-emoji">🎮</div>
+          <div class="role-info">
+            <div class="role-name">Game Developer</div>
+            <div class="role-desc">I build and create games</div>
+          </div>
+          <div class="role-check">
+            <svg width="12" height="9" viewBox="0 0 12 9" fill="none">
+              <path d="M1 4L4.5 7.5L11 1" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </div>
+        </div>
+        <div class="role-card" data-role="Publisher" onclick="selectRole(this)">
+          <div class="role-emoji">📢</div>
+          <div class="role-info">
+            <div class="role-name">Publisher</div>
+            <div class="role-desc">I publish and distribute games</div>
+          </div>
+          <div class="role-check">
+            <svg width="12" height="9" viewBox="0 0 12 9" fill="none">
+              <path d="M1 4L4.5 7.5L11 1" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </div>
+        </div>
+        <div class="role-card" data-role="Investor" onclick="selectRole(this)">
+          <div class="role-emoji">💰</div>
+          <div class="role-info">
+            <div class="role-name">Investor</div>
+            <div class="role-desc">I invest in game studios</div>
+          </div>
+          <div class="role-check">
+            <svg width="12" height="9" viewBox="0 0 12 9" fill="none">
+              <path d="M1 4L4.5 7.5L11 1" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </div>
+        </div>
+        <div class="role-card" data-role="Press & Media" onclick="selectRole(this)">
+          <div class="role-emoji">📰</div>
+          <div class="role-info">
+            <div class="role-name">Press & Media</div>
+            <div class="role-desc">I cover the gaming industry</div>
+          </div>
+          <div class="role-check">
+            <svg width="12" height="9" viewBox="0 0 12 9" fill="none">
+              <path d="M1 4L4.5 7.5L11 1" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </div>
+        </div>
+        <div class="role-card" data-role="Attendee" onclick="selectRole(this)">
+          <div class="role-emoji">🎫</div>
+          <div class="role-info">
+            <div class="role-name">Attendee</div>
+            <div class="role-desc">I attend gaming events</div>
+          </div>
+          <div class="role-check">
+            <svg width="12" height="9" viewBox="0 0 12 9" fill="none">
+              <path d="M1 4L4.5 7.5L11 1" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Step 2: Profile -->
+    <div class="step" id="step-2">
+      <h1 class="step-title">Tell us about yourself</h1>
+      <p class="step-sub">Your profile helps others connect with you</p>
+
+      <div class="avatar-section">
+        <div class="avatar-circle" onclick="document.getElementById('avatar-input').click()">
+          <div class="avatar-placeholder" id="avatar-placeholder">
+            <svg width="28" height="28" viewBox="0 0 24 24" fill="none">
+              <circle cx="12" cy="8" r="4" stroke="#9e9890" stroke-width="2"/>
+              <path d="M4 20c0-4 3.6-7 8-7s8 3 8 7" stroke="#9e9890" stroke-width="2" stroke-linecap="round"/>
+            </svg>
+            <span>Photo</span>
+          </div>
+          <img id="avatar-preview" src="" alt="avatar" style="display:none; width:100%; height:100%; object-fit:cover; border-radius:50%;">
+        </div>
+        <button class="upload-btn" onclick="document.getElementById('avatar-input').click()">Upload Photo</button>
+        <input type="file" id="avatar-input" accept="image/*" onchange="handleAvatar(this)">
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Full Name</label>
+        <input class="form-input" type="text" id="full-name" placeholder="e.g. Alex Chen">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Job Title</label>
+        <input class="form-input" type="text" id="job-title" placeholder="e.g. Lead Game Designer">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Company Name</label>
+        <input class="form-input" type="text" id="company-name" placeholder="e.g. Pixel Storm Studio">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Country</label>
+        <div class="select-wrapper">
+          <select class="form-select" id="country">
+            <option value="" disabled selected>Select your country</option>
+            <option>France</option>
+            <option>United States</option>
+            <option>United Kingdom</option>
+            <option>Germany</option>
+            <option>Japan</option>
+            <option>South Korea</option>
+            <option>China</option>
+            <option>Canada</option>
+            <option>Australia</option>
+            <option>Brazil</option>
+            <option>Sweden</option>
+            <option>Finland</option>
+            <option>Netherlands</option>
+            <option>Poland</option>
+            <option>Spain</option>
+            <option>Italy</option>
+            <option>Portugal</option>
+            <option>India</option>
+            <option>Singapore</option>
+            <option>UAE</option>
+            <option>Other</option>
+          </select>
+        </div>
+      </div>
+    </div>
+
+    <!-- Step 3: Interests -->
+    <div class="step" id="step-3">
+      <h1 class="step-title">What are you looking for?</h1>
+      <p class="step-sub">Select everything that applies to you</p>
+
+      <div class="interest-section">
+        <div class="interest-label">Game Types</div>
+        <div class="tag-cloud">
+          <button class="tag" onclick="toggleTag(this)">Action</button>
+          <button class="tag" onclick="toggleTag(this)">RPG</button>
+          <button class="tag" onclick="toggleTag(this)">Strategy</button>
+          <button class="tag" onclick="toggleTag(this)">Puzzle</button>
+          <button class="tag" onclick="toggleTag(this)">Simulation</button>
+          <button class="tag" onclick="toggleTag(this)">Sports</button>
+          <button class="tag" onclick="toggleTag(this)">Horror</button>
+          <button class="tag" onclick="toggleTag(this)">Indie</button>
+        </div>
+      </div>
+
+      <div class="interest-section">
+        <div class="interest-label">Platforms</div>
+        <div class="tag-cloud">
+          <button class="tag" onclick="toggleTag(this)">Mobile</button>
+          <button class="tag" onclick="toggleTag(this)">PC</button>
+          <button class="tag" onclick="toggleTag(this)">Console</button>
+          <button class="tag" onclick="toggleTag(this)">VR/AR</button>
+        </div>
+      </div>
+
+      <div class="interest-section">
+        <div class="interest-label">Goals</div>
+        <div class="tag-cloud">
+          <button class="tag" onclick="toggleTag(this)">Find Publisher</button>
+          <button class="tag" onclick="toggleTag(this)">Find Investment</button>
+          <button class="tag" onclick="toggleTag(this)">Find Co-dev</button>
+          <button class="tag" onclick="toggleTag(this)">Press Coverage</button>
+          <button class="tag" onclick="toggleTag(this)">Network</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Step 4: Complete -->
+    <div class="step" id="step-4">
+      <div class="complete-section">
+        <div class="check-circle" id="check-circle">
+          <svg width="44" height="44" viewBox="0 0 44 44" fill="none">
+            <path d="M10 22L18.5 30.5L34 14" stroke="#fff" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </div>
+        <h1 class="complete-title">Welcome to<br>Game Connection!</h1>
+        <p class="complete-sub">Your profile is all set. Start exploring<br>the gaming world.</p>
+
+        <div class="summary-card" id="summary-card">
+          <div class="summary-row">
+            <div class="summary-icon" id="summary-icon">🎮</div>
+            <div class="summary-content">
+              <div class="summary-key">Role</div>
+              <div class="summary-val" id="summary-role">—</div>
+            </div>
+          </div>
+          <div class="summary-row">
+            <div class="summary-icon">👤</div>
+            <div class="summary-content">
+              <div class="summary-key">Name</div>
+              <div class="summary-val" id="summary-name">—</div>
+            </div>
+          </div>
+          <div class="summary-row">
+            <div class="summary-icon">🏢</div>
+            <div class="summary-content">
+              <div class="summary-key">Company</div>
+              <div class="summary-val" id="summary-company">—</div>
+            </div>
+          </div>
+          <div class="summary-row">
+            <div class="summary-icon">🌍</div>
+            <div class="summary-content">
+              <div class="summary-key">Country</div>
+              <div class="summary-val" id="summary-country">—</div>
+            </div>
+          </div>
+          <div class="summary-row">
+            <div class="summary-icon">⭐</div>
+            <div class="summary-content">
+              <div class="summary-key">Interests</div>
+              <div class="summary-tags" id="summary-tags"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- /steps-wrapper -->
+
+  <!-- Bottom Nav -->
+  <div class="bottom-nav" id="bottom-nav">
+    <button class="btn btn-back" id="btn-back" onclick="goBack()" style="display:none;" aria-label="Back">
+      <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
+        <path d="M11 4L6 9L11 14" stroke="#6b6560" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+    </button>
+    <button class="btn btn-next" id="btn-next" onclick="goNext()">Get Started</button>
+  </div>
+
+</div><!-- /app -->
+
+<script>
+  let currentStep = 1;
+  const totalSteps = 4;
+  let selectedRole = null;
+
+  const roleEmojis = {
+    'Game Developer': '🎮',
+    'Publisher': '📢',
+    'Investor': '💰',
+    'Press & Media': '📰',
+    'Attendee': '🎫'
+  };
+
+  function selectRole(card) {
+    document.querySelectorAll('.role-card').forEach(c => c.classList.remove('selected'));
+    card.classList.add('selected');
+    selectedRole = card.dataset.role;
+  }
+
+  function toggleTag(btn) {
+    btn.classList.toggle('selected');
+  }
+
+  function handleAvatar(input) {
+    const file = input.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = e => {
+      const preview = document.getElementById('avatar-preview');
+      const placeholder = document.getElementById('avatar-placeholder');
+      preview.src = e.target.result;
+      preview.style.display = 'block';
+      placeholder.style.display = 'none';
+    };
+    reader.readAsDataURL(file);
+  }
+
+  function updateProgress(step) {
+    for (let i = 1; i <= totalSteps; i++) {
+      const dot = document.getElementById('dot-' + i);
+      dot.className = 'dot';
+      if (i < step) dot.classList.add('done');
+      else if (i === step) dot.classList.add('active');
+    }
+    document.getElementById('progress-label').textContent = `Step ${step} of ${totalSteps}`;
+  }
+
+  function goNext() {
+    if (currentStep === totalSteps) return;
+
+    const prev = currentStep;
+    currentStep++;
+
+    const prevEl = document.getElementById('step-' + prev);
+    const nextEl = document.getElementById('step-' + currentStep);
+
+    prevEl.classList.add('exit-left');
+    prevEl.classList.remove('active');
+
+    setTimeout(() => {
+      prevEl.classList.remove('exit-left');
+    }, 350);
+
+    nextEl.style.transform = 'translateX(40px)';
+    nextEl.style.opacity = '0';
+    nextEl.classList.add('active');
+
+    requestAnimationFrame(() => {
+      requestAnimationFrame(() => {
+        nextEl.style.transform = '';
+        nextEl.style.opacity = '';
+      });
+    });
+
+    updateProgress(currentStep);
+    updateNav();
+    nextEl.scrollTop = 0;
+
+    if (currentStep === 4) {
+      populateSummary();
+      setTimeout(() => {
+        document.getElementById('check-circle').classList.add('animate');
+      }, 200);
+    }
+  }
+
+  function goBack() {
+    if (currentStep === 1) return;
+
+    const prev = currentStep;
+    currentStep--;
+
+    const prevEl = document.getElementById('step-' + prev);
+    const nextEl = document.getElementById('step-' + currentStep);
+
+    prevEl.style.transform = 'translateX(40px)';
+    prevEl.style.opacity = '0';
+    prevEl.classList.remove('active');
+
+    setTimeout(() => {
+      prevEl.style.transform = '';
+      prevEl.style.opacity = '';
+    }, 350);
+
+    nextEl.style.transform = 'translateX(-40px)';
+    nextEl.style.opacity = '0';
+    nextEl.classList.add('active');
+
+    requestAnimationFrame(() => {
+      requestAnimationFrame(() => {
+        nextEl.style.transform = '';
+        nextEl.style.opacity = '';
+      });
+    });
+
+    updateProgress(currentStep);
+    updateNav();
+
+    if (prev === 4) {
+      document.getElementById('check-circle').classList.remove('animate');
+    }
+  }
+
+  function updateNav() {
+    const backBtn = document.getElementById('btn-back');
+    const nextBtn = document.getElementById('btn-next');
+    const bottomNav = document.getElementById('bottom-nav');
+
+    backBtn.style.display = currentStep > 1 ? 'flex' : 'none';
+
+    if (currentStep === 4) {
+      nextBtn.style.display = 'none';
+      // Show explore button
+      let exploreBtn = document.getElementById('btn-explore');
+      if (!exploreBtn) {
+        exploreBtn = document.createElement('button');
+        exploreBtn.id = 'btn-explore';
+        exploreBtn.className = 'btn btn-explore';
+        exploreBtn.textContent = 'Explore Platform 🚀';
+        exploreBtn.onclick = () => alert('🎮 Welcome to Game Connection! Enjoy the platform!');
+        bottomNav.appendChild(exploreBtn);
+      }
+      exploreBtn.style.display = 'block';
+      backBtn.style.display = 'flex';
+    } else {
+      nextBtn.style.display = 'block';
+      const exploreBtn = document.getElementById('btn-explore');
+      if (exploreBtn) exploreBtn.style.display = 'none';
+
+      const labels = ['Get Started', 'Continue', 'See My Profile', 'Explore'];
+      nextBtn.textContent = labels[currentStep - 1];
+    }
+  }
+
+  function populateSummary() {
+    // Role
+    const role = selectedRole || '—';
+    document.getElementById('summary-role').textContent = role;
+    document.getElementById('summary-icon').textContent = roleEmojis[role] || '👤';
+
+    // Name
+    const name = document.getElementById('full-name').value.trim();
+    const jobTitle = document.getElementById('job-title').value.trim();
+    document.getElementById('summary-name').textContent =
+      [name, jobTitle].filter(Boolean).join(' · ') || '—';
+
+    // Company
+    const company = document.getElementById('company-name').value.trim();
+    document.getElementById('summary-company').textContent = company || '—';
+
+    // Country
+    const country = document.getElementById('country').value;
+    document.getElementById('summary-country').textContent = country || '—';
+
+    // Interests
+    const tags = Array.from(document.querySelectorAll('.tag.selected')).map(t => t.textContent);
+    const tagsEl = document.getElementById('summary-tags');
+    tagsEl.innerHTML = '';
+    if (tags.length === 0) {
+      tagsEl.innerHTML = '<span style="font-size:13px;color:#9e9890">None selected</span>';
+    } else {
+      tags.forEach(t => {
+        const span = document.createElement('span');
+        span.className = 'summary-tag';
+        span.textContent = t;
+        tagsEl.appendChild(span);
+      });
+    }
+  }
+
+  // Init
+  updateNav();
+</script>
+</body>
+</html>

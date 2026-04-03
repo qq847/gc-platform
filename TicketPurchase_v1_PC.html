@@ -1,0 +1,1446 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Game Connection Live 2026 — Buy Tickets</title>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg: #e8e4da;
+      --primary: #d95f2b;
+      --primary-dark: #b84e21;
+      --primary-light: #f7e8e0;
+      --text: #1a1a18;
+      --text-muted: #6b6b60;
+      --border: #d0ccc0;
+      --white: #ffffff;
+      --success: #2a9d5c;
+      --sold-out: #b0ad9f;
+      --card-bg: #f2ede4;
+      --shadow: 0 2px 12px rgba(0,0,0,0.08);
+      --radius: 12px;
+    }
+
+    body {
+      font-family: 'DM Sans', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      font-size: 15px;
+      line-height: 1.6;
+    }
+
+    /* ── Header ── */
+    .site-header {
+      background: var(--text);
+      color: var(--white);
+      padding: 14px 40px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .site-header .logo {
+      font-size: 18px;
+      font-weight: 700;
+      letter-spacing: -0.3px;
+    }
+    .site-header .logo span { color: var(--primary); }
+    .site-header nav a {
+      color: rgba(255,255,255,0.7);
+      text-decoration: none;
+      font-size: 14px;
+      margin-left: 28px;
+      transition: color 0.2s;
+    }
+    .site-header nav a:hover { color: #fff; }
+
+    /* ── Event Banner ── */
+    .event-banner {
+      background: linear-gradient(135deg, var(--primary) 0%, #c04a1a 100%);
+      color: #fff;
+      padding: 40px 40px 36px;
+      position: relative;
+      overflow: hidden;
+    }
+    .event-banner::before {
+      content: '';
+      position: absolute;
+      top: -60px; right: -60px;
+      width: 240px; height: 240px;
+      background: rgba(255,255,255,0.06);
+      border-radius: 50%;
+    }
+    .event-banner::after {
+      content: '';
+      position: absolute;
+      bottom: -80px; left: 30%;
+      width: 320px; height: 320px;
+      background: rgba(255,255,255,0.04);
+      border-radius: 50%;
+    }
+    .event-banner .inner { max-width: 1200px; margin: 0 auto; position: relative; z-index: 1; }
+    .event-tag {
+      display: inline-block;
+      background: rgba(255,255,255,0.2);
+      border: 1px solid rgba(255,255,255,0.3);
+      border-radius: 20px;
+      padding: 4px 14px;
+      font-size: 12px;
+      font-weight: 600;
+      letter-spacing: 0.8px;
+      text-transform: uppercase;
+      margin-bottom: 14px;
+    }
+    .event-banner h1 {
+      font-size: 36px;
+      font-weight: 700;
+      letter-spacing: -0.5px;
+      margin-bottom: 10px;
+    }
+    .event-meta {
+      display: flex;
+      gap: 28px;
+      flex-wrap: wrap;
+    }
+    .event-meta-item {
+      display: flex;
+      align-items: center;
+      gap: 7px;
+      font-size: 15px;
+      opacity: 0.92;
+    }
+    .event-meta-item svg { width: 16px; height: 16px; opacity: 0.85; }
+
+    /* ── Step Indicator ── */
+    .step-wrapper {
+      background: var(--white);
+      border-bottom: 1px solid var(--border);
+      padding: 0 40px;
+    }
+    .step-indicator {
+      max-width: 1200px;
+      margin: 0 auto;
+      display: flex;
+      align-items: center;
+      padding: 18px 0;
+    }
+    .step-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      color: var(--text-muted);
+      font-size: 14px;
+      font-weight: 500;
+    }
+    .step-item.active { color: var(--primary); }
+    .step-item.done { color: var(--success); }
+    .step-num {
+      width: 28px; height: 28px;
+      border-radius: 50%;
+      border: 2px solid currentColor;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 12px; font-weight: 700;
+      flex-shrink: 0;
+    }
+    .step-item.active .step-num {
+      background: var(--primary);
+      border-color: var(--primary);
+      color: #fff;
+    }
+    .step-item.done .step-num {
+      background: var(--success);
+      border-color: var(--success);
+      color: #fff;
+    }
+    .step-sep {
+      flex: 1;
+      height: 1px;
+      background: var(--border);
+      margin: 0 16px;
+    }
+
+    /* ── Main Layout ── */
+    .main-content {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 36px 40px 60px;
+    }
+
+    /* ── STEP 1: Ticket Selection ── */
+    #step1 { display: flex; gap: 28px; align-items: flex-start; }
+    .tickets-col { flex: 1; min-width: 0; }
+    .summary-col { width: 340px; flex-shrink: 0; position: sticky; top: 24px; }
+
+    .section-title {
+      font-size: 20px;
+      font-weight: 700;
+      margin-bottom: 20px;
+      letter-spacing: -0.3px;
+    }
+
+    /* ── Ticket Card ── */
+    .ticket-card {
+      background: var(--white);
+      border-radius: var(--radius);
+      border: 2px solid transparent;
+      padding: 24px;
+      margin-bottom: 16px;
+      cursor: pointer;
+      transition: border-color 0.2s, box-shadow 0.2s, transform 0.15s;
+      position: relative;
+      overflow: hidden;
+    }
+    .ticket-card:hover:not(.sold-out) {
+      border-color: var(--primary);
+      box-shadow: 0 4px 20px rgba(217,95,43,0.12);
+      transform: translateY(-1px);
+    }
+    .ticket-card.selected {
+      border-color: var(--primary);
+      box-shadow: 0 4px 24px rgba(217,95,43,0.18);
+    }
+    .ticket-card.sold-out {
+      opacity: 0.65;
+      cursor: not-allowed;
+      background: #f5f4f0;
+    }
+    .ticket-card.vip-card {
+      border-color: #e8c977;
+      background: linear-gradient(135deg, #fffdf4 0%, #fff8e6 100%);
+    }
+    .ticket-card.vip-card.selected {
+      border-color: #c9a020;
+    }
+
+    .ticket-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      margin-bottom: 8px;
+    }
+    .ticket-name {
+      font-size: 18px;
+      font-weight: 700;
+      letter-spacing: -0.2px;
+    }
+    .ticket-price {
+      font-size: 26px;
+      font-weight: 700;
+      color: var(--primary);
+      letter-spacing: -0.5px;
+    }
+    .ticket-card.sold-out .ticket-price { color: var(--sold-out); }
+    .ticket-card.vip-card .ticket-price { color: #b8860b; }
+
+    .ticket-desc {
+      font-size: 13px;
+      color: var(--text-muted);
+      margin-bottom: 14px;
+    }
+
+    .ticket-footer {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .stock-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      font-size: 12px;
+      font-weight: 600;
+      padding: 3px 10px;
+      border-radius: 20px;
+    }
+    .stock-badge.available { background: #e6f7ed; color: #1e7a47; }
+    .stock-badge.low { background: #fff3e0; color: #e65c00; }
+    .stock-badge.sold { background: #eeece8; color: #888; }
+    .stock-badge::before { content: '●'; font-size: 8px; }
+
+    /* ── Quantity Selector ── */
+    .qty-selector {
+      display: flex;
+      align-items: center;
+      gap: 0;
+      border: 1.5px solid var(--border);
+      border-radius: 8px;
+      overflow: hidden;
+      background: var(--white);
+    }
+    .qty-btn {
+      width: 36px; height: 36px;
+      border: none;
+      background: transparent;
+      cursor: pointer;
+      font-size: 18px;
+      font-weight: 600;
+      color: var(--text);
+      display: flex; align-items: center; justify-content: center;
+      transition: background 0.15s;
+    }
+    .qty-btn:hover { background: var(--bg); }
+    .qty-btn:disabled { opacity: 0.35; cursor: not-allowed; }
+    .qty-input {
+      width: 44px; height: 36px;
+      border: none;
+      border-left: 1.5px solid var(--border);
+      border-right: 1.5px solid var(--border);
+      text-align: center;
+      font-family: inherit;
+      font-size: 15px;
+      font-weight: 600;
+      background: transparent;
+      outline: none;
+      -moz-appearance: textfield;
+    }
+    .qty-input::-webkit-outer-spin-button,
+    .qty-input::-webkit-inner-spin-button { -webkit-appearance: none; }
+
+    /* ── VIP Benefits ── */
+    .vip-benefits {
+      border-top: 1px solid #e8c977;
+      margin-top: 16px;
+      padding-top: 14px;
+    }
+    .vip-benefits h4 {
+      font-size: 12px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.6px;
+      color: #b8860b;
+      margin-bottom: 10px;
+    }
+    .vip-benefits ul { list-style: none; }
+    .vip-benefits li {
+      display: flex;
+      align-items: flex-start;
+      gap: 8px;
+      font-size: 13px;
+      color: var(--text);
+      margin-bottom: 6px;
+    }
+    .vip-benefits li::before {
+      content: '✓';
+      color: #b8860b;
+      font-weight: 700;
+      flex-shrink: 0;
+      margin-top: 1px;
+    }
+
+    /* ── Sold Out Ribbon ── */
+    .sold-ribbon {
+      position: absolute;
+      top: 18px; right: -24px;
+      background: #888;
+      color: #fff;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.5px;
+      text-transform: uppercase;
+      padding: 4px 36px;
+      transform: rotate(35deg);
+    }
+
+    /* ── Order Summary Card ── */
+    .summary-card {
+      background: var(--white);
+      border-radius: var(--radius);
+      padding: 24px;
+      box-shadow: var(--shadow);
+    }
+    .summary-title {
+      font-size: 17px;
+      font-weight: 700;
+      margin-bottom: 20px;
+      padding-bottom: 16px;
+      border-bottom: 1px solid var(--border);
+    }
+    .summary-empty {
+      text-align: center;
+      padding: 24px 0;
+      color: var(--text-muted);
+      font-size: 14px;
+    }
+    .summary-empty svg { width: 40px; height: 40px; opacity: 0.3; margin-bottom: 8px; display: block; margin-left: auto; margin-right: auto; }
+    .summary-items { margin-bottom: 16px; }
+    .summary-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      margin-bottom: 12px;
+      gap: 8px;
+    }
+    .summary-item-name { font-size: 14px; font-weight: 600; }
+    .summary-item-qty { font-size: 12px; color: var(--text-muted); }
+    .summary-item-price { font-size: 14px; font-weight: 600; white-space: nowrap; }
+
+    /* ── Promo Code ── */
+    .promo-section { margin: 16px 0; }
+    .promo-label { font-size: 12px; font-weight: 600; margin-bottom: 6px; color: var(--text-muted); }
+    .promo-row {
+      display: flex;
+      gap: 8px;
+    }
+    .promo-input {
+      flex: 1;
+      height: 38px;
+      border: 1.5px solid var(--border);
+      border-radius: 8px;
+      padding: 0 12px;
+      font-family: inherit;
+      font-size: 13px;
+      background: var(--bg);
+      outline: none;
+      transition: border-color 0.2s;
+    }
+    .promo-input:focus { border-color: var(--primary); }
+    .promo-btn {
+      height: 38px;
+      padding: 0 14px;
+      background: var(--text);
+      color: #fff;
+      border: none;
+      border-radius: 8px;
+      font-family: inherit;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+    .promo-btn:hover { background: #333; }
+    .promo-msg { font-size: 12px; margin-top: 6px; }
+    .promo-msg.success { color: var(--success); }
+    .promo-msg.error { color: #e53e3e; }
+
+    /* ── Totals ── */
+    .summary-divider { border: none; border-top: 1px solid var(--border); margin: 16px 0; }
+    .summary-subtotal, .summary-discount {
+      display: flex; justify-content: space-between;
+      font-size: 14px; margin-bottom: 8px;
+    }
+    .summary-discount { color: var(--success); }
+    .summary-total {
+      display: flex; justify-content: space-between;
+      font-size: 18px; font-weight: 700;
+      margin-top: 12px; margin-bottom: 20px;
+    }
+
+    /* ── CTA Button ── */
+    .btn-primary {
+      display: block;
+      width: 100%;
+      padding: 14px;
+      background: var(--primary);
+      color: #fff;
+      border: none;
+      border-radius: 10px;
+      font-family: inherit;
+      font-size: 16px;
+      font-weight: 700;
+      cursor: pointer;
+      text-align: center;
+      letter-spacing: -0.2px;
+      transition: background 0.2s, transform 0.15s;
+    }
+    .btn-primary:hover { background: var(--primary-dark); transform: translateY(-1px); }
+    .btn-primary:active { transform: translateY(0); }
+    .btn-primary:disabled { background: var(--sold-out); cursor: not-allowed; transform: none; }
+    .btn-secondary {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 10px 20px;
+      background: transparent;
+      color: var(--text);
+      border: 1.5px solid var(--border);
+      border-radius: 10px;
+      font-family: inherit;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: border-color 0.2s, background 0.2s;
+    }
+    .btn-secondary:hover { border-color: var(--text); background: var(--bg); }
+
+    .secure-note {
+      text-align: center;
+      font-size: 12px;
+      color: var(--text-muted);
+      margin-top: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 4px;
+    }
+
+    /* ── STEP 2: Checkout ── */
+    #step2 { display: none; }
+    .checkout-grid {
+      display: flex;
+      gap: 28px;
+      align-items: flex-start;
+    }
+    .checkout-form-col { flex: 1; min-width: 0; }
+    .checkout-summary-col { width: 320px; flex-shrink: 0; position: sticky; top: 24px; }
+
+    .form-card {
+      background: var(--white);
+      border-radius: var(--radius);
+      padding: 28px;
+      margin-bottom: 20px;
+    }
+    .form-card-title {
+      font-size: 16px;
+      font-weight: 700;
+      margin-bottom: 20px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .form-card-title .step-badge {
+      width: 24px; height: 24px;
+      background: var(--primary);
+      color: #fff;
+      border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 12px; font-weight: 700;
+    }
+
+    .form-row { display: flex; gap: 16px; }
+    .form-group {
+      flex: 1;
+      margin-bottom: 16px;
+    }
+    .form-group label {
+      display: block;
+      font-size: 13px;
+      font-weight: 600;
+      margin-bottom: 6px;
+      color: var(--text);
+    }
+    .form-group .required { color: var(--primary); margin-left: 2px; }
+    .form-control {
+      width: 100%;
+      height: 44px;
+      border: 1.5px solid var(--border);
+      border-radius: 8px;
+      padding: 0 14px;
+      font-family: inherit;
+      font-size: 14px;
+      background: var(--bg);
+      outline: none;
+      transition: border-color 0.2s, box-shadow 0.2s;
+      color: var(--text);
+    }
+    .form-control:focus {
+      border-color: var(--primary);
+      box-shadow: 0 0 0 3px rgba(217,95,43,0.12);
+    }
+    .form-control.error { border-color: #e53e3e; }
+    .field-error { font-size: 12px; color: #e53e3e; margin-top: 4px; }
+
+    /* ── Payment Methods ── */
+    .payment-methods {
+      display: flex;
+      gap: 12px;
+      margin-bottom: 20px;
+    }
+    .payment-method {
+      flex: 1;
+      border: 2px solid var(--border);
+      border-radius: 10px;
+      padding: 14px;
+      cursor: pointer;
+      transition: border-color 0.2s, background 0.2s;
+      text-align: center;
+      position: relative;
+    }
+    .payment-method:hover { border-color: var(--primary); }
+    .payment-method.active { border-color: var(--primary); background: var(--primary-light); }
+    .payment-method input { display: none; }
+    .payment-method-label {
+      font-size: 14px;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+    }
+    .payment-icon { font-size: 20px; }
+
+    .card-grid { display: grid; grid-template-columns: 1fr auto auto; gap: 12px; }
+
+    /* ── Checkout Summary ── */
+    .checkout-summary-card {
+      background: var(--white);
+      border-radius: var(--radius);
+      padding: 20px;
+      box-shadow: var(--shadow);
+    }
+    .mini-order-item {
+      display: flex; justify-content: space-between;
+      font-size: 13px; margin-bottom: 8px;
+      color: var(--text-muted);
+    }
+    .mini-order-item strong { color: var(--text); }
+
+    .checkout-actions {
+      display: flex;
+      gap: 12px;
+      align-items: center;
+      margin-top: 8px;
+    }
+
+    /* ── STEP 3: Success ── */
+    #step3 { display: none; }
+    .success-wrap {
+      max-width: 600px;
+      margin: 0 auto;
+      text-align: center;
+    }
+    .success-icon {
+      width: 80px; height: 80px;
+      background: #e6f7ed;
+      border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      margin: 0 auto 24px;
+    }
+    .success-icon svg { width: 40px; height: 40px; color: var(--success); }
+    .success-title {
+      font-size: 30px; font-weight: 700;
+      letter-spacing: -0.5px; margin-bottom: 10px;
+    }
+    .success-sub {
+      color: var(--text-muted); font-size: 15px; margin-bottom: 32px;
+    }
+    .success-card {
+      background: var(--white);
+      border-radius: var(--radius);
+      padding: 28px;
+      text-align: left;
+      margin-bottom: 24px;
+      box-shadow: var(--shadow);
+    }
+    .order-ref {
+      font-size: 13px; color: var(--text-muted); margin-bottom: 4px;
+    }
+    .order-id {
+      font-size: 22px; font-weight: 700;
+      letter-spacing: 1px;
+      color: var(--primary);
+      margin-bottom: 20px;
+      font-family: monospace;
+    }
+    .order-detail-row {
+      display: flex; justify-content: space-between;
+      font-size: 14px; margin-bottom: 10px;
+      border-bottom: 1px solid var(--border);
+      padding-bottom: 10px;
+    }
+    .order-detail-row:last-child { border-bottom: none; margin-bottom: 0; padding-bottom: 0; }
+    .order-detail-label { color: var(--text-muted); }
+    .order-detail-value { font-weight: 600; }
+    .qr-placeholder {
+      width: 140px; height: 140px;
+      background: var(--bg);
+      border: 2px dashed var(--border);
+      border-radius: 8px;
+      display: flex; align-items: center; justify-content: center;
+      margin: 24px auto;
+      flex-direction: column;
+      gap: 6px;
+      color: var(--text-muted);
+      font-size: 12px;
+    }
+    .qr-placeholder svg { width: 48px; height: 48px; opacity: 0.3; }
+    .success-actions {
+      display: flex; gap: 12px; justify-content: center; flex-wrap: wrap;
+    }
+    .btn-success {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 12px 24px;
+      background: var(--success);
+      color: #fff;
+      border: none;
+      border-radius: 10px;
+      font-family: inherit;
+      font-size: 15px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+    .btn-success:hover { background: #228a4f; }
+    .btn-outline-dark {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 12px 24px;
+      background: transparent;
+      color: var(--text);
+      border: 2px solid var(--text);
+      border-radius: 10px;
+      font-family: inherit;
+      font-size: 15px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+    .btn-outline-dark:hover { background: var(--text); color: #fff; }
+
+    /* ── Confetti ── */
+    .confetti-piece {
+      position: fixed;
+      width: 8px; height: 8px;
+      border-radius: 2px;
+      animation: confettiFall linear forwards;
+      pointer-events: none;
+      z-index: 9999;
+    }
+    @keyframes confettiFall {
+      0% { transform: translateY(-20px) rotate(0deg); opacity: 1; }
+      100% { transform: translateY(100vh) rotate(720deg); opacity: 0; }
+    }
+
+    /* ── Misc ── */
+    .highlight-tag {
+      display: inline-block;
+      background: var(--primary);
+      color: #fff;
+      font-size: 10px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      padding: 2px 8px;
+      border-radius: 4px;
+      margin-left: 8px;
+      vertical-align: middle;
+    }
+    .vip-tag {
+      display: inline-block;
+      background: #f0c040;
+      color: #7a5a00;
+      font-size: 10px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      padding: 2px 8px;
+      border-radius: 4px;
+      margin-left: 8px;
+      vertical-align: middle;
+    }
+
+    .paypal-form { text-align: center; padding: 20px; color: var(--text-muted); font-size: 14px; }
+    .paypal-btn {
+      display: inline-block;
+      background: #009cde;
+      color: #fff;
+      border: none;
+      border-radius: 8px;
+      padding: 12px 32px;
+      font-size: 16px;
+      font-weight: 700;
+      cursor: pointer;
+      margin-top: 12px;
+      font-family: 'Verdana', sans-serif;
+      transition: background 0.2s;
+    }
+    .paypal-btn:hover { background: #007ab5; }
+
+    .toast {
+      position: fixed;
+      bottom: 24px; right: 24px;
+      background: var(--text);
+      color: #fff;
+      padding: 12px 20px;
+      border-radius: 10px;
+      font-size: 14px;
+      font-weight: 500;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.2);
+      transform: translateY(80px);
+      opacity: 0;
+      transition: transform 0.3s, opacity 0.3s;
+      z-index: 1000;
+    }
+    .toast.show { transform: translateY(0); opacity: 1; }
+
+    @media (max-width: 900px) {
+      #step1 { flex-direction: column; }
+      .summary-col { width: 100%; position: static; }
+      .checkout-grid { flex-direction: column; }
+      .checkout-summary-col { width: 100%; position: static; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- Site Header -->
+<header class="site-header">
+  <div class="logo">Game<span>Connection</span></div>
+  <nav>
+    <a href="#">Program</a>
+    <a href="#">Speakers</a>
+    <a href="#">Venue</a>
+    <a href="#">Contact</a>
+  </nav>
+</header>
+
+<!-- Event Banner -->
+<div class="event-banner">
+  <div class="inner">
+    <div class="event-tag">🎮 Annual Industry Summit</div>
+    <h1>Game Connection Live 2026</h1>
+    <div class="event-meta">
+      <div class="event-meta-item">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+        Mar 29 – Apr 3, 2026
+      </div>
+      <div class="event-meta-item">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/></svg>
+        Helsinki, Finland
+      </div>
+      <div class="event-meta-item">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+        6-Day Event
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Step Indicator -->
+<div class="step-wrapper">
+  <div class="step-indicator">
+    <div class="step-item active" id="si-1">
+      <div class="step-num">1</div>
+      <span>Select Tickets</span>
+    </div>
+    <div class="step-sep"></div>
+    <div class="step-item" id="si-2">
+      <div class="step-num">2</div>
+      <span>Checkout</span>
+    </div>
+    <div class="step-sep"></div>
+    <div class="step-item" id="si-3">
+      <div class="step-num">3</div>
+      <span>Confirmation</span>
+    </div>
+  </div>
+</div>
+
+<!-- Main Content -->
+<div class="main-content">
+
+  <!-- ══════════════════════════════════════════════ STEP 1 ══ -->
+  <div id="step1">
+
+    <!-- Ticket Cards -->
+    <div class="tickets-col">
+      <div class="section-title">Choose Your Ticket</div>
+
+      <!-- Early Bird - Sold Out -->
+      <div class="ticket-card sold-out" id="card-earlybird">
+        <div class="sold-ribbon">Sold Out</div>
+        <div class="ticket-header">
+          <div>
+            <div class="ticket-name">Early Bird</div>
+            <div class="ticket-desc">Limited early access pricing for fast movers.</div>
+          </div>
+          <div class="ticket-price">€99</div>
+        </div>
+        <div class="ticket-footer">
+          <span class="stock-badge sold">Sold Out</span>
+        </div>
+      </div>
+
+      <!-- Standard -->
+      <div class="ticket-card" id="card-standard" onclick="selectCard('standard')">
+        <div class="ticket-header">
+          <div>
+            <div class="ticket-name">Standard <span class="highlight-tag">Popular</span></div>
+            <div class="ticket-desc">Full conference access including all keynotes and networking sessions.</div>
+          </div>
+          <div class="ticket-price">€149</div>
+        </div>
+        <div class="ticket-footer">
+          <span class="stock-badge available">32 remaining</span>
+          <div class="qty-selector" onclick="event.stopPropagation()">
+            <button class="qty-btn" onclick="changeQty('standard', -1)">−</button>
+            <input class="qty-input" type="number" id="qty-standard" value="0" min="0" max="10" readonly>
+            <button class="qty-btn" onclick="changeQty('standard', 1)">+</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- VIP -->
+      <div class="ticket-card vip-card" id="card-vip" onclick="selectCard('vip')">
+        <div class="ticket-header">
+          <div>
+            <div class="ticket-name">VIP <span class="vip-tag">✦ Premium</span></div>
+            <div class="ticket-desc">All-access pass with exclusive networking and priority seating.</div>
+          </div>
+          <div class="ticket-price">€299</div>
+        </div>
+        <div class="ticket-footer">
+          <span class="stock-badge low">8 remaining</span>
+          <div class="qty-selector" onclick="event.stopPropagation()">
+            <button class="qty-btn" onclick="changeQty('vip', -1)">−</button>
+            <input class="qty-input" type="number" id="qty-vip" value="0" min="0" max="8" readonly>
+            <button class="qty-btn" onclick="changeQty('vip', 1)">+</button>
+          </div>
+        </div>
+        <div class="vip-benefits">
+          <h4>VIP Includes</h4>
+          <ul>
+            <li>Private networking dinner with speakers (Day 1)</li>
+            <li>VIP lounge access throughout the event</li>
+            <li>Priority front-row seating at all keynotes</li>
+            <li>Exclusive merchandise & welcome kit</li>
+            <li>1-on-1 meeting scheduling with exhibitors</li>
+            <li>Post-event recordings & slides access</li>
+          </ul>
+        </div>
+      </div>
+
+      <!-- Industry Pro -->
+      <div class="ticket-card" id="card-pro" onclick="selectCard('pro')">
+        <div class="ticket-header">
+          <div>
+            <div class="ticket-name">Industry Pro</div>
+            <div class="ticket-desc">For game studios and publishers. Includes B2B meeting slots and expo floor access.</div>
+          </div>
+          <div class="ticket-price">€199</div>
+        </div>
+        <div class="ticket-footer">
+          <span class="stock-badge available">15 remaining</span>
+          <div class="qty-selector" onclick="event.stopPropagation()">
+            <button class="qty-btn" onclick="changeQty('pro', -1)">−</button>
+            <input class="qty-input" type="number" id="qty-pro" value="0" min="0" max="15" readonly>
+            <button class="qty-btn" onclick="changeQty('pro', 1)">+</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Order Summary -->
+    <div class="summary-col">
+      <div class="summary-card">
+        <div class="summary-title">Order Summary</div>
+
+        <!-- Empty State -->
+        <div class="summary-empty" id="summary-empty">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+            <path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/>
+            <path d="M16 10a4 4 0 01-8 0"/>
+          </svg>
+          <div>Select tickets to<br>build your order</div>
+        </div>
+
+        <!-- Items List -->
+        <div class="summary-items" id="summary-items" style="display:none"></div>
+
+        <!-- Promo Code -->
+        <div class="promo-section" id="promo-section" style="display:none">
+          <div class="promo-label">Promo Code</div>
+          <div class="promo-row">
+            <input class="promo-input" type="text" id="promo-input" placeholder="Enter code">
+            <button class="promo-btn" onclick="applyPromo()">Apply</button>
+          </div>
+          <div class="promo-msg" id="promo-msg"></div>
+        </div>
+
+        <hr class="summary-divider" id="summary-divider" style="display:none">
+
+        <!-- Totals -->
+        <div id="summary-totals" style="display:none">
+          <div class="summary-subtotal">
+            <span>Subtotal</span>
+            <span id="subtotal-val">€0</span>
+          </div>
+          <div class="summary-discount" id="discount-row" style="display:none">
+            <span>Discount (10%)</span>
+            <span id="discount-val"></span>
+          </div>
+          <div class="summary-total">
+            <span>Total</span>
+            <span id="total-val">€0</span>
+          </div>
+        </div>
+
+        <button class="btn-primary" id="checkout-btn" onclick="goToStep2()" disabled>
+          Proceed to Checkout →
+        </button>
+        <div class="secure-note">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+            <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0110 0v4"/>
+          </svg>
+          Secure SSL checkout
+        </div>
+      </div>
+    </div>
+  </div><!-- /step1 -->
+
+  <!-- ══════════════════════════════════════════════ STEP 2 ══ -->
+  <div id="step2">
+    <div class="checkout-grid">
+      <div class="checkout-form-col">
+
+        <!-- Attendee Info -->
+        <div class="form-card">
+          <div class="form-card-title">
+            <div class="step-badge">1</div>
+            Attendee Information
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label>First Name <span class="required">*</span></label>
+              <input class="form-control" type="text" id="f-firstname" placeholder="Alex">
+              <div class="field-error" id="err-firstname"></div>
+            </div>
+            <div class="form-group">
+              <label>Last Name <span class="required">*</span></label>
+              <input class="form-control" type="text" id="f-lastname" placeholder="Johnson">
+              <div class="field-error" id="err-lastname"></div>
+            </div>
+          </div>
+          <div class="form-group">
+            <label>Email Address <span class="required">*</span></label>
+            <input class="form-control" type="email" id="f-email" placeholder="alex@studio.com">
+            <div class="field-error" id="err-email"></div>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label>Company / Studio</label>
+              <input class="form-control" type="text" id="f-company" placeholder="Indie Games Ltd.">
+            </div>
+            <div class="form-group">
+              <label>Job Title</label>
+              <input class="form-control" type="text" id="f-jobtitle" placeholder="Game Designer">
+            </div>
+          </div>
+        </div>
+
+        <!-- Payment -->
+        <div class="form-card">
+          <div class="form-card-title">
+            <div class="step-badge">2</div>
+            Payment Method
+          </div>
+
+          <div class="payment-methods">
+            <label class="payment-method active" id="pm-card" onclick="selectPayment('card')">
+              <input type="radio" name="payment" value="card" checked>
+              <div class="payment-method-label">
+                <span class="payment-icon">💳</span> Credit Card
+              </div>
+            </label>
+            <label class="payment-method" id="pm-paypal" onclick="selectPayment('paypal')">
+              <input type="radio" name="payment" value="paypal">
+              <div class="payment-method-label">
+                <span class="payment-icon">🅿️</span> PayPal
+              </div>
+            </label>
+          </div>
+
+          <!-- Credit Card Form -->
+          <div id="card-form">
+            <div class="form-group">
+              <label>Card Number <span class="required">*</span></label>
+              <input class="form-control" type="text" id="f-cardnum" placeholder="1234 5678 9012 3456" maxlength="19" oninput="formatCard(this)">
+              <div class="field-error" id="err-cardnum"></div>
+            </div>
+            <div class="card-grid">
+              <div class="form-group">
+                <label>Cardholder Name <span class="required">*</span></label>
+                <input class="form-control" type="text" id="f-cardname" placeholder="Alex Johnson">
+                <div class="field-error" id="err-cardname"></div>
+              </div>
+              <div class="form-group">
+                <label>Expiry <span class="required">*</span></label>
+                <input class="form-control" type="text" id="f-expiry" placeholder="MM/YY" maxlength="5" oninput="formatExpiry(this)" style="width:100px">
+                <div class="field-error" id="err-expiry"></div>
+              </div>
+              <div class="form-group">
+                <label>CVV <span class="required">*</span></label>
+                <input class="form-control" type="text" id="f-cvv" placeholder="123" maxlength="4" style="width:80px">
+                <div class="field-error" id="err-cvv"></div>
+              </div>
+            </div>
+          </div>
+
+          <!-- PayPal -->
+          <div id="paypal-form" style="display:none" class="paypal-form">
+            <p>You'll be redirected to PayPal to complete your purchase securely.</p>
+            <button class="paypal-btn" onclick="goToStep3()">Pay with <b>PayPal</b></button>
+          </div>
+        </div>
+
+        <!-- Actions -->
+        <div class="checkout-actions">
+          <button class="btn-secondary" onclick="goToStep1()">
+            ← Back
+          </button>
+          <button class="btn-primary" id="confirm-btn" onclick="confirmPurchase()" style="flex:1">
+            Confirm Purchase →
+          </button>
+        </div>
+        <div class="secure-note" style="margin-top:10px">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+            <rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0110 0v4"/>
+          </svg>
+          256-bit SSL encrypted payment
+        </div>
+
+      </div>
+
+      <!-- Mini Summary -->
+      <div class="checkout-summary-col">
+        <div class="checkout-summary-card">
+          <div class="summary-title" style="font-size:15px">Your Order</div>
+          <div id="mini-order-items"></div>
+          <hr class="summary-divider">
+          <div id="mini-order-discount" style="display:none; color:var(--success); font-size:13px; display:none; justify-content:space-between; margin-bottom:8px"></div>
+          <div class="summary-total" style="font-size:16px">
+            <span>Total</span>
+            <span id="mini-total">€0</span>
+          </div>
+          <div style="font-size:12px; color:var(--text-muted); margin-top:4px">
+            📍 Game Connection Live 2026<br>
+            📅 Mar 29 – Apr 3 · Helsinki
+          </div>
+        </div>
+      </div>
+    </div>
+  </div><!-- /step2 -->
+
+  <!-- ══════════════════════════════════════════════ STEP 3 ══ -->
+  <div id="step3">
+    <div class="success-wrap">
+      <div class="success-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="#2a9d5c" stroke-width="2.5">
+          <path d="M22 11.08V12a10 10 0 11-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/>
+        </svg>
+      </div>
+      <div class="success-title">You're Registered! 🎮</div>
+      <div class="success-sub">Your tickets are confirmed. Check your email for the receipt and joining details.</div>
+
+      <div class="success-card">
+        <div class="order-ref">Order Reference</div>
+        <div class="order-id" id="order-id">GCL-2026-XXXXXX</div>
+
+        <div class="order-detail-row">
+          <span class="order-detail-label">Event</span>
+          <span class="order-detail-value">Game Connection Live 2026</span>
+        </div>
+        <div class="order-detail-row">
+          <span class="order-detail-label">Date</span>
+          <span class="order-detail-value">Mar 29 – Apr 3, 2026</span>
+        </div>
+        <div class="order-detail-row">
+          <span class="order-detail-label">Venue</span>
+          <span class="order-detail-value">Helsinki Exhibition & Convention Centre</span>
+        </div>
+        <div class="order-detail-row" id="success-ticket-row">
+          <span class="order-detail-label">Ticket(s)</span>
+          <span class="order-detail-value" id="success-tickets">—</span>
+        </div>
+        <div class="order-detail-row">
+          <span class="order-detail-label">Total Paid</span>
+          <span class="order-detail-value" id="success-total" style="color:var(--primary)">€0</span>
+        </div>
+
+        <div class="qr-placeholder">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+            <rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/>
+            <rect x="3" y="14" width="7" height="7"/><rect x="5" y="5" width="3" height="3"/>
+            <rect x="16" y="5" width="3" height="3"/><rect x="5" y="16" width="3" height="3"/>
+            <path d="M14 14h3v3h-3zM17 17h3v3h-3zM14 17h.01M17 14h.01"/>
+          </svg>
+          QR Code
+          <span style="font-size:10px">Sent to your email</span>
+        </div>
+      </div>
+
+      <div class="success-actions">
+        <button class="btn-success" onclick="addToCalendar()">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/><line x1="12" y1="15" x2="12" y2="19"/><line x1="10" y1="17" x2="14" y2="17"/></svg>
+          Add to Calendar
+        </button>
+        <button class="btn-outline-dark" onclick="viewTickets()">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M20 12v6a2 2 0 01-2 2H6a2 2 0 01-2-2V6a2 2 0 012-2h6"/><path d="M15 3h6v6"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+          View My Tickets
+        </button>
+      </div>
+    </div>
+  </div><!-- /step3 -->
+
+</div><!-- /main-content -->
+
+<!-- Toast -->
+<div class="toast" id="toast"></div>
+
+<script>
+  // ── State ──────────────────────────────────────────────────
+  const tickets = {
+    standard: { name: 'Standard', price: 149, qty: 0, max: 32 },
+    vip:      { name: 'VIP',      price: 299, qty: 0, max: 8 },
+    pro:      { name: 'Industry Pro', price: 199, qty: 0, max: 15 }
+  };
+  let discountPct = 0;
+  const VALID_PROMOS = { 'GAME10': 10, 'GCL2026': 15, 'HELSINKI': 20 };
+
+  // ── Quantity ───────────────────────────────────────────────
+  function changeQty(type, delta) {
+    const t = tickets[type];
+    const newQty = Math.max(0, Math.min(t.max, t.qty + delta));
+    t.qty = newQty;
+    document.getElementById('qty-' + type).value = newQty;
+    if (newQty > 0) selectCard(type);
+    else if (Object.values(tickets).every(t => t.qty === 0)) deselectAll();
+    updateSummary();
+  }
+
+  function selectCard(type) {
+    document.querySelectorAll('.ticket-card:not(.sold-out)').forEach(c => c.classList.remove('selected'));
+    document.getElementById('card-' + type).classList.add('selected');
+    const t = tickets[type];
+    if (t.qty === 0) { t.qty = 1; document.getElementById('qty-' + type).value = 1; }
+    updateSummary();
+  }
+
+  function deselectAll() {
+    document.querySelectorAll('.ticket-card').forEach(c => c.classList.remove('selected'));
+  }
+
+  // ── Summary ────────────────────────────────────────────────
+  function updateSummary() {
+    const items = Object.entries(tickets).filter(([,t]) => t.qty > 0);
+    const subtotal = items.reduce((s,[,t]) => s + t.price * t.qty, 0);
+    const discountAmt = Math.round(subtotal * discountPct / 100);
+    const total = subtotal - discountAmt;
+
+    const emptyEl = document.getElementById('summary-empty');
+    const itemsEl = document.getElementById('summary-items');
+    const promoEl = document.getElementById('promo-section');
+    const divEl   = document.getElementById('summary-divider');
+    const totEl   = document.getElementById('summary-totals');
+    const btn     = document.getElementById('checkout-btn');
+
+    if (items.length === 0) {
+      emptyEl.style.display = 'block';
+      itemsEl.style.display = 'none';
+      promoEl.style.display = 'none';
+      divEl.style.display   = 'none';
+      totEl.style.display   = 'none';
+      btn.disabled = true;
+      return;
+    }
+
+    emptyEl.style.display = 'none';
+    itemsEl.style.display = 'block';
+    promoEl.style.display = 'block';
+    divEl.style.display   = 'block';
+    totEl.style.display   = 'block';
+    btn.disabled = false;
+
+    itemsEl.innerHTML = items.map(([,t]) => `
+      <div class="summary-item">
+        <div>
+          <div class="summary-item-name">${t.name}</div>
+          <div class="summary-item-qty">× ${t.qty} @ €${t.price}</div>
+        </div>
+        <div class="summary-item-price">€${t.price * t.qty}</div>
+      </div>
+    `).join('');
+
+    document.getElementById('subtotal-val').textContent = '€' + subtotal;
+    if (discountAmt > 0) {
+      document.getElementById('discount-row').style.display = 'flex';
+      document.getElementById('discount-val').textContent = '−€' + discountAmt;
+    } else {
+      document.getElementById('discount-row').style.display = 'none';
+    }
+    document.getElementById('total-val').textContent = '€' + total;
+  }
+
+  // ── Promo Code ─────────────────────────────────────────────
+  function applyPromo() {
+    const code = document.getElementById('promo-input').value.trim().toUpperCase();
+    const msg  = document.getElementById('promo-msg');
+    if (VALID_PROMOS[code]) {
+      discountPct = VALID_PROMOS[code];
+      msg.className = 'promo-msg success';
+      msg.textContent = `✓ Code applied! ${discountPct}% off`;
+      updateSummary();
+    } else {
+      msg.className = 'promo-msg error';
+      msg.textContent = '✗ Invalid promo code';
+    }
+  }
+
+  // ── Navigation ─────────────────────────────────────────────
+  function goToStep2() {
+    const items = Object.entries(tickets).filter(([,t]) => t.qty > 0);
+    if (!items.length) return;
+    document.getElementById('step1').style.display = 'none';
+    document.getElementById('step2').style.display = 'block';
+    updateStepIndicator(2);
+
+    const subtotal = items.reduce((s,[,t]) => s + t.price * t.qty, 0);
+    const discountAmt = Math.round(subtotal * discountPct / 100);
+    const total = subtotal - discountAmt;
+
+    document.getElementById('mini-order-items').innerHTML = items.map(([,t]) => `
+      <div class="mini-order-item">
+        <span>${t.name} × ${t.qty}</span>
+        <strong>€${t.price * t.qty}</strong>
+      </div>
+    `).join('');
+
+    const discDiv = document.getElementById('mini-order-discount');
+    if (discountAmt > 0) {
+      discDiv.style.display = 'flex';
+      discDiv.innerHTML = `<span>Discount</span><strong>−€${discountAmt}</strong>`;
+    }
+    document.getElementById('mini-total').textContent = '€' + total;
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+
+  function goToStep1() {
+    document.getElementById('step2').style.display = 'none';
+    document.getElementById('step1').style.display = 'flex';
+    updateStepIndicator(1);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+
+  function goToStep3() {
+    document.getElementById('step2').style.display = 'none';
+    document.getElementById('step3').style.display = 'block';
+    updateStepIndicator(3);
+
+    const orderId = 'GCL-2026-' + Math.random().toString(36).substr(2,6).toUpperCase();
+    document.getElementById('order-id').textContent = orderId;
+
+    const items = Object.entries(tickets).filter(([,t]) => t.qty > 0);
+    const subtotal = items.reduce((s,[,t]) => s + t.price * t.qty, 0);
+    const discountAmt = Math.round(subtotal * discountPct / 100);
+    const total = subtotal - discountAmt;
+
+    document.getElementById('success-tickets').textContent =
+      items.map(([,t]) => `${t.name} × ${t.qty}`).join(', ');
+    document.getElementById('success-total').textContent = '€' + total;
+
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+    launchConfetti();
+  }
+
+  function updateStepIndicator(active) {
+    [1,2,3].forEach(n => {
+      const el = document.getElementById('si-' + n);
+      el.className = 'step-item' + (n < active ? ' done' : n === active ? ' active' : '');
+      const num = el.querySelector('.step-num');
+      num.textContent = n < active ? '✓' : n;
+    });
+  }
+
+  // ── Payment ────────────────────────────────────────────────
+  function selectPayment(method) {
+    document.getElementById('pm-card').classList.toggle('active', method === 'card');
+    document.getElementById('pm-paypal').classList.toggle('active', method === 'paypal');
+    document.getElementById('card-form').style.display = method === 'card' ? 'block' : 'none';
+    document.getElementById('paypal-form').style.display = method === 'paypal' ? 'block' : 'none';
+    document.getElementById('confirm-btn').style.display = method === 'card' ? 'block' : 'none';
+  }
+
+  function formatCard(el) {
+    let v = el.value.replace(/\D/g,'').substring(0,16);
+    el.value = v.replace(/(.{4})/g,'$1 ').trim();
+  }
+  function formatExpiry(el) {
+    let v = el.value.replace(/\D/g,'').substring(0,4);
+    if (v.length >= 2) v = v.substring(0,2) + '/' + v.substring(2);
+    el.value = v;
+  }
+
+  // ── Validation ─────────────────────────────────────────────
+  function confirmPurchase() {
+    let valid = true;
+    const clear = id => { document.getElementById(id).textContent = ''; document.getElementById(id.replace('err-','f-')).classList.remove('error'); };
+    const error = (id, msg) => { document.getElementById(id).textContent = msg; document.getElementById(id.replace('err-','f-')).classList.add('error'); valid = false; };
+
+    ['firstname','lastname','email'].forEach(clear);
+    ['cardnum','cardname','expiry','cvv'].forEach(f => {
+      document.getElementById('err-' + f).textContent = '';
+      const el = document.getElementById('f-' + f);
+      if (el) el.classList.remove('error');
+    });
+
+    const fn = document.getElementById('f-firstname').value.trim();
+    const ln = document.getElementById('f-lastname').value.trim();
+    const em = document.getElementById('f-email').value.trim();
+
+    if (!fn) error('err-firstname', 'First name is required');
+    if (!ln) error('err-lastname', 'Last name is required');
+    if (!em || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(em)) error('err-email', 'Valid email is required');
+
+    const cn = document.getElementById('f-cardnum').value.replace(/\s/g,'');
+    const cname = document.getElementById('f-cardname').value.trim();
+    const exp = document.getElementById('f-expiry').value;
+    const cvv = document.getElementById('f-cvv').value;
+
+    if (cn.length < 13) error('err-cardnum', 'Enter a valid card number');
+    if (!cname) error('err-cardname', 'Cardholder name is required');
+    if (!/^\d{2}\/\d{2}$/.test(exp)) error('err-expiry', 'Use MM/YY format');
+    if (cvv.length < 3) error('err-cvv', 'Invalid CVV');
+
+    if (valid) {
+      const btn = document.getElementById('confirm-btn');
+      btn.textContent = 'Processing…';
+      btn.disabled = true;
+      setTimeout(goToStep3, 1800);
+    }
+  }
+
+  // ── Confetti ───────────────────────────────────────────────
+  function launchConfetti() {
+    const colors = ['#d95f2b','#2a9d5c','#f0c040','#3a86ff','#ff006e'];
+    for (let i = 0; i < 80; i++) {
+      const el = document.createElement('div');
+      el.className = 'confetti-piece';
+      el.style.cssText = `
+        left: ${Math.random()*100}vw;
+        top: -10px;
+        background: ${colors[Math.floor(Math.random()*colors.length)]};
+        animation-duration: ${1.5+Math.random()*2}s;
+        animation-delay: ${Math.random()*0.8}s;
+        transform: rotate(${Math.random()*360}deg);
+        width: ${6+Math.random()*6}px;
+        height: ${6+Math.random()*6}px;
+      `;
+      document.body.appendChild(el);
+      el.addEventListener('animationend', () => el.remove());
+    }
+  }
+
+  // ── Post-success buttons ───────────────────────────────────
+  function addToCalendar() {
+    showToast('📅 Opening calendar…');
+    const url = `https://calendar.google.com/calendar/render?action=TEMPLATE&text=Game+Connection+Live+2026&dates=20260329T090000Z/20260403T180000Z&details=Game+Connection+Live+2026&location=Helsinki+Exhibition+%26+Convention+Centre`;
+    window.open(url, '_blank');
+  }
+  function viewTickets() { showToast('🎟️ Redirecting to your tickets…'); }
+
+  // ── Toast ──────────────────────────────────────────────────
+  function showToast(msg) {
+    const t = document.getElementById('toast');
+    t.textContent = msg;
+    t.classList.add('show');
+    setTimeout(() => t.classList.remove('show'), 3000);
+  }
+</script>
+</body>
+</html>

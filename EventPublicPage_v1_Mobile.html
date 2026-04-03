@@ -1,0 +1,1141 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Game Connection Live 2026</title>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;0,9..40,800;1,9..40,400&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --orange:  #d95f2b;
+      --orange-dark: #b84d20;
+      --teal:    #0a7fa8;
+      --green:   #0d9b72;
+      --bg:      #e8e4da;
+      --card-bg: #ffffff;
+      --text:    #1a1a1a;
+      --muted:   #6b6760;
+      --border:  #d4cfc6;
+      --radius:  16px;
+      --radius-sm: 10px;
+    }
+
+    html { font-family: 'DM Sans', sans-serif; background: #d4cfc6; }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      max-width: 480px;
+      margin: 0 auto;
+      min-height: 100vh;
+      position: relative;
+      overflow-x: hidden;
+    }
+
+    /* ── NAV ─────────────────────────────────────── */
+    nav {
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      background: rgba(232, 228, 218, 0.92);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 12px 20px;
+    }
+
+    .nav-logo {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      text-decoration: none;
+    }
+
+    .nav-logo-icon {
+      width: 32px;
+      height: 32px;
+      background: var(--orange);
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .nav-logo-icon svg { width: 18px; height: 18px; fill: #fff; }
+
+    .nav-logo-text {
+      font-size: 15px;
+      font-weight: 700;
+      color: var(--text);
+      letter-spacing: -0.3px;
+    }
+
+    .nav-logo-text span { color: var(--orange); }
+
+    .btn-signin {
+      background: var(--orange);
+      color: #fff;
+      border: none;
+      border-radius: 50px;
+      padding: 8px 18px;
+      font-size: 14px;
+      font-weight: 600;
+      font-family: 'DM Sans', sans-serif;
+      cursor: pointer;
+      transition: background 0.2s, transform 0.1s;
+    }
+    .btn-signin:active { background: var(--orange-dark); transform: scale(0.97); }
+
+    /* ── HERO ─────────────────────────────────────── */
+    .hero { position: relative; }
+
+    .hero-cover {
+      width: 100%;
+      aspect-ratio: 16/9;
+      background: linear-gradient(135deg, #1a0a2e 0%, #0a2a4a 30%, #0a4a3a 60%, #1a2a10 100%);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .hero-cover-art {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    /* Decorative game-themed background elements */
+    .hero-orb {
+      position: absolute;
+      border-radius: 50%;
+      filter: blur(40px);
+      opacity: 0.5;
+    }
+    .hero-orb-1 { width: 180px; height: 180px; background: #d95f2b; top: -40px; right: -20px; }
+    .hero-orb-2 { width: 140px; height: 140px; background: #0a7fa8; bottom: -30px; left: 10px; }
+    .hero-orb-3 { width: 100px; height: 100px; background: #0d9b72; top: 20px; left: 60px; opacity: 0.35; }
+
+    .hero-grid {
+      position: absolute;
+      inset: 0;
+      background-image:
+        linear-gradient(rgba(255,255,255,0.04) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255,255,255,0.04) 1px, transparent 1px);
+      background-size: 30px 30px;
+    }
+
+    .hero-center-icon {
+      position: relative;
+      z-index: 2;
+      text-align: center;
+    }
+    .hero-center-icon svg { width: 64px; height: 64px; opacity: 0.9; }
+
+    .hero-cover-overlay {
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      height: 60%;
+      background: linear-gradient(to top, rgba(10,10,20,0.85), transparent);
+    }
+
+    .hero-cover-label {
+      position: absolute;
+      bottom: 14px;
+      left: 16px;
+      right: 16px;
+      color: #fff;
+      z-index: 3;
+    }
+
+    .hero-event-name {
+      font-size: 22px;
+      font-weight: 800;
+      letter-spacing: -0.5px;
+      line-height: 1.2;
+      text-shadow: 0 2px 12px rgba(0,0,0,0.4);
+    }
+
+    .hero-meta {
+      margin-top: 6px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .hero-date, .hero-location {
+      font-size: 13px;
+      font-weight: 500;
+      color: rgba(255,255,255,0.85);
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .hero-dot { width: 3px; height: 3px; border-radius: 50%; background: rgba(255,255,255,0.5); }
+
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      padding: 3px 10px;
+      border-radius: 50px;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.5px;
+      text-transform: uppercase;
+    }
+
+    .badge-soon { background: rgba(13, 155, 114, 0.25); color: #4ef5b8; border: 1px solid rgba(13,155,114,0.5); }
+    .badge-live { background: rgba(217, 95, 43, 0.25); color: #ff9f6b; border: 1px solid rgba(217,95,43,0.5); }
+    .badge-ended { background: rgba(107,103,96,0.25); color: #bbb; border: 1px solid rgba(107,103,96,0.5); }
+
+    .badge-dot {
+      width: 6px; height: 6px; border-radius: 50%;
+      background: currentColor;
+    }
+    .badge-soon .badge-dot { animation: pulse 2s infinite; }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.5; transform: scale(0.8); }
+    }
+
+    /* ── STATS ─────────────────────────────────────── */
+    .stats-bar {
+      background: var(--card-bg);
+      border-bottom: 1px solid var(--border);
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+    }
+
+    .stat-item {
+      padding: 18px 8px;
+      text-align: center;
+      position: relative;
+    }
+
+    .stat-item + .stat-item::before {
+      content: '';
+      position: absolute;
+      left: 0; top: 20%; bottom: 20%;
+      width: 1px;
+      background: var(--border);
+    }
+
+    .stat-num {
+      font-size: 24px;
+      font-weight: 800;
+      letter-spacing: -0.5px;
+      color: var(--text);
+      line-height: 1;
+    }
+
+    .stat-num.orange { color: var(--orange); }
+    .stat-num.teal   { color: var(--teal); }
+    .stat-num.green  { color: var(--green); }
+
+    .stat-label {
+      font-size: 11px;
+      font-weight: 500;
+      color: var(--muted);
+      margin-top: 4px;
+      line-height: 1.3;
+      letter-spacing: 0.2px;
+    }
+
+    /* ── SECTIONS ─────────────────────────────────── */
+    section { padding: 24px 20px; }
+    section + section { border-top: 1px solid var(--border); }
+
+    .section-title {
+      font-size: 18px;
+      font-weight: 700;
+      letter-spacing: -0.3px;
+      color: var(--text);
+      margin-bottom: 16px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .section-title-icon {
+      width: 28px; height: 28px;
+      border-radius: 8px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 14px;
+      flex-shrink: 0;
+    }
+
+    /* ── CTA ──────────────────────────────────────── */
+    .cta-section {
+      background: linear-gradient(135deg, #fff8f5, #fff);
+      border-top: none !important;
+    }
+
+    .btn-primary {
+      display: block;
+      width: 100%;
+      padding: 16px;
+      background: var(--orange);
+      color: #fff;
+      border: none;
+      border-radius: var(--radius);
+      font-size: 17px;
+      font-weight: 700;
+      font-family: 'DM Sans', sans-serif;
+      cursor: pointer;
+      text-align: center;
+      letter-spacing: -0.2px;
+      transition: background 0.2s, transform 0.1s, box-shadow 0.2s;
+      box-shadow: 0 4px 20px rgba(217, 95, 43, 0.35);
+      text-decoration: none;
+    }
+    .btn-primary:active { background: var(--orange-dark); transform: scale(0.98); box-shadow: none; }
+
+    .btn-secondary {
+      display: block;
+      width: 100%;
+      padding: 15px;
+      background: transparent;
+      color: var(--teal);
+      border: 2px solid var(--teal);
+      border-radius: var(--radius);
+      font-size: 16px;
+      font-weight: 700;
+      font-family: 'DM Sans', sans-serif;
+      cursor: pointer;
+      text-align: center;
+      letter-spacing: -0.2px;
+      transition: background 0.2s, transform 0.1s;
+    }
+    .btn-secondary:active { background: rgba(10,127,168,0.08); transform: scale(0.98); }
+
+    .cta-note {
+      text-align: center;
+      font-size: 12px;
+      color: var(--muted);
+      margin-top: 10px;
+      line-height: 1.5;
+    }
+    .cta-note strong { color: var(--text); }
+
+    /* ── ABOUT ────────────────────────────────────── */
+    .about-text {
+      font-size: 15px;
+      line-height: 1.7;
+      color: #3a3835;
+    }
+    .about-text p + p { margin-top: 12px; }
+
+    .about-tags {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 16px;
+    }
+
+    .tag {
+      background: var(--bg);
+      border: 1px solid var(--border);
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 600;
+      padding: 4px 12px;
+      border-radius: 50px;
+    }
+
+    /* ── GAMES ────────────────────────────────────── */
+    .games-scroll {
+      display: flex;
+      gap: 12px;
+      overflow-x: auto;
+      padding-bottom: 8px;
+      margin: 0 -20px;
+      padding-left: 20px;
+      padding-right: 20px;
+      scroll-snap-type: x mandatory;
+      -webkit-overflow-scrolling: touch;
+    }
+    .games-scroll::-webkit-scrollbar { display: none; }
+
+    .game-card {
+      flex: 0 0 140px;
+      background: var(--card-bg);
+      border-radius: var(--radius-sm);
+      overflow: hidden;
+      scroll-snap-align: start;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.08);
+      transition: transform 0.2s;
+    }
+    .game-card:active { transform: scale(0.97); }
+
+    .game-cover {
+      width: 100%;
+      aspect-ratio: 3/4;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 36px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .game-cover-bg {
+      position: absolute;
+      inset: 0;
+    }
+
+    .game-cover-emoji {
+      position: relative;
+      z-index: 1;
+      font-size: 40px;
+      filter: drop-shadow(0 4px 12px rgba(0,0,0,0.3));
+    }
+
+    .game-info {
+      padding: 10px;
+    }
+
+    .game-name {
+      font-size: 13px;
+      font-weight: 700;
+      line-height: 1.3;
+      color: var(--text);
+    }
+
+    .game-dev {
+      font-size: 11px;
+      color: var(--muted);
+      margin-top: 3px;
+    }
+
+    .game-genre {
+      display: inline-block;
+      background: var(--bg);
+      color: var(--muted);
+      font-size: 10px;
+      font-weight: 600;
+      padding: 2px 8px;
+      border-radius: 50px;
+      margin-top: 6px;
+    }
+
+    /* ── SPEAKERS ─────────────────────────────────── */
+    .speakers-list {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .speaker-card {
+      background: var(--card-bg);
+      border-radius: var(--radius-sm);
+      padding: 14px;
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      box-shadow: 0 1px 6px rgba(0,0,0,0.06);
+    }
+
+    .speaker-avatar {
+      width: 52px;
+      height: 52px;
+      border-radius: 50%;
+      flex-shrink: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 22px;
+      font-weight: 700;
+      color: #fff;
+      position: relative;
+    }
+
+    .speaker-avatar-ring {
+      position: absolute;
+      inset: -2px;
+      border-radius: 50%;
+      border: 2px solid transparent;
+    }
+
+    .speaker-info { flex: 1; min-width: 0; }
+
+    .speaker-name {
+      font-size: 15px;
+      font-weight: 700;
+      color: var(--text);
+    }
+
+    .speaker-role {
+      font-size: 12px;
+      color: var(--muted);
+      margin-top: 2px;
+      line-height: 1.4;
+    }
+
+    .speaker-company {
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--teal);
+      margin-top: 4px;
+    }
+
+    .speaker-topic {
+      background: var(--bg);
+      border-radius: 6px;
+      padding: 8px 12px;
+      font-size: 12px;
+      color: var(--muted);
+      margin-top: 10px;
+      font-style: italic;
+      line-height: 1.4;
+      border-left: 3px solid var(--orange);
+    }
+
+    /* ── LET'S MEET ───────────────────────────────── */
+    .meet-section {
+      background: linear-gradient(135deg, #f0faf7 0%, #e6f5f9 100%);
+    }
+
+    .meet-banner {
+      background: linear-gradient(135deg, #0d9b72, #0a7fa8);
+      border-radius: var(--radius);
+      padding: 20px;
+      color: #fff;
+      margin-bottom: 16px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .meet-banner-decor {
+      position: absolute;
+      right: -20px;
+      top: -20px;
+      width: 100px;
+      height: 100px;
+      border-radius: 50%;
+      background: rgba(255,255,255,0.1);
+    }
+
+    .meet-banner-decor2 {
+      position: absolute;
+      right: 20px;
+      bottom: -30px;
+      width: 80px;
+      height: 80px;
+      border-radius: 50%;
+      background: rgba(255,255,255,0.07);
+    }
+
+    .meet-banner-icon { font-size: 28px; margin-bottom: 8px; }
+
+    .meet-banner-title {
+      font-size: 18px;
+      font-weight: 800;
+      margin-bottom: 6px;
+    }
+
+    .meet-banner-text {
+      font-size: 13px;
+      opacity: 0.9;
+      line-height: 1.5;
+    }
+
+    .meet-stats {
+      display: flex;
+      gap: 12px;
+      margin-bottom: 16px;
+    }
+
+    .meet-stat {
+      flex: 1;
+      background: #fff;
+      border-radius: var(--radius-sm);
+      padding: 12px;
+      text-align: center;
+      box-shadow: 0 1px 6px rgba(0,0,0,0.06);
+    }
+
+    .meet-stat-num {
+      font-size: 20px;
+      font-weight: 800;
+      color: var(--green);
+    }
+
+    .meet-stat-label {
+      font-size: 11px;
+      color: var(--muted);
+      margin-top: 2px;
+    }
+
+    .btn-meet {
+      display: block;
+      width: 100%;
+      padding: 16px;
+      background: linear-gradient(135deg, #0d9b72, #0a7fa8);
+      color: #fff;
+      border: none;
+      border-radius: var(--radius);
+      font-size: 17px;
+      font-weight: 700;
+      font-family: 'DM Sans', sans-serif;
+      cursor: pointer;
+      text-align: center;
+      box-shadow: 0 4px 20px rgba(13,155,114,0.35);
+      transition: transform 0.1s, box-shadow 0.2s;
+    }
+    .btn-meet:active { transform: scale(0.98); box-shadow: none; }
+
+    /* ── SPONSORS ─────────────────────────────────── */
+    .sponsors-scroll {
+      display: flex;
+      gap: 12px;
+      overflow-x: auto;
+      padding-bottom: 4px;
+      margin: 0 -20px;
+      padding-left: 20px;
+      padding-right: 20px;
+      -webkit-overflow-scrolling: touch;
+    }
+    .sponsors-scroll::-webkit-scrollbar { display: none; }
+
+    .sponsor-logo {
+      flex: 0 0 100px;
+      height: 56px;
+      background: var(--card-bg);
+      border-radius: var(--radius-sm);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 10px;
+      box-shadow: 0 1px 6px rgba(0,0,0,0.07);
+      border: 1px solid var(--border);
+    }
+
+    .sponsor-logo-text {
+      font-size: 12px;
+      font-weight: 700;
+      color: var(--muted);
+      text-align: center;
+      letter-spacing: -0.2px;
+    }
+
+    .sponsor-tier {
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--muted);
+      letter-spacing: 0.8px;
+      text-transform: uppercase;
+      margin-bottom: 10px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .sponsor-tier::before, .sponsor-tier::after {
+      content: '';
+      flex: 1;
+      height: 1px;
+      background: var(--border);
+    }
+
+    /* ── FOOTER CTA ───────────────────────────────── */
+    .footer-cta {
+      background: var(--text);
+      padding: 32px 20px;
+    }
+
+    .footer-cta-title {
+      font-size: 22px;
+      font-weight: 800;
+      color: #fff;
+      text-align: center;
+      letter-spacing: -0.5px;
+      margin-bottom: 6px;
+    }
+
+    .footer-cta-sub {
+      font-size: 14px;
+      color: rgba(255,255,255,0.6);
+      text-align: center;
+      margin-bottom: 20px;
+      line-height: 1.5;
+    }
+
+    .footer-legal {
+      text-align: center;
+      font-size: 11px;
+      color: rgba(255,255,255,0.35);
+      margin-top: 20px;
+      line-height: 1.6;
+    }
+
+    .footer-legal a { color: rgba(255,255,255,0.5); text-decoration: underline; }
+
+    /* ── COUNTDOWN ────────────────────────────────── */
+    .countdown-bar {
+      background: var(--text);
+      padding: 10px 20px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 16px;
+    }
+
+    .countdown-label {
+      font-size: 11px;
+      font-weight: 600;
+      color: rgba(255,255,255,0.7);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .countdown-units {
+      display: flex;
+      gap: 6px;
+      align-items: center;
+    }
+
+    .countdown-unit {
+      text-align: center;
+    }
+
+    .countdown-num {
+      font-size: 18px;
+      font-weight: 800;
+      color: #fff;
+      line-height: 1;
+    }
+
+    .countdown-sub {
+      font-size: 9px;
+      color: rgba(255,255,255,0.5);
+      letter-spacing: 0.5px;
+      text-transform: uppercase;
+    }
+
+    .countdown-sep {
+      font-size: 16px;
+      font-weight: 700;
+      color: rgba(255,255,255,0.4);
+      margin-bottom: 8px;
+    }
+
+    /* ── SCROLL INDICATOR ─────────────────────────── */
+    .scroll-hint {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 11px;
+      color: var(--muted);
+      margin-top: 8px;
+    }
+    .scroll-hint svg { width: 14px; height: 14px; }
+
+    /* ── SMOOTH SCROLLBAR ─────────────────────────── */
+    html { scroll-behavior: smooth; }
+  </style>
+</head>
+<body>
+
+  <!-- NAV -->
+  <nav>
+    <a class="nav-logo" href="#">
+      <div class="nav-logo-icon">
+        <svg viewBox="0 0 24 24"><path d="M7 6h2v4H7zm8 0h2v4h-2zM3 2h18a1 1 0 011 1v14a1 1 0 01-1 1h-7v4h2v2H8v-2h2v-4H3a1 1 0 01-1-1V3a1 1 0 011-1zm1 14h16V4H4v12z"/></svg>
+      </div>
+      <span class="nav-logo-text">Game<span>Link</span></span>
+    </a>
+    <button class="btn-signin" onclick="alert('Sign In')">Sign In</button>
+  </nav>
+
+  <!-- HERO -->
+  <div class="hero">
+    <div class="hero-cover">
+      <div class="hero-orb hero-orb-1"></div>
+      <div class="hero-orb hero-orb-2"></div>
+      <div class="hero-orb hero-orb-3"></div>
+      <div class="hero-grid"></div>
+      <div class="hero-cover-art">
+        <div class="hero-center-icon">
+          <svg viewBox="0 0 80 80" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <circle cx="40" cy="40" r="38" stroke="rgba(255,255,255,0.15)" stroke-width="2"/>
+            <circle cx="40" cy="40" r="28" stroke="rgba(255,255,255,0.1)" stroke-width="1.5"/>
+            <path d="M22 32h8v4h-4v4h-4v-8zm28 0h8v8h-4v-4h-4v-4zM36 50h8v4h-8v-4zm-6-10h4v4h-4v-4zm16 0h4v4h-4v-4z" fill="rgba(255,255,255,0.6)"/>
+            <path d="M40 18L52 30H28L40 18z" fill="rgba(217,95,43,0.7)"/>
+            <circle cx="40" cy="40" r="4" fill="rgba(13,155,114,0.8)"/>
+          </svg>
+        </div>
+      </div>
+      <div class="hero-cover-overlay"></div>
+      <div class="hero-cover-label">
+        <div class="hero-event-name">Game Connection Live 2026</div>
+        <div class="hero-meta">
+          <span class="hero-date">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="rgba(255,255,255,0.7)"><path d="M19 4h-1V2h-2v2H8V2H6v2H5C3.9 4 3 4.9 3 6v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 16H5V9h14v11z"/></svg>
+            Mar 29 – Apr 3, 2026
+          </span>
+          <div class="hero-dot"></div>
+          <span class="hero-location">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="rgba(255,255,255,0.7)"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/></svg>
+            Helsinki & Tallinn
+          </span>
+          <div class="hero-dot"></div>
+          <span class="badge badge-soon">
+            <span class="badge-dot"></span>
+            SOON
+          </span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- COUNTDOWN BAR -->
+  <div class="countdown-bar">
+    <span class="countdown-label">Starts in</span>
+    <div class="countdown-units">
+      <div class="countdown-unit">
+        <div class="countdown-num" id="cd-days">06</div>
+        <div class="countdown-sub">Days</div>
+      </div>
+      <div class="countdown-sep">:</div>
+      <div class="countdown-unit">
+        <div class="countdown-num" id="cd-hrs">14</div>
+        <div class="countdown-sub">Hrs</div>
+      </div>
+      <div class="countdown-sep">:</div>
+      <div class="countdown-unit">
+        <div class="countdown-num" id="cd-min">33</div>
+        <div class="countdown-sub">Min</div>
+      </div>
+      <div class="countdown-sep">:</div>
+      <div class="countdown-unit">
+        <div class="countdown-num" id="cd-sec">47</div>
+        <div class="countdown-sub">Sec</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- STATS -->
+  <div class="stats-bar">
+    <div class="stat-item">
+      <div class="stat-num orange">180</div>
+      <div class="stat-label">Exhibitors</div>
+    </div>
+    <div class="stat-item">
+      <div class="stat-num teal">340</div>
+      <div class="stat-label">Match<br>Requests</div>
+    </div>
+    <div class="stat-item">
+      <div class="stat-num green">48</div>
+      <div class="stat-label">Sessions</div>
+    </div>
+  </div>
+
+  <!-- CTA 1 -->
+  <section class="cta-section">
+    <button class="btn-primary">🎮 Register Now — Free</button>
+    <p class="cta-note">
+      <strong>No credit card required.</strong> Access all sessions, networking &<br>
+      matchmaking tools with your free account.
+    </p>
+  </section>
+
+  <!-- ABOUT -->
+  <section>
+    <div class="section-title">
+      <div class="section-title-icon" style="background:#fff3ee;">📋</div>
+      About This Event
+    </div>
+    <div class="about-text">
+      <p>
+        <strong>Game Connection Live 2026</strong> is the premier B2B event for the global video game industry, bringing together publishers, developers, investors, and service providers across Helsinki and Tallinn for six unforgettable days.
+      </p>
+      <p>
+        Whether you're an indie studio looking for your first publisher deal or an established studio seeking cutting-edge middleware solutions, GCL 2026 delivers the meetings, insights, and connections that drive the industry forward. Our AI-powered matchmaking engine helps you find exactly the right partners from 180+ exhibiting companies.
+      </p>
+      <p>
+        Spanning two Nordic capitals, the event features 48 curated sessions, a showcase of 60+ unreleased titles, and hundreds of pre-scheduled one-on-one meetings — all in stunning waterfront venues.
+      </p>
+    </div>
+    <div class="about-tags">
+      <span class="tag">B2B Networking</span>
+      <span class="tag">Publishing</span>
+      <span class="tag">Indie Dev</span>
+      <span class="tag">Investment</span>
+      <span class="tag">Mobile</span>
+      <span class="tag">PC & Console</span>
+    </div>
+  </section>
+
+  <!-- FEATURED GAMES -->
+  <section>
+    <div class="section-title">
+      <div class="section-title-icon" style="background:#fff3ee;">🕹️</div>
+      Featured Games
+    </div>
+    <div class="games-scroll">
+
+      <div class="game-card">
+        <div class="game-cover">
+          <div class="game-cover-bg" style="background: linear-gradient(135deg, #1a1035, #3d1a6e, #6b2fa0);"></div>
+          <span class="game-cover-emoji">🌌</span>
+        </div>
+        <div class="game-info">
+          <div class="game-name">Stellar Drift</div>
+          <div class="game-dev">Nebula Studios</div>
+          <span class="game-genre">RPG · Open World</span>
+        </div>
+      </div>
+
+      <div class="game-card">
+        <div class="game-cover">
+          <div class="game-cover-bg" style="background: linear-gradient(135deg, #0a2a1a, #0d6b3a, #1aaf5a);"></div>
+          <span class="game-cover-emoji">⚔️</span>
+        </div>
+        <div class="game-info">
+          <div class="game-name">Iron Bastion</div>
+          <div class="game-dev">Frostpeak Games</div>
+          <span class="game-genre">Strategy · War</span>
+        </div>
+      </div>
+
+      <div class="game-card">
+        <div class="game-cover">
+          <div class="game-cover-bg" style="background: linear-gradient(135deg, #2a0a0a, #8b1a1a, #d95f2b);"></div>
+          <span class="game-cover-emoji">🔥</span>
+        </div>
+        <div class="game-info">
+          <div class="game-name">Ashfall Arena</div>
+          <div class="game-dev">Pyro Interactive</div>
+          <span class="game-genre">Action · Battle</span>
+        </div>
+      </div>
+
+      <div class="game-card">
+        <div class="game-cover">
+          <div class="game-cover-bg" style="background: linear-gradient(135deg, #0a1a3a, #0a4fa8, #3a9ff0);"></div>
+          <span class="game-cover-emoji">🌊</span>
+        </div>
+        <div class="game-info">
+          <div class="game-name">Deep Current</div>
+          <div class="game-dev">Tideborn Labs</div>
+          <span class="game-genre">Puzzle · Adventure</span>
+        </div>
+      </div>
+
+    </div>
+    <div class="scroll-hint">
+      <svg viewBox="0 0 24 24" fill="var(--muted)"><path d="M8 5v14l11-7z"/></svg>
+      Swipe to explore more titles
+    </div>
+  </section>
+
+  <!-- SPEAKERS -->
+  <section>
+    <div class="section-title">
+      <div class="section-title-icon" style="background:#e6f5f9;">🎤</div>
+      Speakers
+    </div>
+    <div class="speakers-list">
+
+      <div class="speaker-card">
+        <div class="speaker-avatar" style="background: linear-gradient(135deg, #d95f2b, #ff8c55);">
+          EL
+          <div class="speaker-avatar-ring" style="border-color: #d95f2b; opacity: 0.3;"></div>
+        </div>
+        <div class="speaker-info">
+          <div class="speaker-name">Elena Lindqvist</div>
+          <div class="speaker-role">VP of Publishing, Nordic Division</div>
+          <div class="speaker-company">Supercell Helsinki</div>
+          <div class="speaker-topic">"The next billion mobile gamers: monetisation beyond borders"</div>
+        </div>
+      </div>
+
+      <div class="speaker-card">
+        <div class="speaker-avatar" style="background: linear-gradient(135deg, #0a7fa8, #3ab8e0);">
+          MK
+        </div>
+        <div class="speaker-info">
+          <div class="speaker-name">Marcus Koppel</div>
+          <div class="speaker-role">Co-Founder & CEO</div>
+          <div class="speaker-company">BattleForge Studios</div>
+          <div class="speaker-topic">"From garage to global: raising Series A in a down market"</div>
+        </div>
+      </div>
+
+      <div class="speaker-card">
+        <div class="speaker-avatar" style="background: linear-gradient(135deg, #0d9b72, #3ddba8);">
+          SN
+        </div>
+        <div class="speaker-info">
+          <div class="speaker-name">Sofia Nieminen</div>
+          <div class="speaker-role">Head of Game Investments</div>
+          <div class="speaker-company">Nordic Ventures</div>
+          <div class="speaker-topic">"AI tooling for small teams: where to invest in 2026"</div>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- LET'S MEET -->
+  <section class="meet-section">
+    <div class="section-title">
+      <div class="section-title-icon" style="background:#d6f5ec;">🤝</div>
+      Let's Meet
+    </div>
+
+    <div class="meet-banner">
+      <div class="meet-banner-decor"></div>
+      <div class="meet-banner-decor2"></div>
+      <div class="meet-banner-icon">✨</div>
+      <div class="meet-banner-title">AI-Powered Matchmaking</div>
+      <div class="meet-banner-text">
+        Tell us what you're looking for — publishing deals, co-dev partners, investors, or tools — and our system will find the best matches among 180+ companies attending GCL 2026.
+      </div>
+    </div>
+
+    <div class="meet-stats">
+      <div class="meet-stat">
+        <div class="meet-stat-num">340</div>
+        <div class="meet-stat-label">Match Requests</div>
+      </div>
+      <div class="meet-stat">
+        <div class="meet-stat-num">92%</div>
+        <div class="meet-stat-label">Match Rate</div>
+      </div>
+      <div class="meet-stat">
+        <div class="meet-stat-num">18min</div>
+        <div class="meet-stat-label">Avg. Meeting</div>
+      </div>
+    </div>
+
+    <button class="btn-meet">🎯 Start Matching</button>
+  </section>
+
+  <!-- SPONSORS -->
+  <section>
+    <div class="section-title">
+      <div class="section-title-icon" style="background:#fffbf0;">⭐</div>
+      Sponsors
+    </div>
+
+    <div class="sponsor-tier">Gold</div>
+    <div class="sponsors-scroll" style="margin-bottom: 16px;">
+      <div class="sponsor-logo">
+        <div class="sponsor-logo-text" style="color: #d4a017; font-size: 13px;">🎮 PlayNow</div>
+      </div>
+      <div class="sponsor-logo">
+        <div class="sponsor-logo-text" style="color: #0a7fa8;">NordTech<br>Games</div>
+      </div>
+      <div class="sponsor-logo">
+        <div class="sponsor-logo-text" style="color: #d95f2b;">IGNITE<br>STUDIOS</div>
+      </div>
+    </div>
+
+    <div class="sponsor-tier">Silver</div>
+    <div class="sponsors-scroll">
+      <div class="sponsor-logo">
+        <div class="sponsor-logo-text">PixelForge</div>
+      </div>
+      <div class="sponsor-logo">
+        <div class="sponsor-logo-text">GameDB Pro</div>
+      </div>
+      <div class="sponsor-logo">
+        <div class="sponsor-logo-text">ArcadeCloud</div>
+      </div>
+      <div class="sponsor-logo">
+        <div class="sponsor-logo-text">LoopSound</div>
+      </div>
+      <div class="sponsor-logo">
+        <div class="sponsor-logo-text">DevMatrix</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- FOOTER CTA -->
+  <div class="footer-cta">
+    <div class="footer-cta-title">Ready to connect?</div>
+    <div class="footer-cta-sub">
+      Join 180+ companies at Game Connection Live 2026.<br>
+      Helsinki & Tallinn · March 29 – April 3
+    </div>
+    <button class="btn-primary" style="box-shadow: 0 4px 20px rgba(217,95,43,0.5);">
+      🎮 Register Now — Free
+    </button>
+    <div class="footer-legal">
+      By registering you agree to our
+      <a href="#">Terms of Service</a> and <a href="#">Privacy Policy</a>.<br>
+      © 2026 GameLink Events. All rights reserved.
+    </div>
+  </div>
+
+  <script>
+    // Countdown to March 29, 2026
+    const target = new Date('2026-03-29T09:00:00+02:00').getTime();
+
+    function updateCountdown() {
+      const now = Date.now();
+      const diff = target - now;
+
+      if (diff <= 0) {
+        document.getElementById('cd-days').textContent = '00';
+        document.getElementById('cd-hrs').textContent  = '00';
+        document.getElementById('cd-min').textContent  = '00';
+        document.getElementById('cd-sec').textContent  = '00';
+        return;
+      }
+
+      const days = Math.floor(diff / 86400000);
+      const hrs  = Math.floor((diff % 86400000) / 3600000);
+      const min  = Math.floor((diff % 3600000)  / 60000);
+      const sec  = Math.floor((diff % 60000)    / 1000);
+
+      document.getElementById('cd-days').textContent = String(days).padStart(2,'0');
+      document.getElementById('cd-hrs').textContent  = String(hrs).padStart(2,'0');
+      document.getElementById('cd-min').textContent  = String(min).padStart(2,'0');
+      document.getElementById('cd-sec').textContent  = String(sec).padStart(2,'0');
+    }
+
+    updateCountdown();
+    setInterval(updateCountdown, 1000);
+
+    // Button ripple effect
+    document.querySelectorAll('button, .game-card').forEach(el => {
+      el.addEventListener('click', function(e) {
+        const r = document.createElement('span');
+        const rect = this.getBoundingClientRect();
+        r.style.cssText = `
+          position:absolute;width:4px;height:4px;background:rgba(255,255,255,0.4);
+          border-radius:50%;pointer-events:none;
+          left:${e.clientX - rect.left}px;top:${e.clientY - rect.top}px;
+          transform:translate(-50%,-50%) scale(0);
+          animation:ripple 0.5s ease-out forwards;
+        `;
+        this.style.position = 'relative';
+        this.style.overflow = 'hidden';
+        this.appendChild(r);
+        setTimeout(() => r.remove(), 600);
+      });
+    });
+
+    const style = document.createElement('style');
+    style.textContent = `
+      @keyframes ripple {
+        to { transform: translate(-50%,-50%) scale(60); opacity: 0; }
+      }
+    `;
+    document.head.appendChild(style);
+  </script>
+</body>
+</html>

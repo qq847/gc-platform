@@ -1,0 +1,1657 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Booth Management — Game Connection B2B</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --orange: #d95f2b;
+    --orange-light: #f0784a;
+    --orange-dark: #b84d20;
+    --orange-pale: #fdf0ea;
+    --bg: #e8e4da;
+    --sidebar-bg: #1a1a2e;
+    --sidebar-text: #c8c4bc;
+    --sidebar-active: #d95f2b;
+    --card-bg: #ffffff;
+    --text: #1a1a2e;
+    --text-light: #6b6b7a;
+    --border: #d8d4ca;
+    --green: #2ecc71;
+    --green-bg: #eafaf1;
+    --blue: #3498db;
+    --blue-bg: #eaf4fb;
+    --gray: #95a5a6;
+    --gray-bg: #f2f3f4;
+    --red: #e74c3c;
+    --red-bg: #fdedec;
+    --shadow: 0 2px 12px rgba(0,0,0,0.08);
+    --radius: 12px;
+    --radius-sm: 8px;
+  }
+
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    display: flex;
+  }
+
+  /* ── SIDEBAR ── */
+  .sidebar {
+    width: 240px;
+    min-width: 240px;
+    background: var(--sidebar-bg);
+    display: flex;
+    flex-direction: column;
+    position: sticky;
+    top: 0;
+    height: 100vh;
+    overflow-y: auto;
+  }
+
+  .sidebar-logo {
+    padding: 28px 24px 20px;
+    border-bottom: 1px solid rgba(255,255,255,0.07);
+  }
+
+  .sidebar-logo .brand {
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--orange);
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+  }
+
+  .sidebar-logo .sub {
+    font-size: 11px;
+    color: rgba(255,255,255,0.35);
+    margin-top: 3px;
+    letter-spacing: 0.5px;
+  }
+
+  .sidebar-nav {
+    padding: 16px 0;
+    flex: 1;
+  }
+
+  .nav-section {
+    padding: 6px 24px 2px;
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 1.2px;
+    text-transform: uppercase;
+    color: rgba(255,255,255,0.25);
+    margin-top: 10px;
+  }
+
+  .nav-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 10px 24px;
+    cursor: pointer;
+    transition: all 0.15s;
+    font-size: 14px;
+    font-weight: 400;
+    color: var(--sidebar-text);
+    border-left: 3px solid transparent;
+  }
+
+  .nav-item:hover { background: rgba(255,255,255,0.05); color: #fff; }
+
+  .nav-item.active {
+    background: rgba(217,95,43,0.12);
+    color: #fff;
+    font-weight: 500;
+    border-left-color: var(--orange);
+  }
+
+  .nav-item .icon {
+    font-size: 16px;
+    width: 20px;
+    text-align: center;
+    opacity: 0.8;
+  }
+
+  .nav-item.active .icon { opacity: 1; }
+
+  .sidebar-footer {
+    padding: 16px 24px;
+    border-top: 1px solid rgba(255,255,255,0.07);
+    font-size: 12px;
+    color: rgba(255,255,255,0.3);
+  }
+
+  .sidebar-footer .avatar {
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    background: var(--orange);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 13px;
+    font-weight: 700;
+    color: #fff;
+    margin-right: 8px;
+    vertical-align: middle;
+  }
+
+  /* ── MAIN ── */
+  .main {
+    flex: 1;
+    max-width: calc(1400px - 240px);
+    padding: 32px 36px;
+    overflow-x: hidden;
+  }
+
+  .page-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    margin-bottom: 28px;
+  }
+
+  .page-title {
+    font-size: 26px;
+    font-weight: 700;
+    color: var(--text);
+    line-height: 1.2;
+  }
+
+  .page-subtitle {
+    font-size: 14px;
+    color: var(--text-light);
+    margin-top: 4px;
+  }
+
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    padding: 9px 18px;
+    border-radius: var(--radius-sm);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.15s;
+    border: none;
+    text-decoration: none;
+  }
+
+  .btn-primary {
+    background: var(--orange);
+    color: #fff;
+  }
+  .btn-primary:hover { background: var(--orange-dark); transform: translateY(-1px); box-shadow: 0 4px 12px rgba(217,95,43,0.3); }
+
+  .btn-secondary {
+    background: #fff;
+    color: var(--text);
+    border: 1.5px solid var(--border);
+  }
+  .btn-secondary:hover { border-color: var(--orange); color: var(--orange); }
+
+  .btn-danger {
+    background: var(--red-bg);
+    color: var(--red);
+    border: 1.5px solid #f5c6c2;
+  }
+  .btn-danger:hover { background: var(--red); color: #fff; }
+
+  .btn-success {
+    background: var(--green-bg);
+    color: #27ae60;
+    border: 1.5px solid #a9dfbf;
+  }
+  .btn-success:hover { background: var(--green); color: #fff; }
+
+  .btn-sm { padding: 6px 13px; font-size: 13px; }
+
+  /* ── TABS ── */
+  .tabs {
+    display: flex;
+    gap: 4px;
+    background: rgba(0,0,0,0.05);
+    padding: 4px;
+    border-radius: var(--radius);
+    margin-bottom: 28px;
+    width: fit-content;
+  }
+
+  .tab {
+    padding: 9px 22px;
+    border-radius: 9px;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.15s;
+    color: var(--text-light);
+    border: none;
+    background: transparent;
+    font-family: 'DM Sans', sans-serif;
+    white-space: nowrap;
+  }
+
+  .tab:hover { color: var(--text); background: rgba(255,255,255,0.5); }
+
+  .tab.active {
+    background: #fff;
+    color: var(--orange);
+    font-weight: 600;
+    box-shadow: 0 1px 6px rgba(0,0,0,0.1);
+  }
+
+  .tab-content { display: none; }
+  .tab-content.active { display: block; }
+
+  /* ── CARDS ── */
+  .card {
+    background: var(--card-bg);
+    border-radius: var(--radius);
+    padding: 24px;
+    box-shadow: var(--shadow);
+    border: 1px solid rgba(0,0,0,0.04);
+  }
+
+  .card-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 20px;
+  }
+
+  .card-title {
+    font-size: 17px;
+    font-weight: 600;
+    color: var(--text);
+  }
+
+  .card-subtitle {
+    font-size: 13px;
+    color: var(--text-light);
+    margin-top: 2px;
+  }
+
+  /* ── BOOTH TYPE CARDS ── */
+  .booth-cards {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+    margin-bottom: 24px;
+  }
+
+  .booth-card {
+    background: var(--card-bg);
+    border-radius: var(--radius);
+    padding: 26px;
+    box-shadow: var(--shadow);
+    border: 1px solid rgba(0,0,0,0.04);
+    position: relative;
+    overflow: hidden;
+  }
+
+  .booth-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 4px;
+    background: var(--orange);
+  }
+
+  .booth-card.standard::before {
+    background: linear-gradient(90deg, var(--orange), #f0784a, #ffb347);
+  }
+
+  .booth-card-top {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    margin-bottom: 18px;
+  }
+
+  .booth-type-label {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 12px;
+    background: var(--orange-pale);
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--orange);
+    letter-spacing: 0.3px;
+    text-transform: uppercase;
+  }
+
+  .status-badge {
+    padding: 4px 10px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 500;
+  }
+
+  .status-active { background: var(--green-bg); color: #27ae60; }
+  .status-inactive { background: var(--gray-bg); color: var(--gray); }
+  .status-pending { background: #fef9e7; color: #f39c12; }
+  .status-approved { background: var(--green-bg); color: #27ae60; }
+  .status-rejected { background: var(--red-bg); color: var(--red); }
+
+  .booth-price {
+    font-size: 32px;
+    font-weight: 700;
+    color: var(--text);
+    margin-bottom: 4px;
+  }
+
+  .booth-price span {
+    font-size: 15px;
+    font-weight: 400;
+    color: var(--text-light);
+  }
+
+  .booth-price-note {
+    font-size: 13px;
+    color: var(--text-light);
+    margin-bottom: 16px;
+  }
+
+  .size-options {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-bottom: 16px;
+  }
+
+  .size-chip {
+    padding: 5px 11px;
+    background: var(--bg);
+    border-radius: 6px;
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--text);
+    border: 1px solid var(--border);
+  }
+
+  .includes-title {
+    font-size: 12px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+    color: var(--text-light);
+    margin-bottom: 10px;
+  }
+
+  .includes-list {
+    list-style: none;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin-bottom: 20px;
+  }
+
+  .includes-list li {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    font-size: 13px;
+    color: var(--text);
+    background: var(--bg);
+    padding: 4px 10px;
+    border-radius: 6px;
+    border: 1px solid var(--border);
+  }
+
+  .includes-list li::before { content: '✓'; color: var(--green); font-size: 11px; font-weight: 700; }
+
+  .booth-stats {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 12px;
+    margin-bottom: 20px;
+  }
+
+  .stat-box {
+    text-align: center;
+    background: var(--bg);
+    border-radius: var(--radius-sm);
+    padding: 12px 8px;
+  }
+
+  .stat-box .val {
+    font-size: 22px;
+    font-weight: 700;
+    color: var(--text);
+  }
+
+  .stat-box .val.orange { color: var(--orange); }
+
+  .stat-box .lbl {
+    font-size: 11px;
+    color: var(--text-light);
+    margin-top: 2px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+
+  .progress-bar-wrap {
+    margin-bottom: 20px;
+  }
+
+  .progress-label {
+    display: flex;
+    justify-content: space-between;
+    font-size: 12px;
+    color: var(--text-light);
+    margin-bottom: 6px;
+  }
+
+  .progress-bar {
+    height: 6px;
+    background: var(--bg);
+    border-radius: 4px;
+    overflow: hidden;
+  }
+
+  .progress-fill {
+    height: 100%;
+    background: var(--orange);
+    border-radius: 4px;
+    transition: width 0.5s;
+  }
+
+  .booth-card-footer {
+    display: flex;
+    gap: 10px;
+    justify-content: flex-end;
+    padding-top: 16px;
+    border-top: 1px solid var(--border);
+  }
+
+  /* Add Booth Form */
+  .add-booth-section {
+    background: var(--card-bg);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+    border: 1px solid rgba(0,0,0,0.04);
+    overflow: hidden;
+  }
+
+  .add-booth-header {
+    padding: 20px 24px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    cursor: pointer;
+    user-select: none;
+  }
+
+  .add-booth-header:hover { background: rgba(0,0,0,0.02); }
+
+  .add-booth-body {
+    padding: 0 24px 24px;
+    display: none;
+  }
+
+  .add-booth-body.open { display: block; }
+
+  .form-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+  }
+
+  .form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+
+  .form-group.full { grid-column: 1 / -1; }
+
+  .form-label {
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--text);
+  }
+
+  .form-input, .form-select, .form-textarea {
+    padding: 10px 13px;
+    border: 1.5px solid var(--border);
+    border-radius: var(--radius-sm);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 14px;
+    color: var(--text);
+    background: #fff;
+    transition: border-color 0.15s;
+    outline: none;
+  }
+
+  .form-input:focus, .form-select:focus, .form-textarea:focus {
+    border-color: var(--orange);
+    box-shadow: 0 0 0 3px rgba(217,95,43,0.1);
+  }
+
+  .form-textarea { resize: vertical; min-height: 80px; }
+
+  .form-actions {
+    display: flex;
+    gap: 10px;
+    justify-content: flex-end;
+    margin-top: 20px;
+    padding-top: 16px;
+    border-top: 1px solid var(--border);
+  }
+
+  /* ── FLOOR MAP ── */
+  .floormap-wrap {
+    background: var(--card-bg);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+    padding: 24px;
+    border: 1px solid rgba(0,0,0,0.04);
+  }
+
+  .floormap-toolbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 20px;
+    flex-wrap: wrap;
+    gap: 12px;
+  }
+
+  .legend {
+    display: flex;
+    gap: 16px;
+    flex-wrap: wrap;
+  }
+
+  .legend-item {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    font-size: 13px;
+    color: var(--text);
+  }
+
+  .legend-dot {
+    width: 14px;
+    height: 14px;
+    border-radius: 3px;
+    flex-shrink: 0;
+  }
+
+  .dot-available { background: #2ecc71; }
+  .dot-sold { background: #d95f2b; }
+  .dot-reserved { background: #3498db; }
+  .dot-unavailable { background: #bdc3c7; }
+
+  .hall-label {
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: var(--text-light);
+    margin-bottom: 10px;
+    padding: 4px 10px;
+    background: var(--bg);
+    border-radius: 4px;
+    display: inline-block;
+  }
+
+  .venue {
+    background: #f7f5f1;
+    border-radius: 10px;
+    padding: 20px;
+    border: 2px solid var(--border);
+  }
+
+  .hall-section {
+    margin-bottom: 24px;
+  }
+
+  .pod-grid {
+    display: grid;
+    grid-template-columns: repeat(10, 44px);
+    gap: 5px;
+    flex-wrap: wrap;
+  }
+
+  .booth-grid {
+    display: grid;
+    grid-template-columns: repeat(5, 80px);
+    gap: 8px;
+  }
+
+  .booth-cell {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 10px;
+    font-weight: 600;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: all 0.12s;
+    user-select: none;
+    position: relative;
+    color: #fff;
+    text-shadow: 0 1px 2px rgba(0,0,0,0.2);
+    border: 2px solid transparent;
+  }
+
+  .pod-cell {
+    width: 44px;
+    height: 36px;
+    font-size: 9px;
+    border-radius: 4px;
+  }
+
+  .std-cell {
+    width: 80px;
+    height: 58px;
+    font-size: 11px;
+  }
+
+  .cell-available { background: #2ecc71; border-color: #27ae60; }
+  .cell-sold { background: #d95f2b; border-color: #b84d20; }
+  .cell-reserved { background: #3498db; border-color: #2980b9; }
+  .cell-unavailable { background: #bdc3c7; border-color: #95a5a6; cursor: default; }
+
+  .booth-cell:not(.cell-unavailable):hover {
+    transform: scale(1.08);
+    z-index: 2;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+  }
+
+  /* Tooltip / Popup */
+  .cell-popup {
+    display: none;
+    position: fixed;
+    z-index: 1000;
+    background: #1a1a2e;
+    color: #fff;
+    border-radius: 10px;
+    padding: 16px 18px;
+    min-width: 220px;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.25);
+    pointer-events: none;
+  }
+
+  .cell-popup.visible { display: block; }
+
+  .popup-id {
+    font-size: 18px;
+    font-weight: 700;
+    margin-bottom: 10px;
+    color: #fff;
+  }
+
+  .popup-row {
+    display: flex;
+    justify-content: space-between;
+    font-size: 13px;
+    margin-bottom: 6px;
+    gap: 16px;
+  }
+
+  .popup-row .pk { color: rgba(255,255,255,0.55); }
+  .popup-row .pv { font-weight: 500; color: #fff; }
+
+  .popup-status {
+    display: inline-block;
+    padding: 3px 9px;
+    border-radius: 12px;
+    font-size: 11px;
+    font-weight: 600;
+  }
+
+  .ps-available { background: rgba(46,204,113,0.2); color: #2ecc71; }
+  .ps-sold { background: rgba(217,95,43,0.25); color: #f0784a; }
+  .ps-reserved { background: rgba(52,152,219,0.2); color: #5dade2; }
+
+  /* ── APPLICATIONS ── */
+  .stats-row {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 16px;
+    margin-bottom: 24px;
+  }
+
+  .stat-card {
+    background: var(--card-bg);
+    border-radius: var(--radius);
+    padding: 20px 22px;
+    box-shadow: var(--shadow);
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    border: 1px solid rgba(0,0,0,0.04);
+  }
+
+  .stat-icon {
+    width: 48px;
+    height: 48px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 22px;
+    flex-shrink: 0;
+  }
+
+  .si-pending { background: #fef9e7; }
+  .si-approved { background: var(--green-bg); }
+  .si-rejected { background: var(--red-bg); }
+
+  .stat-card .sc-val { font-size: 28px; font-weight: 700; color: var(--text); }
+  .stat-card .sc-lbl { font-size: 13px; color: var(--text-light); margin-top: 1px; }
+
+  .table-wrap {
+    background: var(--card-bg);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+    border: 1px solid rgba(0,0,0,0.04);
+    overflow: hidden;
+  }
+
+  .table-toolbar {
+    padding: 18px 22px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    border-bottom: 1px solid var(--border);
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+
+  .table-toolbar-title { font-size: 16px; font-weight: 600; }
+
+  .filter-group {
+    display: flex;
+    gap: 8px;
+  }
+
+  .filter-chip {
+    padding: 6px 14px;
+    border-radius: 20px;
+    font-size: 13px;
+    cursor: pointer;
+    border: 1.5px solid var(--border);
+    background: transparent;
+    font-family: 'DM Sans', sans-serif;
+    transition: all 0.12s;
+    color: var(--text-light);
+    font-weight: 500;
+  }
+
+  .filter-chip:hover { border-color: var(--orange); color: var(--orange); }
+  .filter-chip.active { background: var(--orange); border-color: var(--orange); color: #fff; }
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+  }
+
+  thead th {
+    padding: 13px 18px;
+    text-align: left;
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+    color: var(--text-light);
+    background: #fafaf8;
+    border-bottom: 1px solid var(--border);
+    white-space: nowrap;
+  }
+
+  tbody td {
+    padding: 14px 18px;
+    font-size: 14px;
+    color: var(--text);
+    border-bottom: 1px solid #f0ede7;
+    vertical-align: middle;
+  }
+
+  tbody tr:last-child td { border-bottom: none; }
+
+  tbody tr:hover { background: #faf8f5; }
+
+  .company-cell {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .company-avatar {
+    width: 34px;
+    height: 34px;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 13px;
+    font-weight: 700;
+    color: #fff;
+    flex-shrink: 0;
+  }
+
+  .company-name { font-weight: 500; }
+  .company-sub { font-size: 12px; color: var(--text-light); }
+
+  .action-btns { display: flex; gap: 6px; }
+
+  .booth-tag {
+    display: inline-block;
+    padding: 3px 9px;
+    border-radius: 5px;
+    font-size: 12px;
+    font-weight: 500;
+  }
+
+  .bt-pod { background: var(--orange-pale); color: var(--orange); }
+  .bt-std { background: var(--blue-bg); color: var(--blue); }
+
+  /* ── MODAL ── */
+  .modal-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.45);
+    z-index: 2000;
+    align-items: center;
+    justify-content: center;
+    backdrop-filter: blur(2px);
+  }
+
+  .modal-overlay.open { display: flex; }
+
+  .modal {
+    background: #fff;
+    border-radius: 16px;
+    padding: 32px;
+    max-width: 480px;
+    width: 92%;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.2);
+    animation: modalIn 0.2s ease;
+  }
+
+  @keyframes modalIn {
+    from { transform: scale(0.95) translateY(-8px); opacity: 0; }
+    to { transform: scale(1) translateY(0); opacity: 1; }
+  }
+
+  .modal-icon {
+    width: 56px;
+    height: 56px;
+    border-radius: 50%;
+    background: var(--green-bg);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 26px;
+    margin-bottom: 18px;
+  }
+
+  .modal-title { font-size: 20px; font-weight: 700; margin-bottom: 10px; }
+  .modal-body { font-size: 14px; color: var(--text-light); line-height: 1.6; margin-bottom: 24px; }
+  .modal-body strong { color: var(--text); font-weight: 600; }
+
+  .modal-actions { display: flex; gap: 10px; justify-content: flex-end; }
+
+  /* Edit modal */
+  .edit-modal .modal { max-width: 520px; }
+
+  /* Chevron */
+  .chevron {
+    display: inline-block;
+    transition: transform 0.2s;
+    font-size: 12px;
+  }
+
+  .chevron.open { transform: rotate(180deg); }
+
+  /* Notification toast */
+  .toast {
+    position: fixed;
+    bottom: 28px;
+    right: 28px;
+    background: #1a1a2e;
+    color: #fff;
+    padding: 14px 20px;
+    border-radius: 10px;
+    font-size: 14px;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.2);
+    z-index: 3000;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    transform: translateY(20px);
+    opacity: 0;
+    transition: all 0.25s;
+    max-width: 340px;
+  }
+
+  .toast.show { transform: translateY(0); opacity: 1; }
+
+  /* Edit Booth Modal form */
+  .edit-form .form-grid { grid-template-columns: 1fr 1fr; }
+
+  /* Divider */
+  .hall-divider {
+    border: none;
+    border-top: 2px dashed var(--border);
+    margin: 20px 0;
+  }
+</style>
+</head>
+<body>
+
+<!-- SIDEBAR -->
+<aside class="sidebar">
+  <div class="sidebar-logo">
+    <div class="brand">Game Connection</div>
+    <div class="sub">B2B Organizer Portal</div>
+  </div>
+  <nav class="sidebar-nav">
+    <div class="nav-section">Overview</div>
+    <div class="nav-item"><span class="icon">📊</span> Dashboard</div>
+    <div class="nav-item"><span class="icon">🗓</span> Event Setup</div>
+
+    <div class="nav-section">Exhibitors</div>
+    <div class="nav-item active"><span class="icon">🏪</span> Booth Management</div>
+    <div class="nav-item"><span class="icon">🎮</span> Exhibitor List</div>
+    <div class="nav-item"><span class="icon">📋</span> Meeting Schedule</div>
+
+    <div class="nav-section">Visitors</div>
+    <div class="nav-item"><span class="icon">👥</span> Visitor Profiles</div>
+    <div class="nav-item"><span class="icon">🔗</span> Matchmaking</div>
+
+    <div class="nav-section">Finance</div>
+    <div class="nav-item"><span class="icon">💳</span> Payments</div>
+    <div class="nav-item"><span class="icon">🧾</span> Invoices</div>
+
+    <div class="nav-section">System</div>
+    <div class="nav-item"><span class="icon">📧</span> Email Templates</div>
+    <div class="nav-item"><span class="icon">⚙️</span> Settings</div>
+  </nav>
+  <div class="sidebar-footer">
+    <span class="avatar">Q</span> Qiang Qiang
+  </div>
+</aside>
+
+<!-- MAIN CONTENT -->
+<main class="main">
+  <div class="page-header">
+    <div>
+      <div class="page-title">Booth Management</div>
+      <div class="page-subtitle">Manage Pod & Standard Booth types, floor plan and exhibitor applications</div>
+    </div>
+    <div style="display:flex;gap:10px;align-items:center;">
+      <button class="btn btn-secondary" onclick="showToast('📤 Exporting floor plan PDF…')"><span>📤</span> Export</button>
+      <button class="btn btn-primary" onclick="openAddBooth()"><span>＋</span> Add Booth Type</button>
+    </div>
+  </div>
+
+  <!-- TABS -->
+  <div class="tabs">
+    <button class="tab active" onclick="switchTab('types',this)">🏷 Booth Types</button>
+    <button class="tab" onclick="switchTab('floormap',this)">🗺 Floor Map</button>
+    <button class="tab" onclick="switchTab('applications',this)">📬 Applications <span id="appBadge" style="background:var(--orange);color:#fff;font-size:11px;padding:1px 7px;border-radius:10px;margin-left:4px;font-weight:700;">8</span></button>
+  </div>
+
+  <!-- ═══════════════════════════ TAB 1: BOOTH TYPES ═══════════════════════════ -->
+  <div class="tab-content active" id="tab-types">
+    <div class="booth-cards">
+      <!-- Pod Card -->
+      <div class="booth-card">
+        <div class="booth-card-top">
+          <span class="booth-type-label">🎯 Pod</span>
+          <span class="status-badge status-active">● Active</span>
+        </div>
+        <div class="booth-price">€299<span> / unit</span></div>
+        <div class="booth-price-note">Ideal for indie developers — compact and cost-effective</div>
+
+        <div class="includes-title">Includes</div>
+        <ul class="includes-list">
+          <li>1 Table</li>
+          <li>2 Chairs</li>
+          <li>Power Outlet</li>
+          <li>WiFi Access</li>
+          <li>Display Screen</li>
+        </ul>
+
+        <div class="booth-stats">
+          <div class="stat-box">
+            <div class="val">40</div>
+            <div class="lbl">Total</div>
+          </div>
+          <div class="stat-box">
+            <div class="val orange">18</div>
+            <div class="lbl">Sold</div>
+          </div>
+          <div class="stat-box">
+            <div class="val">22</div>
+            <div class="lbl">Available</div>
+          </div>
+        </div>
+
+        <div class="progress-bar-wrap">
+          <div class="progress-label">
+            <span>Occupancy</span>
+            <span>18 / 40 (45%)</span>
+          </div>
+          <div class="progress-bar"><div class="progress-fill" style="width:45%"></div></div>
+        </div>
+
+        <div class="booth-card-footer">
+          <button class="btn btn-secondary btn-sm" onclick="showToast('📋 Pod details copied to clipboard')">Duplicate</button>
+          <button class="btn btn-primary btn-sm" onclick="openEditModal('pod')">✏️ Edit</button>
+        </div>
+      </div>
+
+      <!-- Standard Booth Card -->
+      <div class="booth-card standard">
+        <div class="booth-card-top">
+          <span class="booth-type-label" style="background:#eaf4fb;color:#2980b9;">🏢 Standard Booth</span>
+          <span class="status-badge status-active">● Active</span>
+        </div>
+        <div class="booth-price">€899<span> starting</span></div>
+        <div class="booth-price-note">For mid to large publishers — flexible sizing options</div>
+
+        <div class="includes-title">Size Options</div>
+        <div class="size-options">
+          <div class="size-chip">3×3m — €899</div>
+          <div class="size-chip">4×4m — €1,299</div>
+          <div class="size-chip">6×6m — €1,999</div>
+        </div>
+
+        <ul class="includes-list">
+          <li>Custom Branding</li>
+          <li>Tables & Chairs</li>
+          <li>Power &amp; WiFi</li>
+          <li>Storage Cabinet</li>
+          <li>Carpet Flooring</li>
+          <li>Backwall</li>
+        </ul>
+
+        <div class="booth-stats">
+          <div class="stat-box">
+            <div class="val">25</div>
+            <div class="lbl">Total</div>
+          </div>
+          <div class="stat-box">
+            <div class="val orange">9</div>
+            <div class="lbl">Sold</div>
+          </div>
+          <div class="stat-box">
+            <div class="val">16</div>
+            <div class="lbl">Available</div>
+          </div>
+        </div>
+
+        <div class="progress-bar-wrap">
+          <div class="progress-label">
+            <span>Occupancy</span>
+            <span>9 / 25 (36%)</span>
+          </div>
+          <div class="progress-bar"><div class="progress-fill" style="width:36%;background:linear-gradient(90deg,var(--orange),#f0784a)"></div></div>
+        </div>
+
+        <div class="booth-card-footer">
+          <button class="btn btn-secondary btn-sm" onclick="showToast('📋 Standard Booth details copied')">Duplicate</button>
+          <button class="btn btn-primary btn-sm" onclick="openEditModal('standard')">✏️ Edit</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Add Booth Section -->
+    <div class="add-booth-section" id="addBoothSection">
+      <div class="add-booth-header" onclick="toggleAddBooth()">
+        <div style="display:flex;align-items:center;gap:10px;">
+          <span style="font-size:20px;color:var(--orange)">＋</span>
+          <div>
+            <div class="card-title">Add New Booth Type</div>
+            <div class="card-subtitle">Create a custom booth configuration</div>
+          </div>
+        </div>
+        <span class="chevron" id="addChevron">▼</span>
+      </div>
+      <div class="add-booth-body" id="addBoothBody">
+        <form onsubmit="submitNewBooth(event)">
+          <div class="form-grid">
+            <div class="form-group">
+              <label class="form-label">Booth Name *</label>
+              <input class="form-input" type="text" placeholder="e.g. Premium Booth" required>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Base Price (€) *</label>
+              <input class="form-input" type="number" placeholder="e.g. 599" min="0" required>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Total Quantity *</label>
+              <input class="form-input" type="number" placeholder="e.g. 20" min="1" required>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Status</label>
+              <select class="form-select">
+                <option>Active</option>
+                <option>Inactive</option>
+                <option>Coming Soon</option>
+              </select>
+            </div>
+            <div class="form-group full">
+              <label class="form-label">Included Features</label>
+              <input class="form-input" type="text" placeholder="e.g. Table, 2 Chairs, WiFi, Power (comma separated)">
+            </div>
+            <div class="form-group full">
+              <label class="form-label">Description</label>
+              <textarea class="form-textarea" placeholder="Brief description of this booth type…"></textarea>
+            </div>
+          </div>
+          <div class="form-actions">
+            <button type="button" class="btn btn-secondary" onclick="toggleAddBooth()">Cancel</button>
+            <button type="submit" class="btn btn-primary">Create Booth Type</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════ TAB 2: FLOOR MAP ═══════════════════════════ -->
+  <div class="tab-content" id="tab-floormap">
+    <div class="floormap-wrap">
+      <div class="floormap-toolbar">
+        <div>
+          <div class="card-title">Venue Floor Plan</div>
+          <div class="card-subtitle">Click any booth for details · Drag to pan (coming soon)</div>
+        </div>
+        <div class="legend">
+          <div class="legend-item"><div class="legend-dot dot-available"></div> Available</div>
+          <div class="legend-item"><div class="legend-dot dot-sold"></div> Sold</div>
+          <div class="legend-item"><div class="legend-dot dot-reserved"></div> Reserved</div>
+          <div class="legend-item"><div class="legend-dot dot-unavailable"></div> Unavailable</div>
+        </div>
+      </div>
+
+      <div class="venue">
+        <!-- Main Hall — Pods -->
+        <div class="hall-section">
+          <div class="hall-label">🏛 Main Hall — Pod Zone (P01–P40)</div>
+          <div class="pod-grid" id="podGrid"></div>
+        </div>
+
+        <hr class="hall-divider">
+
+        <!-- Hall A — Standard Booths -->
+        <div class="hall-section">
+          <div class="hall-label">🅰 Hall A — Standard Booths (B01–B15)</div>
+          <div class="booth-grid" id="boothGridA"></div>
+        </div>
+
+        <hr class="hall-divider">
+
+        <!-- Hall B — Standard Booths -->
+        <div class="hall-section">
+          <div class="hall-label">🅱 Hall B — Standard Booths (B16–B25)</div>
+          <div class="booth-grid" id="boothGridB"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════ TAB 3: APPLICATIONS ═══════════════════════════ -->
+  <div class="tab-content" id="tab-applications">
+    <!-- Stats Row -->
+    <div class="stats-row">
+      <div class="stat-card">
+        <div class="stat-icon si-pending">⏳</div>
+        <div><div class="sc-val">8</div><div class="sc-lbl">Pending Review</div></div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon si-approved">✅</div>
+        <div><div class="sc-val">27</div><div class="sc-lbl">Approved</div></div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon si-rejected">❌</div>
+        <div><div class="sc-val">3</div><div class="sc-lbl">Rejected</div></div>
+      </div>
+    </div>
+
+    <!-- Applications Table -->
+    <div class="table-wrap">
+      <div class="table-toolbar">
+        <div class="table-toolbar-title">Application List</div>
+        <div class="filter-group">
+          <button class="filter-chip active" onclick="filterApps('all',this)">All</button>
+          <button class="filter-chip" onclick="filterApps('pending',this)">Pending</button>
+          <button class="filter-chip" onclick="filterApps('approved',this)">Approved</button>
+          <button class="filter-chip" onclick="filterApps('rejected',this)">Rejected</button>
+        </div>
+      </div>
+      <table id="appTable">
+        <thead>
+          <tr>
+            <th>Company</th>
+            <th>Game Genre</th>
+            <th>Booth Type</th>
+            <th>Applied On</th>
+            <th>Status</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody id="appTableBody"></tbody>
+      </table>
+    </div>
+  </div>
+</main>
+
+<!-- ── CELL POPUP ── -->
+<div class="cell-popup" id="cellPopup"></div>
+
+<!-- ── APPROVAL EMAIL MODAL ── -->
+<div class="modal-overlay" id="approvalModal">
+  <div class="modal">
+    <div class="modal-icon">📧</div>
+    <div class="modal-title">Payment Email Sent!</div>
+    <div class="modal-body" id="approvalModalBody">
+      Approval confirmed. An automated payment request email has been dispatched to <strong id="approvalCompany"></strong>.<br><br>
+      The exhibitor will receive invoice details and a secure payment link within the next few minutes.
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-secondary" onclick="closeModal('approvalModal')">Close</button>
+      <button class="btn btn-primary" onclick="closeModal('approvalModal');showToast('📋 Email preview copied')">Preview Email</button>
+    </div>
+  </div>
+</div>
+
+<!-- ── REJECT MODAL ── -->
+<div class="modal-overlay" id="rejectModal">
+  <div class="modal">
+    <div class="modal-icon" style="background:var(--red-bg)">🚫</div>
+    <div class="modal-title">Reject Application?</div>
+    <div class="modal-body">
+      You are about to reject the application from <strong id="rejectCompany"></strong>. A notification email will be sent to inform them of the decision.<br><br>
+      <label class="form-label" style="margin-bottom:8px;display:block;">Reason (optional)</label>
+      <textarea class="form-textarea" id="rejectReason" placeholder="e.g. Capacity full, genre mismatch…" style="width:100%"></textarea>
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-secondary" onclick="closeModal('rejectModal')">Cancel</button>
+      <button class="btn btn-danger" onclick="confirmReject()">Confirm Rejection</button>
+    </div>
+  </div>
+</div>
+
+<!-- ── EDIT BOOTH MODAL ── -->
+<div class="modal-overlay edit-modal" id="editModal">
+  <div class="modal" style="max-width:540px">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;">
+      <div class="modal-title" id="editModalTitle" style="margin:0">Edit Booth Type</div>
+      <button onclick="closeModal('editModal')" style="background:none;border:none;font-size:20px;cursor:pointer;color:var(--text-light)">✕</button>
+    </div>
+    <div class="edit-form">
+      <div class="form-grid">
+        <div class="form-group">
+          <label class="form-label">Booth Name</label>
+          <input class="form-input" id="editName" type="text">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Base Price (€)</label>
+          <input class="form-input" id="editPrice" type="number">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Total Quantity</label>
+          <input class="form-input" id="editQty" type="number">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Status</label>
+          <select class="form-select" id="editStatus">
+            <option>Active</option>
+            <option>Inactive</option>
+          </select>
+        </div>
+        <div class="form-group full">
+          <label class="form-label">Included Features</label>
+          <input class="form-input" id="editFeatures" type="text">
+        </div>
+      </div>
+    </div>
+    <div class="form-actions">
+      <button class="btn btn-secondary" onclick="closeModal('editModal')">Cancel</button>
+      <button class="btn btn-primary" onclick="saveEdit()">💾 Save Changes</button>
+    </div>
+  </div>
+</div>
+
+<!-- Toast -->
+<div class="toast" id="toast"></div>
+
+<script>
+// ══════════════════════ TABS ══════════════════════
+function switchTab(id, el) {
+  document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  document.getElementById('tab-' + id).classList.add('active');
+  el.classList.add('active');
+}
+
+// ══════════════════════ ADD BOOTH ══════════════════════
+function openAddBooth() {
+  const body = document.getElementById('addBoothBody');
+  const chev = document.getElementById('addChevron');
+  body.classList.add('open');
+  chev.classList.add('open');
+  body.scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
+function toggleAddBooth() {
+  const body = document.getElementById('addBoothBody');
+  const chev = document.getElementById('addChevron');
+  body.classList.toggle('open');
+  chev.classList.toggle('open');
+}
+
+function submitNewBooth(e) {
+  e.preventDefault();
+  toggleAddBooth();
+  showToast('✅ New booth type created successfully!');
+}
+
+// ══════════════════════ EDIT BOOTH ══════════════════════
+function openEditModal(type) {
+  const data = {
+    pod: { name: 'Pod', price: 299, qty: 40, status: 'Active', features: '1 Table, 2 Chairs, Power Outlet, WiFi, Display Screen' },
+    standard: { name: 'Standard Booth', price: 899, qty: 25, status: 'Active', features: 'Custom Branding, Tables & Chairs, Power, WiFi, Storage, Backwall' }
+  };
+  const d = data[type];
+  document.getElementById('editModalTitle').textContent = 'Edit — ' + d.name;
+  document.getElementById('editName').value = d.name;
+  document.getElementById('editPrice').value = d.price;
+  document.getElementById('editQty').value = d.qty;
+  document.getElementById('editStatus').value = d.status;
+  document.getElementById('editFeatures').value = d.features;
+  document.getElementById('editModal').classList.add('open');
+}
+
+function saveEdit() {
+  closeModal('editModal');
+  showToast('✅ Booth configuration saved!');
+}
+
+// ══════════════════════ FLOOR MAP ══════════════════════
+const podData = {};
+const boothData = {};
+
+// Companies for sold pods
+const soldCompanies = [
+  'Pixel Forge', 'Neon Rabbit', 'Iron Tiger', 'Ghost Wave', 'Storm Labs',
+  'Cyber Monk', 'Blue Nova', 'Red Pixel', 'Dark Matter', 'Warp Studio',
+  'Echo Games', 'Void Team', 'Spark Dev', 'Lunar Bits', 'Prime Shift',
+  'Ultra Soft', 'Core Works', 'Deep Play'
+];
+
+const soldBooths = [
+  'Ubisoft', 'EA Games', 'Devolver', 'THQ Nordic', 'Focus Ent.',
+  'Nacon', 'Microids', 'Bandai Namco', 'Deep Silver'
+];
+
+function buildFloorMap() {
+  // Pods
+  const podGrid = document.getElementById('podGrid');
+  const reservedPods = [22, 25, 30];
+  const unavailablePods = [35, 36];
+
+  for (let i = 1; i <= 40; i++) {
+    const id = 'P' + String(i).padStart(2, '0');
+    let status, company = '', size = '';
+
+    if (i <= 18) {
+      status = 'sold';
+      company = soldCompanies[i - 1] || 'Exhibitor ' + i;
+    } else if (reservedPods.includes(i)) {
+      status = 'reserved';
+      company = 'Reserved';
+    } else if (unavailablePods.includes(i)) {
+      status = 'unavailable';
+    } else {
+      status = 'available';
+    }
+
+    podData[id] = { id, type: 'Pod', status, company, size: '1×1m', price: '€299' };
+
+    const cell = document.createElement('div');
+    cell.className = `booth-cell pod-cell cell-${status}`;
+    cell.textContent = id;
+    cell.setAttribute('data-id', id);
+    if (status !== 'unavailable') {
+      cell.addEventListener('click', e => showCellPopup(e, id));
+      cell.addEventListener('mouseleave', hideCellPopup);
+    }
+    podGrid.appendChild(cell);
+  }
+
+  // Booths Hall A (B01–B15)
+  const gridA = document.getElementById('boothGridA');
+  const reservedBooths = [11, 13];
+
+  for (let i = 1; i <= 15; i++) {
+    const id = 'B' + String(i).padStart(2, '0');
+    let status, company = '';
+    const sizes = ['3×3m', '4×4m', '6×6m'];
+    const prices = ['€899', '€1,299', '€1,999'];
+    const si = (i - 1) % 3;
+
+    if (i <= 9) {
+      status = 'sold';
+      company = soldBooths[i - 1] || 'Publisher ' + i;
+    } else if (reservedBooths.includes(i)) {
+      status = 'reserved';
+      company = 'Reserved';
+    } else {
+      status = 'available';
+    }
+
+    boothData[id] = { id, type: 'Standard Booth', status, company, size: sizes[si], price: prices[si] };
+
+    const cell = document.createElement('div');
+    cell.className = `booth-cell std-cell cell-${status}`;
+    cell.textContent = id;
+    cell.setAttribute('data-id', id);
+    cell.addEventListener('click', e => showCellPopup(e, id));
+    cell.addEventListener('mouseleave', hideCellPopup);
+    gridA.appendChild(cell);
+  }
+
+  // Booths Hall B (B16–B25)
+  const gridB = document.getElementById('boothGridB');
+  for (let i = 16; i <= 25; i++) {
+    const id = 'B' + String(i).padStart(2, '0');
+    const si = (i - 1) % 3;
+    const sizes = ['3×3m', '4×4m', '6×6m'];
+    const prices = ['€899', '€1,299', '€1,999'];
+    const status = 'available';
+    boothData[id] = { id, type: 'Standard Booth', status, company: '', size: sizes[si], price: prices[si] };
+
+    const cell = document.createElement('div');
+    cell.className = `booth-cell std-cell cell-${status}`;
+    cell.textContent = id;
+    cell.setAttribute('data-id', id);
+    cell.addEventListener('click', e => showCellPopup(e, id));
+    cell.addEventListener('mouseleave', hideCellPopup);
+    gridB.appendChild(cell);
+  }
+}
+
+function showCellPopup(e, id) {
+  const d = podData[id] || boothData[id];
+  if (!d) return;
+
+  const popup = document.getElementById('cellPopup');
+  const statusMap = { available: 'ps-available', sold: 'ps-sold', reserved: 'ps-reserved' };
+  const statusLabel = { available: '🟢 Available', sold: '🔴 Sold', reserved: '🔵 Reserved' };
+
+  popup.innerHTML = `
+    <div class="popup-id">${d.id}</div>
+    <div class="popup-row"><span class="pk">Type</span><span class="pv">${d.type}</span></div>
+    <div class="popup-row"><span class="pk">Size</span><span class="pv">${d.size}</span></div>
+    <div class="popup-row"><span class="pk">Price</span><span class="pv">${d.price}</span></div>
+    ${d.company ? `<div class="popup-row"><span class="pk">Exhibitor</span><span class="pv">${d.company}</span></div>` : ''}
+    <div class="popup-row"><span class="pk">Status</span><span class="popup-status ${statusMap[d.status] || ''}">${statusLabel[d.status] || d.status}</span></div>
+  `;
+
+  const rect = e.target.getBoundingClientRect();
+  let left = rect.right + 10;
+  let top = rect.top - 10;
+
+  // Clamp to viewport
+  if (left + 240 > window.innerWidth) left = rect.left - 250;
+  if (top + 200 > window.innerHeight) top = window.innerHeight - 210;
+  if (top < 10) top = 10;
+
+  popup.style.left = left + 'px';
+  popup.style.top = top + 'px';
+  popup.classList.add('visible');
+}
+
+function hideCellPopup() {
+  document.getElementById('cellPopup').classList.remove('visible');
+}
+
+// ══════════════════════ APPLICATIONS ══════════════════════
+const appData = [
+  { id: 1, company: 'Pixel Forge Studio', genre: 'Action RPG', boothType: 'pod', date: '2026-03-18', status: 'pending', initial: 'PF', color: '#e74c3c' },
+  { id: 2, company: 'Neon Rabbit Games', genre: 'Platformer', boothType: 'pod', date: '2026-03-17', status: 'pending', initial: 'NR', color: '#9b59b6' },
+  { id: 3, company: 'Ubisoft Bordeaux', genre: 'Open World', boothType: 'standard', date: '2026-03-15', status: 'approved', initial: 'UB', color: '#3498db' },
+  { id: 4, company: 'Iron Tiger Interactive', genre: 'Fighting', boothType: 'pod', date: '2026-03-14', status: 'pending', initial: 'IT', color: '#e67e22' },
+  { id: 5, company: 'Ghost Wave Digital', genre: 'Horror', boothType: 'pod', date: '2026-03-14', status: 'rejected', initial: 'GW', color: '#1abc9c' },
+  { id: 6, company: 'Storm Labs', genre: 'Strategy', boothType: 'standard', date: '2026-03-13', status: 'approved', initial: 'SL', color: '#2ecc71' },
+  { id: 7, company: 'Cyber Monk Studio', genre: 'Cyberpunk RPG', boothType: 'pod', date: '2026-03-12', status: 'pending', initial: 'CM', color: '#e74c3c' },
+  { id: 8, company: 'Blue Nova Entertainment', genre: 'MMORPG', boothType: 'standard', date: '2026-03-11', status: 'approved', initial: 'BN', color: '#3498db' },
+  { id: 9, company: 'Void Team', genre: 'Sci-Fi Shooter', boothType: 'pod', date: '2026-03-10', status: 'pending', initial: 'VT', color: '#8e44ad' },
+  { id: 10, company: 'Spark Dev Co.', genre: 'Puzzle', boothType: 'pod', date: '2026-03-09', status: 'pending', initial: 'SD', color: '#f39c12' },
+];
+
+let currentFilter = 'all';
+let pendingRejectId = null;
+
+function renderApps(filter) {
+  const tbody = document.getElementById('appTableBody');
+  const filtered = filter === 'all' ? appData : appData.filter(a => a.status === filter);
+  tbody.innerHTML = '';
+
+  filtered.forEach(app => {
+    const tr = document.createElement('tr');
+    tr.setAttribute('data-id', app.id);
+    tr.innerHTML = `
+      <td>
+        <div class="company-cell">
+          <div class="company-avatar" style="background:${app.color}">${app.initial}</div>
+          <div>
+            <div class="company-name">${app.company}</div>
+            <div class="company-sub">ID: APP-${String(app.id).padStart(4,'0')}</div>
+          </div>
+        </div>
+      </td>
+      <td>${app.genre}</td>
+      <td><span class="booth-tag ${app.boothType === 'pod' ? 'bt-pod' : 'bt-std'}">${app.boothType === 'pod' ? '🎯 Pod' : '🏢 Standard'}</span></td>
+      <td>${formatDate(app.date)}</td>
+      <td><span class="status-badge status-${app.status}">${statusIcon(app.status)} ${cap(app.status)}</span></td>
+      <td>
+        <div class="action-btns">
+          ${app.status === 'pending' ? `
+            <button class="btn btn-success btn-sm" onclick="approveApp(${app.id})">✓ Approve</button>
+            <button class="btn btn-danger btn-sm" onclick="rejectApp(${app.id})">✕ Reject</button>
+          ` : app.status === 'approved' ? `
+            <button class="btn btn-secondary btn-sm" onclick="showToast('📧 Resending payment email…')">Resend Email</button>
+          ` : `
+            <button class="btn btn-secondary btn-sm" onclick="showToast('↩ Moved to pending review')">Reconsider</button>
+          `}
+        </div>
+      </td>
+    `;
+    tbody.appendChild(tr);
+  });
+}
+
+function filterApps(filter, el) {
+  currentFilter = filter;
+  document.querySelectorAll('.filter-chip').forEach(c => c.classList.remove('active'));
+  el.classList.add('active');
+  renderApps(filter);
+}
+
+function approveApp(id) {
+  const app = appData.find(a => a.id === id);
+  if (!app) return;
+  document.getElementById('approvalCompany').textContent = app.company;
+  app.status = 'approved';
+  document.getElementById('approvalModal').classList.add('open');
+  renderApps(currentFilter);
+}
+
+function rejectApp(id) {
+  const app = appData.find(a => a.id === id);
+  if (!app) return;
+  pendingRejectId = id;
+  document.getElementById('rejectCompany').textContent = app.company;
+  document.getElementById('rejectReason').value = '';
+  document.getElementById('rejectModal').classList.add('open');
+}
+
+function confirmReject() {
+  if (pendingRejectId) {
+    const app = appData.find(a => a.id === pendingRejectId);
+    if (app) app.status = 'rejected';
+    pendingRejectId = null;
+  }
+  closeModal('rejectModal');
+  renderApps(currentFilter);
+  showToast('🚫 Application rejected. Notification sent.');
+}
+
+function closeModal(id) {
+  document.getElementById(id).classList.remove('open');
+}
+
+// Close modal on overlay click
+document.querySelectorAll('.modal-overlay').forEach(overlay => {
+  overlay.addEventListener('click', e => {
+    if (e.target === overlay) overlay.classList.remove('open');
+  });
+});
+
+// ══════════════════════ HELPERS ══════════════════════
+function cap(s) { return s.charAt(0).toUpperCase() + s.slice(1); }
+
+function statusIcon(s) {
+  return { pending: '⏳', approved: '✅', rejected: '❌' }[s] || '';
+}
+
+function formatDate(d) {
+  const dt = new Date(d);
+  return dt.toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' });
+}
+
+let toastTimer;
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.innerHTML = msg;
+  t.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => t.classList.remove('show'), 3000);
+}
+
+// ══════════════════════ INIT ══════════════════════
+buildFloorMap();
+renderApps('all');
+</script>
+</body>
+</html>

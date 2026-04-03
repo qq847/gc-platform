@@ -1,0 +1,1317 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>My Schedule — GDC 2026</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg: #e8e4da;
+    --bg-card: #f2efe8;
+    --bg-white: #faf9f5;
+    --primary: #d95f2b;
+    --primary-hover: #c2511f;
+    --primary-light: rgba(217,95,43,0.12);
+    --primary-lighter: rgba(217,95,43,0.06);
+    --text: #1a1714;
+    --text-muted: #7a7570;
+    --text-light: #a09a93;
+    --border: #d4cfc6;
+    --border-light: #e2ddd5;
+    --shadow-sm: 0 1px 3px rgba(0,0,0,0.08);
+    --shadow-md: 0 4px 12px rgba(0,0,0,0.10);
+    --shadow-lg: 0 8px 24px rgba(0,0,0,0.12);
+    --conflict: #e05252;
+    --conflict-bg: rgba(224,82,82,0.10);
+    --success: #2eb67d;
+    --tag-bg: #e2ddd5;
+    --radius: 10px;
+    --radius-sm: 6px;
+    --radius-lg: 14px;
+  }
+
+  html, body {
+    height: 100%;
+    font-family: 'DM Sans', -apple-system, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    font-size: 14px;
+    line-height: 1.5;
+  }
+
+  /* ── TOP BAR ── */
+  .topbar {
+    height: 56px;
+    background: var(--bg-white);
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    padding: 0 24px;
+    gap: 20px;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    box-shadow: var(--shadow-sm);
+  }
+
+  .topbar-brand {
+    font-weight: 700;
+    font-size: 17px;
+    color: var(--primary);
+    letter-spacing: -0.3px;
+    white-space: nowrap;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .topbar-brand svg { width: 22px; height: 22px; }
+
+  .topbar-divider { width: 1px; height: 24px; background: var(--border); }
+
+  .conf-switcher {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 30px;
+    padding: 3px;
+  }
+  .conf-btn {
+    padding: 5px 14px;
+    border-radius: 26px;
+    border: none;
+    background: transparent;
+    font-family: inherit;
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--text-muted);
+    cursor: pointer;
+    transition: all 0.18s;
+    white-space: nowrap;
+  }
+  .conf-btn:hover { color: var(--text); background: var(--bg-card); }
+  .conf-btn.active {
+    background: var(--primary);
+    color: #fff;
+    box-shadow: 0 2px 6px rgba(217,95,43,0.35);
+  }
+
+  .topbar-right {
+    margin-left: auto;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .export-btn {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    padding: 7px 16px;
+    background: var(--bg-white);
+    border: 1.5px solid var(--border);
+    border-radius: 8px;
+    font-family: inherit;
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--text);
+    cursor: pointer;
+    transition: all 0.18s;
+  }
+  .export-btn:hover {
+    border-color: var(--primary);
+    color: var(--primary);
+    background: var(--primary-lighter);
+  }
+  .export-btn svg { width: 15px; height: 15px; }
+
+  .avatar {
+    width: 34px; height: 34px;
+    border-radius: 50%;
+    background: var(--primary);
+    color: #fff;
+    font-weight: 600;
+    font-size: 13px;
+    display: flex; align-items: center; justify-content: center;
+    cursor: pointer;
+  }
+
+  /* ── MAIN LAYOUT ── */
+  .layout {
+    display: grid;
+    grid-template-columns: 220px 1fr 280px;
+    height: calc(100vh - 56px);
+    overflow: hidden;
+  }
+
+  /* ── LEFT SIDEBAR ── */
+  .sidebar-left {
+    background: var(--bg-card);
+    border-right: 1px solid var(--border);
+    display: flex;
+    flex-direction: column;
+    overflow-y: auto;
+    padding: 20px 0;
+  }
+
+  .sidebar-section-title {
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+    color: var(--text-light);
+    padding: 0 16px;
+    margin-bottom: 8px;
+  }
+
+  .date-list { padding: 0 12px; }
+
+  .date-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 10px 12px;
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+    transition: all 0.15s;
+    margin-bottom: 3px;
+  }
+  .date-item:hover { background: var(--border-light); }
+  .date-item.active {
+    background: var(--primary-light);
+    border-left: 3px solid var(--primary);
+    padding-left: 9px;
+  }
+
+  .date-dot {
+    width: 36px; height: 36px;
+    border-radius: 8px;
+    background: var(--tag-bg);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+  }
+  .date-item.active .date-dot { background: var(--primary); }
+  .date-dot-num {
+    font-size: 16px;
+    font-weight: 700;
+    line-height: 1;
+    color: var(--text);
+  }
+  .date-item.active .date-dot-num { color: #fff; }
+  .date-dot-mon {
+    font-size: 9px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.4px;
+    color: var(--text-muted);
+  }
+  .date-item.active .date-dot-mon { color: rgba(255,255,255,0.8); }
+
+  .date-meta { flex: 1; min-width: 0; }
+  .date-label { font-size: 13px; font-weight: 500; color: var(--text); }
+  .date-count { font-size: 11px; color: var(--text-muted); margin-top: 1px; }
+
+  .date-badge {
+    min-width: 20px; height: 20px;
+    border-radius: 10px;
+    background: var(--primary);
+    color: #fff;
+    font-size: 11px;
+    font-weight: 600;
+    display: flex; align-items: center; justify-content: center;
+    padding: 0 5px;
+  }
+
+  .sidebar-divider {
+    height: 1px;
+    background: var(--border);
+    margin: 18px 16px;
+  }
+
+  .tag-filter-section { padding: 0 12px; }
+  .tag-list { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }
+  .tag {
+    padding: 4px 10px;
+    border-radius: 20px;
+    font-size: 11px;
+    font-weight: 500;
+    background: var(--tag-bg);
+    color: var(--text-muted);
+    cursor: pointer;
+    border: 1.5px solid transparent;
+    transition: all 0.15s;
+    user-select: none;
+  }
+  .tag:hover { border-color: var(--primary); color: var(--primary); }
+  .tag.active { background: var(--primary-light); border-color: var(--primary); color: var(--primary); }
+
+  .stats-box {
+    margin: 18px 12px 0;
+    background: var(--bg-white);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 14px;
+  }
+  .stats-row { display: flex; justify-content: space-between; margin-bottom: 10px; }
+  .stats-row:last-child { margin-bottom: 0; }
+  .stat-item { text-align: center; }
+  .stat-num { font-size: 22px; font-weight: 700; color: var(--primary); line-height: 1; }
+  .stat-lbl { font-size: 10px; color: var(--text-muted); margin-top: 3px; text-transform: uppercase; letter-spacing: 0.4px; }
+
+  /* ── MAIN TIMELINE ── */
+  .main-area {
+    overflow-y: auto;
+    padding: 20px 24px;
+    background: var(--bg);
+  }
+
+  .day-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 20px;
+  }
+  .day-title {
+    font-size: 22px;
+    font-weight: 700;
+    letter-spacing: -0.4px;
+    color: var(--text);
+  }
+  .day-subtitle {
+    font-size: 13px;
+    color: var(--text-muted);
+    margin-top: 2px;
+  }
+
+  .conflict-alert {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 14px;
+    background: var(--conflict-bg);
+    border: 1.5px solid var(--conflict);
+    border-radius: var(--radius-sm);
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--conflict);
+    margin-bottom: 16px;
+    animation: slideIn 0.3s ease;
+  }
+  .conflict-alert svg { width: 16px; height: 16px; flex-shrink: 0; }
+  @keyframes slideIn { from { opacity:0; transform: translateY(-6px); } to { opacity:1; transform: translateY(0); } }
+
+  /* Timeline */
+  .timeline-wrap { position: relative; }
+
+  .hour-row {
+    display: grid;
+    grid-template-columns: 52px 1fr;
+    gap: 0;
+    min-height: 80px;
+    position: relative;
+  }
+  .hour-row + .hour-row { border-top: 1px dashed var(--border-light); }
+
+  .hour-label {
+    padding-top: 4px;
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--text-light);
+    text-align: right;
+    padding-right: 12px;
+    letter-spacing: 0.2px;
+    user-select: none;
+  }
+
+  .hour-slot {
+    position: relative;
+    padding: 4px 0 4px 0;
+    min-height: 80px;
+    border-left: 2px solid var(--border-light);
+    padding-left: 12px;
+  }
+
+  .session-card {
+    background: var(--bg-white);
+    border: 1.5px solid var(--border);
+    border-left: 4px solid var(--primary);
+    border-radius: var(--radius-sm);
+    padding: 10px 12px;
+    margin-bottom: 6px;
+    cursor: pointer;
+    transition: all 0.18s;
+    position: relative;
+    overflow: hidden;
+  }
+  .session-card:hover {
+    box-shadow: var(--shadow-md);
+    transform: translateY(-1px);
+    border-color: var(--primary);
+  }
+  .session-card.conflict {
+    border-left-color: var(--conflict);
+    background: #fff5f5;
+    border-color: rgba(224,82,82,0.4);
+  }
+  .session-card.conflict::before {
+    content: '';
+    position: absolute;
+    top: 0; right: 0;
+    border: 0;
+    border-top: 22px solid var(--conflict);
+    border-left: 22px solid transparent;
+  }
+  .session-card.conflict::after {
+    content: '!';
+    position: absolute;
+    top: 1px; right: 3px;
+    font-size: 11px;
+    font-weight: 700;
+    color: #fff;
+  }
+
+  .session-time {
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--primary);
+    margin-bottom: 3px;
+    letter-spacing: 0.2px;
+  }
+  .session-card.conflict .session-time { color: var(--conflict); }
+
+  .session-title {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text);
+    line-height: 1.3;
+    margin-bottom: 4px;
+  }
+
+  .session-meta {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+  }
+  .session-speaker {
+    font-size: 11px;
+    color: var(--text-muted);
+    display: flex;
+    align-items: center;
+    gap: 3px;
+  }
+  .session-room {
+    font-size: 11px;
+    color: var(--text-muted);
+    background: var(--tag-bg);
+    padding: 2px 7px;
+    border-radius: 4px;
+  }
+  .session-tags { display: flex; gap: 4px; flex-wrap: wrap; }
+  .session-tag {
+    font-size: 10px;
+    font-weight: 500;
+    padding: 2px 7px;
+    border-radius: 10px;
+    background: var(--primary-light);
+    color: var(--primary);
+  }
+  .session-tag.design { background: #e8f0fe; color: #4a80d4; }
+  .session-tag.business { background: #e6f4ea; color: #34a853; }
+  .session-tag.tech { background: #fce8e6; color: #d93025; }
+  .session-tag.ux { background: #fef9e0; color: #c49a00; }
+  .session-tag.indie { background: #f3e8fd; color: #9b4de0; }
+
+  .remove-btn {
+    position: absolute;
+    top: 8px; right: 8px;
+    width: 22px; height: 22px;
+    border-radius: 50%;
+    background: transparent;
+    border: none;
+    color: var(--text-light);
+    font-size: 16px;
+    line-height: 22px;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.15s;
+    display: flex; align-items: center; justify-content: center;
+    opacity: 0;
+  }
+  .session-card:hover .remove-btn { opacity: 1; }
+  .remove-btn:hover { background: #fce8e6; color: var(--conflict); }
+
+  /* empty slot */
+  .empty-slot {
+    height: 24px;
+    display: flex;
+    align-items: center;
+  }
+  .empty-slot-line {
+    flex: 1;
+    border-top: 1px dashed transparent;
+  }
+
+  /* ── RIGHT SIDEBAR ── */
+  .sidebar-right {
+    background: var(--bg-card);
+    border-left: 1px solid var(--border);
+    display: flex;
+    flex-direction: column;
+    overflow-y: auto;
+    padding: 20px 0;
+  }
+
+  .rec-header {
+    padding: 0 16px;
+    margin-bottom: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+  .rec-title {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--text);
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .rec-title svg { width: 16px; height: 16px; color: var(--primary); }
+  .rec-count {
+    font-size: 12px;
+    color: var(--text-muted);
+    background: var(--tag-bg);
+    padding: 2px 8px;
+    border-radius: 10px;
+  }
+
+  .rec-list { padding: 0 12px; }
+
+  .rec-card {
+    background: var(--bg-white);
+    border: 1.5px solid var(--border);
+    border-radius: var(--radius);
+    padding: 12px;
+    margin-bottom: 8px;
+    transition: all 0.18s;
+    cursor: pointer;
+  }
+  .rec-card:hover {
+    border-color: var(--primary);
+    box-shadow: var(--shadow-sm);
+  }
+  .rec-card.added {
+    border-color: var(--success);
+    background: rgba(46,182,125,0.05);
+  }
+
+  .rec-card-top {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 8px;
+    margin-bottom: 6px;
+  }
+  .rec-card-time {
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--primary);
+    white-space: nowrap;
+  }
+  .rec-card.added .rec-card-time { color: var(--success); }
+
+  .rec-card-title {
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--text);
+    line-height: 1.35;
+    flex: 1;
+  }
+
+  .rec-card-speaker {
+    font-size: 11px;
+    color: var(--text-muted);
+    margin-bottom: 8px;
+  }
+
+  .rec-card-bottom {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .add-btn {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    padding: 5px 11px;
+    background: var(--primary);
+    color: #fff;
+    border: none;
+    border-radius: 6px;
+    font-family: inherit;
+    font-size: 11px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.18s;
+    white-space: nowrap;
+  }
+  .add-btn:hover { background: var(--primary-hover); box-shadow: 0 2px 6px rgba(217,95,43,0.35); }
+  .add-btn.added-state {
+    background: var(--success);
+    cursor: default;
+  }
+  .add-btn svg { width: 12px; height: 12px; }
+
+  .match-score {
+    display: flex;
+    align-items: center;
+    gap: 3px;
+    font-size: 11px;
+    color: var(--text-muted);
+  }
+  .match-score svg { width: 11px; height: 11px; color: #f5a623; }
+
+  .conflict-warning-small {
+    font-size: 10px;
+    color: var(--conflict);
+    font-weight: 500;
+    margin-top: 5px;
+    display: flex;
+    align-items: center;
+    gap: 3px;
+  }
+
+  .rec-interest-bar {
+    height: 3px;
+    background: var(--border-light);
+    border-radius: 2px;
+    margin-top: 8px;
+    overflow: hidden;
+  }
+  .rec-interest-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--primary), #f0814e);
+    border-radius: 2px;
+    transition: width 0.5s ease;
+  }
+
+  /* ── TOAST NOTIFICATION ── */
+  .toast-container {
+    position: fixed;
+    bottom: 28px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 1000;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    pointer-events: none;
+  }
+  .toast {
+    background: #1a1714;
+    color: #fff;
+    padding: 10px 18px;
+    border-radius: 8px;
+    font-size: 13px;
+    font-weight: 500;
+    box-shadow: var(--shadow-lg);
+    animation: toastIn 0.25s ease, toastOut 0.25s ease 2.5s forwards;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    pointer-events: auto;
+  }
+  .toast.success { background: #1e6e4e; }
+  .toast.warning { background: #7a3010; }
+  .toast svg { width: 15px; height: 15px; }
+  @keyframes toastIn { from { opacity:0; transform: translateY(10px); } to { opacity:1; transform: translateY(0); } }
+  @keyframes toastOut { from { opacity:1; } to { opacity:0; transform: translateY(10px); } }
+
+  /* ── MODAL ── */
+  .modal-overlay {
+    display: none;
+    position: fixed; inset: 0;
+    background: rgba(0,0,0,0.45);
+    z-index: 500;
+    align-items: center;
+    justify-content: center;
+    backdrop-filter: blur(2px);
+  }
+  .modal-overlay.open { display: flex; }
+  .modal {
+    background: var(--bg-white);
+    border-radius: var(--radius-lg);
+    padding: 28px;
+    width: 480px;
+    max-width: 94vw;
+    box-shadow: var(--shadow-lg);
+    animation: modalIn 0.22s ease;
+  }
+  @keyframes modalIn { from { opacity:0; transform: scale(0.95); } to { opacity:1; transform: scale(1); } }
+  .modal-title { font-size: 18px; font-weight: 700; margin-bottom: 6px; }
+  .modal-sub { font-size: 13px; color: var(--text-muted); margin-bottom: 20px; }
+  .modal-ics-box {
+    background: var(--bg);
+    border: 1px dashed var(--border);
+    border-radius: var(--radius-sm);
+    padding: 14px 16px;
+    font-size: 12px;
+    color: var(--text-muted);
+    font-family: 'SF Mono', 'Fira Code', monospace;
+    margin-bottom: 16px;
+    line-height: 1.7;
+  }
+  .modal-note { font-size: 12px; color: var(--text-muted); margin-bottom: 20px; line-height: 1.6; }
+  .modal-actions { display: flex; gap: 10px; justify-content: flex-end; }
+  .modal-btn-cancel {
+    padding: 9px 20px;
+    background: transparent;
+    border: 1.5px solid var(--border);
+    border-radius: 8px;
+    font-family: inherit;
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    color: var(--text);
+    transition: all 0.15s;
+  }
+  .modal-btn-cancel:hover { border-color: var(--text-muted); }
+  .modal-btn-primary {
+    padding: 9px 20px;
+    background: var(--primary);
+    border: none;
+    border-radius: 8px;
+    font-family: inherit;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    color: #fff;
+    transition: all 0.15s;
+    display: flex; align-items: center; gap: 6px;
+  }
+  .modal-btn-primary:hover { background: var(--primary-hover); }
+  .modal-btn-primary svg { width: 14px; height: 14px; }
+
+  /* ── SCROLLBAR ── */
+  ::-webkit-scrollbar { width: 5px; height: 5px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+  ::-webkit-scrollbar-thumb:hover { background: var(--text-light); }
+
+  /* ── RESPONSIVE note ── */
+  @media (max-width: 1024px) {
+    .layout { grid-template-columns: 200px 1fr 240px; }
+  }
+</style>
+</head>
+<body>
+
+<!-- TOP BAR -->
+<header class="topbar">
+  <div class="topbar-brand">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+      <rect x="3" y="4" width="18" height="18" rx="3"/>
+      <path d="M16 2v4M8 2v4M3 10h18"/>
+      <circle cx="8" cy="15" r="1.5" fill="currentColor"/>
+      <circle cx="12" cy="15" r="1.5" fill="currentColor"/>
+      <circle cx="16" cy="15" r="1.5" fill="currentColor"/>
+    </svg>
+    My Schedule
+  </div>
+
+  <div class="topbar-divider"></div>
+
+  <div class="conf-switcher">
+    <button class="conf-btn active" onclick="switchConf('gdc')">GDC 2026</button>
+    <button class="conf-btn" onclick="switchConf('gce')">GDC Europe</button>
+    <button class="conf-btn" onclick="switchConf('e3')">Gamescom</button>
+    <button class="conf-btn" onclick="switchConf('ign')">IGF Awards</button>
+  </div>
+
+  <div class="topbar-right">
+    <button class="export-btn" onclick="openExportModal()">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/>
+        <polyline points="7 10 12 15 17 10"/>
+        <line x1="12" y1="15" x2="12" y2="3"/>
+      </svg>
+      Export .ics
+    </button>
+    <div class="avatar">QQ</div>
+  </div>
+</header>
+
+<!-- MAIN LAYOUT -->
+<div class="layout">
+
+  <!-- LEFT SIDEBAR -->
+  <aside class="sidebar-left">
+    <div class="sidebar-section-title">Conference Days</div>
+    <div class="date-list" id="dateList"></div>
+
+    <div class="sidebar-divider"></div>
+
+    <div class="tag-filter-section">
+      <div class="sidebar-section-title">Interest Tags</div>
+      <div class="tag-list" id="tagList">
+        <span class="tag active" onclick="toggleTag(this)" data-tag="all">All</span>
+        <span class="tag" onclick="toggleTag(this)" data-tag="design">Design</span>
+        <span class="tag" onclick="toggleTag(this)" data-tag="tech">Tech</span>
+        <span class="tag" onclick="toggleTag(this)" data-tag="business">Business</span>
+        <span class="tag" onclick="toggleTag(this)" data-tag="ux">UX</span>
+        <span class="tag" onclick="toggleTag(this)" data-tag="indie">Indie</span>
+        <span class="tag" onclick="toggleTag(this)" data-tag="narrative">Narrative</span>
+      </div>
+    </div>
+
+    <div class="stats-box">
+      <div class="stats-row">
+        <div class="stat-item">
+          <div class="stat-num" id="stat-total">0</div>
+          <div class="stat-lbl">Sessions</div>
+        </div>
+        <div class="stat-item">
+          <div class="stat-num" id="stat-hours">0h</div>
+          <div class="stat-lbl">Content</div>
+        </div>
+        <div class="stat-item">
+          <div class="stat-num" id="stat-conflicts" style="color: var(--conflict)">0</div>
+          <div class="stat-lbl">Conflicts</div>
+        </div>
+      </div>
+    </div>
+  </aside>
+
+  <!-- MAIN TIMELINE -->
+  <main class="main-area">
+    <div class="day-header">
+      <div>
+        <div class="day-title" id="dayTitle">Loading...</div>
+        <div class="day-subtitle" id="daySubtitle"></div>
+      </div>
+    </div>
+    <div id="conflictAlertWrap"></div>
+    <div class="timeline-wrap" id="timeline"></div>
+  </main>
+
+  <!-- RIGHT SIDEBAR -->
+  <aside class="sidebar-right">
+    <div class="rec-header">
+      <div class="rec-title">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
+        </svg>
+        Recommended
+      </div>
+      <span class="rec-count" id="recCount">0 sessions</span>
+    </div>
+    <div class="rec-list" id="recList"></div>
+  </aside>
+</div>
+
+<!-- EXPORT MODAL -->
+<div class="modal-overlay" id="exportModal" onclick="closeModalIf(event)">
+  <div class="modal">
+    <div class="modal-title">Export Schedule as .ics</div>
+    <div class="modal-sub">Import your personalized GDC 2026 schedule into any calendar app.</div>
+    <div class="modal-ics-box">
+BEGIN:VCALENDAR<br>
+VERSION:2.0<br>
+PRODID:-//MySchedule//GDC2026//EN<br>
+CALSCALE:GREGORIAN<br>
+METHOD:PUBLISH<br>
+BEGIN:VEVENT<br>
+SUMMARY:Opening Keynote: The Future of Game Design<br>
+DTSTART:20260317T100000Z<br>
+DTEND:20260317T110000Z<br>
+LOCATION:Main Hall, Moscone Center<br>
+...
+    </div>
+    <div class="modal-note">
+      ✓ Compatible with <strong>Apple Calendar</strong>, <strong>Google Calendar</strong>, <strong>Outlook</strong>, and more.<br>
+      ✓ Includes session title, speaker, room, and description.<br>
+      ✓ All <strong id="ics-count">12</strong> sessions in your schedule will be exported.
+    </div>
+    <div class="modal-actions">
+      <button class="modal-btn-cancel" onclick="closeModal()">Cancel</button>
+      <button class="modal-btn-primary" onclick="fakeDownload()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+          <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/>
+          <polyline points="7 10 12 15 17 10"/>
+          <line x1="12" y1="15" x2="12" y2="3"/>
+        </svg>
+        Download GDC2026_MySchedule.ics
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- TOAST CONTAINER -->
+<div class="toast-container" id="toastContainer"></div>
+
+<script>
+// ═══════════════════════════════════════════════════
+// DATA
+// ═══════════════════════════════════════════════════
+
+const CONFERENCES = {
+  gdc: { name: 'GDC 2026', location: 'Moscone Center, San Francisco', dates: ['2026-03-17', '2026-03-18', '2026-03-19'] },
+  gce: { name: 'GDC Europe 2026', location: 'Cologne, Germany', dates: ['2026-08-18', '2026-08-19', '2026-08-20'] },
+  e3: { name: 'Gamescom 2026', location: 'Cologne, Germany', dates: ['2026-08-26', '2026-08-27', '2026-08-28'] },
+  ign: { name: 'IGF Awards 2026', location: 'San Francisco, CA', dates: ['2026-03-22', '2026-03-23'] }
+};
+
+const SESSION_DATA = {
+  'gdc': {
+    '2026-03-17': [
+      { id: 's1', title: 'Opening Keynote: The Future of Game Design', speaker: 'Tim Sweeney, Epic Games', room: 'Main Hall', startHour: 10, duration: 60, tags: ['design', 'tech'], enrolled: true },
+      { id: 's2', title: 'Indie Dev Survival Guide: From Concept to Launch', speaker: 'Rami Ismail', room: 'Room 301', startHour: 11, startMin: 30, duration: 60, tags: ['indie', 'business'], enrolled: true },
+      { id: 's3', title: 'UX in AAA: Lessons from 10 Years of Playtesting', speaker: 'Laura Fryer, Xbox', room: 'Room 205', startHour: 13, duration: 60, tags: ['ux', 'design'], enrolled: true },
+      { id: 's4', title: 'AI-Driven NPC Behavior Systems', speaker: 'James Liu, Naughty Dog', room: 'Room 108', startHour: 15, duration: 90, tags: ['tech'], enrolled: true },
+      { id: 's5', title: 'Narrative Design Masterclass: Writing for Open Worlds', speaker: 'Mary DeMarle, Eidos', room: 'Room 412', startHour: 17, duration: 60, tags: ['narrative', 'design'], enrolled: true },
+    ],
+    '2026-03-18': [
+      { id: 's6', title: 'Monetization Without Dark Patterns', speaker: 'Rami Ismail, Vlambeer', room: 'Room 301', startHour: 9, duration: 60, tags: ['business', 'indie'], enrolled: true },
+      { id: 's7', title: 'Procedural World Generation at Scale', speaker: 'Hao Chen, Riot Games', room: 'Room 207', startHour: 10, startMin: 30, duration: 90, tags: ['tech'], enrolled: true },
+      { id: 's8', title: 'Player Psychology: Motivation & Retention', speaker: 'Nicole Lazzaro', room: 'Room 105', startHour: 10, startMin: 30, duration: 60, tags: ['ux', 'design'], enrolled: true },
+      { id: 's9', title: 'Live Ops Masterclass: Year 2 and Beyond', speaker: 'Sarah Thomson, Supercell', room: 'Room 310', startHour: 14, duration: 60, tags: ['business'], enrolled: true },
+      { id: 's10', title: 'Accessibility in Game Design: A Practical Guide', speaker: 'Ian Hamilton', room: 'Room 203', startHour: 16, duration: 60, tags: ['design', 'ux'], enrolled: true },
+      { id: 's11', title: 'Post-Mortem: An Indie Journey to 1M Sales', speaker: 'Andrew Shouldice (Tunic)', room: 'Room 401', startHour: 17, startMin: 30, duration: 60, tags: ['indie', 'business'], enrolled: true },
+    ],
+    '2026-03-19': [
+      { id: 's12', title: 'Rendering Techniques for Next-Gen Consoles', speaker: 'Alex Tardif, Activision', room: 'Room 109', startHour: 10, duration: 60, tags: ['tech'], enrolled: true },
+      { id: 's13', title: 'Game Audio: Adaptive Soundscapes with AI', speaker: 'Karen Collins, Waterloo', room: 'Room 304', startHour: 11, startMin: 30, duration: 60, tags: ['design', 'tech'], enrolled: true },
+      { id: 's14', title: 'Building Diverse Teams in Game Studios', speaker: 'Laila Shabir, Girls Make Games', room: 'Main Hall B', startHour: 13, duration: 60, tags: ['business'], enrolled: true },
+      { id: 's15', title: 'Closing Panel: Where is the Industry Heading?', speaker: 'Industry Leaders Panel', room: 'Main Hall', startHour: 16, duration: 90, tags: ['design', 'business', 'tech'], enrolled: true },
+    ]
+  }
+};
+
+const RECOMMENDED = {
+  'gdc': {
+    '2026-03-17': [
+      { id: 'r1', title: 'Level Design Workshop: Flow & Pacing', speaker: 'Steve Lee, Bungie', room: 'Room 203', startHour: 11, duration: 60, tags: ['design'], match: 94 },
+      { id: 'r2', title: 'Mobile Game Revenue Models 2026', speaker: 'Katy Jones, Scopely', room: 'Room 305', startHour: 13, duration: 60, tags: ['business'], match: 87 },
+      { id: 'r3', title: 'VR/AR: Beyond the Hype Cycle', speaker: 'Palmer Luckey', room: 'Room 108', startHour: 15, duration: 60, tags: ['tech', 'ux'], match: 82 },
+      { id: 'r4', title: 'Indie Publishing: Finding the Right Partner', speaker: 'Devolver Digital Team', room: 'Room 401', startHour: 16, duration: 60, tags: ['indie', 'business'], match: 78 },
+    ],
+    '2026-03-18': [
+      { id: 'r5', title: 'Game Feel: The Secret Sauce', speaker: 'Jan Willem Nijman', room: 'Room 205', startHour: 11, duration: 60, tags: ['design', 'ux'], match: 96 },
+      { id: 'r6', title: 'Cross-Platform Development with Unreal 6', speaker: 'Epic Games Team', room: 'Room 108', startHour: 13, duration: 60, tags: ['tech'], match: 88 },
+      { id: 'r7', title: 'Narrative Branching: Tools & Workflows', speaker: 'Emily Short', room: 'Room 302', startHour: 15, duration: 90, tags: ['narrative', 'tech'], match: 83 },
+    ],
+    '2026-03-19': [
+      { id: 'r8', title: 'Shaders for Artists: No Code Required', speaker: 'Freya Holmér', room: 'Room 207', startHour: 10, duration: 60, tags: ['design', 'tech'], match: 91 },
+      { id: 'r9', title: 'Community Building for Indie Games', speaker: 'Rami Ismail', room: 'Room 401', startHour: 14, duration: 60, tags: ['indie', 'business'], match: 85 },
+      { id: 'r10', title: 'The Business of Porting: Platforms & Costs', speaker: 'Abstraction Games', room: 'Room 305', startHour: 15, duration: 60, tags: ['business', 'indie'], match: 74 },
+    ]
+  }
+};
+
+// ═══════════════════════════════════════════════════
+// STATE
+// ═══════════════════════════════════════════════════
+
+let currentConf = 'gdc';
+let currentDate = '2026-03-17';
+let activeTags = new Set(['all']);
+let addedRecs = new Set();
+
+// Deep copy session data to allow mutation
+let scheduleData = JSON.parse(JSON.stringify(SESSION_DATA));
+let recData = JSON.parse(JSON.stringify(RECOMMENDED));
+
+// ═══════════════════════════════════════════════════
+// HELPERS
+// ═══════════════════════════════════════════════════
+
+function fmtDate(d) {
+  const dt = new Date(d + 'T12:00:00Z');
+  return dt.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric', timeZone: 'UTC' });
+}
+function fmtDateShort(d) {
+  const dt = new Date(d + 'T12:00:00Z');
+  return dt.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric', timeZone: 'UTC' });
+}
+function fmtDateDayNum(d) {
+  return new Date(d + 'T12:00:00Z').getUTCDate();
+}
+function fmtDateMon(d) {
+  return new Date(d + 'T12:00:00Z').toLocaleDateString('en-US', { month: 'short', timeZone: 'UTC' });
+}
+function sessionToMinutes(s) {
+  return (s.startHour * 60) + (s.startMin || 0);
+}
+function sessionEndMin(s) {
+  return sessionToMinutes(s) + (s.duration || 60);
+}
+function fmtHMM(h, m) {
+  const mm = String(m || 0).padStart(2,'0');
+  return `${h}:${mm}`;
+}
+function sessionTimeLabel(s) {
+  const sm = s.startMin || 0;
+  const em = sm + s.duration;
+  const eh = s.startHour + Math.floor(em / 60);
+  const erem = em % 60;
+  return `${fmtHMM(s.startHour, sm)} – ${fmtHMM(eh, erem)}`;
+}
+
+function detectConflicts(sessions) {
+  const conflicts = new Set();
+  for (let i = 0; i < sessions.length; i++) {
+    for (let j = i+1; j < sessions.length; j++) {
+      const a = sessions[i], b = sessions[j];
+      const as = sessionToMinutes(a), ae = sessionEndMin(a);
+      const bs = sessionToMinutes(b), be = sessionEndMin(b);
+      if (as < be && ae > bs) {
+        conflicts.add(a.id);
+        conflicts.add(b.id);
+      }
+    }
+  }
+  return conflicts;
+}
+
+function getSessionsForDay() {
+  return (scheduleData[currentConf] || {})[currentDate] || [];
+}
+function getRecsForDay() {
+  return (recData[currentConf] || {})[currentDate] || [];
+}
+
+// ═══════════════════════════════════════════════════
+// RENDER
+// ═══════════════════════════════════════════════════
+
+function renderAll() {
+  renderDateList();
+  renderTimeline();
+  renderRecommended();
+  updateStats();
+}
+
+function renderDateList() {
+  const conf = CONFERENCES[currentConf];
+  const container = document.getElementById('dateList');
+  container.innerHTML = '';
+
+  conf.dates.forEach((d, i) => {
+    const sessions = (scheduleData[currentConf] || {})[d] || [];
+    const el = document.createElement('div');
+    el.className = 'date-item' + (d === currentDate ? ' active' : '');
+    el.innerHTML = `
+      <div class="date-dot">
+        <span class="date-dot-num">${fmtDateDayNum(d)}</span>
+        <span class="date-dot-mon">${fmtDateMon(d)}</span>
+      </div>
+      <div class="date-meta">
+        <div class="date-label">Day ${i+1}</div>
+        <div class="date-count">${sessions.length} sessions</div>
+      </div>
+      ${sessions.length > 0 ? `<div class="date-badge">${sessions.length}</div>` : ''}
+    `;
+    el.onclick = () => { currentDate = d; renderAll(); };
+    container.appendChild(el);
+  });
+}
+
+function renderTimeline() {
+  const sessions = getSessionsForDay();
+  const conflicts = detectConflicts(sessions);
+
+  const dayTitle = document.getElementById('dayTitle');
+  const daySubtitle = document.getElementById('daySubtitle');
+  const alertWrap = document.getElementById('conflictAlertWrap');
+  const timeline = document.getElementById('timeline');
+
+  dayTitle.textContent = fmtDate(currentDate);
+  const conf = CONFERENCES[currentConf];
+  const dayIdx = conf.dates.indexOf(currentDate);
+  daySubtitle.textContent = `Day ${dayIdx+1} of ${conf.dates.length} · ${conf.location} · ${sessions.length} sessions enrolled`;
+
+  // Conflict alert
+  if (conflicts.size > 0) {
+    alertWrap.innerHTML = `
+      <div class="conflict-alert">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/>
+          <line x1="12" y1="9" x2="12" y2="13"/>
+          <line x1="12" y1="17" x2="12.01" y2="17"/>
+        </svg>
+        <strong>${conflicts.size / 2 | 0} time conflict${conflicts.size > 2 ? 's' : ''} detected</strong> — overlapping sessions are highlighted below.
+      </div>`;
+  } else {
+    alertWrap.innerHTML = '';
+  }
+
+  // Build hours range
+  let minH = 9, maxH = 19;
+  sessions.forEach(s => {
+    if (s.startHour < minH) minH = s.startHour;
+    const eh = Math.ceil((sessionEndMin(s)) / 60);
+    if (eh > maxH) maxH = eh;
+  });
+  if (minH > 9) minH = 9;
+
+  timeline.innerHTML = '';
+
+  for (let h = minH; h <= maxH; h++) {
+    const hourSessions = sessions.filter(s => s.startHour === h);
+
+    const row = document.createElement('div');
+    row.className = 'hour-row';
+
+    const label = document.createElement('div');
+    label.className = 'hour-label';
+    label.textContent = h < 12 ? `${h} AM` : h === 12 ? `12 PM` : `${h-12} PM`;
+
+    const slot = document.createElement('div');
+    slot.className = 'hour-slot';
+    slot.dataset.hour = h;
+
+    if (hourSessions.length === 0) {
+      const empty = document.createElement('div');
+      empty.className = 'empty-slot';
+      slot.appendChild(empty);
+    } else {
+      hourSessions.forEach(s => {
+        const card = buildSessionCard(s, conflicts.has(s.id));
+        slot.appendChild(card);
+      });
+    }
+
+    row.appendChild(label);
+    row.appendChild(slot);
+    timeline.appendChild(row);
+  }
+}
+
+function buildSessionCard(s, isConflict) {
+  const div = document.createElement('div');
+  div.className = 'session-card' + (isConflict ? ' conflict' : '');
+  div.id = 'card-' + s.id;
+
+  const tagsHtml = (s.tags || []).map(t => `<span class="session-tag ${t}">${t}</span>`).join('');
+
+  div.innerHTML = `
+    <div class="session-time">${sessionTimeLabel(s)} · ${s.duration} min</div>
+    <div class="session-title">${s.title}</div>
+    <div class="session-meta">
+      <span class="session-speaker">
+        <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.58-7 8-7s8 3 8 7"/></svg>
+        ${s.speaker}
+      </span>
+      <span class="session-room">📍 ${s.room}</span>
+    </div>
+    <div class="session-tags" style="margin-top:6px">${tagsHtml}</div>
+    <button class="remove-btn" onclick="removeSession('${s.id}', event)" title="Remove from schedule">✕</button>
+  `;
+  return div;
+}
+
+function renderRecommended() {
+  const recs = getRecsForDay();
+  const sessions = getSessionsForDay();
+  const container = document.getElementById('recList');
+  const countEl = document.getElementById('recCount');
+  container.innerHTML = '';
+
+  const filtered = activeTags.has('all') ? recs : recs.filter(r => r.tags.some(t => activeTags.has(t)));
+  countEl.textContent = `${filtered.length} sessions`;
+
+  if (filtered.length === 0) {
+    container.innerHTML = `<div style="padding:20px 16px;text-align:center;color:var(--text-muted);font-size:12px;">No recommendations for selected tags.</div>`;
+    return;
+  }
+
+  filtered.forEach(r => {
+    const isAdded = addedRecs.has(r.id);
+    // Check conflict with existing schedule
+    const potentialConflict = sessions.some(s => {
+      const as = sessionToMinutes(s), ae = sessionEndMin(s);
+      const bs = (r.startHour * 60) + (r.startMin || 0);
+      const be = bs + (r.duration || 60);
+      return as < be && ae > bs;
+    });
+
+    const tagsHtml = (r.tags || []).map(t => `<span class="session-tag ${t}">${t}</span>`).join('');
+    const stars = Math.round(r.match / 20);
+    const starHtml = Array.from({length: 5}, (_, i) => `
+      <svg viewBox="0 0 24 24" fill="${i < stars ? '#f5a623' : 'none'}" stroke="#f5a623" stroke-width="2" width="11" height="11"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+    `).join('');
+
+    const card = document.createElement('div');
+    card.className = 'rec-card' + (isAdded ? ' added' : '');
+    card.id = 'rec-' + r.id;
+    card.innerHTML = `
+      <div class="rec-card-top">
+        <div style="flex:1">
+          <div class="rec-card-time">${fmtHMM(r.startHour, r.startMin || 0)} · ${r.duration} min · ${r.room}</div>
+          <div class="rec-card-title">${r.title}</div>
+        </div>
+      </div>
+      <div class="rec-card-speaker">👤 ${r.speaker}</div>
+      <div style="display:flex;gap:4px;flex-wrap:wrap;margin-bottom:8px">${tagsHtml}</div>
+      <div class="rec-card-bottom">
+        <div class="match-score">${starHtml} <span style="margin-left:2px">${r.match}% match</span></div>
+        <button class="add-btn ${isAdded ? 'added-state' : ''}" onclick="addSession('${r.id}', event)" ${isAdded ? 'disabled' : ''}>
+          ${isAdded
+            ? `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg> Added`
+            : `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg> Add`
+          }
+        </button>
+      </div>
+      ${potentialConflict && !isAdded ? `<div class="conflict-warning-small"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="10" height="10"><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg> Time conflict with enrolled session</div>` : ''}
+      <div class="rec-interest-bar"><div class="rec-interest-fill" style="width:${r.match}%"></div></div>
+    `;
+    container.appendChild(card);
+  });
+}
+
+function updateStats() {
+  const conf = CONFERENCES[currentConf];
+  let total = 0, totalMin = 0, totalConflicts = 0;
+  conf.dates.forEach(d => {
+    const sessions = (scheduleData[currentConf] || {})[d] || [];
+    total += sessions.length;
+    sessions.forEach(s => totalMin += (s.duration || 60));
+    const c = detectConflicts(sessions);
+    totalConflicts += c.size / 2;
+  });
+  document.getElementById('stat-total').textContent = total;
+  document.getElementById('stat-hours').textContent = Math.round(totalMin / 60) + 'h';
+  document.getElementById('stat-conflicts').textContent = Math.round(totalConflicts);
+  document.getElementById('ics-count').textContent = total;
+}
+
+// ═══════════════════════════════════════════════════
+// ACTIONS
+// ═══════════════════════════════════════════════════
+
+function switchConf(conf) {
+  currentConf = conf;
+  document.querySelectorAll('.conf-btn').forEach((b, i) => {
+    b.classList.toggle('active', Object.keys(CONFERENCES)[i] === conf);
+  });
+  const confDates = CONFERENCES[conf].dates;
+  currentDate = confDates[0];
+
+  // Ensure data exists
+  if (!scheduleData[conf]) {
+    // Create placeholder data for other conferences
+    scheduleData[conf] = {};
+    recData[conf] = {};
+    confDates.forEach(d => { scheduleData[conf][d] = []; recData[conf][d] = []; });
+  }
+
+  addedRecs.clear();
+  renderAll();
+  showToast(`Switched to ${CONFERENCES[conf].name}`, 'info');
+}
+
+function removeSession(id, e) {
+  e.stopPropagation();
+  const sessions = getSessionsForDay();
+  const idx = sessions.findIndex(s => s.id === id);
+  if (idx !== -1) {
+    const title = sessions[idx].title;
+    sessions.splice(idx, 1);
+    renderAll();
+    showToast(`Removed: "${title.substring(0, 40)}..."`, 'warning');
+  }
+}
+
+function addSession(recId, e) {
+  e.stopPropagation();
+  const recs = getRecsForDay();
+  const rec = recs.find(r => r.id === recId);
+  if (!rec || addedRecs.has(rec.id)) return;
+
+  const sessions = getSessionsForDay();
+  if (!scheduleData[currentConf]) scheduleData[currentConf] = {};
+  if (!scheduleData[currentConf][currentDate]) scheduleData[currentConf][currentDate] = [];
+
+  const newSession = { ...rec, enrolled: true };
+  scheduleData[currentConf][currentDate].push(newSession);
+  scheduleData[currentConf][currentDate].sort((a, b) => sessionToMinutes(a) - sessionToMinutes(b));
+
+  addedRecs.add(recId);
+  renderAll();
+  showToast(`✓ Added to schedule: "${rec.title.substring(0, 35)}..."`, 'success');
+}
+
+function toggleTag(el) {
+  const tag = el.dataset.tag;
+  if (tag === 'all') {
+    activeTags.clear();
+    activeTags.add('all');
+    document.querySelectorAll('.tag').forEach(t => t.classList.remove('active'));
+    el.classList.add('active');
+  } else {
+    activeTags.delete('all');
+    document.querySelector('[data-tag="all"]').classList.remove('active');
+    if (activeTags.has(tag)) {
+      activeTags.delete(tag);
+      el.classList.remove('active');
+      if (activeTags.size === 0) {
+        activeTags.add('all');
+        document.querySelector('[data-tag="all"]').classList.add('active');
+      }
+    } else {
+      activeTags.add(tag);
+      el.classList.add('active');
+    }
+  }
+  renderRecommended();
+}
+
+// ═══════════════════════════════════════════════════
+// MODAL & EXPORT
+// ═══════════════════════════════════════════════════
+
+function openExportModal() {
+  document.getElementById('exportModal').classList.add('open');
+}
+function closeModal() {
+  document.getElementById('exportModal').classList.remove('open');
+}
+function closeModalIf(e) {
+  if (e.target === document.getElementById('exportModal')) closeModal();
+}
+function fakeDownload() {
+  closeModal();
+  showToast('📅 GDC2026_MySchedule.ics downloaded!', 'success');
+}
+
+// ═══════════════════════════════════════════════════
+// TOAST
+// ═══════════════════════════════════════════════════
+
+function showToast(msg, type = 'info') {
+  const container = document.getElementById('toastContainer');
+  const toast = document.createElement('div');
+  toast.className = `toast ${type}`;
+  toast.textContent = msg;
+  container.appendChild(toast);
+  setTimeout(() => toast.remove(), 2800);
+}
+
+// ═══════════════════════════════════════════════════
+// INIT
+// ═══════════════════════════════════════════════════
+
+renderAll();
+</script>
+</body>
+</html>
