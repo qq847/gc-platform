@@ -2754,7 +2754,9 @@ function renderProjCard(p, idx) {
     'VR':['🥽','135deg,#0a1a2a,#0891b2'],
     'Mobile':['📱','135deg,#1a0a3a,#7c3aed'],
   };
-  const genreKey = Object.keys(_GENRE_STYLE).find(k => (p.genre||'').toLowerCase().includes(k.toLowerCase())) || '';
+  // Handle genre as string or array
+  const genreStr = Array.isArray(p.genre) ? (p.genre[0]||'') : (p.genre||'');
+  const genreKey = Object.keys(_GENRE_STYLE).find(k => genreStr.toLowerCase().includes(k.toLowerCase())) || '';
   const [genreIcon, genreGrad] = _GENRE_STYLE[genreKey] || ['🎮', '135deg,#1a3a6b,#4a6cf7'];
   const statusColors = {
     'seeking_publisher':'background:rgba(37,99,235,0.1);color:#2563eb',
@@ -2765,7 +2767,7 @@ function renderProjCard(p, idx) {
   };
   const statusLabel = (p.status||'').replace(/_/g,' ').replace(/\b\w/g,c=>c.toUpperCase()) || 'Open';
   const statusStyle = statusColors[(p.status||'').toLowerCase()] || 'background:#f3f4f6;color:#6b7280';
-  const genre = p.genre || 'Game';
+  const genre = genreStr || 'Game';
   const studio = p.tagline || '';
   const lookingFor = p.looking_for ? '<div style="font-size:11px;color:var(--orange);margin-top:4px">🤝 '+p.looking_for+'</div>' : '';
   const plats = (p.platforms||[]).slice(0,3).map(pl=>`<span style="font-size:9px;font-weight:700;padding:1px 7px;border-radius:6px;background:rgba(28,26,23,0.06);color:var(--text2)">${pl}</span>`).join('');
@@ -3360,13 +3362,14 @@ async function _pcProjLoadBatch(reset) {
         'Mobile':['📱','135deg,#1a0a3a,#7c3aed'],
       };
       const html = (data||[]).map((p, i) => {
-      const genreKey = Object.keys(_GENRE_STYLE).find(k => (p.genre||'').toLowerCase().includes(k.toLowerCase())) || '';
+      const _genreStr = Array.isArray(p.genre) ? (p.genre[0]||'') : (p.genre||'');
+      const genreKey = Object.keys(_GENRE_STYLE).find(k => _genreStr.toLowerCase().includes(k.toLowerCase())) || '';
       const [genreIcon, genreGrad] = _GENRE_STYLE[genreKey] || ['🎮', '135deg,#1a3a6b,#4a6cf7'];
       const grad = `linear-gradient(${genreGrad})`;
       const sKey = (p.status||'').toLowerCase().replace(/ /g,'_');
       const sStyle = _PC_STATUS_COLORS[sKey] || 'background:#f3f4f6;color:#6b7280';
       const sLabel = (p.status||'Open').replace(/_/g,' ').replace(/\b\w/g,c=>c.toUpperCase());
-      const genre = p.genre || 'Game';
+      const genre = _genreStr || 'Game';
       const studio = p.tagline || '';
       const desc = p.description ? p.description.slice(0,100)+(p.description.length>100?'…':'') : '';
       const plats = (p.platforms||[]).slice(0,3).map(pl=>`<span style="font-size:9px;font-weight:700;padding:1px 7px;border-radius:6px;background:rgba(28,26,23,0.06);color:var(--text2)">${pl}</span>`).join('');
