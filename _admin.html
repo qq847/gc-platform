@@ -1499,20 +1499,29 @@ async function bannerQuickSearch() {
       return;
     }
     if (!items.length) { res.innerHTML = '<div style="font-size:12px;color:var(--text3)">No results found.</div>'; return; }
-    res.innerHTML = items.map(item => `
+    res.innerHTML = items.map(item => {
+      const encoded = encodeURIComponent(JSON.stringify(item.banner));
+      return `
       <div style="display:flex;align-items:center;justify-content:space-between;padding:8px 12px;background:#fff;border:1px solid #e4e6ea;border-radius:7px">
         <span style="font-size:12px;color:var(--text1)">${item.label}</span>
-        <button onclick='bannerAdminAddItem(${JSON.stringify(item.banner).replace(/'/g,"\\'")})' style="padding:4px 12px;border:1px solid var(--orange);border-radius:5px;background:transparent;color:var(--orange);font-size:11px;font-weight:700;cursor:pointer">➕ Add to Banner</button>
-      </div>
-    `).join('');
-  } catch(e) { res.innerHTML = '<div style="font-size:12px;color:#dc2626">Search failed.</div>'; }
+        <button class="banner-add-btn" data-banner="${encoded}" style="padding:4px 12px;border:1px solid var(--orange);border-radius:5px;background:transparent;color:var(--orange);font-size:11px;font-weight:700;cursor:pointer">➕ Add to Banner</button>
+      </div>`;
+    }).join('');
+    // Attach click handlers after rendering
+    res.querySelectorAll('.banner-add-btn').forEach(btn => {
+      btn.addEventListener('click', function() {
+        const banner = JSON.parse(decodeURIComponent(this.dataset.banner));
+        bannerAdminAddItem(banner);
+      });
+    });
+  } catch(e) { res.innerHTML = '<div style="font-size:12px;color:#dc2626">Search failed: ' + e.message + '</div>'; }
 }
 
 function bannerAdminAddItem(banner) {
   const items = bannerAdminGetItems();
   items.push(banner);
   bannerAdminSaveItems(items);
-  document.getElementById('banner-quick-results').innerHTML = '<div style="font-size:12px;color:var(--green);font-weight:600">✓ Added! Refresh Home to see changes.</div>';
+  document.getElementById('banner-quick-results').innerHTML = '<div style="font-size:12px;color:var(--green);font-weight:600">✓ Added to Banner! Refresh Home page to see changes.</div>';
 }
 
 // ── INIT ──

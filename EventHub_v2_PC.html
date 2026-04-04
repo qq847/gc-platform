@@ -1797,11 +1797,11 @@ async function gcSignOut() {
     <div style="margin-top:20px;padding-top:16px;border-top:1px solid #e0dfdc">
       <div class="left-title" style="margin-bottom:10px">Statistics</div>
       <div class="stat-list">
-        <div class="stat-row"><span class="stat-key">Total Projects</span><span class="stat-val" style="color:var(--orange)">10</span></div>
-        <div class="stat-row"><span class="stat-key">Seeking Publisher</span><span class="stat-val">4</span></div>
-        <div class="stat-row"><span class="stat-key">Seeking Investment</span><span class="stat-val">2</span></div>
-        <div class="stat-row"><span class="stat-key">In Development</span><span class="stat-val">2</span></div>
-        <div class="stat-row"><span class="stat-key">Released</span><span class="stat-val" style="color:var(--green)">2</span></div>
+        <div class="stat-row"><span class="stat-key">Total Projects</span><span class="stat-val" id="proj-stat-total" style="color:var(--orange)">…</span></div>
+        <div class="stat-row"><span class="stat-key">Seeking Publisher</span><span class="stat-val" id="proj-stat-pub">…</span></div>
+        <div class="stat-row"><span class="stat-key">Seeking Investment</span><span class="stat-val" id="proj-stat-inv">…</span></div>
+        <div class="stat-row"><span class="stat-key">In Development</span><span class="stat-val" id="proj-stat-dev">…</span></div>
+        <div class="stat-row"><span class="stat-key">Released</span><span class="stat-val" id="proj-stat-rel" style="color:var(--green)">…</span></div>
       </div>
     </div>
   </div>
@@ -2416,16 +2416,30 @@ function bannerRender() {
   const w = hero.offsetWidth || window.innerWidth;
   track.style.width = (w * _bannerItems.length) + 'px';
 
+  // Type → decorative icon mapping
+  const _BANNER_ICONS = {
+    'event': '🏙️', 'conference': '🏛️', 'trade_show': '🏪',
+    'awards': '🏆', 'esports': '🎮', 'festival': '🎉',
+    'project': '🎮', 'projects': '🎮', 'game': '🎮',
+    'company': '🏢', 'companies': '🏢', 'publisher': '💼',
+    'news': '📰', 'platform': '🌐', 'live': '🔴',
+  };
   track.innerHTML = _bannerItems.map((b, i) => {
     const bg = b.bg || 'linear-gradient(135deg,#1a1a2e,#0f3460)';
     const imgStyle = b.img ? `background-image:url('${b.img}');background-size:cover;background-position:center;` : '';
-    return `<div style="width:${w}px;min-height:260px;${bg};${imgStyle}position:relative;display:flex;align-items:center;flex-shrink:0">
-      <div style="position:absolute;inset:0;background:linear-gradient(to right,rgba(0,0,0,.65) 0%,rgba(0,0,0,.2) 60%,transparent 100%)"></div>
-      <div style="position:relative;z-index:2;padding:48px 80px 80px 48px;max-width:700px">
-        <div style="display:inline-flex;align-items:center;gap:8px;background:${b.labelColor}22;border:1px solid ${b.labelColor}55;border-radius:6px;padding:5px 12px;margin-bottom:16px;font-size:12px;font-weight:700;color:#fff">${b.label||''}</div>
-        <h1 style="font-size:38px;font-weight:800;color:#fff;line-height:1.15;margin-bottom:12px;letter-spacing:-1px">${b.title}</h1>
-        <p style="font-size:15px;color:rgba(255,255,255,.8);line-height:1.6;margin-bottom:24px;max-width:520px">${b.subtitle}</p>
-        ${b.cta ? `<button onclick="${b.ctaAction}" style="padding:12px 28px;background:var(--orange);color:#fff;border:none;border-radius:8px;font-size:14px;font-weight:700;cursor:pointer;transition:.2s" onmouseover="this.style.opacity='.85'" onmouseout="this.style.opacity='1'">${b.cta}</button>` : ''}
+    const icon = _BANNER_ICONS[(b.type||'').toLowerCase()] || '🌟';
+    return `<div style="width:${w}px;min-height:260px;${bg};${imgStyle}position:relative;display:flex;align-items:center;flex-shrink:0;overflow:hidden">
+      <div style="position:absolute;inset:0;background:linear-gradient(to right,rgba(0,0,0,.7) 0%,rgba(0,0,0,.3) 55%,transparent 100%)"></div>
+      <!-- Decorative large icon on right -->
+      <div style="position:absolute;right:60px;top:50%;transform:translateY(-50%);font-size:120px;opacity:0.12;pointer-events:none;user-select:none">${icon}</div>
+      <!-- Decorative circles -->
+      <div style="position:absolute;right:-40px;top:-40px;width:200px;height:200px;border-radius:50%;background:rgba(255,255,255,0.04);pointer-events:none"></div>
+      <div style="position:absolute;right:80px;bottom:-60px;width:150px;height:150px;border-radius:50%;background:rgba(255,255,255,0.03);pointer-events:none"></div>
+      <div style="position:relative;z-index:2;padding:40px 48px">
+        <div style="display:inline-flex;align-items:center;gap:8px;background:${b.labelColor||'#0a66c2'}33;border:1px solid ${b.labelColor||'#0a66c2'}66;border-radius:20px;padding:5px 14px;margin-bottom:14px;font-size:11px;font-weight:800;color:#fff;letter-spacing:.5px">${b.label||''}</div>
+        <h1 style="font-size:clamp(24px,3vw,40px);font-weight:900;color:#fff;line-height:1.15;margin-bottom:10px;letter-spacing:-0.5px;max-width:600px">${b.title}</h1>
+        <p style="font-size:14px;color:rgba(255,255,255,.75);line-height:1.6;margin-bottom:22px;max-width:480px">${b.subtitle}</p>
+        ${b.cta ? `<button onclick="${b.ctaAction}" style="padding:11px 26px;background:rgba(255,255,255,0.15);backdrop-filter:blur(8px);color:#fff;border:1.5px solid rgba(255,255,255,0.4);border-radius:8px;font-size:13px;font-weight:700;cursor:pointer;transition:.2s" onmouseover="this.style.background='rgba(255,255,255,0.25)'" onmouseout="this.style.background='rgba(255,255,255,0.15)'">${b.cta}</button>` : ''}
       </div>
     </div>`;
   }).join('');
@@ -2489,15 +2503,17 @@ let _feedEvtOffset = 0, _feedProjOffset = 0, _feedEvtTotal = 0, _feedProjTotal =
 async function loadHomeFeed() {
   // 1. Load hero stats
   try {
+    const _countHeaders = {..._SB_H, 'Prefer':'count=exact', 'Range':'0-0'};
+    const today = new Date().toISOString().split('T')[0];
     const [re, rp, rc, ru] = await Promise.all([
-      fetch(_SB_URL+'/rest/v1/events?select=id&limit=0', {headers:{..._SB_H,'Prefer':'count=exact'}}),
-      fetch(_SB_URL+'/rest/v1/game_projects?select=id&limit=0', {headers:{..._SB_H,'Prefer':'count=exact'}}),
-      fetch(_SB_URL+'/rest/v1/companies?select=id&limit=0', {headers:{..._SB_H,'Prefer':'count=exact'}}),
-      fetch(_SB_URL+'/rest/v1/events?select=id&limit=0&status=neq.ended', {headers:{..._SB_H,'Prefer':'count=exact'}}),
+      fetch(_SB_URL+'/rest/v1/events?select=id', {headers:_countHeaders}),
+      fetch(_SB_URL+'/rest/v1/game_projects?select=id', {headers:_countHeaders}),
+      fetch(_SB_URL+'/rest/v1/companies?select=id', {headers:_countHeaders}),
+      fetch(_SB_URL+'/rest/v1/events?select=id&start_date=gte.'+today, {headers:_countHeaders}),
     ]);
     const parseCount = r => { const cr = r.headers.get('content-range'); return cr ? parseInt(cr.split('/')[1])||0 : 0; };
     const evtTotal = parseCount(re), projTotal = parseCount(rp), coTotal = parseCount(rc), upTotal = parseCount(ru);
-    const fmt = n => n >= 1000 ? (n/1000).toFixed(1).replace('.0','')+' K' : String(n);
+    const fmt = n => n >= 1000 ? (n/1000).toFixed(1).replace('.0','')+' K' : String(n);
     const el = id => document.getElementById(id);
     if(el('hstat-events')) el('hstat-events').textContent = fmt(evtTotal);
     if(el('hstat-projects')) el('hstat-projects').textContent = fmt(projTotal);
@@ -2669,25 +2685,47 @@ function renderNewsCard(item) {
 }
 
 function renderEvtCard(ev, idx) {
-  const grad = _GRAD[idx % _GRAD.length];
+  // Event type → icon + gradient
+  const _EVT_STYLE = {
+    'conference':['🏛️','135deg,#0a2a4a,#1565c0'],
+    'trade_show':['🏪','135deg,#1a3a00,#2e7d32'],
+    'tradeshow':['🏪','135deg,#1a3a00,#2e7d32'],
+    'awards':['🏆','135deg,#3a2a00,#f9a825'],
+    'esports':['🎮','135deg,#0a0a2a,#4527a0'],
+    'festival':['🎉','135deg,#2a0a3a,#ad1457'],
+    'meetup':['🤝','135deg,#0a2a3a,#00695c'],
+    'online':['🌐','135deg,#0a1a3a,#1565c0'],
+    'summit':['⛰️','135deg,#1a1a2a,#37474f'],
+    'expo':['🏢','135deg,#2a1a0a,#bf360c'],
+  };
+  const typeKey = (ev.type||'').toLowerCase().replace(/[ -]/g,'_');
+  const [evtIcon, evtGrad] = _EVT_STYLE[typeKey] || ['🏙️', '135deg,#1a2a3a,#1565c0'];
   const d = new Date(ev.start_date);
   const mon = MONTH_NAMES[d.getMonth()]||'';
   const day = d.getDate();
   const loc = [ev.city, ev.country].filter(Boolean).join(', ') || 'Online';
   const att = ev.attendee_count ? '👥 '+Number(ev.attendee_count).toLocaleString()+' Attendees' : (ev.exhibitor_count ? '🏪 '+ev.exhibitor_count+' Exhibitors' : '');
-  const typeLabel = {conference:'CONFERENCE',tradeshow:'TRADE SHOW',awards:'AWARDS',esports:'ESPORTS',festival:'FESTIVAL',meetup:'MEETUP',online:'ONLINE'}[ev.type] || (ev.type||'EVENT').toUpperCase();
-  const statusLabel = ev.status === 'live' ? '<span class="evt-status" style="background:rgba(229,57,53,0.15);color:#e53935">LIVE</span>' : '<span class="evt-status s-upcoming">Upcoming</span>';
+  const typeLabel = {conference:'CONFERENCE',trade_show:'TRADE SHOW',tradeshow:'TRADE SHOW',awards:'AWARDS',esports:'ESPORTS',festival:'FESTIVAL',meetup:'MEETUP',online:'ONLINE',summit:'SUMMIT',expo:'EXPO'}[typeKey] || (ev.type||'EVENT').toUpperCase();
+  const isLive = ev.status === 'live';
   return `<div class="card" data-type="events" data-feed-type="events">
-    <span class="data-badge" style="background:rgba(10,102,194,0.1);color:var(--orange);font-size:9px;font-weight:700;padding:2px 7px;border-radius:4px">${typeLabel}</span>
-    <div class="card-event-cover" style="${grad}">
-      ${statusLabel}
-      <div class="evt-cover-year">${d.getFullYear()}</div>
-      <span class="evt-cover-text">${ev.title}</span>
+    <div style="height:140px;background:linear-gradient(${evtGrad});position:relative;overflow:hidden;border-radius:10px 10px 0 0">
+      <div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center">
+        <span style="font-size:56px;opacity:0.2">${evtIcon}</span>
+      </div>
+      <div style="position:absolute;top:12px;left:14px;display:flex;align-items:center;gap:6px">
+        <span style="font-size:9px;font-weight:800;padding:2px 8px;border-radius:10px;background:rgba(255,255,255,0.18);color:#fff;letter-spacing:.5px">${typeLabel}</span>
+        ${isLive ? '<span style="font-size:9px;font-weight:800;padding:2px 8px;border-radius:10px;background:rgba(229,57,53,0.9);color:#fff;animation:pulse-badge 1.5s infinite">🔴 LIVE</span>' : ''}
+      </div>
+      <div style="position:absolute;bottom:0;left:0;right:0;padding:10px 14px;background:linear-gradient(transparent,rgba(0,0,0,0.55))">
+        <div style="font-size:14px;font-weight:800;color:#fff;line-height:1.3;text-shadow:0 1px 3px rgba(0,0,0,0.4)">${ev.title}</div>
+      </div>
+      <div style="position:absolute;top:12px;right:14px;text-align:right">
+        <div style="font-size:22px;font-weight:900;color:rgba(255,255,255,0.9);line-height:1">${day}</div>
+        <div style="font-size:10px;font-weight:700;color:rgba(255,255,255,0.7);letter-spacing:1px">${mon}</div>
+      </div>
     </div>
     <div class="card-event-body">
-      <h3>${ev.title}</h3>
       <div class="evt-meta">
-        <div class="evt-meta-i">📅 ${mon} ${day}, ${d.getFullYear()}</div>
         <div class="evt-meta-i">📍 ${loc}</div>
         ${att ? '<div class="evt-meta-i">'+att+'</div>' : ''}
       </div>
@@ -2697,7 +2735,27 @@ function renderEvtCard(ev, idx) {
 }
 
 function renderProjCard(p, idx) {
-  const grad = _GRAD[(idx + 3) % _GRAD.length];
+  // Genre → icon + gradient (same mapping as Projects page)
+  const _GENRE_STYLE = {
+    'RPG':['⚔️','135deg,#1a3a6b,#4a6cf7'],
+    'Action':['🔥','135deg,#7a1a1a,#e53935'],
+    'Strategy':['🧠','135deg,#1a4a2e,#0d9b72'],
+    'Puzzle':['🧩','135deg,#2d1a4a,#7c3aed'],
+    'Adventure':['🗺️','135deg,#0a2a3a,#0a7fa8'],
+    'Simulation':['🏙️','135deg,#1a3a00,#52b788'],
+    'Sports':['⚽','135deg,#0a3a1a,#22c55e'],
+    'Horror':['👻','135deg,#0a0a0a,#374151'],
+    'Shooter':['🎯','135deg,#3a1a00,#d95f2b'],
+    'Platformer':['🎮','135deg,#0a1a3a,#1d4ed8'],
+    'Racing':['🏎️','135deg,#3a2a00,#f59e0b'],
+    'Fighting':['🥊','135deg,#3a0a0a,#dc2626'],
+    'Casual':['🎈','135deg,#1a2a3a,#0ea5e9'],
+    'Indie':['✨','135deg,#2a1a3a,#8b5cf6'],
+    'VR':['🥽','135deg,#0a1a2a,#0891b2'],
+    'Mobile':['📱','135deg,#1a0a3a,#7c3aed'],
+  };
+  const genreKey = Object.keys(_GENRE_STYLE).find(k => (p.genre||'').toLowerCase().includes(k.toLowerCase())) || '';
+  const [genreIcon, genreGrad] = _GENRE_STYLE[genreKey] || ['🎮', '135deg,#1a3a6b,#4a6cf7'];
   const statusColors = {
     'seeking_publisher':'background:rgba(37,99,235,0.1);color:#2563eb',
     'seeking_investment':'background:rgba(13,155,114,0.1);color:#0d9b72',
@@ -2712,9 +2770,17 @@ function renderProjCard(p, idx) {
   const lookingFor = p.looking_for ? '<div style="font-size:11px;color:var(--orange);margin-top:4px">🤝 '+p.looking_for+'</div>' : '';
   const plats = (p.platforms||[]).slice(0,3).map(pl=>`<span style="font-size:9px;font-weight:700;padding:1px 7px;border-radius:6px;background:rgba(28,26,23,0.06);color:var(--text2)">${pl}</span>`).join('');
   return `<div class="card" data-type="games" data-feed-type="projects">
-    <span class="data-badge" style="background:rgba(13,155,114,0.1);color:#0d9b72;font-size:9px;font-weight:700;padding:2px 7px;border-radius:4px">🎮 Project DB</span>
-    <div style="height:80px;${grad};position:relative;display:flex;align-items:flex-end;padding:10px 14px">
-      <span style="font-size:10px;font-weight:800;padding:3px 10px;border-radius:20px;${statusStyle}">${statusLabel}</span>
+    <div style="height:120px;background:linear-gradient(${genreGrad});position:relative;overflow:hidden;border-radius:10px 10px 0 0">
+      <div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center">
+        <span style="font-size:48px;opacity:0.2">${genreIcon}</span>
+      </div>
+      <div style="position:absolute;top:10px;left:12px">
+        <span style="font-size:9px;font-weight:800;padding:2px 8px;border-radius:10px;background:rgba(255,255,255,0.18);color:#fff;letter-spacing:.5px">🎮 PROJECT DB</span>
+      </div>
+      <div style="position:absolute;top:10px;right:12px;font-size:9px;font-weight:700;color:rgba(255,255,255,0.6);letter-spacing:.5px">${genre.toUpperCase()}</div>
+      <div style="position:absolute;bottom:10px;left:12px">
+        <span style="font-size:10px;font-weight:800;padding:3px 10px;border-radius:20px;${statusStyle}">${statusLabel}</span>
+      </div>
     </div>
     <div style="padding:14px">
       <div style="font-size:15px;font-weight:800;color:var(--text1);margin-bottom:3px">${p.title}</div>
@@ -3230,8 +3296,32 @@ async function pcProjRender() {
   const grid = document.getElementById('pc-proj-cards');
   if (!grid) { _pcProjLoading = false; return; }
   grid.innerHTML = '<div style="text-align:center;padding:60px;color:#aaa;font-size:13px">Loading projects…</div>';
+  // Load stats in parallel
+  _pcProjLoadStats();
   await _pcProjLoadBatch(true);
   _pcProjLoading = false;
+}
+
+async function _pcProjLoadStats() {
+  try {
+    const h = {..._SB_H, 'Prefer': 'count=exact', 'Range': '0-0'};
+    const base = _SB_URL + '/rest/v1/game_projects?select=id&is_public=eq.true';
+    const [rTotal, rPub, rInv, rDev, rRel] = await Promise.all([
+      fetch(base, {headers: h}),
+      fetch(base + '&status=eq.seeking_publisher', {headers: h}),
+      fetch(base + '&status=eq.seeking_investment', {headers: h}),
+      fetch(base + '&status=eq.in_development', {headers: h}),
+      fetch(base + '&status=eq.released', {headers: h}),
+    ]);
+    const cnt = r => { const cr = r.headers.get('content-range'); return cr ? parseInt(cr.split('/')[1])||0 : 0; };
+    const fmt = n => n >= 1000 ? (n/1000).toFixed(1).replace('.0','')+'K' : String(n);
+    const el = id => document.getElementById(id);
+    if(el('proj-stat-total')) el('proj-stat-total').textContent = fmt(cnt(rTotal));
+    if(el('proj-stat-pub')) el('proj-stat-pub').textContent = fmt(cnt(rPub));
+    if(el('proj-stat-inv')) el('proj-stat-inv').textContent = fmt(cnt(rInv));
+    if(el('proj-stat-dev')) el('proj-stat-dev').textContent = fmt(cnt(rDev));
+    if(el('proj-stat-rel')) el('proj-stat-rel').textContent = fmt(cnt(rRel));
+  } catch(e) { console.warn('proj stats error', e); }
 }
 
 async function _pcProjLoadBatch(reset) {
@@ -3250,8 +3340,29 @@ async function _pcProjLoadBatch(reset) {
     if (sub) sub.textContent = _pcProjTotal.toLocaleString() + ' projects from worldwide studios';
     const grid = document.getElementById('pc-proj-cards');
     if (!grid) return;
-    const html = (data||[]).map((p, i) => {
-      const grad = _PC_GRADS[(i + _pcProjOffset - (data||[]).length) % _PC_GRADS.length];
+      // Genre → icon + gradient mapping
+      const _GENRE_STYLE = {
+        'RPG':['⚔️','135deg,#1a3a6b,#4a6cf7'],
+        'Action':['🔥','135deg,#7a1a1a,#e53935'],
+        'Strategy':['🧠','135deg,#1a4a2e,#0d9b72'],
+        'Puzzle':['🧩','135deg,#2d1a4a,#7c3aed'],
+        'Adventure':['🗺️','135deg,#0a2a3a,#0a7fa8'],
+        'Simulation':['🏙️','135deg,#1a3a00,#52b788'],
+        'Sports':['⚽','135deg,#0a3a1a,#22c55e'],
+        'Horror':['👻','135deg,#0a0a0a,#374151'],
+        'Shooter':['🎯','135deg,#3a1a00,#d95f2b'],
+        'Platformer':['🎮','135deg,#0a1a3a,#1d4ed8'],
+        'Racing':['🏎️','135deg,#3a2a00,#f59e0b'],
+        'Fighting':['🥊','135deg,#3a0a0a,#dc2626'],
+        'Casual':['🎈','135deg,#1a2a3a,#0ea5e9'],
+        'Indie':['✨','135deg,#2a1a3a,#8b5cf6'],
+        'VR':['🥽','135deg,#0a1a2a,#0891b2'],
+        'Mobile':['📱','135deg,#1a0a3a,#7c3aed'],
+      };
+      const html = (data||[]).map((p, i) => {
+      const genreKey = Object.keys(_GENRE_STYLE).find(k => (p.genre||'').toLowerCase().includes(k.toLowerCase())) || '';
+      const [genreIcon, genreGrad] = _GENRE_STYLE[genreKey] || ['🎮', '135deg,#1a3a6b,#4a6cf7'];
+      const grad = `linear-gradient(${genreGrad})`;
       const sKey = (p.status||'').toLowerCase().replace(/ /g,'_');
       const sStyle = _PC_STATUS_COLORS[sKey] || 'background:#f3f4f6;color:#6b7280';
       const sLabel = (p.status||'Open').replace(/_/g,' ').replace(/\b\w/g,c=>c.toUpperCase());
@@ -3261,8 +3372,10 @@ async function _pcProjLoadBatch(reset) {
       const plats = (p.platforms||[]).slice(0,3).map(pl=>`<span style="font-size:9px;font-weight:700;padding:1px 7px;border-radius:6px;background:rgba(28,26,23,0.06);color:var(--text2)">${pl}</span>`).join('');
       const lookFor = p.looking_for ? `<div style="font-size:11px;color:var(--orange);margin-top:4px">🤝 ${p.looking_for}</div>` : '';
       return `<div class="pc-proj-card">
-        <div style="height:90px;${grad};position:relative;display:flex;align-items:flex-end;padding:10px 14px">
-          <span style="font-size:10px;font-weight:800;padding:3px 10px;border-radius:20px;${sStyle}">${sLabel}</span>
+        <div style="height:110px;${grad};position:relative;display:flex;align-items:center;justify-content:center;overflow:hidden">
+          <div style="font-size:42px;opacity:0.35;position:absolute;top:50%;left:50%;transform:translate(-50%,-50%)">${genreIcon}</div>
+          <div style="position:absolute;bottom:10px;left:14px"><span style="font-size:10px;font-weight:800;padding:3px 10px;border-radius:20px;${sStyle}">${sLabel}</span></div>
+          <div style="position:absolute;top:10px;right:12px;font-size:9px;font-weight:700;color:rgba(255,255,255,0.6);letter-spacing:.5px">${genre.toUpperCase()}</div>
         </div>
         <div style="padding:14px">
           <div style="font-size:15px;font-weight:800;color:var(--text1);margin-bottom:3px">${p.title}</div>
@@ -3271,9 +3384,6 @@ async function _pcProjLoadBatch(reset) {
           ${desc ? '<div style="font-size:12px;color:var(--text2);line-height:1.5;margin-bottom:6px">'+desc+'</div>' : ''}
           ${lookFor}
           <div style="display:flex;gap:4px;flex-wrap:wrap;margin-top:8px">${plats}</div>
-          <div style="margin-top:12px;padding-top:10px;border-top:1px solid #f0eeeb;display:flex;gap:8px">
-            <button onclick="openTestKeyModal('${p.id}','${(p.title||'').replace(/'/g,"\\'").replace(/"/g,'&quot;')}')" style="flex:1;padding:7px 0;border-radius:8px;background:linear-gradient(135deg,#7c3aed,#5b21b6);color:#fff;border:none;font-size:11px;font-weight:700;cursor:pointer;transition:.2s" onmouseover="this.style.opacity='.85'" onmouseout="this.style.opacity='1'">🎁 Send Test Key</button>
-          </div>
         </div>
       </div>`;
     }).join('');
@@ -4529,12 +4639,18 @@ async function testKeySearchPub() {
     const r = await fetch(_SB_URL + '/rest/v1/companies?select=id,name,type,primary_email,country&name=ilike.*' + encodeURIComponent(q) + '*&type=in.(publisher,investor,distributor)&limit=8', {headers: _SB_H});
     const data = await r.json();
     if (!data || !data.length) { res.innerHTML = '<div style="font-size:12px;color:var(--text3);padding:8px">No publishers found</div>'; return; }
-    res.innerHTML = data.map(c => `
-      <div onclick='testKeySelectPub(${JSON.stringify(c).replace(/'/g,"\\'")})' style="padding:9px 12px;border:1px solid #e4e6ea;border-radius:7px;cursor:pointer;background:#fff" onmouseover="this.style.background='#f8f9fa'" onmouseout="this.style.background='#fff'">
+    res.innerHTML = data.map(c => {
+      const enc = encodeURIComponent(JSON.stringify(c));
+      return `<div class="testkey-pub-item" data-company="${enc}" style="padding:9px 12px;border:1px solid #e4e6ea;border-radius:7px;cursor:pointer;background:#fff" onmouseover="this.style.background='#f8f9fa'" onmouseout="this.style.background='#fff'">
         <div style="font-size:12px;font-weight:700;color:var(--text1)">${c.name}</div>
         <div style="font-size:10px;color:var(--text3)">${c.type||''} · ${c.country||''} · ${c.primary_email||'no email'}</div>
-      </div>
-    `).join('');
+      </div>`;
+    }).join('');
+    res.querySelectorAll('.testkey-pub-item').forEach(el => {
+      el.addEventListener('click', function() {
+        testKeySelectPub(JSON.parse(decodeURIComponent(this.dataset.company)));
+      });
+    });
   } catch(e) { res.innerHTML = '<div style="font-size:12px;color:#dc2626">Search failed</div>'; }
 }
 
