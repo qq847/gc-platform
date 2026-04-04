@@ -1,0 +1,547 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>You're Invited — Game Connection</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --bg: #f3f2ef;
+    --orange: #d95f2b;
+    --orange-dim: rgba(217,95,43,.1);
+    --orange-border: rgba(217,95,43,.3);
+    --teal: #0a7fa8;
+    --green: #0d9b72;
+    --purple: #7c3aed;
+    --white: #fff;
+    --text: #000000;
+    --muted: #444444;
+    --faint: #999999;
+    --border: #e0dfdc;
+    --radius: 10px;
+  }
+  body { font-family: 'DM Sans', sans-serif; line-height: 1.5; background: var(--bg); color: var(--text); min-height: 100vh; display: flex; flex-direction: column; }
+
+  /* ── TOPBAR ── */
+  .topbar {
+    height: 58px; background: var(--white);
+    border-bottom: 1px solid var(--border);
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 0 32px;
+  }
+  .topbar-logo { font-weight: 800; font-size: 15px; letter-spacing: .04em; }
+  .topbar-logo span { color: var(--orange); }
+  .topbar-right { font-size: 13px; color: var(--muted); }
+  .topbar-right a { color: var(--orange); font-weight: 600; text-decoration: none; }
+
+  /* ── HERO ── */
+  .hero {
+    background: linear-gradient(135deg, #0d1b2e 0%, #1a2744 40%, #2d1810 70%, #1a0d05 100%);
+    padding: 48px 32px; text-align: center; position: relative; overflow: hidden;
+  }
+  .hero::before {
+    content: '';
+    position: absolute; inset: 0;
+    background: radial-gradient(ellipse at 50% 60%, rgba(217,95,43,.3) 0%, transparent 60%);
+  }
+  .hero-inner { position: relative; z-index: 1; max-width: 600px; margin: 0 auto; }
+  .hero-badge {
+    display: inline-flex; align-items: center; gap: 6px;
+    background: rgba(217,95,43,.2); border: 1px solid rgba(217,95,43,.4);
+    color: #fbbf9a; font-size: 12px; font-weight: 700; letter-spacing: .06em;
+    text-transform: uppercase; padding: 5px 14px; border-radius: 20px;
+    margin-bottom: 16px;
+  }
+  .hero-badge-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--orange); }
+  .hero-title { font-size: 36px; font-weight: 800; color: #fff; letter-spacing: -.02em; margin-bottom: 10px; }
+  .hero-sub { font-size: 15px; color: rgba(255,255,255,.65); max-width: 480px; margin: 0 auto; }
+
+  /* ── MAIN ── */
+  .main { flex: 1; max-width: 680px; margin: 0 auto; padding: 36px 24px; width: 100%; }
+
+  /* ── EVENT CARD ── */
+  .event-card {
+    background: var(--white); border: 1.5px solid var(--border);
+    border-radius: var(--radius); padding: 22px; margin-bottom: 24px;
+    display: flex; align-items: flex-start; gap: 18px;
+  }
+  .event-logo {
+    width: 64px; height: 64px; border-radius: 10px; flex-shrink: 0;
+    background: linear-gradient(135deg, #d95f2b, #a0440f);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 28px;
+  }
+  .event-info { flex: 1; }
+  .event-name { font-size: 18px; font-weight: 800; margin-bottom: 4px; }
+  .event-meta { font-size: 13px; color: var(--muted); display: flex; flex-wrap: wrap; gap: 12px; margin-bottom: 10px; }
+  .event-meta-item { display: flex; align-items: center; gap: 5px; }
+  .event-tags { display: flex; gap: 6px; flex-wrap: wrap; }
+  .event-tag {
+    font-size: 11px; font-weight: 600; padding: 3px 10px;
+    border-radius: 10px; background: #e0f3fa; color: var(--teal);
+  }
+  .event-tag-b2b { background: #fff3ec; color: var(--orange); }
+
+  /* ── INVITATION DETAILS ── */
+  .invite-details {
+    background: var(--white); border: 1.5px solid var(--orange-border);
+    border-radius: var(--radius); padding: 20px; margin-bottom: 24px;
+    background: linear-gradient(135deg, #fffaf7, #fff);
+  }
+  .invite-from { display: flex; align-items: center; gap: 12px; margin-bottom: 14px; }
+  .invite-from-avatar {
+    width: 44px; height: 44px; border-radius: 50%; flex-shrink: 0;
+    background: linear-gradient(135deg, #0a7fa8, #065f78);
+    display: flex; align-items: center; justify-content: center;
+    color: #fff; font-size: 15px; font-weight: 700;
+  }
+  .invite-from-name { font-size: 14px; font-weight: 700; }
+  .invite-from-role { font-size: 12px; color: var(--muted); }
+  .invite-message {
+    font-size: 14px; color: var(--muted); line-height: 1.6;
+    padding: 14px; background: var(--bg); border-radius: 8px;
+    border-left: 3px solid var(--orange); margin-bottom: 14px;
+    font-style: italic;
+  }
+  .invite-perks { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  .invite-perk {
+    display: flex; align-items: flex-start; gap: 8px;
+    padding: 10px; background: var(--bg); border-radius: 8px;
+  }
+  .invite-perk-icon { font-size: 18px; flex-shrink: 0; }
+  .invite-perk-text { font-size: 12px; }
+  .invite-perk-title { font-weight: 700; margin-bottom: 1px; }
+  .invite-perk-sub { color: var(--muted); }
+
+  /* ── STEPS ── */
+  .steps-wrap { margin-bottom: 24px; }
+  .steps-title { font-size: 13px; font-weight: 700; text-transform: uppercase; letter-spacing: .06em; color: var(--muted); margin-bottom: 12px; }
+  .steps-list { display: flex; flex-direction: column; gap: 0; }
+  .step-item {
+    display: flex; align-items: flex-start; gap: 14px;
+    padding: 14px 0; border-bottom: 1px solid var(--border);
+  }
+  .step-item:last-child { border-bottom: none; }
+  .step-num-circle {
+    width: 28px; height: 28px; border-radius: 50%; flex-shrink: 0;
+    background: var(--orange); color: #fff;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 13px; font-weight: 700;
+  }
+  .step-text-title { font-size: 14px; font-weight: 700; margin-bottom: 2px; }
+  .step-text-sub { font-size: 12px; color: var(--muted); }
+
+  /* ── FORM CARD ── */
+  .form-card {
+    background: var(--white); border: 1.5px solid var(--border);
+    border-radius: var(--radius); overflow: hidden; margin-bottom: 20px;
+  }
+  .form-card-header {
+    padding: 16px 22px; border-bottom: 1px solid var(--border);
+    background: var(--bg);
+  }
+  .form-card-title { font-size: 14px; font-weight: 700; }
+  .form-card-sub { font-size: 12px; color: var(--muted); margin-top: 2px; }
+  .form-card-body { padding: 22px; }
+  .form-group { margin-bottom: 16px; }
+  .form-label { font-size: 13px; font-weight: 600; margin-bottom: 6px; display: block; }
+  .form-label span { color: var(--orange); }
+  .form-input, .form-select, .form-textarea {
+    width: 100%; padding: 10px 14px; border: 1.5px solid var(--border);
+    border-radius: 8px; font-size: 13px; font-family: inherit;
+    outline: none; transition: border-color .15s; background: var(--white);
+    color: var(--text);
+  }
+  .form-input:focus, .form-select:focus, .form-textarea:focus { border-color: var(--orange); }
+  .form-textarea { resize: vertical; min-height: 80px; }
+  .form-hint { font-size: 11px; color: var(--faint); margin-top: 4px; }
+  .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  .form-group.full { grid-column: 1 / -1; }
+
+  /* ── INTERESTS ── */
+  .interest-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+  .interest-item {
+    border: 1.5px solid var(--border); border-radius: 8px; padding: 10px 12px;
+    cursor: pointer; transition: all .15s; font-size: 12px; font-weight: 600;
+    text-align: center; display: flex; align-items: center; justify-content: center; gap: 6px;
+  }
+  .interest-item:hover { border-color: var(--orange-border); background: var(--orange-dim); }
+  .interest-item.selected { border-color: var(--orange); background: var(--orange-dim); color: var(--orange); }
+
+  /* ── AVAILABILITY ── */
+  .availability-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+  .avail-slot {
+    border: 1.5px solid var(--border); border-radius: 8px; padding: 10px;
+    cursor: pointer; transition: all .15s; text-align: center;
+  }
+  .avail-slot:hover { border-color: var(--orange-border); }
+  .avail-slot.selected { border-color: var(--orange); background: var(--orange-dim); }
+  .avail-slot-day { font-size: 12px; font-weight: 700; margin-bottom: 2px; }
+  .avail-slot-time { font-size: 11px; color: var(--muted); }
+
+  /* ── BUTTONS ── */
+  .btn-primary {
+    background: var(--orange); color: #fff; border: none;
+    padding: 14px 32px; border-radius: 8px; font-size: 15px;
+    font-weight: 700; cursor: pointer; font-family: inherit;
+    transition: all .15s; width: 100%;
+  }
+  .btn-primary:hover { background: #c2521f; }
+  .btn-secondary {
+    background: none; color: var(--muted); border: 1px solid var(--border);
+    padding: 12px 24px; border-radius: 8px; font-size: 13px;
+    font-weight: 500; cursor: pointer; font-family: inherit; transition: all .15s;
+    width: 100%;
+  }
+  .btn-secondary:hover { border-color: var(--orange); color: var(--orange); }
+  .btn-row { display: flex; gap: 12px; }
+  .btn-row .btn-primary { flex: 2; }
+  .btn-row .btn-secondary { flex: 1; }
+
+  /* ── SUCCESS ── */
+  .success-wrap { text-align: center; padding: 48px 32px; background: var(--white); border-radius: var(--radius); border: 1px solid var(--border); }
+  .success-icon { font-size: 56px; margin-bottom: 16px; }
+  .success-title { font-size: 24px; font-weight: 800; margin-bottom: 8px; }
+  .success-sub { font-size: 14px; color: var(--muted); max-width: 420px; margin: 0 auto 24px; line-height: 1.6; }
+  .success-next { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-top: 28px; text-align: left; }
+  .success-next-item { background: var(--bg); border-radius: 8px; padding: 14px; }
+  .success-next-icon { font-size: 20px; margin-bottom: 6px; }
+  .success-next-title { font-size: 13px; font-weight: 700; margin-bottom: 2px; }
+  .success-next-sub { font-size: 12px; color: var(--muted); }
+  .success-actions { display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; }
+
+  /* ── DECLINE STATE ── */
+  .decline-wrap { text-align: center; padding: 48px 32px; background: var(--white); border-radius: var(--radius); border: 1px solid var(--border); }
+</style>
+</head>
+<body>
+
+<!-- TOPBAR -->
+<header class="topbar">
+  <div class="topbar-logo">GAME<span>CONNECTION</span></div>
+  <div class="topbar-right">Already have an account? <a href="EventHub_v2_PC.html">Sign in →</a></div>
+</header>
+
+<!-- HERO -->
+<div class="hero">
+  <div class="hero-inner">
+    <div class="hero-badge"><span class="hero-badge-dot"></span> Exclusive Buyer Invitation</div>
+    <div class="hero-title">You're Invited to<br>Indie Game Fest 2026</div>
+    <div class="hero-sub">You've been personally selected as a qualified buyer. Claim your complimentary access and start scheduling meetings with top indie developers.</div>
+  </div>
+</div>
+
+<!-- MAIN -->
+<div class="main" id="main-content">
+
+  <!-- Event Info Card -->
+  <div class="event-card">
+    <div class="event-logo">🎮</div>
+    <div class="event-info">
+      <div class="event-name">Indie Game Fest 2026</div>
+      <div class="event-meta">
+        <div class="event-meta-item">📅 April 15–17, 2026</div>
+        <div class="event-meta-item">📍 Berlin Exhibition Center, Germany</div>
+        <div class="event-meta-item">👥 2,000+ attendees</div>
+      </div>
+      <div class="event-tags">
+        <span class="event-tag event-tag-b2b">B2B</span>
+        <span class="event-tag">Indie Games</span>
+        <span class="event-tag">Publisher Meetings</span>
+        <span class="event-tag">Investment</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Invitation Details -->
+  <div class="invite-details">
+    <div class="invite-from">
+      <div class="invite-from-avatar">FW</div>
+      <div>
+        <div class="invite-from-name">Felix Wagner · Event Organizer</div>
+        <div class="invite-from-role">Indie Game Fest 2026 · Game Connection Platform</div>
+      </div>
+    </div>
+    <div class="invite-message">
+      "We've reviewed your profile and believe you'd be an excellent fit for our curated buyer program. As a qualified publisher/investor, you'll have complimentary access to all developer demos and priority access to our Let's Meet scheduling system."
+    </div>
+    <div class="invite-perks">
+      <div class="invite-perk">
+        <div class="invite-perk-icon">🎫</div>
+        <div class="invite-perk-text">
+          <div class="invite-perk-title">Complimentary Access</div>
+          <div class="invite-perk-sub">Free Industry Pro pass (€199 value)</div>
+        </div>
+      </div>
+      <div class="invite-perk">
+        <div class="invite-perk-icon">🤝</div>
+        <div class="invite-perk-text">
+          <div class="invite-perk-title">Priority Meetings</div>
+          <div class="invite-perk-sub">Up to 15 pre-scheduled 1-on-1s</div>
+        </div>
+      </div>
+      <div class="invite-perk">
+        <div class="invite-perk-icon">🎮</div>
+        <div class="invite-perk-text">
+          <div class="invite-perk-title">Exclusive Buyer Zone</div>
+          <div class="invite-perk-sub">Access to 80+ curated game demos</div>
+        </div>
+      </div>
+      <div class="invite-perk">
+        <div class="invite-perk-icon">🍷</div>
+        <div class="invite-perk-text">
+          <div class="invite-perk-title">VIP Networking Dinner</div>
+          <div class="invite-perk-sub">Day 1 evening · Exclusive to buyers</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- How it works -->
+  <div class="steps-wrap">
+    <div class="steps-title">How it works</div>
+    <div class="steps-list">
+      <div class="step-item">
+        <div class="step-num-circle">1</div>
+        <div>
+          <div class="step-text-title">Confirm your profile</div>
+          <div class="step-text-sub">Tell us about your company and what you're looking for — helps developers prepare for your meetings.</div>
+        </div>
+      </div>
+      <div class="step-item">
+        <div class="step-num-circle">2</div>
+        <div>
+          <div class="step-text-title">Set your availability</div>
+          <div class="step-text-sub">Choose your preferred meeting times across the 3-day event.</div>
+        </div>
+      </div>
+      <div class="step-item">
+        <div class="step-num-circle">3</div>
+        <div>
+          <div class="step-text-title">Get matched & schedule</div>
+          <div class="step-text-sub">Our AI matching system suggests the most relevant developers based on your interests. Confirm or adjust meetings.</div>
+        </div>
+      </div>
+      <div class="step-item">
+        <div class="step-num-circle">4</div>
+        <div>
+          <div class="step-text-title">Receive your badge & schedule</div>
+          <div class="step-text-sub">Your complimentary badge and full meeting schedule will be sent by email 1 week before the event.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Profile Form -->
+  <div class="form-card" id="form-section">
+    <div class="form-card-header">
+      <div class="form-card-title">👤 Confirm Your Profile</div>
+      <div class="form-card-sub">Pre-filled from your invitation — please verify and complete.</div>
+    </div>
+    <div class="form-card-body">
+      <div class="form-grid">
+        <div class="form-group">
+          <label class="form-label">First Name <span>*</span></label>
+          <input class="form-input" type="text" value="Marcus" placeholder="First name">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Last Name <span>*</span></label>
+          <input class="form-input" type="text" value="Reid" placeholder="Last name">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Email <span>*</span></label>
+          <input class="form-input" type="email" value="m.reid@indiefund.vc" placeholder="Email">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Phone</label>
+          <input class="form-input" type="tel" placeholder="+1 555 000 0000">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Company <span>*</span></label>
+          <input class="form-input" type="text" value="IndieFund VC" placeholder="Company name">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Job Title <span>*</span></label>
+          <input class="form-input" type="text" value="Partner" placeholder="e.g. CEO, Partner, Director">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Company Type <span>*</span></label>
+          <select class="form-select">
+            <option>Publisher</option>
+            <option selected>Investor / VC</option>
+            <option>Platform</option>
+            <option>Service Provider</option>
+            <option>Media</option>
+            <option>Other</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Country <span>*</span></label>
+          <select class="form-select">
+            <option selected>United States</option>
+            <option>United Kingdom</option>
+            <option>Germany</option>
+            <option>France</option>
+            <option>Japan</option>
+            <option>Other</option>
+          </select>
+        </div>
+        <div class="form-group full">
+          <label class="form-label">What are you looking for at this event? <span>*</span></label>
+          <div class="interest-grid" id="interest-grid">
+            <div class="interest-item selected" onclick="toggleInterest(this)">🎮 Indie Games</div>
+            <div class="interest-item selected" onclick="toggleInterest(this)">💰 Investment Targets</div>
+            <div class="interest-item" onclick="toggleInterest(this)">📱 Mobile Games</div>
+            <div class="interest-item" onclick="toggleInterest(this)">🎲 Narrative Games</div>
+            <div class="interest-item selected" onclick="toggleInterest(this)">🌍 Global Publishing</div>
+            <div class="interest-item" onclick="toggleInterest(this)">🕹️ Console Titles</div>
+            <div class="interest-item" onclick="toggleInterest(this)">🥽 VR / AR</div>
+            <div class="interest-item" onclick="toggleInterest(this)">🏆 Award-winning</div>
+            <div class="interest-item" onclick="toggleInterest(this)">🚀 Early Stage</div>
+          </div>
+        </div>
+        <div class="form-group full">
+          <label class="form-label">Brief bio / what you bring to developers</label>
+          <textarea class="form-textarea" placeholder="Tell developers what you offer — funding, publishing deals, distribution, etc.">Partner at IndieFund VC with $50M+ invested in indie games. Focus on narrative-driven experiences and innovative mechanics. Ticket to Series A.</textarea>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Availability -->
+  <div class="form-card">
+    <div class="form-card-header">
+      <div class="form-card-title">🗓️ Set Your Meeting Availability</div>
+      <div class="form-card-sub">Select all time slots when you're available for 1-on-1 meetings.</div>
+    </div>
+    <div class="form-card-body">
+      <div style="margin-bottom:14px">
+        <div style="font-size:12px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;margin-bottom:8px">📅 Day 1 — Tuesday, April 15</div>
+        <div class="availability-grid">
+          <div class="avail-slot selected" onclick="toggleSlot(this)"><div class="avail-slot-day">09:00 – 09:30</div><div class="avail-slot-time">Morning</div></div>
+          <div class="avail-slot selected" onclick="toggleSlot(this)"><div class="avail-slot-day">09:30 – 10:00</div><div class="avail-slot-time">Morning</div></div>
+          <div class="avail-slot" onclick="toggleSlot(this)"><div class="avail-slot-day">10:00 – 10:30</div><div class="avail-slot-time">Morning</div></div>
+          <div class="avail-slot selected" onclick="toggleSlot(this)"><div class="avail-slot-day">11:00 – 11:30</div><div class="avail-slot-time">Late Morning</div></div>
+          <div class="avail-slot selected" onclick="toggleSlot(this)"><div class="avail-slot-day">14:00 – 14:30</div><div class="avail-slot-time">Afternoon</div></div>
+          <div class="avail-slot selected" onclick="toggleSlot(this)"><div class="avail-slot-day">15:00 – 15:30</div><div class="avail-slot-time">Afternoon</div></div>
+        </div>
+      </div>
+      <div style="margin-bottom:14px">
+        <div style="font-size:12px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;margin-bottom:8px">📅 Day 2 — Wednesday, April 16</div>
+        <div class="availability-grid">
+          <div class="avail-slot selected" onclick="toggleSlot(this)"><div class="avail-slot-day">09:00 – 09:30</div><div class="avail-slot-time">Morning</div></div>
+          <div class="avail-slot selected" onclick="toggleSlot(this)"><div class="avail-slot-day">10:00 – 10:30</div><div class="avail-slot-time">Morning</div></div>
+          <div class="avail-slot" onclick="toggleSlot(this)"><div class="avail-slot-day">11:00 – 11:30</div><div class="avail-slot-time">Late Morning</div></div>
+          <div class="avail-slot selected" onclick="toggleSlot(this)"><div class="avail-slot-day">14:30 – 15:00</div><div class="avail-slot-time">Afternoon</div></div>
+          <div class="avail-slot" onclick="toggleSlot(this)"><div class="avail-slot-day">15:30 – 16:00</div><div class="avail-slot-time">Afternoon</div></div>
+          <div class="avail-slot selected" onclick="toggleSlot(this)"><div class="avail-slot-day">16:00 – 16:30</div><div class="avail-slot-time">Late Afternoon</div></div>
+        </div>
+      </div>
+      <div>
+        <div style="font-size:12px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;margin-bottom:8px">📅 Day 3 — Thursday, April 17</div>
+        <div class="availability-grid">
+          <div class="avail-slot selected" onclick="toggleSlot(this)"><div class="avail-slot-day">09:30 – 10:00</div><div class="avail-slot-time">Morning</div></div>
+          <div class="avail-slot selected" onclick="toggleSlot(this)"><div class="avail-slot-day">10:00 – 10:30</div><div class="avail-slot-time">Morning</div></div>
+          <div class="avail-slot" onclick="toggleSlot(this)"><div class="avail-slot-day">11:00 – 11:30</div><div class="avail-slot-time">Late Morning</div></div>
+          <div class="avail-slot" onclick="toggleSlot(this)"><div class="avail-slot-day">14:00 – 14:30</div><div class="avail-slot-time">Afternoon</div></div>
+          <div class="avail-slot" onclick="toggleSlot(this)"><div class="avail-slot-day">15:00 – 15:30</div><div class="avail-slot-time">Afternoon</div></div>
+          <div class="avail-slot" onclick="toggleSlot(this)"><div class="avail-slot-day">16:00 – 16:30</div><div class="avail-slot-time">Late Afternoon</div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Terms -->
+  <div style="background:var(--white);border:1px solid var(--border);border-radius:var(--radius);padding:16px 20px;margin-bottom:20px">
+    <label style="display:flex;align-items:flex-start;gap:10px;font-size:13px;cursor:pointer;margin-bottom:10px">
+      <input type="checkbox" id="terms-check" style="margin-top:2px;accent-color:var(--orange)" checked>
+      <span>I confirm I am a qualified buyer (publisher, investor, platform, or distributor) and agree to the <a href="#" style="color:var(--orange)">Buyer Program Terms</a> and <a href="#" style="color:var(--orange)">Privacy Policy</a>.</span>
+    </label>
+    <label style="display:flex;align-items:flex-start;gap:10px;font-size:13px;cursor:pointer">
+      <input type="checkbox" id="notify-check" style="margin-top:2px;accent-color:var(--orange)" checked>
+      <span>Send me meeting suggestions and event updates by email.</span>
+    </label>
+  </div>
+
+  <!-- CTA Buttons -->
+  <div class="btn-row" style="margin-bottom:16px">
+    <button class="btn-primary" onclick="acceptInvitation()">✅ Accept Invitation & Activate Access</button>
+    <button class="btn-secondary" onclick="declineInvitation()">Decline</button>
+  </div>
+  <div style="text-align:center;font-size:12px;color:var(--faint)">
+    This invitation is personal and non-transferable. Expires April 1, 2026.
+  </div>
+
+</div><!-- /main -->
+
+<!-- SUCCESS STATE (hidden) -->
+<div id="success-state" style="display:none">
+  <div class="main">
+    <div class="success-wrap">
+      <div class="success-icon">🎉</div>
+      <div class="success-title">Welcome, Marcus!</div>
+      <div class="success-sub">Your buyer access to <strong>Indie Game Fest 2026</strong> is now activated. You'll receive your badge and meeting schedule by email 1 week before the event.</div>
+      <div class="success-actions">
+        <button class="btn-secondary" style="width:auto;padding:10px 24px" onclick="window.location.href='BuyerZone_v1_PC.html'">🎮 Open Buyer Zone</button>
+        <button class="btn-primary" style="width:auto;padding:10px 24px" onclick="window.location.href='AttendeeDashboard_v1_PC.html'">Go to My Dashboard →</button>
+      </div>
+      <div class="success-next">
+        <div class="success-next-item">
+          <div class="success-next-icon">📧</div>
+          <div class="success-next-title">Check your email</div>
+          <div class="success-next-sub">Confirmation sent to m.reid@indiefund.vc</div>
+        </div>
+        <div class="success-next-item">
+          <div class="success-next-icon">🤝</div>
+          <div class="success-next-title">Meeting suggestions</div>
+          <div class="success-next-sub">AI matching runs 2 weeks before event</div>
+        </div>
+        <div class="success-next-item">
+          <div class="success-next-icon">🎮</div>
+          <div class="success-next-title">Browse Buyer Zone</div>
+          <div class="success-next-sub">80+ curated game demos available now</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- DECLINE STATE (hidden) -->
+<div id="decline-state" style="display:none">
+  <div class="main">
+    <div class="decline-wrap">
+      <div style="font-size:48px;margin-bottom:16px">😔</div>
+      <div style="font-size:20px;font-weight:800;margin-bottom:8px">Invitation Declined</div>
+      <div style="font-size:14px;color:var(--muted);max-width:400px;margin:0 auto 24px;line-height:1.6">No problem. Your invitation has been declined. If you change your mind, contact the organizer at <a href="mailto:hello@indiegamefest.com" style="color:var(--orange)">hello@indiegamefest.com</a>.</div>
+      <button class="btn-secondary" style="width:auto;padding:10px 24px" onclick="window.location.href='ConferenceCalendar_v2_PC.html'">Browse Other Events</button>
+    </div>
+  </div>
+</div>
+
+<script>
+  function toggleInterest(el) {
+    el.classList.toggle('selected');
+  }
+
+  function toggleSlot(el) {
+    el.classList.toggle('selected');
+  }
+
+  function acceptInvitation() {
+    document.getElementById('main-content').style.display = 'none';
+    document.getElementById('success-state').style.display = 'block';
+    document.getElementById('decline-state').style.display = 'none';
+    window.scrollTo(0, 0);
+  }
+
+  function declineInvitation() {
+    document.getElementById('main-content').style.display = 'none';
+    document.getElementById('success-state').style.display = 'none';
+    document.getElementById('decline-state').style.display = 'block';
+    window.scrollTo(0, 0);
+  }
+</script>
+</body>
+</html>

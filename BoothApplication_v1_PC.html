@@ -1,0 +1,913 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Apply for a Booth — Game Connection</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --bg: #f3f2ef;
+    --orange: #d95f2b;
+    --orange-dim: rgba(217,95,43,.1);
+    --orange-border: rgba(217,95,43,.3);
+    --teal: #0a7fa8;
+    --green: #0d9b72;
+    --purple: #7c3aed;
+    --white: #fff;
+    --text: #000000;
+    --muted: #444444;
+    --faint: #999999;
+    --border: #e0dfdc;
+    --radius: 10px;
+  }
+  body { font-family: 'DM Sans', sans-serif; line-height: 1.5; background: var(--bg); color: var(--text); min-height: 100vh; }
+
+  /* ── TOPBAR ── */
+  .topbar {
+    position: sticky; top: 0; z-index: 100;
+    height: 58px; background: var(--white);
+    border-bottom: 1px solid var(--border);
+    display: flex; align-items: center; gap: 0;
+    padding: 0 28px;
+  }
+  .topbar-logo { font-weight: 800; font-size: 15px; letter-spacing: .04em; margin-right: 20px; }
+  .topbar-logo span { color: var(--orange); }
+  .topbar-event { font-size: 13px; color: var(--muted); display: flex; align-items: center; gap: 8px; }
+  .topbar-event-name { font-weight: 600; color: var(--text); }
+  .topbar-sep { color: var(--border); }
+  .topbar-right { margin-left: auto; display: flex; align-items: center; gap: 10px; }
+  .btn-back {
+    padding: 7px 16px; border-radius: 8px; border: 1px solid var(--border);
+    background: var(--white); font-size: 13px; font-weight: 500;
+    cursor: pointer; font-family: inherit; color: var(--muted);
+    transition: all .15s; text-decoration: none; display: inline-flex; align-items: center; gap: 6px;
+  }
+  .btn-back:hover { border-color: var(--orange); color: var(--orange); }
+
+  /* ── PROGRESS BAR ── */
+  .progress-bar-wrap {
+    background: var(--white); border-bottom: 1px solid var(--border);
+    padding: 0 40px;
+  }
+  .progress-steps {
+    display: flex; align-items: center; max-width: 800px; margin: 0 auto;
+    padding: 16px 0;
+  }
+  .step {
+    display: flex; align-items: center; gap: 8px;
+    font-size: 13px; font-weight: 500; color: var(--faint);
+    cursor: pointer; transition: color .15s;
+  }
+  .step.active { color: var(--orange); font-weight: 600; }
+  .step.done { color: var(--green); }
+  .step-num {
+    width: 26px; height: 26px; border-radius: 50%;
+    border: 2px solid var(--border); background: var(--white);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 12px; font-weight: 700; flex-shrink: 0;
+    transition: all .15s;
+  }
+  .step.active .step-num { border-color: var(--orange); background: var(--orange); color: #fff; }
+  .step.done .step-num { border-color: var(--green); background: var(--green); color: #fff; }
+  .step-connector { flex: 1; height: 2px; background: var(--border); margin: 0 12px; }
+  .step-connector.done { background: var(--green); }
+
+  /* ── MAIN ── */
+  .main { max-width: 860px; margin: 0 auto; padding: 36px 24px; }
+
+  /* ── SECTION TITLE ── */
+  .section-title { font-size: 22px; font-weight: 800; letter-spacing: -.01em; margin-bottom: 6px; }
+  .section-sub { font-size: 14px; color: var(--muted); margin-bottom: 28px; }
+
+  /* ── CARD ── */
+  .card {
+    background: var(--white); border: 1px solid var(--border);
+    border-radius: var(--radius); margin-bottom: 20px; overflow: hidden;
+  }
+  .card-header {
+    padding: 16px 22px; border-bottom: 1px solid var(--border);
+    display: flex; align-items: center; justify-content: space-between;
+  }
+  .card-title { font-size: 14px; font-weight: 700; display: flex; align-items: center; gap: 8px; }
+  .card-body { padding: 22px; }
+
+  /* ── BOOTH TYPE GRID ── */
+  .booth-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; }
+  .booth-option {
+    border: 2px solid var(--border); border-radius: var(--radius);
+    padding: 18px; cursor: pointer; transition: all .2s; position: relative;
+    background: var(--white);
+  }
+  .booth-option:hover { border-color: var(--orange-border); }
+  .booth-option.selected { border-color: var(--orange); background: var(--orange-dim); }
+  .booth-option.selected::after {
+    content: '✓'; position: absolute; top: 10px; right: 12px;
+    width: 22px; height: 22px; border-radius: 50%;
+    background: var(--orange); color: #fff;
+    font-size: 12px; font-weight: 700;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .booth-icon { font-size: 28px; margin-bottom: 8px; }
+  .booth-name { font-size: 15px; font-weight: 700; margin-bottom: 4px; }
+  .booth-price { font-size: 18px; font-weight: 800; color: var(--orange); margin-bottom: 6px; }
+  .booth-price-sub { font-size: 11px; color: var(--muted); }
+  .booth-desc { font-size: 12px; color: var(--muted); margin-bottom: 10px; line-height: 1.5; }
+  .booth-features { list-style: none; }
+  .booth-features li { font-size: 12px; color: var(--muted); padding: 2px 0; display: flex; align-items: center; gap: 6px; }
+  .booth-features li::before { content: '✓'; color: var(--green); font-weight: 700; font-size: 11px; }
+  .booth-badge {
+    display: inline-block; font-size: 10px; font-weight: 700;
+    padding: 2px 8px; border-radius: 8px; margin-bottom: 8px;
+  }
+  .badge-popular { background: #fff3ec; color: var(--orange); }
+  .badge-premium { background: #f3e8ff; color: var(--purple); }
+  .badge-free { background: #d1fae5; color: var(--green); }
+
+  /* ── FLOOR PLAN ── */
+  .floor-plan-wrap { background: var(--bg); border-radius: 8px; padding: 20px; margin-bottom: 16px; }
+  .floor-plan-title { font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: .06em; color: var(--muted); margin-bottom: 14px; }
+  .floor-plan {
+    display: grid; gap: 8px;
+    grid-template-columns: repeat(8, 1fr);
+    max-width: 600px;
+  }
+  .floor-unit {
+    aspect-ratio: 1; border-radius: 6px; border: 1.5px solid var(--border);
+    background: var(--white); cursor: pointer; transition: all .15s;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 10px; font-weight: 700; color: var(--muted);
+    position: relative;
+  }
+  .floor-unit:hover { border-color: var(--orange); background: var(--orange-dim); }
+  .floor-unit.taken { background: #f3f4f6; cursor: not-allowed; color: var(--faint); border-color: var(--border); }
+  .floor-unit.taken:hover { border-color: var(--border); background: #f3f4f6; }
+  .floor-unit.selected { background: var(--orange); border-color: var(--orange); color: #fff; }
+  .floor-unit.premium { border-color: var(--purple); }
+  .floor-unit.premium:hover { background: rgba(124,58,237,.1); }
+  .floor-unit.premium.selected { background: var(--purple); border-color: var(--purple); color: #fff; }
+  .floor-legend { display: flex; gap: 16px; margin-top: 12px; flex-wrap: wrap; }
+  .floor-legend-item { display: flex; align-items: center; gap: 6px; font-size: 11px; color: var(--muted); }
+  .legend-dot { width: 12px; height: 12px; border-radius: 3px; }
+
+  /* ── FORM ── */
+  .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  .form-group { margin-bottom: 16px; }
+  .form-group.full { grid-column: 1 / -1; }
+  .form-label { font-size: 13px; font-weight: 600; margin-bottom: 6px; display: block; }
+  .form-label span { color: var(--orange); }
+  .form-input, .form-select, .form-textarea {
+    width: 100%; padding: 10px 14px; border: 1.5px solid var(--border);
+    border-radius: 8px; font-size: 13px; font-family: inherit;
+    outline: none; transition: border-color .15s; background: var(--white);
+    color: var(--text);
+  }
+  .form-input:focus, .form-select:focus, .form-textarea:focus { border-color: var(--orange); }
+  .form-textarea { resize: vertical; min-height: 80px; }
+  .form-hint { font-size: 11px; color: var(--faint); margin-top: 4px; }
+
+  /* ── ADDONS ── */
+  .addon-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; }
+  .addon-item {
+    border: 1.5px solid var(--border); border-radius: 8px; padding: 14px;
+    display: flex; align-items: flex-start; gap: 12px; cursor: pointer;
+    transition: all .15s;
+  }
+  .addon-item:hover { border-color: var(--orange-border); }
+  .addon-item.selected { border-color: var(--orange); background: var(--orange-dim); }
+  .addon-check {
+    width: 18px; height: 18px; border-radius: 4px; border: 2px solid var(--border);
+    flex-shrink: 0; margin-top: 1px; display: flex; align-items: center; justify-content: center;
+    transition: all .15s;
+  }
+  .addon-item.selected .addon-check { background: var(--orange); border-color: var(--orange); color: #fff; font-size: 11px; font-weight: 700; }
+  .addon-info { flex: 1; }
+  .addon-name { font-size: 13px; font-weight: 700; margin-bottom: 2px; }
+  .addon-desc { font-size: 12px; color: var(--muted); }
+  .addon-price { font-size: 13px; font-weight: 700; color: var(--orange); margin-top: 4px; }
+
+  /* ── ORDER SUMMARY ── */
+  .order-summary {
+    background: var(--white); border: 1.5px solid var(--border);
+    border-radius: var(--radius); padding: 20px; position: sticky; top: 80px;
+  }
+  .order-title { font-size: 14px; font-weight: 700; margin-bottom: 14px; }
+  .order-item { display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid var(--border); font-size: 13px; }
+  .order-item:last-of-type { border-bottom: none; }
+  .order-item-label { color: var(--muted); }
+  .order-item-value { font-weight: 600; }
+  .order-total { display: flex; justify-content: space-between; padding: 12px 0 0; font-size: 16px; font-weight: 800; }
+  .order-total-label { }
+  .order-total-value { color: var(--orange); }
+  .order-note { font-size: 11px; color: var(--faint); margin-top: 8px; line-height: 1.5; }
+
+  /* ── BUTTONS ── */
+  .btn-primary {
+    background: var(--orange); color: #fff; border: none;
+    padding: 12px 28px; border-radius: 8px; font-size: 14px;
+    font-weight: 700; cursor: pointer; font-family: inherit;
+    transition: all .15s; width: 100%; margin-top: 14px;
+  }
+  .btn-primary:hover { background: #c2521f; }
+  .btn-secondary {
+    background: none; color: var(--muted); border: 1px solid var(--border);
+    padding: 10px 20px; border-radius: 8px; font-size: 13px;
+    font-weight: 500; cursor: pointer; font-family: inherit; transition: all .15s;
+  }
+  .btn-secondary:hover { border-color: var(--orange); color: var(--orange); }
+
+  /* ── LAYOUT WITH SIDEBAR ── */
+  .content-with-sidebar { display: grid; grid-template-columns: 1fr 280px; gap: 24px; align-items: start; }
+
+  /* ── SUCCESS STATE ── */
+  .success-wrap {
+    text-align: center; padding: 60px 40px;
+    background: var(--white); border-radius: var(--radius);
+    border: 1px solid var(--border);
+  }
+  .success-icon { font-size: 56px; margin-bottom: 16px; }
+  .success-title { font-size: 22px; font-weight: 800; margin-bottom: 8px; }
+  .success-sub { font-size: 14px; color: var(--muted); max-width: 400px; margin: 0 auto 24px; line-height: 1.6; }
+  .success-ref { font-family: monospace; font-size: 14px; color: var(--orange); font-weight: 700; margin-bottom: 24px; }
+  .success-actions { display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; }
+  .success-next { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-top: 32px; text-align: left; }
+  .success-next-item { background: var(--bg); border-radius: 8px; padding: 14px; }
+  .success-next-icon { font-size: 20px; margin-bottom: 6px; }
+  .success-next-title { font-size: 13px; font-weight: 700; margin-bottom: 2px; }
+  .success-next-sub { font-size: 12px; color: var(--muted); }
+</style>
+</head>
+<body>
+
+<!-- TOPBAR -->
+<header class="topbar">
+  <div class="topbar-logo">GAME<span>CONNECTION</span></div>
+  <div class="topbar-event">
+    <span class="topbar-sep">›</span>
+    <span class="topbar-event-name">Indie Game Fest 2026</span>
+    <span class="topbar-sep">›</span>
+    <span>Booth Application</span>
+  </div>
+  <div class="topbar-right">
+    <a href="EventPublicPage_v2_PC.html" class="btn-back">← Back to Event</a>
+  </div>
+</header>
+
+<!-- PROGRESS BAR -->
+<div class="progress-bar-wrap">
+  <div class="progress-steps">
+    <div class="step done" id="step-1" onclick="goStep(1)">
+      <div class="step-num">1</div>
+      <span>Choose Type</span>
+    </div>
+    <div class="step-connector done" id="conn-1"></div>
+    <div class="step active" id="step-2" onclick="goStep(2)">
+      <div class="step-num">2</div>
+      <span>Select Location</span>
+    </div>
+    <div class="step-connector" id="conn-2"></div>
+    <div class="step" id="step-3" onclick="goStep(3)">
+      <div class="step-num">3</div>
+      <span>Company Info</span>
+    </div>
+    <div class="step-connector" id="conn-3"></div>
+    <div class="step" id="step-4" onclick="goStep(4)">
+      <div class="step-num">4</div>
+      <span>Add-ons</span>
+    </div>
+    <div class="step-connector" id="conn-4"></div>
+    <div class="step" id="step-5" onclick="goStep(5)">
+      <div class="step-num">5</div>
+      <span>Review & Pay</span>
+    </div>
+  </div>
+</div>
+
+<div class="main">
+
+  <!-- ── STEP 1: CHOOSE TYPE ── -->
+  <div id="step-panel-1" style="display:none">
+    <div class="section-title">Choose Your Booth Type</div>
+    <div class="section-sub">Select the booth format that best fits your company and goals at Indie Game Fest 2026.</div>
+
+    <div class="card">
+      <div class="card-body">
+        <div class="booth-grid">
+          <!-- Pod -->
+          <div class="booth-option" id="type-pod" onclick="selectBoothType('pod')">
+            <span class="booth-badge badge-free">FREE</span>
+            <div class="booth-icon">🎮</div>
+            <div class="booth-name">Pod</div>
+            <div class="booth-price">€0</div>
+            <div class="booth-price-sub">Free for qualifying indie developers</div>
+            <div class="booth-desc">A compact demo station perfect for indie developers to showcase their game to publishers and players.</div>
+            <ul class="booth-features">
+              <li>1 demo station (TV + console)</li>
+              <li>2 exhibitor badges</li>
+              <li>Listed in exhibitor directory</li>
+              <li>Access to Let's Meet</li>
+            </ul>
+          </div>
+          <!-- Standard -->
+          <div class="booth-option selected" id="type-standard" onclick="selectBoothType('standard')">
+            <span class="booth-badge badge-popular">MOST POPULAR</span>
+            <div class="booth-icon">🏢</div>
+            <div class="booth-name">Standard Booth</div>
+            <div class="booth-price">€899</div>
+            <div class="booth-price-sub">6m² · All-inclusive</div>
+            <div class="booth-desc">A professional booth space ideal for publishers, studios, and service providers looking to make a strong impression.</div>
+            <ul class="booth-features">
+              <li>6m² booth space</li>
+              <li>4 exhibitor badges</li>
+              <li>Furniture package included</li>
+              <li>Listed in exhibitor directory</li>
+              <li>Access to Let's Meet</li>
+              <li>1 speaking slot (optional)</li>
+            </ul>
+          </div>
+          <!-- Premium -->
+          <div class="booth-option" id="type-premium" onclick="selectBoothType('premium')">
+            <span class="booth-badge badge-premium">PREMIUM</span>
+            <div class="booth-icon">⭐</div>
+            <div class="booth-name">Premium Booth</div>
+            <div class="booth-price">€2,499</div>
+            <div class="booth-price-sub">12m² · Corner position</div>
+            <div class="booth-desc">Maximum visibility with a corner position, double the space, and premium branding opportunities throughout the venue.</div>
+            <ul class="booth-features">
+              <li>12m² corner booth</li>
+              <li>8 exhibitor badges</li>
+              <li>Custom build options</li>
+              <li>Featured in exhibitor directory</li>
+              <li>Logo on event signage</li>
+              <li>2 speaking slots</li>
+              <li>Priority Let's Meet scheduling</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div style="display:flex;justify-content:flex-end;gap:12px">
+      <button class="btn-secondary" onclick="window.location.href='EventPublicPage_v2_PC.html'">Cancel</button>
+      <button class="btn-primary" style="width:auto;padding:12px 32px" onclick="goStep(2)">Continue →</button>
+    </div>
+  </div>
+
+  <!-- ── STEP 2: SELECT LOCATION ── -->
+  <div id="step-panel-2">
+    <div class="section-title">Select Your Booth Location</div>
+    <div class="section-sub">Choose your preferred position on the exhibition floor. Standard booths are shown in orange, Premium in purple.</div>
+
+    <div class="content-with-sidebar">
+      <div>
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title">🗺️ Exhibition Floor Plan — Hall A</div>
+            <span style="font-size:12px;color:var(--muted)">Click to select · 14 available</span>
+          </div>
+          <div class="card-body">
+            <div class="floor-plan-wrap">
+              <div class="floor-plan-title">HALL A — GROUND FLOOR</div>
+              <div class="floor-plan" id="floor-plan">
+                <!-- Row 1: A1-A8 -->
+                <div class="floor-unit taken" title="A1 — Taken">A1</div>
+                <div class="floor-unit taken" title="A2 — Taken">A2</div>
+                <div class="floor-unit" title="A3 — Available" onclick="selectUnit('A3', this)">A3</div>
+                <div class="floor-unit" title="A4 — Available" onclick="selectUnit('A4', this)">A4</div>
+                <div class="floor-unit taken" title="A5 — Taken">A5</div>
+                <div class="floor-unit premium" title="A6 — Premium Available" onclick="selectUnit('A6', this)">A6</div>
+                <div class="floor-unit premium taken" title="A7 — Taken">A7</div>
+                <div class="floor-unit premium" title="A8 — Premium Available" onclick="selectUnit('A8', this)">A8</div>
+                <!-- Row 2: B1-B8 -->
+                <div class="floor-unit taken" title="B1 — Taken">B1</div>
+                <div class="floor-unit" title="B2 — Available" onclick="selectUnit('B2', this)">B2</div>
+                <div class="floor-unit selected" title="B3 — Selected" onclick="selectUnit('B3', this)" id="unit-B3">B3</div>
+                <div class="floor-unit" title="B4 — Available" onclick="selectUnit('B4', this)">B4</div>
+                <div class="floor-unit taken" title="B5 — Taken">B5</div>
+                <div class="floor-unit taken" title="B6 — Taken">B6</div>
+                <div class="floor-unit premium" title="B7 — Premium Available" onclick="selectUnit('B7', this)">B7</div>
+                <div class="floor-unit premium taken" title="B8 — Taken">B8</div>
+                <!-- Row 3: C1-C8 -->
+                <div class="floor-unit" title="C1 — Available" onclick="selectUnit('C1', this)">C1</div>
+                <div class="floor-unit" title="C2 — Available" onclick="selectUnit('C2', this)">C2</div>
+                <div class="floor-unit taken" title="C3 — Taken">C3</div>
+                <div class="floor-unit taken" title="C4 — Taken">C4</div>
+                <div class="floor-unit" title="C5 — Available" onclick="selectUnit('C5', this)">C5</div>
+                <div class="floor-unit" title="C6 — Available" onclick="selectUnit('C6', this)">C6</div>
+                <div class="floor-unit taken" title="C7 — Taken">C7</div>
+                <div class="floor-unit premium" title="C8 — Premium Available" onclick="selectUnit('C8', this)">C8</div>
+                <!-- Row 4: D1-D8 -->
+                <div class="floor-unit taken" title="D1 — Taken">D1</div>
+                <div class="floor-unit taken" title="D2 — Taken">D2</div>
+                <div class="floor-unit" title="D3 — Available" onclick="selectUnit('D3', this)">D3</div>
+                <div class="floor-unit" title="D4 — Available" onclick="selectUnit('D4', this)">D4</div>
+                <div class="floor-unit taken" title="D5 — Taken">D5</div>
+                <div class="floor-unit" title="D6 — Available" onclick="selectUnit('D6', this)">D6</div>
+                <div class="floor-unit taken" title="D7 — Taken">D7</div>
+                <div class="floor-unit premium" title="D8 — Premium Available" onclick="selectUnit('D8', this)">D8</div>
+              </div>
+              <div class="floor-legend">
+                <div class="floor-legend-item"><div class="legend-dot" style="background:var(--white);border:1.5px solid var(--border)"></div> Available</div>
+                <div class="floor-legend-item"><div class="legend-dot" style="background:var(--orange)"></div> Selected</div>
+                <div class="floor-legend-item"><div class="legend-dot" style="background:#f3f4f6;border:1.5px solid var(--border)"></div> Taken</div>
+                <div class="floor-legend-item"><div class="legend-dot" style="background:rgba(124,58,237,.15);border:1.5px solid var(--purple)"></div> Premium</div>
+              </div>
+            </div>
+            <div style="background:var(--bg);border-radius:8px;padding:14px;font-size:13px;color:var(--muted)">
+              <strong style="color:var(--text)">Selected:</strong> <span id="selected-unit-label" style="color:var(--orange);font-weight:700">B3 — Standard Booth (6m²)</span>
+              <span style="margin-left:16px">📍 Row B, Position 3 · Near main entrance</span>
+            </div>
+          </div>
+        </div>
+
+        <div style="display:flex;justify-content:space-between;gap:12px">
+          <button class="btn-secondary" onclick="goStep(1)">← Back</button>
+          <button class="btn-primary" style="width:auto;padding:12px 32px" onclick="goStep(3)">Continue →</button>
+        </div>
+      </div>
+
+      <!-- Order Summary Sidebar -->
+      <div class="order-summary">
+        <div class="order-title">📋 Application Summary</div>
+        <div class="order-item"><span class="order-item-label">Event</span><span class="order-item-value">Indie Game Fest 2026</span></div>
+        <div class="order-item"><span class="order-item-label">Booth Type</span><span class="order-item-value" id="summary-type">Standard Booth</span></div>
+        <div class="order-item"><span class="order-item-label">Location</span><span class="order-item-value" id="summary-location">B3</span></div>
+        <div class="order-item"><span class="order-item-label">Size</span><span class="order-item-value" id="summary-size">6m²</span></div>
+        <div class="order-item"><span class="order-item-label">Badges</span><span class="order-item-value">4 included</span></div>
+        <div class="order-total">
+          <span class="order-total-label">Total</span>
+          <span class="order-total-value" id="summary-price">€899</span>
+        </div>
+        <div class="order-note">Price excludes VAT. Final invoice issued after approval. Payment due within 14 days of approval.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── STEP 3: COMPANY INFO ── -->
+  <div id="step-panel-3" style="display:none">
+    <div class="section-title">Company Information</div>
+    <div class="section-sub">Tell us about your company. This information will appear in the exhibitor directory and on your booth page.</div>
+
+    <div class="content-with-sidebar">
+      <div>
+        <div class="card">
+          <div class="card-header"><div class="card-title">🏢 Company Details</div></div>
+          <div class="card-body">
+            <div class="form-grid">
+              <div class="form-group">
+                <label class="form-label">Company Name <span>*</span></label>
+                <input class="form-input" type="text" placeholder="e.g. Pixel Valley Studio" value="Indie Studio">
+              </div>
+              <div class="form-group">
+                <label class="form-label">Company Type <span>*</span></label>
+                <select class="form-select">
+                  <option>Developer</option>
+                  <option>Publisher</option>
+                  <option>Investor / VC</option>
+                  <option>Service Provider</option>
+                  <option>Platform</option>
+                  <option>Media</option>
+                  <option>Other</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label class="form-label">Country <span>*</span></label>
+                <select class="form-select">
+                  <option>United States</option>
+                  <option>United Kingdom</option>
+                  <option>Germany</option>
+                  <option>France</option>
+                  <option>Japan</option>
+                  <option>South Korea</option>
+                  <option>China</option>
+                  <option>Other</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label class="form-label">Company Website</label>
+                <input class="form-input" type="url" placeholder="https://yourstudio.com">
+              </div>
+              <div class="form-group full">
+                <label class="form-label">Company Description <span>*</span></label>
+                <textarea class="form-textarea" placeholder="Brief description of your company (max 300 characters). This will appear in the exhibitor directory.">Independent game studio focused on narrative RPGs and immersive worlds.</textarea>
+                <div class="form-hint">0/300 characters</div>
+              </div>
+              <div class="form-group">
+                <label class="form-label">Company Logo</label>
+                <input class="form-input" type="file" accept="image/*">
+                <div class="form-hint">PNG or SVG, min 200×200px</div>
+              </div>
+              <div class="form-group">
+                <label class="form-label">Social Media</label>
+                <input class="form-input" type="text" placeholder="@yourstudio (Twitter/X)">
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-header"><div class="card-title">👤 Primary Contact</div></div>
+          <div class="card-body">
+            <div class="form-grid">
+              <div class="form-group">
+                <label class="form-label">First Name <span>*</span></label>
+                <input class="form-input" type="text" placeholder="Alex" value="Alex">
+              </div>
+              <div class="form-group">
+                <label class="form-label">Last Name <span>*</span></label>
+                <input class="form-input" type="text" placeholder="Johnson" value="Johnson">
+              </div>
+              <div class="form-group">
+                <label class="form-label">Job Title <span>*</span></label>
+                <input class="form-input" type="text" placeholder="e.g. CEO, Studio Director" value="Studio Director">
+              </div>
+              <div class="form-group">
+                <label class="form-label">Email <span>*</span></label>
+                <input class="form-input" type="email" placeholder="alex@indiegame.io" value="alex@indiegame.io">
+              </div>
+              <div class="form-group">
+                <label class="form-label">Phone</label>
+                <input class="form-input" type="tel" placeholder="+1 555 000 0000">
+              </div>
+              <div class="form-group">
+                <label class="form-label">On-site Contact</label>
+                <input class="form-input" type="text" placeholder="Name of person at booth during event">
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-header"><div class="card-title">🎮 What Will You Showcase?</div></div>
+          <div class="card-body">
+            <div class="form-group">
+              <label class="form-label">Game / Product Title(s) <span>*</span></label>
+              <input class="form-input" type="text" placeholder="e.g. Echoes of Aether, Project Nebula">
+            </div>
+            <div class="form-group">
+              <label class="form-label">Genre / Category</label>
+              <input class="form-input" type="text" placeholder="e.g. Action RPG, Puzzle, Strategy">
+            </div>
+            <div class="form-group">
+              <label class="form-label">Target Platform(s)</label>
+              <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:6px">
+                <label style="display:flex;align-items:center;gap:6px;font-size:13px;cursor:pointer"><input type="checkbox" checked> PC</label>
+                <label style="display:flex;align-items:center;gap:6px;font-size:13px;cursor:pointer"><input type="checkbox"> Console</label>
+                <label style="display:flex;align-items:center;gap:6px;font-size:13px;cursor:pointer"><input type="checkbox"> Mobile</label>
+                <label style="display:flex;align-items:center;gap:6px;font-size:13px;cursor:pointer"><input type="checkbox"> VR/AR</label>
+                <label style="display:flex;align-items:center;gap:6px;font-size:13px;cursor:pointer"><input type="checkbox"> Web</label>
+              </div>
+            </div>
+            <div class="form-group">
+              <label class="form-label">What are you looking for at this event?</label>
+              <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:6px">
+                <label style="display:flex;align-items:center;gap:6px;font-size:13px;cursor:pointer"><input type="checkbox" checked> Publisher deals</label>
+                <label style="display:flex;align-items:center;gap:6px;font-size:13px;cursor:pointer"><input type="checkbox" checked> Investment</label>
+                <label style="display:flex;align-items:center;gap:6px;font-size:13px;cursor:pointer"><input type="checkbox"> Co-development</label>
+                <label style="display:flex;align-items:center;gap:6px;font-size:13px;cursor:pointer"><input type="checkbox"> Press coverage</label>
+                <label style="display:flex;align-items:center;gap:6px;font-size:13px;cursor:pointer"><input type="checkbox"> Distribution</label>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div style="display:flex;justify-content:space-between;gap:12px">
+          <button class="btn-secondary" onclick="goStep(2)">← Back</button>
+          <button class="btn-primary" style="width:auto;padding:12px 32px" onclick="goStep(4)">Continue →</button>
+        </div>
+      </div>
+
+      <!-- Order Summary Sidebar -->
+      <div class="order-summary">
+        <div class="order-title">📋 Application Summary</div>
+        <div class="order-item"><span class="order-item-label">Event</span><span class="order-item-value">Indie Game Fest 2026</span></div>
+        <div class="order-item"><span class="order-item-label">Booth Type</span><span class="order-item-value">Standard Booth</span></div>
+        <div class="order-item"><span class="order-item-label">Location</span><span class="order-item-value">B3 · Hall A</span></div>
+        <div class="order-item"><span class="order-item-label">Size</span><span class="order-item-value">6m²</span></div>
+        <div class="order-item"><span class="order-item-label">Badges</span><span class="order-item-value">4 included</span></div>
+        <div class="order-total"><span>Subtotal</span><span style="color:var(--orange)">€899</span></div>
+        <div class="order-note">Add-ons available in the next step.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── STEP 4: ADD-ONS ── -->
+  <div id="step-panel-4" style="display:none">
+    <div class="section-title">Optional Add-ons</div>
+    <div class="section-sub">Enhance your booth presence with additional services and visibility packages.</div>
+
+    <div class="content-with-sidebar">
+      <div>
+        <div class="card">
+          <div class="card-header"><div class="card-title">⚡ Visibility & Marketing</div></div>
+          <div class="card-body">
+            <div class="addon-grid">
+              <div class="addon-item selected" onclick="toggleAddon(this, 150)">
+                <div class="addon-check">✓</div>
+                <div class="addon-info">
+                  <div class="addon-name">Featured Listing</div>
+                  <div class="addon-desc">Your company appears at the top of the exhibitor directory with a highlighted badge.</div>
+                  <div class="addon-price">+€150</div>
+                </div>
+              </div>
+              <div class="addon-item" onclick="toggleAddon(this, 250)">
+                <div class="addon-check"></div>
+                <div class="addon-info">
+                  <div class="addon-name">Logo on Event Map</div>
+                  <div class="addon-desc">Your logo printed on all venue maps and digital floor plan.</div>
+                  <div class="addon-price">+€250</div>
+                </div>
+              </div>
+              <div class="addon-item" onclick="toggleAddon(this, 500)">
+                <div class="addon-check"></div>
+                <div class="addon-info">
+                  <div class="addon-name">Email Blast to Attendees</div>
+                  <div class="addon-desc">Dedicated mention in pre-event email sent to all registered attendees (2,000+).</div>
+                  <div class="addon-price">+€500</div>
+                </div>
+              </div>
+              <div class="addon-item" onclick="toggleAddon(this, 350)">
+                <div class="addon-check"></div>
+                <div class="addon-info">
+                  <div class="addon-name">Social Media Feature</div>
+                  <div class="addon-desc">Dedicated post on official event social channels (Twitter, LinkedIn, Instagram).</div>
+                  <div class="addon-price">+€350</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-header"><div class="card-title">🎤 Speaking & Networking</div></div>
+          <div class="card-body">
+            <div class="addon-grid">
+              <div class="addon-item" onclick="toggleAddon(this, 400)">
+                <div class="addon-check"></div>
+                <div class="addon-info">
+                  <div class="addon-name">Speaking Slot (30 min)</div>
+                  <div class="addon-desc">Present your game or company on the main stage to all attendees.</div>
+                  <div class="addon-price">+€400</div>
+                </div>
+              </div>
+              <div class="addon-item" onclick="toggleAddon(this, 200)">
+                <div class="addon-check"></div>
+                <div class="addon-info">
+                  <div class="addon-name">Extra Exhibitor Badges</div>
+                  <div class="addon-desc">Additional exhibitor badges for your team (pack of 2).</div>
+                  <div class="addon-price">+€200 / pack</div>
+                </div>
+              </div>
+              <div class="addon-item" onclick="toggleAddon(this, 300)">
+                <div class="addon-check"></div>
+                <div class="addon-info">
+                  <div class="addon-name">Priority Let's Meet</div>
+                  <div class="addon-desc">Your profile is shown first to buyers and publishers in the meeting matching system.</div>
+                  <div class="addon-price">+€300</div>
+                </div>
+              </div>
+              <div class="addon-item" onclick="toggleAddon(this, 180)">
+                <div class="addon-check"></div>
+                <div class="addon-info">
+                  <div class="addon-name">Networking Dinner Ticket</div>
+                  <div class="addon-desc">Access to the exclusive exhibitor networking dinner on Day 1 evening.</div>
+                  <div class="addon-price">+€180 / person</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div style="display:flex;justify-content:space-between;gap:12px">
+          <button class="btn-secondary" onclick="goStep(3)">← Back</button>
+          <button class="btn-primary" style="width:auto;padding:12px 32px" onclick="goStep(5)">Continue to Review →</button>
+        </div>
+      </div>
+
+      <!-- Order Summary Sidebar -->
+      <div class="order-summary">
+        <div class="order-title">📋 Application Summary</div>
+        <div class="order-item"><span class="order-item-label">Standard Booth (B3)</span><span class="order-item-value">€899</span></div>
+        <div class="order-item"><span class="order-item-label">Featured Listing</span><span class="order-item-value">€150</span></div>
+        <div class="order-item" id="addon-total-row" style="display:none"><span class="order-item-label">Other Add-ons</span><span class="order-item-value" id="addon-total">€0</span></div>
+        <div class="order-total"><span>Total</span><span style="color:var(--orange)" id="grand-total">€1,049</span></div>
+        <div class="order-note">Excludes VAT. Payment due within 14 days of approval.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── STEP 5: REVIEW & PAY ── -->
+  <div id="step-panel-5" style="display:none">
+    <div class="section-title">Review & Submit Application</div>
+    <div class="section-sub">Please review your application details before submitting. You'll receive a confirmation email and our team will review within 2 business days.</div>
+
+    <div class="content-with-sidebar">
+      <div>
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title">📋 Application Summary</div>
+            <button class="btn-secondary" style="padding:5px 12px;font-size:12px" onclick="goStep(1)">Edit</button>
+          </div>
+          <div class="card-body">
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;font-size:13px">
+              <div><div style="color:var(--muted);font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.05em;margin-bottom:3px">Event</div><div style="font-weight:600">Indie Game Fest 2026</div><div style="color:var(--muted)">April 15–17, 2026 · Berlin</div></div>
+              <div><div style="color:var(--muted);font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.05em;margin-bottom:3px">Booth</div><div style="font-weight:600">Standard Booth — B3</div><div style="color:var(--muted)">6m² · Hall A · Near entrance</div></div>
+              <div><div style="color:var(--muted);font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.05em;margin-bottom:3px">Company</div><div style="font-weight:600">Indie Studio</div><div style="color:var(--muted)">Developer · United States</div></div>
+              <div><div style="color:var(--muted);font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.05em;margin-bottom:3px">Contact</div><div style="font-weight:600">Alex Johnson</div><div style="color:var(--muted)">alex@indiegame.io</div></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-header"><div class="card-title">💳 Payment Method</div></div>
+          <div class="card-body">
+            <div style="display:flex;gap:12px;margin-bottom:16px">
+              <label style="flex:1;border:2px solid var(--orange);border-radius:8px;padding:12px;cursor:pointer;display:flex;align-items:center;gap:10px;background:var(--orange-dim)">
+                <input type="radio" name="payment" checked style="accent-color:var(--orange)">
+                <div><div style="font-size:13px;font-weight:700">💳 Credit / Debit Card</div><div style="font-size:11px;color:var(--muted)">Visa, Mastercard, Amex</div></div>
+              </label>
+              <label style="flex:1;border:1.5px solid var(--border);border-radius:8px;padding:12px;cursor:pointer;display:flex;align-items:center;gap:10px">
+                <input type="radio" name="payment" style="accent-color:var(--orange)">
+                <div><div style="font-size:13px;font-weight:700">🏦 Bank Transfer</div><div style="font-size:11px;color:var(--muted)">Invoice sent after approval</div></div>
+              </label>
+            </div>
+            <div class="form-grid">
+              <div class="form-group full">
+                <label class="form-label">Card Number</label>
+                <input class="form-input" type="text" placeholder="1234 5678 9012 3456">
+              </div>
+              <div class="form-group">
+                <label class="form-label">Expiry Date</label>
+                <input class="form-input" type="text" placeholder="MM / YY">
+              </div>
+              <div class="form-group">
+                <label class="form-label">CVV</label>
+                <input class="form-input" type="text" placeholder="123">
+              </div>
+              <div class="form-group full">
+                <label class="form-label">Cardholder Name</label>
+                <input class="form-input" type="text" placeholder="Alex Johnson" value="Alex Johnson">
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div style="background:#fff3ec;border:1px solid var(--orange-border);border-radius:8px;padding:14px;font-size:13px;color:var(--muted);margin-bottom:16px">
+          <strong style="color:var(--text)">⚠️ Application Process:</strong> Your booth application will be reviewed by the event organizer within 2 business days. Your card will only be charged upon approval. You'll receive a confirmation email with your booth contract.
+        </div>
+
+        <label style="display:flex;align-items:flex-start;gap:10px;font-size:13px;cursor:pointer;margin-bottom:20px">
+          <input type="checkbox" style="margin-top:2px;accent-color:var(--orange)" checked>
+          <span>I agree to the <a href="#" style="color:var(--orange)">Exhibitor Terms & Conditions</a> and <a href="#" style="color:var(--orange)">Cancellation Policy</a>.</span>
+        </label>
+
+        <div style="display:flex;justify-content:space-between;gap:12px">
+          <button class="btn-secondary" onclick="goStep(4)">← Back</button>
+          <button class="btn-primary" style="width:auto;padding:14px 40px;font-size:15px" onclick="submitApplication()">🚀 Submit Application — €1,049</button>
+        </div>
+      </div>
+
+      <!-- Order Summary Sidebar -->
+      <div class="order-summary">
+        <div class="order-title">📋 Final Summary</div>
+        <div class="order-item"><span class="order-item-label">Standard Booth (B3)</span><span class="order-item-value">€899</span></div>
+        <div class="order-item"><span class="order-item-label">Featured Listing</span><span class="order-item-value">€150</span></div>
+        <div class="order-item"><span class="order-item-label">VAT (0%)</span><span class="order-item-value">€0</span></div>
+        <div class="order-total"><span>Total</span><span style="color:var(--orange)">€1,049</span></div>
+        <div class="order-note">Payment charged only after organizer approval. You'll receive an invoice by email.</div>
+        <div style="margin-top:12px;padding:10px;background:var(--bg);border-radius:6px;font-size:12px;color:var(--muted)">
+          🔒 Secure payment powered by Stripe
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── SUCCESS STATE ── -->
+  <div id="step-panel-success" style="display:none">
+    <div class="success-wrap">
+      <div class="success-icon">🎉</div>
+      <div class="success-title">Application Submitted!</div>
+      <div class="success-sub">Your booth application for <strong>Indie Game Fest 2026</strong> has been received. Our team will review it within 2 business days and send you a confirmation email.</div>
+      <div class="success-ref">Application Ref: IGF2026-BOOTH-0147</div>
+      <div class="success-actions">
+        <button class="btn-secondary" onclick="window.location.href='AttendeeDashboard_v1_PC.html'">Go to My Dashboard</button>
+        <button class="btn-primary" style="width:auto;padding:10px 24px" onclick="window.location.href='EventPublicPage_v2_PC.html'">Back to Event Page</button>
+      </div>
+      <div class="success-next">
+        <div class="success-next-item">
+          <div class="success-next-icon">📧</div>
+          <div class="success-next-title">Check your email</div>
+          <div class="success-next-sub">Confirmation sent to alex@indiegame.io</div>
+        </div>
+        <div class="success-next-item">
+          <div class="success-next-icon">⏳</div>
+          <div class="success-next-title">Await approval</div>
+          <div class="success-next-sub">2 business days review time</div>
+        </div>
+        <div class="success-next-item">
+          <div class="success-next-icon">🤝</div>
+          <div class="success-next-title">Set up Let's Meet</div>
+          <div class="success-next-sub">Start scheduling meetings once approved</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div><!-- /main -->
+
+<script>
+  let currentStep = 2;
+  let selectedBoothType = 'standard';
+  let selectedUnit = 'B3';
+  let addonTotal = 150; // Featured Listing pre-selected
+
+  const boothPrices = { pod: 0, standard: 899, premium: 2499 };
+  const boothSizes = { pod: '2m²', standard: '6m²', premium: '12m²' };
+  const boothBadges = { pod: 2, standard: 4, premium: 8 };
+
+  function goStep(n) {
+    if (n < 1 || n > 5) return;
+    // Update panels
+    for (let i = 1; i <= 5; i++) {
+      document.getElementById('step-panel-' + i).style.display = (i === n) ? 'block' : 'none';
+    }
+    // Update step indicators
+    for (let i = 1; i <= 5; i++) {
+      const el = document.getElementById('step-' + i);
+      el.classList.remove('active', 'done');
+      if (i < n) el.classList.add('done');
+      else if (i === n) el.classList.add('active');
+    }
+    // Update connectors
+    for (let i = 1; i <= 4; i++) {
+      const conn = document.getElementById('conn-' + i);
+      conn.classList.toggle('done', i < n);
+    }
+    currentStep = n;
+    window.scrollTo(0, 0);
+  }
+
+  function selectBoothType(type) {
+    selectedBoothType = type;
+    ['pod','standard','premium'].forEach(t => {
+      document.getElementById('type-' + t).classList.toggle('selected', t === type);
+    });
+    document.getElementById('summary-type').textContent = type.charAt(0).toUpperCase() + type.slice(1) + ' Booth';
+    document.getElementById('summary-size').textContent = boothSizes[type];
+    document.getElementById('summary-price').textContent = '€' + boothPrices[type];
+    updateGrandTotal();
+  }
+
+  function selectUnit(id, el) {
+    if (el.classList.contains('taken')) return;
+    // Deselect all
+    document.querySelectorAll('.floor-unit.selected').forEach(u => u.classList.remove('selected'));
+    el.classList.add('selected');
+    selectedUnit = id;
+    document.getElementById('summary-location').textContent = id;
+    document.getElementById('selected-unit-label').textContent = id + ' — ' + (el.classList.contains('premium') ? 'Premium' : 'Standard') + ' Booth (' + boothSizes[selectedBoothType] + ')';
+  }
+
+  function toggleAddon(el, price) {
+    el.classList.toggle('selected');
+    const check = el.querySelector('.addon-check');
+    if (el.classList.contains('selected')) {
+      check.textContent = '✓';
+      addonTotal += price;
+    } else {
+      check.textContent = '';
+      addonTotal -= price;
+    }
+    updateGrandTotal();
+  }
+
+  function updateGrandTotal() {
+    const base = boothPrices[selectedBoothType];
+    const total = base + addonTotal;
+    const el = document.getElementById('grand-total');
+    if (el) el.textContent = '€' + total.toLocaleString();
+  }
+
+  function submitApplication() {
+    for (let i = 1; i <= 5; i++) {
+      document.getElementById('step-panel-' + i).style.display = 'none';
+    }
+    document.getElementById('step-panel-success').style.display = 'block';
+    // Mark all steps done
+    for (let i = 1; i <= 5; i++) {
+      const el = document.getElementById('step-' + i);
+      el.classList.remove('active');
+      el.classList.add('done');
+    }
+    for (let i = 1; i <= 4; i++) {
+      document.getElementById('conn-' + i).classList.add('done');
+    }
+    window.scrollTo(0, 0);
+  }
+
+  // Initialize on step 1
+  goStep(1);
+</script>
+</body>
+</html>

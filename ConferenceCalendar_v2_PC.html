@@ -1026,6 +1026,14 @@ body {
         </div>
       </button>
     </div>
+      <button class="modal-btn" id="addToScheduleBtn" onclick="addToMySchedule()">
+        <span class="modal-btn-icon">⭐</span>
+        <div>
+          <div style="font-weight:600;">Add to My Schedule</div>
+          <div style="font-size:12px;color:var(--soft);">Save to your Game Connection schedule</div>
+        </div>
+      </button>
+    </div>
     <button class="modal-close" onclick="closeModal()">Cancel</button>
   </div>
 </div>
@@ -1160,7 +1168,7 @@ function handleCardClick(id) {
     // Navigate to platform event page (simulate)
     showToast('🚀 跳转到展会详情页…');
     setTimeout(() => {
-      window.open('EventPublicPage_v1_PC.html', '_blank');
+      window.location.href = 'EventPublicPage_v2_PC.html';
     }, 400);
   } else {
     window.open(e.link, '_blank');
@@ -1411,6 +1419,21 @@ function openCalModal(id) {
 
 function closeModal() {
   document.getElementById('calModal').classList.remove('open');
+}
+
+function addToMySchedule() {
+  if (!currentCalEvent) return;
+  // Save to localStorage
+  let schedule = JSON.parse(localStorage.getItem('_GC_MY_SCHEDULE') || '[]');
+  const exists = schedule.find(s => s.id === currentCalEvent.id);
+  if (!exists) {
+    schedule.push({ id: currentCalEvent.id, name: currentCalEvent.name, dateStart: currentCalEvent.dateStart, dateEnd: currentCalEvent.dateEnd, year: currentCalEvent.year, city: currentCalEvent.city, country: currentCalEvent.country, flag: currentCalEvent.flag, addedAt: Date.now() });
+    localStorage.setItem('_GC_MY_SCHEDULE', JSON.stringify(schedule));
+    showToast('⭐ Added to My Schedule!');
+  } else {
+    showToast('✔ Already in your schedule');
+  }
+  closeModal();
 }
 
 function parseDate(str, year) {

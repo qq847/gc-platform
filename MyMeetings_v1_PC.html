@@ -1,0 +1,736 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>My Meetings — Game Connection</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --bg: #f3f2ef;
+    --orange: #d95f2b;
+    --orange-dim: rgba(217,95,43,.1);
+    --orange-border: rgba(217,95,43,.3);
+    --teal: #0a7fa8;
+    --green: #0d9b72;
+    --purple: #7c3aed;
+    --white: #fff;
+    --text: #000000;
+    --muted: #444444;
+    --faint: #999999;
+    --border: #e0dfdc;
+    --radius: 10px;
+  }
+  body { font-family: 'DM Sans', sans-serif; line-height: 1.5; background: var(--bg); color: var(--text); min-height: 100vh; }
+
+  /* ── TOPBAR ── */
+  .topbar {
+    position: sticky; top: 0; z-index: 100;
+    height: 58px; background: var(--white);
+    border-bottom: 1px solid var(--border);
+    display: flex; align-items: center; gap: 0;
+    padding: 0 28px;
+  }
+  .topbar-logo { font-weight: 800; font-size: 15px; letter-spacing: .04em; margin-right: 20px; }
+  .topbar-logo span { color: var(--orange); }
+  .topbar-nav { display: flex; align-items: center; gap: 2px; flex: 1; }
+  .topbar-nav-link {
+    padding: 6px 14px; border-radius: 6px; font-size: 13px; font-weight: 500;
+    color: var(--muted); cursor: pointer; border: none; background: none;
+    font-family: inherit; transition: all .15s; text-decoration: none;
+  }
+  .topbar-nav-link:hover { background: var(--bg); color: var(--text); }
+  .topbar-nav-link.active { background: var(--orange-dim); color: var(--orange); font-weight: 600; }
+  .topbar-right { display: flex; align-items: center; gap: 10px; }
+  .avatar-btn {
+    width: 34px; height: 34px; border-radius: 50%;
+    background: linear-gradient(135deg, #d95f2b, #a0440f);
+    color: #fff; font-size: 13px; font-weight: 700;
+    display: flex; align-items: center; justify-content: center;
+    cursor: pointer; border: none; font-family: inherit;
+  }
+
+  /* ── LAYOUT ── */
+  .layout { display: flex; min-height: calc(100vh - 58px); }
+
+  /* ── SIDEBAR ── */
+  .sidebar {
+    width: 260px; flex-shrink: 0;
+    background: var(--white); border-right: 1px solid var(--border);
+    padding: 20px 0; display: flex; flex-direction: column;
+    position: sticky; top: 58px; height: calc(100vh - 58px); overflow-y: auto;
+  }
+  .sidebar-event {
+    padding: 14px 20px 10px; border-bottom: 1px solid var(--border); margin-bottom: 8px;
+  }
+  .sidebar-event-label { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: .08em; color: var(--faint); margin-bottom: 6px; }
+  .sidebar-event-item {
+    display: flex; align-items: center; gap: 10px;
+    padding: 10px 12px; border-radius: 8px; cursor: pointer;
+    transition: all .15s; margin-bottom: 4px;
+  }
+  .sidebar-event-item:hover { background: var(--bg); }
+  .sidebar-event-item.active { background: var(--orange-dim); }
+  .sidebar-event-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+  .sidebar-event-name { font-size: 13px; font-weight: 600; }
+  .sidebar-event-date { font-size: 11px; color: var(--muted); }
+  .sidebar-event-count {
+    margin-left: auto; font-size: 11px; font-weight: 700;
+    background: var(--orange); color: #fff;
+    padding: 1px 7px; border-radius: 10px;
+  }
+  .sidebar-section-label {
+    font-size: 10px; font-weight: 700; text-transform: uppercase;
+    letter-spacing: .08em; color: var(--faint); padding: 8px 20px 4px;
+  }
+  .sidebar-filter {
+    display: flex; align-items: center; gap: 8px;
+    padding: 8px 20px; cursor: pointer; font-size: 13px;
+    font-weight: 500; color: var(--muted); transition: color .15s;
+    border: none; background: none; font-family: inherit; width: 100%; text-align: left;
+  }
+  .sidebar-filter:hover { color: var(--text); }
+  .sidebar-filter.active { color: var(--orange); font-weight: 600; }
+  .sidebar-filter-dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
+  .sidebar-filter-count { margin-left: auto; font-size: 11px; color: var(--faint); }
+
+  /* ── MAIN ── */
+  .main { flex: 1; padding: 28px 32px; overflow-y: auto; }
+  .page-header { display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: 22px; }
+  .page-title { font-size: 22px; font-weight: 800; letter-spacing: -.01em; }
+  .page-subtitle { font-size: 13px; color: var(--muted); margin-top: 4px; }
+  .btn-primary {
+    background: var(--orange); color: #fff; border: none;
+    padding: 9px 20px; border-radius: 8px; font-size: 13px;
+    font-weight: 700; cursor: pointer; font-family: inherit;
+    transition: all .15s; display: flex; align-items: center; gap: 6px;
+  }
+  .btn-primary:hover { background: #c2521f; }
+  .btn-secondary {
+    background: none; color: var(--muted); border: 1px solid var(--border);
+    padding: 7px 14px; border-radius: 8px; font-size: 13px;
+    font-weight: 500; cursor: pointer; font-family: inherit; transition: all .15s;
+  }
+  .btn-secondary:hover { border-color: var(--orange); color: var(--orange); }
+
+  /* ── STATS ROW ── */
+  .stats-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-bottom: 22px; }
+  .stat-card {
+    background: var(--white); border: 1px solid var(--border);
+    border-radius: var(--radius); padding: 14px 16px;
+  }
+  .stat-value { font-size: 24px; font-weight: 800; }
+  .stat-label { font-size: 12px; color: var(--muted); margin-top: 2px; }
+  .stat-card.orange .stat-value { color: var(--orange); }
+  .stat-card.green .stat-value { color: var(--green); }
+  .stat-card.teal .stat-value { color: var(--teal); }
+
+  /* ── TOOLBAR ── */
+  .toolbar {
+    display: flex; align-items: center; gap: 10px; margin-bottom: 18px; flex-wrap: wrap;
+  }
+  .toolbar-search {
+    flex: 1; min-width: 200px; border: 1.5px solid var(--border);
+    border-radius: 8px; padding: 8px 14px; font-size: 13px;
+    font-family: inherit; outline: none; transition: border-color .15s;
+    background: var(--white);
+  }
+  .toolbar-search:focus { border-color: var(--orange); }
+  .toolbar-select {
+    border: 1.5px solid var(--border); border-radius: 8px;
+    padding: 8px 12px; font-size: 13px; font-family: inherit;
+    outline: none; background: var(--white); cursor: pointer;
+  }
+  .toolbar-select:focus { border-color: var(--orange); }
+
+  /* ── DAY SECTION ── */
+  .day-section { margin-bottom: 28px; }
+  .day-label {
+    font-size: 12px; font-weight: 700; text-transform: uppercase;
+    letter-spacing: .07em; color: var(--muted); margin-bottom: 12px;
+    display: flex; align-items: center; gap: 10px;
+  }
+  .day-label::after { content: ''; flex: 1; height: 1px; background: var(--border); }
+
+  /* ── MEETING CARD ── */
+  .meeting-card {
+    background: var(--white); border: 1.5px solid var(--border);
+    border-radius: var(--radius); padding: 16px 20px;
+    margin-bottom: 10px; display: flex; align-items: flex-start; gap: 16px;
+    transition: border-color .15s; cursor: pointer;
+    position: relative;
+  }
+  .meeting-card:hover { border-color: var(--orange-border); }
+  .meeting-card.confirmed { border-left: 4px solid var(--green); }
+  .meeting-card.pending { border-left: 4px solid var(--orange); }
+  .meeting-card.requested { border-left: 4px solid var(--teal); }
+  .meeting-card.cancelled { border-left: 4px solid #ef4444; opacity: .6; }
+  .meeting-time-col { width: 64px; flex-shrink: 0; text-align: center; }
+  .meeting-time { font-size: 15px; font-weight: 800; }
+  .meeting-duration { font-size: 11px; color: var(--faint); margin-top: 2px; }
+  .meeting-time-end { font-size: 12px; color: var(--muted); margin-top: 2px; }
+  .meeting-divider { width: 1px; background: var(--border); align-self: stretch; flex-shrink: 0; }
+  .meeting-person { display: flex; align-items: center; gap: 12px; flex: 1; }
+  .meeting-avatar {
+    width: 44px; height: 44px; border-radius: 50%; flex-shrink: 0;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 15px; font-weight: 700; color: #fff;
+  }
+  .meeting-name { font-size: 14px; font-weight: 700; margin-bottom: 2px; }
+  .meeting-role { font-size: 12px; color: var(--muted); }
+  .meeting-company { font-size: 12px; color: var(--muted); }
+  .meeting-agenda { font-size: 12px; color: var(--faint); margin-top: 4px; font-style: italic; }
+  .meeting-meta { display: flex; align-items: center; gap: 12px; flex-shrink: 0; }
+  .meeting-room {
+    font-size: 12px; color: var(--muted); background: var(--bg);
+    padding: 4px 10px; border-radius: 6px; display: flex; align-items: center; gap: 4px;
+  }
+  .meeting-status {
+    font-size: 11px; font-weight: 700; padding: 4px 10px; border-radius: 8px;
+  }
+  .status-confirmed { background: #d1fae5; color: #065f46; }
+  .status-pending { background: #fff3ec; color: var(--orange); }
+  .status-requested { background: #dbeafe; color: #1d4ed8; }
+  .status-cancelled { background: #fee2e2; color: #dc2626; }
+  .meeting-actions { display: flex; gap: 6px; align-items: center; }
+  .btn-xs {
+    padding: 4px 10px; border-radius: 6px; font-size: 11px; font-weight: 600;
+    cursor: pointer; font-family: inherit; border: none; transition: all .15s;
+  }
+  .btn-xs-primary { background: var(--orange); color: #fff; }
+  .btn-xs-primary:hover { background: #c2521f; }
+  .btn-xs-secondary { background: var(--bg); color: var(--muted); border: 1px solid var(--border); }
+  .btn-xs-secondary:hover { border-color: var(--orange); color: var(--orange); }
+  .btn-xs-danger { background: #fee2e2; color: #dc2626; }
+  .btn-xs-danger:hover { background: #fecaca; }
+
+  /* ── AVAILABLE SLOTS ── */
+  .slots-section { margin-bottom: 28px; }
+  .slots-title { font-size: 14px; font-weight: 700; margin-bottom: 12px; display: flex; align-items: center; gap: 8px; }
+  .slots-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 8px; }
+  .slot-item {
+    border: 1.5px dashed var(--border); border-radius: 8px; padding: 12px;
+    text-align: center; cursor: pointer; transition: all .15s;
+  }
+  .slot-item:hover { border-color: var(--orange); background: var(--orange-dim); }
+  .slot-item.blocked { background: #f3f4f6; cursor: not-allowed; opacity: .5; }
+  .slot-time { font-size: 13px; font-weight: 700; }
+  .slot-date { font-size: 11px; color: var(--muted); margin-top: 2px; }
+  .slot-add { font-size: 11px; color: var(--orange); font-weight: 600; margin-top: 4px; }
+
+  /* ── MODAL ── */
+  .modal-overlay {
+    position: fixed; inset: 0; background: rgba(0,0,0,.45);
+    z-index: 500; display: flex; align-items: center; justify-content: center;
+    opacity: 0; pointer-events: none; transition: opacity .2s;
+  }
+  .modal-overlay.open { opacity: 1; pointer-events: all; }
+  .modal {
+    background: var(--white); border-radius: 14px;
+    width: 520px; max-width: 95vw; max-height: 85vh;
+    overflow-y: auto; box-shadow: 0 20px 60px rgba(0,0,0,.2);
+    transform: translateY(20px); transition: transform .2s;
+  }
+  .modal-overlay.open .modal { transform: translateY(0); }
+  .modal-header {
+    padding: 20px 24px; border-bottom: 1px solid var(--border);
+    display: flex; align-items: center; justify-content: space-between;
+  }
+  .modal-title { font-size: 16px; font-weight: 700; }
+  .modal-close { font-size: 22px; cursor: pointer; color: var(--muted); border: none; background: none; line-height: 1; }
+  .modal-body { padding: 20px 24px; }
+  .modal-footer { padding: 16px 24px; border-top: 1px solid var(--border); display: flex; justify-content: flex-end; gap: 10px; }
+  .modal-person { display: flex; align-items: center; gap: 14px; margin-bottom: 18px; padding-bottom: 18px; border-bottom: 1px solid var(--border); }
+  .modal-person-avatar {
+    width: 52px; height: 52px; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 18px; font-weight: 700; color: #fff;
+  }
+  .modal-person-name { font-size: 16px; font-weight: 800; }
+  .modal-person-role { font-size: 13px; color: var(--muted); }
+  .modal-detail-row { display: flex; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid var(--border); font-size: 13px; }
+  .modal-detail-row:last-child { border-bottom: none; }
+  .modal-detail-label { color: var(--muted); }
+  .modal-detail-value { font-weight: 600; }
+  .modal-agenda-input {
+    width: 100%; padding: 10px 14px; border: 1.5px solid var(--border);
+    border-radius: 8px; font-size: 13px; font-family: inherit;
+    outline: none; resize: vertical; min-height: 80px;
+    transition: border-color .15s;
+  }
+  .modal-agenda-input:focus { border-color: var(--orange); }
+
+  /* ── EMPTY STATE ── */
+  .empty-state { text-align: center; padding: 48px 24px; color: var(--faint); }
+  .empty-state-icon { font-size: 48px; margin-bottom: 12px; }
+  .empty-state-title { font-size: 16px; font-weight: 700; color: var(--muted); margin-bottom: 6px; }
+  .empty-state-sub { font-size: 13px; margin-bottom: 20px; }
+</style>
+</head>
+<body>
+
+<!-- TOPBAR -->
+<header class="topbar">
+  <div class="topbar-logo">GAME<span>CONNECTION</span></div>
+  <nav class="topbar-nav">
+    <a href="EventHub_v2_PC.html" class="topbar-nav-link">🏠 Home</a>
+    <a href="AttendeeDashboard_v1_PC.html" class="topbar-nav-link">📊 Dashboard</a>
+    <a href="MyMeetings_v1_PC.html" class="topbar-nav-link active">🤝 My Meetings</a>
+    <a href="MySchedule_v1_PC.html" class="topbar-nav-link">🗓 My Schedule</a>
+  </nav>
+  <div class="topbar-right">
+    <button class="avatar-btn" title="Alex Johnson">AJ</button>
+  </div>
+</header>
+
+<!-- LAYOUT -->
+<div class="layout">
+
+  <!-- SIDEBAR -->
+  <aside class="sidebar">
+    <div class="sidebar-event">
+      <div class="sidebar-event-label">My Events</div>
+      <div class="sidebar-event-item active" onclick="switchEvent('igf')">
+        <div class="sidebar-event-dot" style="background:var(--orange)"></div>
+        <div>
+          <div class="sidebar-event-name">Indie Game Fest 2026</div>
+          <div class="sidebar-event-date">Apr 15–17 · Berlin</div>
+        </div>
+        <div class="sidebar-event-count">5</div>
+      </div>
+      <div class="sidebar-event-item" onclick="switchEvent('gca')">
+        <div class="sidebar-event-dot" style="background:var(--teal)"></div>
+        <div>
+          <div class="sidebar-event-name">Game Connection Asia</div>
+          <div class="sidebar-event-date">May 14–16 · Singapore</div>
+        </div>
+        <div class="sidebar-event-count">0</div>
+      </div>
+    </div>
+
+    <div class="sidebar-section-label">Filter by Status</div>
+    <button class="sidebar-filter active" onclick="filterMeetings('all')">
+      <div class="sidebar-filter-dot" style="background:var(--muted)"></div>
+      All Meetings
+      <span class="sidebar-filter-count">5</span>
+    </button>
+    <button class="sidebar-filter" onclick="filterMeetings('confirmed')">
+      <div class="sidebar-filter-dot" style="background:var(--green)"></div>
+      Confirmed
+      <span class="sidebar-filter-count">2</span>
+    </button>
+    <button class="sidebar-filter" onclick="filterMeetings('pending')">
+      <div class="sidebar-filter-dot" style="background:var(--orange)"></div>
+      Pending Approval
+      <span class="sidebar-filter-count">1</span>
+    </button>
+    <button class="sidebar-filter" onclick="filterMeetings('requested')">
+      <div class="sidebar-filter-dot" style="background:var(--teal)"></div>
+      Requested by Me
+      <span class="sidebar-filter-count">2</span>
+    </button>
+
+    <div class="sidebar-section-label" style="margin-top:12px">My Availability</div>
+    <div style="padding:0 16px;margin-top:4px">
+      <div style="font-size:12px;color:var(--muted);margin-bottom:8px">Apr 15–17 · 12 slots open</div>
+      <button class="btn-secondary" style="width:100%;font-size:12px;padding:7px 12px" onclick="openAvailabilityModal()">Edit Availability</button>
+    </div>
+  </aside>
+
+  <!-- MAIN -->
+  <main class="main">
+    <div class="page-header">
+      <div>
+        <div class="page-title">🤝 My Meetings</div>
+        <div class="page-subtitle">Indie Game Fest 2026 · April 15–17, 2026 · Berlin Exhibition Center</div>
+      </div>
+      <button class="btn-primary" onclick="openRequestModal()">+ Request Meeting</button>
+    </div>
+
+    <!-- Stats -->
+    <div class="stats-row">
+      <div class="stat-card green">
+        <div class="stat-value">2</div>
+        <div class="stat-label">Confirmed</div>
+      </div>
+      <div class="stat-card orange">
+        <div class="stat-value">1</div>
+        <div class="stat-label">Pending Approval</div>
+      </div>
+      <div class="stat-card teal">
+        <div class="stat-value">2</div>
+        <div class="stat-label">Requested by Me</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-value">12</div>
+        <div class="stat-label">Slots Available</div>
+      </div>
+    </div>
+
+    <!-- Toolbar -->
+    <div class="toolbar">
+      <input class="toolbar-search" type="text" placeholder="🔍 Search by name or company…" oninput="filterBySearch(this.value)">
+      <select class="toolbar-select" onchange="filterMeetings(this.value)">
+        <option value="all">All Statuses</option>
+        <option value="confirmed">Confirmed</option>
+        <option value="pending">Pending</option>
+        <option value="requested">Requested</option>
+      </select>
+      <select class="toolbar-select">
+        <option>All Days</option>
+        <option>Day 1 — Apr 15</option>
+        <option>Day 2 — Apr 16</option>
+        <option>Day 3 — Apr 17</option>
+      </select>
+    </div>
+
+    <!-- Day 1 -->
+    <div class="day-section">
+      <div class="day-label">📅 Day 1 — Tuesday, April 15</div>
+
+      <div class="meeting-card confirmed" onclick="openMeetingDetail('sc')">
+        <div class="meeting-time-col">
+          <div class="meeting-time">10:00</div>
+          <div class="meeting-time-end">10:30</div>
+          <div class="meeting-duration">30 min</div>
+        </div>
+        <div class="meeting-divider"></div>
+        <div class="meeting-person">
+          <div class="meeting-avatar" style="background:linear-gradient(135deg,#0a7fa8,#065f78)">SC</div>
+          <div>
+            <div class="meeting-name">Sarah Chen</div>
+            <div class="meeting-role">VP Acquisitions · Nexus Publishing</div>
+            <div class="meeting-agenda">"Looking forward to seeing your latest build — especially the combat system."</div>
+          </div>
+        </div>
+        <div class="meeting-meta">
+          <div class="meeting-room">📍 Room A</div>
+          <div class="meeting-status status-confirmed">✓ Confirmed</div>
+          <div class="meeting-actions" onclick="event.stopPropagation()">
+            <button class="btn-xs btn-xs-secondary" onclick="openMeetingDetail('sc')">Details</button>
+            <button class="btn-xs btn-xs-secondary">💬 Message</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="meeting-card confirmed" onclick="openMeetingDetail('mr')">
+        <div class="meeting-time-col">
+          <div class="meeting-time">14:30</div>
+          <div class="meeting-time-end">15:00</div>
+          <div class="meeting-duration">30 min</div>
+        </div>
+        <div class="meeting-divider"></div>
+        <div class="meeting-person">
+          <div class="meeting-avatar" style="background:linear-gradient(135deg,#7c3aed,#5b21b6)">MR</div>
+          <div>
+            <div class="meeting-name">Marcus Reid</div>
+            <div class="meeting-role">Partner · IndieFund VC</div>
+            <div class="meeting-agenda">"Interested in your funding needs and revenue projections."</div>
+          </div>
+        </div>
+        <div class="meeting-meta">
+          <div class="meeting-room">📍 Room C</div>
+          <div class="meeting-status status-confirmed">✓ Confirmed</div>
+          <div class="meeting-actions" onclick="event.stopPropagation()">
+            <button class="btn-xs btn-xs-secondary" onclick="openMeetingDetail('mr')">Details</button>
+            <button class="btn-xs btn-xs-secondary">💬 Message</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Day 2 -->
+    <div class="day-section">
+      <div class="day-label">📅 Day 2 — Wednesday, April 16</div>
+
+      <div class="meeting-card pending" onclick="openMeetingDetail('np')">
+        <div class="meeting-time-col">
+          <div class="meeting-time">11:00</div>
+          <div class="meeting-time-end">11:30</div>
+          <div class="meeting-duration">30 min</div>
+        </div>
+        <div class="meeting-divider"></div>
+        <div class="meeting-person">
+          <div class="meeting-avatar" style="background:linear-gradient(135deg,#0d9b72,#065f46)">NP</div>
+          <div>
+            <div class="meeting-name">Nina Park</div>
+            <div class="meeting-role">Partner Development · Steam</div>
+            <div class="meeting-agenda">"Would love to discuss your Steam page strategy and wishlist optimization."</div>
+          </div>
+        </div>
+        <div class="meeting-meta">
+          <div class="meeting-room">📍 Room B</div>
+          <div class="meeting-status status-pending">⏳ Pending</div>
+          <div class="meeting-actions" onclick="event.stopPropagation()">
+            <button class="btn-xs btn-xs-secondary">Details</button>
+            <button class="btn-xs btn-xs-danger">Cancel</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="meeting-card requested" onclick="openMeetingDetail('yt')">
+        <div class="meeting-time-col">
+          <div class="meeting-time">15:00</div>
+          <div class="meeting-time-end">15:30</div>
+          <div class="meeting-duration">30 min</div>
+        </div>
+        <div class="meeting-divider"></div>
+        <div class="meeting-person">
+          <div class="meeting-avatar" style="background:linear-gradient(135deg,#d95f2b,#a0440f)">YT</div>
+          <div>
+            <div class="meeting-name">Yuki Tanaka</div>
+            <div class="meeting-role">Founder · Pixel Valley Studio</div>
+            <div class="meeting-agenda">"Exploring co-development opportunities on our upcoming title."</div>
+          </div>
+        </div>
+        <div class="meeting-meta">
+          <div class="meeting-room">📍 Room A</div>
+          <div class="meeting-status status-requested">📤 Requested</div>
+          <div class="meeting-actions" onclick="event.stopPropagation()">
+            <button class="btn-xs btn-xs-secondary">Details</button>
+            <button class="btn-xs btn-xs-danger">Cancel</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Day 3 -->
+    <div class="day-section">
+      <div class="day-label">📅 Day 3 — Thursday, April 17</div>
+
+      <div class="meeting-card requested" onclick="openMeetingDetail('fw')">
+        <div class="meeting-time-col">
+          <div class="meeting-time">09:30</div>
+          <div class="meeting-time-end">10:00</div>
+          <div class="meeting-duration">30 min</div>
+        </div>
+        <div class="meeting-divider"></div>
+        <div class="meeting-person">
+          <div class="meeting-avatar" style="background:linear-gradient(135deg,#374151,#1f2937)">FW</div>
+          <div>
+            <div class="meeting-name">Felix Wagner</div>
+            <div class="meeting-role">Head of Data · Game Analytics Co.</div>
+            <div class="meeting-agenda">"Analytics partnership and player behavior insights for your game."</div>
+          </div>
+        </div>
+        <div class="meeting-meta">
+          <div class="meeting-room">📍 Room C</div>
+          <div class="meeting-status status-requested">📤 Requested</div>
+          <div class="meeting-actions" onclick="event.stopPropagation()">
+            <button class="btn-xs btn-xs-secondary">Details</button>
+            <button class="btn-xs btn-xs-danger">Cancel</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Available Slots -->
+    <div class="slots-section">
+      <div class="slots-title">⏰ Your Open Slots — Request a Meeting</div>
+      <div class="slots-grid">
+        <div class="slot-item" onclick="openRequestModal()">
+          <div class="slot-time">10:30 – 11:00</div>
+          <div class="slot-date">Apr 15 (Day 1)</div>
+          <div class="slot-add">+ Request meeting</div>
+        </div>
+        <div class="slot-item" onclick="openRequestModal()">
+          <div class="slot-time">13:00 – 13:30</div>
+          <div class="slot-date">Apr 15 (Day 1)</div>
+          <div class="slot-add">+ Request meeting</div>
+        </div>
+        <div class="slot-item" onclick="openRequestModal()">
+          <div class="slot-time">09:00 – 09:30</div>
+          <div class="slot-date">Apr 16 (Day 2)</div>
+          <div class="slot-add">+ Request meeting</div>
+        </div>
+        <div class="slot-item" onclick="openRequestModal()">
+          <div class="slot-time">13:30 – 14:00</div>
+          <div class="slot-date">Apr 16 (Day 2)</div>
+          <div class="slot-add">+ Request meeting</div>
+        </div>
+        <div class="slot-item" onclick="openRequestModal()">
+          <div class="slot-time">11:00 – 11:30</div>
+          <div class="slot-date">Apr 17 (Day 3)</div>
+          <div class="slot-add">+ Request meeting</div>
+        </div>
+        <div class="slot-item" onclick="openRequestModal()">
+          <div class="slot-time">14:30 – 15:00</div>
+          <div class="slot-date">Apr 17 (Day 3)</div>
+          <div class="slot-add">+ Request meeting</div>
+        </div>
+      </div>
+    </div>
+
+  </main>
+</div>
+
+<!-- MEETING DETAIL MODAL -->
+<div class="modal-overlay" id="meeting-modal">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-title">Meeting Details</div>
+      <button class="modal-close" onclick="closeModal('meeting-modal')">×</button>
+    </div>
+    <div class="modal-body" id="meeting-modal-body">
+    </div>
+    <div class="modal-footer">
+      <button class="btn-secondary" onclick="closeModal('meeting-modal')">Close</button>
+      <button class="btn-primary" style="padding:9px 20px;font-size:13px">💬 Send Message</button>
+    </div>
+  </div>
+</div>
+
+<!-- REQUEST MEETING MODAL -->
+<div class="modal-overlay" id="request-modal">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-title">+ Request a Meeting</div>
+      <button class="modal-close" onclick="closeModal('request-modal')">×</button>
+    </div>
+    <div class="modal-body">
+      <div style="margin-bottom:16px">
+        <label style="font-size:13px;font-weight:600;display:block;margin-bottom:6px">Search for a person</label>
+        <input type="text" placeholder="🔍 Search by name or company…" style="width:100%;padding:10px 14px;border:1.5px solid var(--border);border-radius:8px;font-size:13px;font-family:inherit;outline:none">
+      </div>
+      <div style="margin-bottom:16px">
+        <label style="font-size:13px;font-weight:600;display:block;margin-bottom:6px">Preferred Time Slot</label>
+        <select style="width:100%;padding:10px 14px;border:1.5px solid var(--border);border-radius:8px;font-size:13px;font-family:inherit;outline:none;background:var(--white)">
+          <option>Apr 15 · 10:30 – 11:00 (Day 1)</option>
+          <option>Apr 15 · 13:00 – 13:30 (Day 1)</option>
+          <option>Apr 16 · 09:00 – 09:30 (Day 2)</option>
+          <option>Apr 16 · 13:30 – 14:00 (Day 2)</option>
+          <option>Apr 17 · 11:00 – 11:30 (Day 3)</option>
+          <option>Apr 17 · 14:30 – 15:00 (Day 3)</option>
+        </select>
+      </div>
+      <div>
+        <label style="font-size:13px;font-weight:600;display:block;margin-bottom:6px">Meeting Agenda <span style="color:var(--orange)">*</span></label>
+        <textarea class="modal-agenda-input" placeholder="What would you like to discuss? (e.g. publishing deal, investment, co-development…)"></textarea>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-secondary" onclick="closeModal('request-modal')">Cancel</button>
+      <button class="btn-primary" style="padding:9px 20px;font-size:13px" onclick="submitMeetingRequest()">Send Request →</button>
+    </div>
+  </div>
+</div>
+
+<script>
+  const meetingDetails = {
+    sc: {
+      name: 'Sarah Chen', role: 'VP Acquisitions', company: 'Nexus Publishing',
+      initials: 'SC', color: 'linear-gradient(135deg,#0a7fa8,#065f78)',
+      time: 'Apr 15 · 10:00 – 10:30', room: 'Room A, Hall A',
+      status: 'Confirmed', statusClass: 'status-confirmed',
+      agenda: 'Looking forward to seeing your latest build — especially the combat system.',
+      notes: 'Sarah has published 12 indie titles in the past 3 years. Focus on action and RPG genres.'
+    },
+    mr: {
+      name: 'Marcus Reid', role: 'Partner', company: 'IndieFund VC',
+      initials: 'MR', color: 'linear-gradient(135deg,#7c3aed,#5b21b6)',
+      time: 'Apr 15 · 14:30 – 15:00', room: 'Room C, Hall A',
+      status: 'Confirmed', statusClass: 'status-confirmed',
+      agenda: 'Interested in your funding needs and revenue projections.',
+      notes: 'IndieFund VC has invested $50M+ in indie games. Ticket size: $500K – $2M.'
+    },
+    np: {
+      name: 'Nina Park', role: 'Partner Development', company: 'Steam / Valve',
+      initials: 'NP', color: 'linear-gradient(135deg,#0d9b72,#065f46)',
+      time: 'Apr 16 · 11:00 – 11:30', room: 'Room B, Hall A',
+      status: 'Pending Approval', statusClass: 'status-pending',
+      agenda: 'Would love to discuss your Steam page strategy and wishlist optimization.',
+      notes: 'Nina helps developers optimize their Steam presence and launch strategy.'
+    },
+    yt: {
+      name: 'Yuki Tanaka', role: 'Founder', company: 'Pixel Valley Studio',
+      initials: 'YT', color: 'linear-gradient(135deg,#d95f2b,#a0440f)',
+      time: 'Apr 16 · 15:00 – 15:30', room: 'Room A, Hall A',
+      status: 'Requested by You', statusClass: 'status-requested',
+      agenda: 'Exploring co-development opportunities on our upcoming title.',
+      notes: 'Pixel Valley Studio is known for pixel art platformers. 3 titles shipped on Switch and PC.'
+    },
+    fw: {
+      name: 'Felix Wagner', role: 'Head of Data', company: 'Game Analytics Co.',
+      initials: 'FW', color: 'linear-gradient(135deg,#374151,#1f2937)',
+      time: 'Apr 17 · 09:30 – 10:00', room: 'Room C, Hall A',
+      status: 'Requested by You', statusClass: 'status-requested',
+      agenda: 'Analytics partnership and player behavior insights for your game.',
+      notes: 'Game Analytics Co. provides real-time player behavior data for 200+ live games.'
+    }
+  };
+
+  function openMeetingDetail(id) {
+    const d = meetingDetails[id];
+    if (!d) return;
+    document.getElementById('meeting-modal-body').innerHTML = `
+      <div class="modal-person">
+        <div class="modal-person-avatar" style="background:${d.color}">${d.initials}</div>
+        <div>
+          <div class="modal-person-name">${d.name}</div>
+          <div class="modal-person-role">${d.role} · ${d.company}</div>
+        </div>
+        <span class="meeting-status ${d.statusClass}" style="margin-left:auto">${d.status}</span>
+      </div>
+      <div class="modal-detail-row"><span class="modal-detail-label">Date & Time</span><span class="modal-detail-value">${d.time}</span></div>
+      <div class="modal-detail-row"><span class="modal-detail-label">Location</span><span class="modal-detail-value">📍 ${d.room}</span></div>
+      <div class="modal-detail-row"><span class="modal-detail-label">Duration</span><span class="modal-detail-value">30 minutes</span></div>
+      <div class="modal-detail-row"><span class="modal-detail-label">Event</span><span class="modal-detail-value">Indie Game Fest 2026</span></div>
+      <div style="margin-top:14px">
+        <div style="font-size:12px;font-weight:700;color:var(--muted);margin-bottom:6px">MEETING AGENDA</div>
+        <div style="font-size:13px;color:var(--muted);background:var(--bg);padding:12px;border-radius:8px;font-style:italic">"${d.agenda}"</div>
+      </div>
+      <div style="margin-top:14px">
+        <div style="font-size:12px;font-weight:700;color:var(--muted);margin-bottom:6px">ABOUT ${d.name.toUpperCase()}</div>
+        <div style="font-size:13px;color:var(--muted)">${d.notes}</div>
+      </div>
+    `;
+    document.getElementById('meeting-modal').classList.add('open');
+  }
+
+  function openRequestModal() {
+    document.getElementById('request-modal').classList.add('open');
+  }
+
+  function openAvailabilityModal() {
+    // placeholder
+    alert('Availability editor coming soon!');
+  }
+
+  function closeModal(id) {
+    document.getElementById(id).classList.remove('open');
+  }
+
+  function submitMeetingRequest() {
+    closeModal('request-modal');
+    // Show toast
+    const toast = document.createElement('div');
+    toast.style.cssText = 'position:fixed;bottom:24px;right:24px;background:#1a1a1a;color:#fff;padding:12px 20px;border-radius:10px;font-size:13px;font-weight:600;z-index:9999;box-shadow:0 8px 24px rgba(0,0,0,.2)';
+    toast.textContent = '✅ Meeting request sent!';
+    document.body.appendChild(toast);
+    setTimeout(() => toast.remove(), 3000);
+  }
+
+  function filterMeetings(status) {
+    document.querySelectorAll('.sidebar-filter').forEach(f => f.classList.remove('active'));
+    // Update active filter
+  }
+
+  function filterBySearch(query) {
+    // placeholder
+  }
+
+  function switchEvent(id) {
+    document.querySelectorAll('.sidebar-event-item').forEach(el => el.classList.remove('active'));
+    event.currentTarget.classList.add('active');
+  }
+
+  // Close modals on overlay click
+  ['meeting-modal', 'request-modal'].forEach(id => {
+    document.getElementById(id).addEventListener('click', function(e) {
+      if (e.target === this) closeModal(id);
+    });
+  });
+</script>
+</body>
+</html>
