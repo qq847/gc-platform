@@ -1096,15 +1096,15 @@
         <div class="form-grid col-3">
           <div class="form-field">
             <label class="form-label">Venue</label>
-            <input type="text" class="form-input" placeholder="Convention Center">
+            <input type="text" class="form-input" id="venuePhysical" placeholder="Convention Center">
           </div>
           <div class="form-field">
             <label class="form-label">City</label>
-            <input type="text" class="form-input" placeholder="Lyon">
+            <input type="text" class="form-input" id="cityPhysical" placeholder="Lyon">
           </div>
           <div class="form-field">
             <label class="form-label">Country</label>
-            <input type="text" class="form-input" placeholder="France">
+            <input type="text" class="form-input" id="countryPhysical" placeholder="France">
           </div>
         </div>
       </div>
@@ -1918,16 +1918,26 @@
   function publishEvent() {
     updateChecklist();
     setTimeout(() => {
-      if (document.querySelectorAll('.check-item.warn').length > 0) {
-        showToast('Some checklist items need attention.', 'error');
+      // Only block if critical fields are missing (not cover image)
+      const criticalWarn = document.querySelectorAll('.check-item.warn:not(#chkCover)').length > 0;
+      if (criticalWarn) {
+        showToast('Please complete required fields before publishing.', 'error');
       } else {
         showToast('🎉 Event published successfully!', 'success');
-        // Save event to localStorage so EventHub knows we have an event
+        // Save comprehensive event data to localStorage
         const eventData = {
           id: 'evt_' + Date.now(),
-          name: document.getElementById('event-name')?.value || 'My Event',
+          name: document.getElementById('eventName')?.value || 'My Event',
           status: 'live',
-          publishedAt: new Date().toISOString()
+          publishedAt: new Date().toISOString(),
+          startDate: document.getElementById('startDate')?.value || '',
+          endDate: document.getElementById('endDate')?.value || '',
+          venue: document.getElementById('venuePhysical')?.value || '',
+          city: document.getElementById('cityPhysical')?.value || '',
+          country: document.getElementById('countryPhysical')?.value || '',
+          location: [document.getElementById('venuePhysical')?.value, document.getElementById('cityPhysical')?.value, document.getElementById('countryPhysical')?.value].filter(Boolean).join(', ') || '',
+          attendees: document.getElementById('expectedAttendees')?.value || '',
+          description: document.getElementById('eventDesc')?.value || ''
         };
         localStorage.setItem('gc_hq_event', JSON.stringify(eventData));
         setTimeout(() => {
@@ -1941,7 +1951,7 @@
   function saveDraft() {
     const draftData = {
       id: 'draft_' + Date.now(),
-      name: document.getElementById('event-name')?.value || 'Draft Event',
+      name: document.getElementById('eventName')?.value || 'Draft Event',
       status: 'draft',
       savedAt: new Date().toISOString()
     };

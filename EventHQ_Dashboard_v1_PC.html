@@ -987,6 +987,39 @@
 
 </div>
 <script>
+// ── LOAD EVENT DATA FROM LOCALSTORAGE ──
+(function initEventData() {
+  try {
+    const stored = localStorage.getItem('gc_hq_event');
+    if (stored) {
+      const ev = JSON.parse(stored);
+      const evName = ev.name || 'Indie Game Fest 2026';
+      // Update org name in topbar
+      const orgNameEl = document.querySelector('.org-name');
+      if (orgNameEl) orgNameEl.textContent = evName;
+      // Update welcome title
+      const welcomeTitle = document.querySelector('.welcome-title');
+      if (welcomeTitle) welcomeTitle.textContent = 'Welcome back, ' + evName.split(' ').slice(0,3).join(' ') + ' \uD83D\uDC4B';
+      // Update page title
+      document.title = 'Event HQ \u2013 Dashboard \u00b7 ' + evName;
+      // Update subtitle with location and dates if available
+      const welcomeSub = document.querySelector('.welcome-sub');
+      if (welcomeSub && (ev.location || ev.startDate)) {
+        let subText = 'Your event is live';
+        if (ev.location) subText += ' \u00b7 ' + ev.location;
+        if (ev.startDate && ev.endDate) {
+          const start = new Date(ev.startDate);
+          const end = new Date(ev.endDate);
+          const today = new Date();
+          const daysLeft = Math.ceil((end - today) / (1000 * 60 * 60 * 24));
+          if (daysLeft > 0) subText += ' \u00b7 ' + daysLeft + ' days to go';
+        }
+        welcomeSub.innerHTML = '<span class="live-dot"></span>' + subText;
+      }
+    }
+  } catch(e) { /* fallback to static content */ }
+})();
+
 function hqNav(el, section) {
   document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
   el.classList.add('active');
