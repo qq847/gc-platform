@@ -1768,105 +1768,74 @@ async function gcSignOut() {
 </div><!-- /layout -->
 
 <!-- PROJECTS PANEL -->
-<div id="projects-panel" style="display:none;position:fixed;top:var(--nav-h);left:0;right:0;bottom:0;background:var(--bg);z-index:100;display:none;grid-template-columns:240px 1fr 300px">
+<div id="projects-panel" style="display:none;position:fixed;top:var(--nav-h);left:0;right:0;bottom:0;background:#f5f3ef;z-index:100;flex-direction:column;overflow:hidden">
 
-  <!-- Left filter sidebar -->
-  <div style="border-right:1px solid #e0dfdc;background:#f3f2ef;overflow-y:auto;padding:16px">
-    <div class="left-title" style="margin-bottom:12px">Filter Projects</div>
-    <div class="left-title" style="margin-top:16px;margin-bottom:8px">Status</div>
-    <div style="display:flex;flex-direction:column;gap:4px" id="proj-pc-status-filters">
-      <button class="pc-proj-filter active" data-status="All" onclick="pcProjSetStatus(this)">All Projects</button>
-      <button class="pc-proj-filter" data-status="Seeking Publisher" onclick="pcProjSetStatus(this)">🎯 Seeking Publisher</button>
-      <button class="pc-proj-filter" data-status="Seeking Investment" onclick="pcProjSetStatus(this)">💰 Seeking Investment</button>
-      <button class="pc-proj-filter" data-status="In Development" onclick="pcProjSetStatus(this)">🛠️ In Development</button>
-      <button class="pc-proj-filter" data-status="Released" onclick="pcProjSetStatus(this)">✅ Released</button>
-    </div>
-    <div class="left-title" style="margin-top:20px;margin-bottom:8px">Platform</div>
-    <div style="display:flex;flex-direction:column;gap:4px">
-      <button class="pc-proj-filter" onclick="fdShowToast('Filter by PC')">PC</button>
-      <button class="pc-proj-filter" onclick="fdShowToast('Filter by Console')">Console</button>
-      <button class="pc-proj-filter" onclick="fdShowToast('Filter by Mobile')">Mobile</button>
-      <button class="pc-proj-filter" onclick="fdShowToast('Filter by Switch')">Switch</button>
-    </div>
-    <div class="left-title" style="margin-top:20px;margin-bottom:8px">Team Size</div>
-    <div style="display:flex;flex-direction:column;gap:4px">
-      <button class="pc-proj-filter" onclick="fdShowToast('Filter: 1-5')">1–5 people</button>
-      <button class="pc-proj-filter" onclick="fdShowToast('Filter: 6-15')">6–15 people</button>
-      <button class="pc-proj-filter" onclick="fdShowToast('Filter: 15+')">15+ people</button>
-    </div>
-    <div style="margin-top:20px;padding-top:16px;border-top:1px solid #e0dfdc">
-      <div class="left-title" style="margin-bottom:10px">Statistics</div>
-      <div class="stat-list">
-        <div class="stat-row"><span class="stat-key">Total Projects</span><span class="stat-val" id="proj-stat-total" style="color:var(--orange)">…</span></div>
-        <div class="stat-row"><span class="stat-key">Seeking Publisher</span><span class="stat-val" id="proj-stat-pub">…</span></div>
-        <div class="stat-row"><span class="stat-key">Seeking Investment</span><span class="stat-val" id="proj-stat-inv">…</span></div>
-        <div class="stat-row"><span class="stat-key">In Development</span><span class="stat-val" id="proj-stat-dev">…</span></div>
-        <div class="stat-row"><span class="stat-key">Released</span><span class="stat-val" id="proj-stat-rel" style="color:var(--green)">…</span></div>
+  <!-- Filter Bar -->
+  <div style="background:#fff;border-bottom:1px solid #e0dbd0;padding:0 28px;flex-shrink:0">
+    <div style="display:flex;align-items:center;gap:10px;height:54px;overflow-x:auto;scrollbar-width:none">
+      <!-- Search -->
+      <div style="flex-shrink:0;position:relative;flex:1;max-width:280px">
+        <span style="position:absolute;left:10px;top:50%;transform:translateY(-50%);font-size:13px;color:#a09890;pointer-events:none">🔍</span>
+        <input id="pc-proj-search" type="text" placeholder="Search projects, studios…"
+          style="width:100%;padding:8px 10px 8px 32px;border:1.5px solid #e0dbd0;border-radius:9px;font-size:13px;font-family:inherit;background:#f5f3ef;color:#1c1a17;outline:none"
+          oninput="pcProjRender()">
       </div>
+      <div style="width:1px;height:26px;background:#e0dbd0;flex-shrink:0"></div>
+      <!-- Status dropdown -->
+      <select id="pc-proj-status-sel" onchange="pcProjRender()"
+        style="padding:7px 28px 7px 10px;border:1.5px solid #e0dbd0;border-radius:9px;font-size:13px;font-family:inherit;background:#f5f3ef url('data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%2212%22 height=%228%22 viewBox=%220 0 12 8%22%3E%3Cpath d=%22M1 1l5 5 5-5%22 stroke=%22%23a09890%22 stroke-width=%221.5%22 fill=%22none%22 stroke-linecap=%22round%22/%3E%3C/svg%3E') no-repeat right 8px center;-webkit-appearance:none;appearance:none;color:#1c1a17;outline:none;cursor:pointer;flex-shrink:0">
+        <option value="">All Status</option>
+        <option value="seeking_publisher">🎯 Seeking Publisher</option>
+        <option value="seeking_investment">💰 Seeking Investment</option>
+        <option value="in_development">🛠️ In Development</option>
+        <option value="released">✅ Released</option>
+        <option value="prototype">🔬 Prototype</option>
+      </select>
+      <!-- Platform dropdown -->
+      <select id="pc-proj-plat-sel" onchange="pcProjRender()"
+        style="padding:7px 28px 7px 10px;border:1.5px solid #e0dbd0;border-radius:9px;font-size:13px;font-family:inherit;background:#f5f3ef url('data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%2212%22 height=%228%22 viewBox=%220 0 12 8%22%3E%3Cpath d=%22M1 1l5 5 5-5%22 stroke=%22%23a09890%22 stroke-width=%221.5%22 fill=%22none%22 stroke-linecap=%22round%22/%3E%3C/svg%3E') no-repeat right 8px center;-webkit-appearance:none;appearance:none;color:#1c1a17;outline:none;cursor:pointer;flex-shrink:0">
+        <option value="">All Platforms</option>
+        <option value="PC">PC</option>
+        <option value="Console">Console</option>
+        <option value="Mobile">Mobile</option>
+        <option value="Switch">Switch</option>
+        <option value="VR">VR</option>
+      </select>
+      <div style="width:1px;height:26px;background:#e0dbd0;flex-shrink:0"></div>
+      <!-- Count -->
+      <div id="pc-proj-subtitle" style="font-size:12px;color:#a09890;white-space:nowrap;flex-shrink:0">Loading…</div>
+      <!-- Deal Room CTA -->
+      <a href="DealFlow_v1_PC.html" style="margin-left:auto;flex-shrink:0;padding:7px 16px;border-radius:20px;background:linear-gradient(135deg,#0f172a,#1e1b4b);color:#a5b4fc;font-size:12px;font-weight:700;text-decoration:none;white-space:nowrap">Open Deal Room →</a>
     </div>
   </div>
 
-  <!-- Center: project grid -->
-  <div style="overflow-y:auto;padding:20px 24px">
-    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px">
-      <div>
-        <div style="font-size:18px;font-weight:800;color:var(--text1)">Projects &amp; Games</div>
-        <div id="pc-proj-subtitle" style="font-size:12px;color:var(--text3);margin-top:2px">10 projects from worldwide studios</div>
-      </div>
-      <div style="display:flex;gap:8px;align-items:center">
-        <input id="pc-proj-search" type="text" placeholder="Search projects, studios…" style="padding:7px 12px;border:1.5px solid var(--border);border-radius:8px;font-size:13px;font-family:inherit;outline:none;background:#fff;width:220px" oninput="pcProjRender()">
-      </div>
+  <!-- Genre Tag Row -->
+  <div style="background:#fff;border-bottom:1px solid #e0dbd0;padding:0 28px;flex-shrink:0">
+    <div id="pc-proj-genre-tags" style="display:flex;gap:6px;height:42px;align-items:center;overflow-x:auto;scrollbar-width:none">
+      <button class="pc-genre-tag active" data-genre="" onclick="pcProjSetGenre(this)">All</button>
+      <button class="pc-genre-tag" data-genre="RPG" onclick="pcProjSetGenre(this)">⚔️ RPG</button>
+      <button class="pc-genre-tag" data-genre="Action" onclick="pcProjSetGenre(this)">🔥 Action</button>
+      <button class="pc-genre-tag" data-genre="Strategy" onclick="pcProjSetGenre(this)">🧠 Strategy</button>
+      <button class="pc-genre-tag" data-genre="Puzzle" onclick="pcProjSetGenre(this)">🧩 Puzzle</button>
+      <button class="pc-genre-tag" data-genre="Adventure" onclick="pcProjSetGenre(this)">🗺️ Adventure</button>
+      <button class="pc-genre-tag" data-genre="Simulation" onclick="pcProjSetGenre(this)">🏙️ Simulation</button>
+      <button class="pc-genre-tag" data-genre="Sports" onclick="pcProjSetGenre(this)">⚽ Sports</button>
+      <button class="pc-genre-tag" data-genre="Horror" onclick="pcProjSetGenre(this)">👻 Horror</button>
+      <button class="pc-genre-tag" data-genre="Shooter" onclick="pcProjSetGenre(this)">🎯 Shooter</button>
+      <button class="pc-genre-tag" data-genre="Platformer" onclick="pcProjSetGenre(this)">🎮 Platformer</button>
+      <button class="pc-genre-tag" data-genre="Racing" onclick="pcProjSetGenre(this)">🏎️ Racing</button>
+      <button class="pc-genre-tag" data-genre="Fighting" onclick="pcProjSetGenre(this)">🥊 Fighting</button>
+      <button class="pc-genre-tag" data-genre="Casual" onclick="pcProjSetGenre(this)">🎈 Casual</button>
+      <button class="pc-genre-tag" data-genre="Indie" onclick="pcProjSetGenre(this)">✨ Indie</button>
+      <button class="pc-genre-tag" data-genre="VR" onclick="pcProjSetGenre(this)">🥽 VR</button>
     </div>
-    <div id="pc-proj-cards" style="display:grid;grid-template-columns:repeat(2,1fr);gap:16px"></div>
   </div>
 
-  <!-- Right: featured + genre stats -->
-  <div style="border-left:1px solid #e0dfdc;background:#fff;overflow-y:auto;padding:16px">
-    <div class="left-title" style="margin-bottom:12px">Featured</div>
-    <div style="display:flex;flex-direction:column;gap:10px;margin-bottom:20px">
-      <div style="padding:12px;border-radius:10px;background:linear-gradient(135deg,#1a3a6b,#4a6cf7);color:#fff;cursor:pointer" onclick="fdShowToast('Opening Echoes of Yun…')">
-        <div style="font-size:12px;font-weight:800;margin-bottom:3px">Echoes of Yun</div>
-        <div style="font-size:10px;opacity:.8">Phantom Circuit · RPG Roguelite</div>
-        <div style="font-size:10px;margin-top:6px;background:rgba(255,255,255,0.2);display:inline-block;padding:2px 8px;border-radius:10px">Seeking Publisher</div>
-      </div>
-      <div style="padding:12px;border-radius:10px;background:linear-gradient(135deg,#7a3a00,#d95f2b);color:#fff;cursor:pointer" onclick="fdShowToast('Opening Pixel Kingdoms…')">
-        <div style="font-size:12px;font-weight:800;margin-bottom:3px">Pixel Kingdoms</div>
-        <div style="font-size:10px;opacity:.8">8-Bit Empire · City Builder</div>
-        <div style="font-size:10px;margin-top:6px;background:rgba(255,255,255,0.2);display:inline-block;padding:2px 8px;border-radius:10px">Released · 500K DL</div>
-      </div>
-    </div>
-    <div class="left-title" style="margin-bottom:12px">Genre Distribution</div>
-    <div style="display:flex;flex-direction:column;gap:7px">
-      <div><div style="display:flex;justify-content:space-between;font-size:11px;margin-bottom:3px"><span style="color:var(--text2)">RPG</span><span style="font-weight:700">3</span></div><div style="height:5px;border-radius:3px;background:var(--border)"><div style="width:30%;height:100%;border-radius:3px;background:var(--orange)"></div></div></div>
-      <div><div style="display:flex;justify-content:space-between;font-size:11px;margin-bottom:3px"><span style="color:var(--text2)">Action</span><span style="font-weight:700">2</span></div><div style="height:5px;border-radius:3px;background:var(--border)"><div style="width:20%;height:100%;border-radius:3px;background:var(--teal)"></div></div></div>
-      <div><div style="display:flex;justify-content:space-between;font-size:11px;margin-bottom:3px"><span style="color:var(--text2)">Narrative</span><span style="font-weight:700">2</span></div><div style="height:5px;border-radius:3px;background:var(--border)"><div style="width:20%;height:100%;border-radius:3px;background:#7c3aed"></div></div></div>
-      <div><div style="display:flex;justify-content:space-between;font-size:11px;margin-bottom:3px"><span style="color:var(--text2)">Strategy</span><span style="font-weight:700">1</span></div><div style="height:5px;border-radius:3px;background:var(--border)"><div style="width:10%;height:100%;border-radius:3px;background:#0d9b72"></div></div></div>
-      <div><div style="display:flex;justify-content:space-between;font-size:11px;margin-bottom:3px"><span style="color:var(--text2)">Other</span><span style="font-weight:700">2</span></div><div style="height:5px;border-radius:3px;background:var(--border)"><div style="width:20%;height:100%;border-radius:3px;background:#6b7280"></div></div></div>
-    </div>
-    <div style="margin-top:20px;padding-top:16px;border-top:1px solid #e0dfdc">
-      <div class="left-title" style="margin-bottom:10px">Top Studios</div>
-      <div style="display:flex;flex-direction:column;gap:8px">
-        <div style="display:flex;align-items:center;gap:8px;cursor:pointer" onclick="fdShowToast('Opening Phantom Circuit Studio…')">
-          <div style="width:32px;height:32px;border-radius:8px;background:linear-gradient(135deg,#1a3a6b,#4a6cf7);display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:800;color:#fff">PC</div>
-          <div><div style="font-size:12px;font-weight:700;color:var(--text1)">Phantom Circuit</div><div style="font-size:10px;color:var(--text3)">RPG · Roguelite</div></div>
-        </div>
-        <div style="display:flex;align-items:center;gap:8px;cursor:pointer" onclick="fdShowToast('Opening Ironwood Games…')">
-          <div style="width:32px;height:32px;border-radius:8px;background:linear-gradient(135deg,#1a4a2e,#0d9b72);display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:800;color:#fff">IW</div>
-          <div><div style="font-size:12px;font-weight:700;color:var(--text1)">Ironwood Games</div><div style="font-size:10px;color:var(--text3)">Strategy · RTS</div></div>
-        </div>
-        <div style="display:flex;align-items:center;gap:8px;cursor:pointer" onclick="fdShowToast('Opening Nebula Labs…')">
-          <div style="width:32px;height:32px;border-radius:8px;background:linear-gradient(135deg,#0a1a3a,#1d4ed8);display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:800;color:#fff">NL</div>
-          <div><div style="font-size:12px;font-weight:700;color:var(--text1)">Nebula Labs</div><div style="font-size:10px;color:var(--text3)">Sci-Fi · Shooter</div></div>
-        </div>
-      </div>
-    </div>
-    <!-- Deal Room CTA -->
-    <div style="margin-top:20px;padding:14px 16px;background:linear-gradient(135deg,#0f172a,#1e1b4b);border-radius:10px;text-align:center">
-      <div style="font-size:11px;font-weight:800;color:#a5b4fc;margin-bottom:4px;letter-spacing:.5px;text-transform:uppercase">Publisher or Investor?</div>
-      <div style="font-size:12px;color:rgba(255,255,255,0.7);margin-bottom:10px">Manage your pipeline in Deal Room</div>
-      <a href="DealFlow_v1_PC.html" style="display:inline-block;padding:8px 18px;border-radius:20px;background:#6366f1;color:#fff;font-size:12px;font-weight:700;text-decoration:none">Open Deal Room →</a>
-    </div>
+  <!-- Main Grid -->
+  <div style="flex:1;overflow-y:auto;padding:24px 28px">
+    <div id="pc-proj-cards" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:18px"></div>
   </div>
+
 </div><!-- /projects-panel -->
 
 <!-- COMPANIES PANEL -->
@@ -2227,7 +2196,7 @@ function switchMode(mode) {
     homePanel.style.display = 'none';
     confBar.style.display = 'none';
     layout.style.display = 'none';
-    projectsPanel.style.display = 'grid';
+    projectsPanel.style.display = 'flex';
     pcProjRender();
   } else if (mode === 'companies') {
     tabs[4].classList.add('active');
@@ -3160,8 +3129,11 @@ async function loadProfileGames(showSendKey) {
     .pc-proj-filter{width:100%;text-align:left;padding:7px 10px;border-radius:8px;border:none;background:transparent;font-size:12px;font-weight:600;color:var(--text2);cursor:pointer;font-family:inherit;transition:all .15s}
     .pc-proj-filter:hover{background:rgba(0,0,0,0.05);color:var(--text1)}
     .pc-proj-filter.active{background:var(--orange-dim);color:var(--orange)}
-    .pc-proj-card{background:#fff;border-radius:12px;overflow:hidden;box-shadow:0 1px 4px rgba(0,0,0,0.07);border:1px solid #e0dfdc;cursor:pointer;transition:box-shadow .15s}
-    .pc-proj-card:hover{box-shadow:0 4px 16px rgba(0,0,0,0.12)}
+    .pc-proj-card{background:#fff;border-radius:14px;overflow:hidden;box-shadow:0 1px 4px rgba(0,0,0,0.07);cursor:pointer;transition:transform .2s,box-shadow .2s;display:flex;flex-direction:column}
+    .pc-proj-card:hover{transform:translateY(-4px);box-shadow:0 8px 24px rgba(0,0,0,0.13)}
+    .pc-genre-tag{padding:5px 13px;border-radius:20px;border:1.5px solid #e0dbd0;background:#f5f3ef;font-size:12px;font-weight:600;color:#6b6660;cursor:pointer;font-family:inherit;white-space:nowrap;flex-shrink:0;transition:all .15s}
+    .pc-genre-tag:hover{border-color:#0A66C2;color:#0A66C2;background:#fff}
+    .pc-genre-tag.active{border-color:#0A66C2;background:#e8f0fe;color:#0A66C2;font-weight:700}
   `;
   document.head.appendChild(s);
 })();
@@ -3321,7 +3293,8 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 
 // ═══ PROJECTS PANEL JS — REAL DATA FROM SUPABASE ═══
-let pcProjStatusFilter = 'All';
+let pcProjStatusFilter = '';
+let pcProjGenreFilter = '';
 let _pcProjOffset = 0, _pcProjTotal = 0, _pcProjLoading = false;
 const _PC_GRADS = [
   'linear-gradient(135deg,#1a3a6b,#4a6cf7)',
@@ -3341,10 +3314,10 @@ const _PC_STATUS_COLORS = {
   'prototype':'background:rgba(156,163,175,0.15);color:#6b7280',
 };
 
-function pcProjSetStatus(btn) {
-  document.querySelectorAll('.pc-proj-filter').forEach(b => b.classList.remove('active'));
+function pcProjSetGenre(btn) {
+  document.querySelectorAll('.pc-genre-tag').forEach(b => b.classList.remove('active'));
   btn.classList.add('active');
-  pcProjStatusFilter = btn.getAttribute('data-status') || 'All';
+  pcProjGenreFilter = btn.getAttribute('data-genre') || '';
   pcProjRender();
 }
 
@@ -3352,11 +3325,12 @@ async function pcProjRender() {
   if (_pcProjLoading) return;
   _pcProjLoading = true;
   _pcProjOffset = 0;
+  // Read filters from new UI elements
+  const statusSel = document.getElementById('pc-proj-status-sel');
+  if (statusSel) pcProjStatusFilter = statusSel.value || '';
   const grid = document.getElementById('pc-proj-cards');
   if (!grid) { _pcProjLoading = false; return; }
   grid.innerHTML = '<div style="text-align:center;padding:60px;color:#aaa;font-size:13px">Loading projects…</div>';
-  // Load stats in parallel
-  _pcProjLoadStats();
   await _pcProjLoadBatch(true);
   _pcProjLoading = false;
 }
@@ -3386,9 +3360,12 @@ async function _pcProjLoadStats() {
 async function _pcProjLoadBatch(reset) {
   const PAGE = 24;
   const q = (document.getElementById('pc-proj-search') || {}).value || '';
+  const platSel = document.getElementById('pc-proj-plat-sel');
+  const platFilter = platSel ? platSel.value : '';
   let url = _SB_URL + '/rest/v1/game_projects?select=id,title,tagline,description,genre,status,looking_for,platforms,is_featured,source&is_public=eq.true&order=created_at.desc&limit=' + PAGE + '&offset=' + _pcProjOffset;
-  if (pcProjStatusFilter !== 'All') url += '&status=eq.' + encodeURIComponent(pcProjStatusFilter.toLowerCase().replace(/ /g,'_'));
+  if (pcProjStatusFilter) url += '&status=eq.' + encodeURIComponent(pcProjStatusFilter);
   if (q) url += '&title=ilike.*' + encodeURIComponent(q) + '*';
+  if (platFilter) url += '&platforms=cs.["' + encodeURIComponent(platFilter) + '"]';
   try {
     const r = await fetch(url, {headers:{..._SB_H,'Prefer':'count=exact'}});
     const cr = r.headers.get('content-range');
@@ -3399,53 +3376,60 @@ async function _pcProjLoadBatch(reset) {
     if (sub) sub.textContent = _pcProjTotal.toLocaleString() + ' projects from worldwide studios';
     const grid = document.getElementById('pc-proj-cards');
     if (!grid) return;
-      // Genre → icon + gradient mapping
-      const _GENRE_STYLE = {
-        'RPG':['⚔️','135deg,#1a3a6b,#4a6cf7'],
-        'Action':['🔥','135deg,#7a1a1a,#e53935'],
-        'Strategy':['🧠','135deg,#1a4a2e,#0d9b72'],
-        'Puzzle':['🧩','135deg,#2d1a4a,#7c3aed'],
-        'Adventure':['🗺️','135deg,#0a2a3a,#0a7fa8'],
-        'Simulation':['🏙️','135deg,#1a3a00,#52b788'],
-        'Sports':['⚽','135deg,#0a3a1a,#22c55e'],
-        'Horror':['👻','135deg,#0a0a0a,#374151'],
-        'Shooter':['🎯','135deg,#3a1a00,#d95f2b'],
-        'Platformer':['🎮','135deg,#0a1a3a,#1d4ed8'],
-        'Racing':['🏎️','135deg,#3a2a00,#f59e0b'],
-        'Fighting':['🥊','135deg,#3a0a0a,#dc2626'],
-        'Casual':['🎈','135deg,#1a2a3a,#0ea5e9'],
-        'Indie':['✨','135deg,#2a1a3a,#8b5cf6'],
-        'VR':['🥽','135deg,#0a1a2a,#0891b2'],
-        'Mobile':['📱','135deg,#1a0a3a,#7c3aed'],
-      };
-      const html = (data||[]).map((p, i) => {
+    // Genre → icon + gradient mapping
+    const _GENRE_STYLE = {
+      'RPG':['⚔️','135deg,#1a3a6b,#4a6cf7'],
+      'Action':['🔥','135deg,#7a1a1a,#e53935'],
+      'Strategy':['🧠','135deg,#1a4a2e,#0d9b72'],
+      'Puzzle':['🧩','135deg,#2d1a4a,#7c3aed'],
+      'Adventure':['🗺️','135deg,#0a2a3a,#0a7fa8'],
+      'Simulation':['🏙️','135deg,#1a3a00,#52b788'],
+      'Sports':['⚽','135deg,#0a3a1a,#22c55e'],
+      'Horror':['👻','135deg,#0a0a0a,#374151'],
+      'Shooter':['🎯','135deg,#3a1a00,#d95f2b'],
+      'Platformer':['🎮','135deg,#0a1a3a,#1d4ed8'],
+      'Racing':['🏎️','135deg,#3a2a00,#f59e0b'],
+      'Fighting':['🥊','135deg,#3a0a0a,#dc2626'],
+      'Casual':['🎈','135deg,#1a2a3a,#0ea5e9'],
+      'Indie':['✨','135deg,#2a1a3a,#8b5cf6'],
+      'VR':['🥽','135deg,#0a1a2a,#0891b2'],
+      'Mobile':['📱','135deg,#1a0a3a,#7c3aed'],
+    };
+    // Client-side genre filter
+    let rows = data || [];
+    if (pcProjGenreFilter) {
+      rows = rows.filter(p => {
+        const gs = (Array.isArray(p.genre) ? (p.genre[0]||'') : (p.genre||'')).replace(/;+/g,'').trim().toLowerCase();
+        return gs.includes(pcProjGenreFilter.toLowerCase());
+      });
+    }
+    const html = rows.map((p) => {
       const _genreStr = (Array.isArray(p.genre) ? (p.genre[0]||'') : (p.genre||'')).replace(/;+/g,'').trim();
       const genreKey = Object.keys(_GENRE_STYLE).find(k => _genreStr.toLowerCase().includes(k.toLowerCase())) || '';
-      const [genreIcon, genreGrad] = _GENRE_STYLE[genreKey] || ['🎮', '135deg,#1a3a6b,#4a6cf7'];
+      const [genreIcon, genreGrad] = _GENRE_STYLE[genreKey] || ['🎮', '135deg,#2a2a2a,#555'];
       const grad = `linear-gradient(${genreGrad})`;
       const sKey = (p.status||'').toLowerCase().replace(/ /g,'_');
-      const sStyle = _PC_STATUS_COLORS[sKey] || 'background:#f3f4f6;color:#6b7280';
-      const sLabel = (p.status||'Open').replace(/_/g,' ').replace(/\b\w/g,c=>c.toUpperCase());
-      const genre = _genreStr || 'Game';
+      const sStyle = _PC_STATUS_COLORS[sKey] || 'background:rgba(107,114,128,0.12);color:#6b7280';
+      const sLabel = (p.status||'').replace(/_/g,' ').replace(/\b\w/g,c=>c.toUpperCase());
+      const genre = _genreStr || '';
       const studio = p.tagline || '';
-      const desc = p.description ? p.description.slice(0,100)+(p.description.length>100?'…':'') : '';
-      const _validPlats = [...new Set((p.platforms||[]).filter(pl=>pl&&!pl.includes('Please Select')&&!pl.includes('please select')))].slice(0,3);
-  const plats = _validPlats.map(pl=>`<span style="font-size:9px;font-weight:700;padding:1px 7px;border-radius:6px;background:rgba(28,26,23,0.06);color:var(--text2)">${pl}</span>`).join('');
-      const _lfArr = Array.isArray(p.looking_for) ? p.looking_for.map(s=>s.replace(/;+/g,'').trim()).filter(Boolean).join(', ') : (p.looking_for||'').replace(/;+/g,'').trim();
-      const lookFor = _lfArr ? `<div style="font-size:11px;color:var(--orange);margin-top:4px">🤝 ${_lfArr}</div>` : '';
+      const desc = p.description ? p.description.slice(0,120)+(p.description.length>120?'…':'') : '';
+      const _validPlats = [...new Set((p.platforms||[]).filter(pl=>pl&&!pl.includes('Please Select')&&!pl.includes('please select')))].slice(0,4);
+      const plats = _validPlats.map(pl=>`<span style="padding:2px 8px;border-radius:5px;font-size:10px;font-weight:600;background:#f0ece4;color:#6b6660">${pl}</span>`).join('');
+      const _lfArr = Array.isArray(p.looking_for) ? p.looking_for.map(s=>s.replace(/;+/g,'').trim()).filter(Boolean) : [(p.looking_for||'').replace(/;+/g,'').trim()].filter(Boolean);
+      const seekingBadge = _lfArr.length ? `<span style="position:absolute;top:10px;right:10px;background:rgba(0,0,0,0.55);color:#fff;font-size:10px;font-weight:600;padding:3px 8px;border-radius:5px;backdrop-filter:blur(4px)">${_lfArr[0].length > 20 ? _lfArr[0].slice(0,18)+'…' : _lfArr[0]}</span>` : '';
       return `<div class="pc-proj-card">
-        <div style="height:110px;${grad};position:relative;display:flex;align-items:center;justify-content:center;overflow:hidden">
-          <div style="font-size:42px;opacity:0.35;position:absolute;top:50%;left:50%;transform:translate(-50%,-50%)">${genreIcon}</div>
-          <div style="position:absolute;bottom:10px;left:14px"><span style="font-size:10px;font-weight:800;padding:3px 10px;border-radius:20px;${sStyle}">${sLabel}</span></div>
-          <div style="position:absolute;top:10px;right:12px;font-size:9px;font-weight:700;color:rgba(255,255,255,0.6);letter-spacing:.5px">${genre.toUpperCase()}</div>
+        <div style="height:150px;background:${grad};position:relative;display:flex;align-items:center;justify-content:center;overflow:hidden;flex-shrink:0">
+          <div style="font-size:52px;opacity:0.3;position:absolute;top:50%;left:50%;transform:translate(-50%,-50%)">${genreIcon}</div>
+          ${sLabel ? `<div style="position:absolute;bottom:10px;left:12px"><span style="font-size:10px;font-weight:700;padding:3px 10px;border-radius:20px;${sStyle}">${sLabel}</span></div>` : ''}
+          ${seekingBadge}
+          ${genre ? `<div style="position:absolute;top:10px;left:12px;font-size:9px;font-weight:800;color:rgba(255,255,255,0.7);letter-spacing:.6px;text-transform:uppercase">${genre}</div>` : ''}
         </div>
-        <div style="padding:14px">
-          <div style="font-size:15px;font-weight:800;color:var(--text1);margin-bottom:3px">${p.title}</div>
-          ${studio ? '<div style="font-size:11px;color:var(--text2);margin-bottom:2px">'+studio+'</div>' : ''}
-          <div style="font-size:11px;color:var(--text3);margin-bottom:6px">${genre}</div>
-          ${desc ? '<div style="font-size:12px;color:var(--text2);line-height:1.5;margin-bottom:6px">'+desc+'</div>' : ''}
-          ${lookFor}
-          <div style="display:flex;gap:4px;flex-wrap:wrap;margin-top:8px">${plats}</div>
+        <div style="padding:14px 14px 12px;flex:1;display:flex;flex-direction:column">
+          <div style="font-size:15px;font-weight:700;color:#1c1a17;margin-bottom:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${p.title}</div>
+          ${studio ? `<div style="font-size:12px;color:#6b6660;margin-bottom:8px">${studio}</div>` : '<div style="margin-bottom:8px"></div>'}
+          ${desc ? `<div style="font-size:12px;color:#444;line-height:1.55;margin-bottom:8px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden">${desc}</div>` : ''}
+          <div style="display:flex;gap:5px;flex-wrap:wrap;margin-top:auto;padding-top:8px;border-top:1px solid #f0ece4">${plats}</div>
         </div>
       </div>`;
     }).join('');
@@ -3456,11 +3440,11 @@ async function _pcProjLoadBatch(reset) {
     if (!moreBtn) {
       moreBtn = document.createElement('div');
       moreBtn.id = 'pc-proj-more-btn';
-      moreBtn.style.cssText = 'text-align:center;padding:20px';
+      moreBtn.style.cssText = 'text-align:center;padding:24px';
       grid.parentElement.appendChild(moreBtn);
     }
     if (_pcProjOffset < _pcProjTotal) {
-      moreBtn.innerHTML = '<button style="padding:10px 28px;border-radius:24px;background:var(--orange);color:#fff;border:none;font-size:13px;font-weight:700;cursor:pointer" onclick="_pcProjLoadBatch(false)">Load More (' + (_pcProjTotal - _pcProjOffset).toLocaleString() + ' remaining)</button>';
+      moreBtn.innerHTML = `<button style="padding:10px 32px;border-radius:24px;background:#1c1a17;color:#fff;border:none;font-size:13px;font-weight:700;cursor:pointer;transition:background .15s" onmouseover="this.style.background='#3a3835'" onmouseout="this.style.background='#1c1a17'" onclick="_pcProjLoadBatch(false)">Load More (${(_pcProjTotal - _pcProjOffset).toLocaleString()} remaining)</button>`;
     } else {
       moreBtn.innerHTML = '';
     }
