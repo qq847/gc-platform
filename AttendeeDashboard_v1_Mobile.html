@@ -1,0 +1,330 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=no">
+<title>My Dashboard — Game Connection</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;0,9..40,800;0,9..40,900&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+html,body{height:100%;font-family:"DM Sans",-apple-system,sans-serif;color:#1c1a17;-webkit-font-smoothing:antialiased;background:#f7f7f5}
+:root{
+  --tl:#0a7fa8;--tl08:rgba(10,127,168,0.08);--tlb:rgba(10,127,168,0.18);
+  --gn:#0d9b72;--gn08:rgba(13,155,114,0.08);--gnb:rgba(13,155,114,0.2);
+  --pr:#2563eb;--pr08:rgba(37,99,235,0.07);
+  --am:#f59e0b;--am08:rgba(245,158,11,0.08);
+  --rd:#dc2626;--rd08:rgba(220,38,38,0.08);
+  --pu:#7c3aed;--pu08:rgba(124,58,237,0.08);
+  --c:#fff;--bg:#f7f7f5;--bg2:#efefed;
+  --b:rgba(28,26,23,0.07);--b2:rgba(28,26,23,0.04);
+  --t1:#1c1a17;--t2:#6b6660;--t3:#a09890;--t4:#c4bdb5;
+  --s1:0 1px 3px rgba(0,0,0,0.05);--s2:0 3px 12px rgba(0,0,0,0.08);
+  --r:12px;--r2:10px;--r3:8px;
+}
+.app{max-width:430px;margin:0 auto;min-height:100%;display:flex;flex-direction:column;background:var(--bg)}
+/* Header */
+.hdr{background:rgba(255,255,255,0.92);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);border-bottom:1px solid var(--b);padding:12px 16px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100}
+.hdr-back{width:32px;height:32px;border:none;background:0;border-radius:var(--r3);display:flex;align-items:center;justify-content:center;cursor:pointer;color:var(--t2);font-size:18px}
+.hdr-title{font-size:15px;font-weight:800;color:var(--t1);letter-spacing:-.3px}
+.hdr-right{width:32px}
+/* Body */
+.body{flex:1;overflow-y:auto;padding:0 0 80px}
+/* Hero */
+.hero{background:linear-gradient(135deg,#0a3d62,#0a7fa8);padding:20px 16px 16px;color:#fff}
+.hero-greeting{font-size:11px;font-weight:600;opacity:.7;letter-spacing:.5px;text-transform:uppercase;margin-bottom:4px}
+.hero-name{font-size:22px;font-weight:900;letter-spacing:-.5px;margin-bottom:2px}
+.hero-role{font-size:11px;opacity:.75;margin-bottom:14px}
+.hero-stats{display:flex;gap:8px}
+.hero-stat{flex:1;background:rgba(255,255,255,0.12);border-radius:var(--r2);padding:10px 8px;text-align:center}
+.hero-stat-n{font-size:20px;font-weight:900;line-height:1}
+.hero-stat-l{font-size:9px;opacity:.7;margin-top:2px;font-weight:600;letter-spacing:.3px}
+/* Section */
+.sec{padding:14px 14px 0}
+.sec-hdr{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px}
+.sec-title{font-size:13px;font-weight:800;color:var(--t1);letter-spacing:-.2px}
+.sec-link{font-size:11px;font-weight:700;color:var(--tl)}
+/* Event card */
+.ev-card{background:var(--c);border-radius:var(--r);border:1px solid var(--b);box-shadow:var(--s1);overflow:hidden;margin-bottom:8px;cursor:pointer;transition:all .15s}
+.ev-card:active{transform:scale(.985)}
+.ev-card-strip{height:3px}
+.ev-card-body{padding:10px 12px}
+.ev-card-row1{display:flex;align-items:center;justify-content:space-between;margin-bottom:3px}
+.ev-card-name{font-size:13px;font-weight:700;color:var(--t1)}
+.ev-badge{font-size:8px;font-weight:800;padding:2px 7px;border-radius:10px;letter-spacing:.3px}
+.ev-card-meta{font-size:10px;color:var(--t3);margin-bottom:6px}
+.ev-card-actions{display:flex;gap:6px}
+.ev-btn{flex:1;padding:6px;border-radius:var(--r3);border:1px solid var(--b);background:0;font-size:10px;font-weight:700;color:var(--t2);cursor:pointer;font-family:inherit;text-align:center;transition:all .15s}
+.ev-btn:active{background:var(--bg2)}
+.ev-btn.primary{background:var(--tl);border-color:var(--tl);color:#fff}
+/* Meeting card */
+.meet-card{background:var(--c);border-radius:var(--r);border:1px solid var(--b);box-shadow:var(--s1);padding:10px 12px;margin-bottom:8px;cursor:pointer;transition:all .15s}
+.meet-card:active{transform:scale(.985)}
+.meet-card-row1{display:flex;align-items:center;gap:8px;margin-bottom:4px}
+.meet-avatar{width:32px;height:32px;border-radius:50%;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:800;color:#fff}
+.meet-card-info{flex:1;min-width:0}
+.meet-card-name{font-size:12px;font-weight:700;color:var(--t1)}
+.meet-card-role{font-size:10px;color:var(--t3)}
+.meet-card-time{font-size:10px;color:var(--t2);display:flex;align-items:center;gap:4px;margin-top:2px}
+.meet-status{font-size:8px;font-weight:800;padding:2px 7px;border-radius:10px;flex-shrink:0}
+/* Quick actions */
+.qa-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:14px}
+.qa-btn{background:var(--c);border-radius:var(--r);border:1px solid var(--b);box-shadow:var(--s1);padding:12px;cursor:pointer;transition:all .15s;text-align:left}
+.qa-btn:active{transform:scale(.97)}
+.qa-icon{font-size:20px;margin-bottom:6px}
+.qa-label{font-size:11px;font-weight:700;color:var(--t1);margin-bottom:1px}
+.qa-sub{font-size:9px;color:var(--t3)}
+/* Notification */
+.notif{background:var(--c);border-radius:var(--r);border:1px solid var(--b);box-shadow:var(--s1);padding:10px 12px;margin-bottom:8px;display:flex;align-items:flex-start;gap:10px;cursor:pointer;transition:all .15s}
+.notif:active{background:var(--bg2)}
+.notif-icon{width:32px;height:32px;border-radius:50%;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:14px}
+.notif-body{flex:1;min-width:0}
+.notif-text{font-size:11px;color:var(--t1);line-height:1.4;margin-bottom:2px}
+.notif-time{font-size:9px;color:var(--t3)}
+.notif-dot{width:7px;height:7px;border-radius:50%;background:var(--tl);flex-shrink:0;margin-top:4px}
+/* Bottom nav */
+.bnav{position:fixed;bottom:0;left:50%;transform:translateX(-50%);width:100%;max-width:430px;height:68px;background:rgba(255,255,255,0.88);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);border-top:1px solid var(--b);display:flex;align-items:flex-start;padding-top:8px;z-index:200}
+.bn{flex:1;display:flex;flex-direction:column;align-items:center;gap:2px;cursor:pointer;padding:2px 0}
+.bn-i{width:22px;height:22px;display:flex;align-items:center;justify-content:center}
+.bn-l{font-size:8px;font-weight:700;color:var(--t3);letter-spacing:.2px;text-transform:uppercase}
+.bn.on .bn-l{color:var(--tl)}
+</style>
+</head>
+<body>
+<div class="app">
+  <div class="hdr">
+    <button class="hdr-back" onclick="history.back()">&#8592;</button>
+    <span class="hdr-title">My Dashboard</span>
+    <div class="hdr-right"></div>
+  </div>
+
+  <div class="body">
+    <!-- Hero -->
+    <div class="hero">
+      <div class="hero-greeting">Welcome back</div>
+      <div class="hero-name">Alex Chen 👋</div>
+      <div class="hero-role">PixelForge Studios · Indie Developer</div>
+      <div class="hero-stats">
+        <div class="hero-stat">
+          <div class="hero-stat-n">3</div>
+          <div class="hero-stat-l">Events</div>
+        </div>
+        <div class="hero-stat">
+          <div class="hero-stat-n">8</div>
+          <div class="hero-stat-l">Meetings</div>
+        </div>
+        <div class="hero-stat">
+          <div class="hero-stat-n">12</div>
+          <div class="hero-stat-l">Connections</div>
+        </div>
+        <div class="hero-stat">
+          <div class="hero-stat-n">2</div>
+          <div class="hero-stat-l">Tickets</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- My Events -->
+    <div class="sec">
+      <div class="sec-hdr">
+        <span class="sec-title">My Events</span>
+        <a href="ConferenceCalendar_v2_PC.html" class="sec-link">Browse more →</a>
+      </div>
+
+      <div class="ev-card" onclick="location.href='EventPublicPage_v2_PC.html'">
+        <div class="ev-card-strip" style="background:linear-gradient(90deg,#dc2626,#f87171)"></div>
+        <div class="ev-card-body">
+          <div class="ev-card-row1">
+            <span class="ev-card-name">Game Connection Live 2026</span>
+            <span class="ev-badge" style="background:rgba(220,38,38,0.08);color:#dc2626">LIVE NOW</span>
+          </div>
+          <div class="ev-card-meta">📍 Helsinki & Tallinn · Mar 29 – Apr 3</div>
+          <div class="ev-card-actions">
+            <button class="ev-btn primary" onclick="event.stopPropagation();location.href='MyMeetings_v1_Mobile.html'">My Meetings</button>
+            <button class="ev-btn" onclick="event.stopPropagation();location.href='BuyerZone_v1_PC.html'">Buyer Zone</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="ev-card" onclick="location.href='EventPublicPage_v2_PC.html'">
+        <div class="ev-card-strip" style="background:linear-gradient(90deg,#064a8c,#0a7fa8)"></div>
+        <div class="ev-card-body">
+          <div class="ev-card-row1">
+            <span class="ev-card-name">Gamescom Asia 2026</span>
+            <span class="ev-badge" style="background:var(--tl08);color:var(--tl)">UPCOMING</span>
+          </div>
+          <div class="ev-card-meta">📍 Singapore · Apr 15–18</div>
+          <div class="ev-card-actions">
+            <button class="ev-btn primary" onclick="event.stopPropagation();location.href='TicketPurchase_v1_Mobile.html'">View Ticket</button>
+            <button class="ev-btn" onclick="event.stopPropagation()">Add to Cal</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="ev-card" onclick="location.href='EventPublicPage_v2_PC.html'">
+        <div class="ev-card-strip" style="background:linear-gradient(90deg,#004d40,#0d9b72)"></div>
+        <div class="ev-card-body">
+          <div class="ev-card-row1">
+            <span class="ev-card-name">Nordic Game 2026</span>
+            <span class="ev-badge" style="background:var(--tl08);color:var(--tl)">UPCOMING</span>
+          </div>
+          <div class="ev-card-meta">📍 Malmö, Sweden · May 21–23</div>
+          <div class="ev-card-actions">
+            <button class="ev-btn primary" onclick="event.stopPropagation();location.href='TicketPurchase_v1_Mobile.html'">View Ticket</button>
+            <button class="ev-btn" onclick="event.stopPropagation()">Add to Cal</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Upcoming Meetings -->
+    <div class="sec">
+      <div class="sec-hdr">
+        <span class="sec-title">Upcoming Meetings</span>
+        <a href="MyMeetings_v1_Mobile.html" class="sec-link">View all →</a>
+      </div>
+
+      <div class="meet-card" onclick="location.href='MyMeetings_v1_Mobile.html'">
+        <div class="meet-card-row1">
+          <div class="meet-avatar" style="background:#7c3aed">JP</div>
+          <div class="meet-card-info">
+            <div class="meet-card-name">Jin Park · Riot Games</div>
+            <div class="meet-card-role">BD Director</div>
+          </div>
+          <span class="meet-status" style="background:var(--gn08);color:var(--gn)">CONFIRMED</span>
+        </div>
+        <div class="meet-card-time">📅 Today, 14:00 · Room B-204 · 30 min</div>
+      </div>
+
+      <div class="meet-card" onclick="location.href='MyMeetings_v1_Mobile.html'">
+        <div class="meet-card-row1">
+          <div class="meet-avatar" style="background:#0d9b72">LC</div>
+          <div class="meet-card-info">
+            <div class="meet-card-name">Lisa Chen · a16z Games</div>
+            <div class="meet-card-role">Partner</div>
+          </div>
+          <span class="meet-status" style="background:var(--am08);color:var(--am)">PENDING</span>
+        </div>
+        <div class="meet-card-time">📅 Today, 16:30 · Room A-101 · 30 min</div>
+      </div>
+
+      <div class="meet-card" onclick="location.href='MyMeetings_v1_Mobile.html'">
+        <div class="meet-card-row1">
+          <div class="meet-avatar" style="background:#d95f2b">MD</div>
+          <div class="meet-card-info">
+            <div class="meet-card-name">Marc Dubois · Devolver Digital</div>
+            <div class="meet-card-role">Publisher</div>
+          </div>
+          <span class="meet-status" style="background:var(--gn08);color:var(--gn)">CONFIRMED</span>
+        </div>
+        <div class="meet-card-time">📅 Tomorrow, 10:00 · Room C-312 · 45 min</div>
+      </div>
+    </div>
+
+    <!-- Quick Actions -->
+    <div class="sec">
+      <div class="sec-hdr">
+        <span class="sec-title">Quick Actions</span>
+      </div>
+      <div class="qa-grid">
+        <div class="qa-btn" onclick="location.href='MyMeetings_v1_Mobile.html'">
+          <div class="qa-icon">🤝</div>
+          <div class="qa-label">My Meetings</div>
+          <div class="qa-sub">8 scheduled</div>
+        </div>
+        <div class="qa-btn" onclick="location.href='TicketPurchase_v1_Mobile.html'">
+          <div class="qa-icon">🎟️</div>
+          <div class="qa-label">My Tickets</div>
+          <div class="qa-sub">2 active</div>
+        </div>
+        <div class="qa-btn" onclick="location.href='MobileHub_v14.html'">
+          <div class="qa-icon">💬</div>
+          <div class="qa-label">Messages</div>
+          <div class="qa-sub">6 unread</div>
+        </div>
+        <div class="qa-btn" onclick="location.href='ConferenceCalendar_v2_PC.html'">
+          <div class="qa-icon">📅</div>
+          <div class="qa-label">Browse Events</div>
+          <div class="qa-sub">3000+ events</div>
+        </div>
+        <div class="qa-btn" onclick="location.href='BuyerZone_v1_PC.html'">
+          <div class="qa-icon">🎮</div>
+          <div class="qa-label">Buyer Zone</div>
+          <div class="qa-sub">Explore games</div>
+        </div>
+        <div class="qa-btn" onclick="location.href='BoothApplication_v1_Mobile.html'">
+          <div class="qa-icon">🏢</div>
+          <div class="qa-label">Book a Booth</div>
+          <div class="qa-sub">Apply now</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Notifications -->
+    <div class="sec">
+      <div class="sec-hdr">
+        <span class="sec-title">Notifications</span>
+        <span class="sec-link" style="cursor:pointer">Mark all read</span>
+      </div>
+
+      <div class="notif">
+        <div class="notif-icon" style="background:var(--gn08)">✅</div>
+        <div class="notif-body">
+          <div class="notif-text"><strong>Meeting confirmed</strong> — Jin Park accepted your meeting request for today at 14:00.</div>
+          <div class="notif-time">2 hours ago</div>
+        </div>
+        <div class="notif-dot"></div>
+      </div>
+
+      <div class="notif">
+        <div class="notif-icon" style="background:var(--am08)">🎟️</div>
+        <div class="notif-body">
+          <div class="notif-text"><strong>Ticket confirmed</strong> — Your VIP ticket for Gamescom Asia 2026 is ready.</div>
+          <div class="notif-time">Yesterday</div>
+        </div>
+        <div class="notif-dot"></div>
+      </div>
+
+      <div class="notif">
+        <div class="notif-icon" style="background:var(--tl08)">💬</div>
+        <div class="notif-body">
+          <div class="notif-text"><strong>New message</strong> — Lisa Chen sent you a message about investment opportunities.</div>
+          <div class="notif-time">2 days ago</div>
+        </div>
+      </div>
+
+      <div class="notif">
+        <div class="notif-icon" style="background:var(--pr08)">📋</div>
+        <div class="notif-body">
+          <div class="notif-text"><strong>Booth application</strong> — Your application for Nordic Game 2026 is under review.</div>
+          <div class="notif-time">3 days ago</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Bottom Nav -->
+  <div class="bnav">
+    <div class="bn" onclick="location.href='MobileHub_v14.html'">
+      <div class="bn-i"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--t3)" stroke-width="2"><path d="M3 12L12 4l9 8v8h-6v-5H9v5H3z"/></svg></div>
+      <span class="bn-l">Home</span>
+    </div>
+    <div class="bn" onclick="location.href='ConferenceCalendar_v2_PC.html'">
+      <div class="bn-i"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--t3)" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="3" y1="9" x2="21" y2="9"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="16" y1="2" x2="16" y2="6"/></svg></div>
+      <span class="bn-l">Events</span>
+    </div>
+    <div class="bn" onclick="location.href='MyMeetings_v1_Mobile.html'">
+      <div class="bn-i"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--t3)" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg></div>
+      <span class="bn-l">Meetings</span>
+    </div>
+    <div class="bn" onclick="location.href='MobileHub_v14.html'">
+      <div class="bn-i"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--t3)" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg></div>
+      <span class="bn-l">Messages</span>
+    </div>
+    <div class="bn on">
+      <div class="bn-i"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--tl)" stroke-width="2"><circle cx="12" cy="7" r="4"/><path d="M20 21a8 8 0 1 0-16 0"/></svg></div>
+      <span class="bn-l" style="color:var(--tl)">Profile</span>
+    </div>
+  </div>
+</div>
+</body>
+</html>

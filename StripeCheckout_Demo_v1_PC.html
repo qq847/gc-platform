@@ -1,0 +1,405 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Checkout — Game Connection</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,600;0,9..40,700;0,9..40,800;0,9..40,900&display=swap" rel="stylesheet">
+<script src="https://js.stripe.com/v3/"></script>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:"DM Sans",-apple-system,sans-serif;background:#f3f2ef;color:#1c1a17;min-height:100vh;display:flex;flex-direction:column;-webkit-font-smoothing:antialiased}
+:root{
+  --tl:#0a7fa8;--tl08:rgba(10,127,168,0.08);--tlb:rgba(10,127,168,0.2);
+  --gn:#0d9b72;--gn08:rgba(13,155,114,0.08);
+  --rd:#dc2626;--rd08:rgba(220,38,38,0.08);
+  --c:#fff;--bg:#f3f2ef;
+  --b:rgba(28,26,23,0.08);
+  --t1:#1c1a17;--t2:#6b6660;--t3:#a09890;
+  --s1:0 1px 3px rgba(0,0,0,0.05);--s2:0 4px 16px rgba(0,0,0,0.08);
+  --r:14px;--r2:10px;
+}
+/* Nav */
+nav{background:var(--c);border-bottom:1px solid var(--b);padding:0 32px;height:56px;display:flex;align-items:center;justify-content:space-between}
+.nav-logo{font-size:16px;font-weight:900;color:var(--t1);letter-spacing:-.4px}
+.nav-logo span{color:var(--tl)}
+.nav-secure{display:flex;align-items:center;gap:6px;font-size:12px;color:var(--t3);font-weight:600}
+/* Main */
+main{flex:1;max-width:960px;margin:0 auto;width:100%;padding:40px 24px;display:grid;grid-template-columns:1fr 420px;gap:32px;align-items:start}
+/* Left: Order Summary */
+.order-panel{background:var(--c);border-radius:var(--r);border:1px solid var(--b);box-shadow:var(--s1);overflow:hidden}
+.order-header{padding:20px 24px;border-bottom:1px solid var(--b)}
+.order-event{font-size:11px;font-weight:700;color:var(--t3);text-transform:uppercase;letter-spacing:.6px;margin-bottom:4px}
+.order-title{font-size:18px;font-weight:900;color:var(--t1);letter-spacing:-.4px}
+.order-meta{font-size:12px;color:var(--t3);margin-top:2px}
+.order-items{padding:16px 24px}
+.order-item{display:flex;justify-content:space-between;align-items:flex-start;padding:10px 0;border-bottom:1px solid var(--b)}
+.order-item:last-child{border-bottom:none}
+.order-item-left{}
+.order-item-name{font-size:13px;font-weight:700;color:var(--t1)}
+.order-item-desc{font-size:11px;color:var(--t3);margin-top:1px}
+.order-item-price{font-size:13px;font-weight:800;color:var(--t1)}
+.order-divider{height:1px;background:var(--b);margin:0 24px}
+.order-total{padding:14px 24px;display:flex;justify-content:space-between;align-items:center}
+.order-total-label{font-size:13px;font-weight:700;color:var(--t2)}
+.order-total-price{font-size:20px;font-weight:900;color:var(--tl)}
+/* Test cards info */
+.test-info{background:linear-gradient(135deg,#f0f9ff,#e0f2fe);border:1px solid rgba(10,127,168,0.2);border-radius:var(--r2);padding:14px 16px;margin-top:16px}
+.test-info-title{font-size:11px;font-weight:800;color:var(--tl);text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px}
+.test-card-row{display:flex;align-items:center;justify-content:space-between;padding:4px 0;font-size:11px}
+.test-card-num{font-family:monospace;font-weight:700;color:var(--t1);letter-spacing:.5px}
+.test-card-result{font-size:10px;font-weight:700;padding:2px 7px;border-radius:8px}
+/* Right: Payment Form */
+.payment-panel{background:var(--c);border-radius:var(--r);border:1px solid var(--b);box-shadow:var(--s2);overflow:hidden}
+.payment-header{padding:20px 24px;border-bottom:1px solid var(--b)}
+.payment-title{font-size:16px;font-weight:800;color:var(--t1);letter-spacing:-.3px}
+.payment-subtitle{font-size:12px;color:var(--t3);margin-top:2px}
+.payment-body{padding:20px 24px}
+/* Form */
+.form-row{margin-bottom:16px}
+.form-label{font-size:11px;font-weight:700;color:var(--t2);margin-bottom:6px;display:block;letter-spacing:.2px}
+.form-input{width:100%;border:1.5px solid var(--b);border-radius:var(--r2);padding:11px 14px;font-size:14px;font-family:inherit;color:var(--t1);background:var(--c);outline:none;transition:border-color .2s}
+.form-input:focus{border-color:var(--tl)}
+.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+/* Stripe Elements container */
+#card-element{border:1.5px solid var(--b);border-radius:var(--r2);padding:12px 14px;background:var(--c);transition:border-color .2s}
+#card-element.StripeElement--focus{border-color:var(--tl)}
+#card-element.StripeElement--invalid{border-color:var(--rd)}
+#card-errors{color:var(--rd);font-size:12px;margin-top:6px;min-height:16px}
+/* Pay button */
+.pay-btn{width:100%;padding:14px;background:var(--tl);border:none;border-radius:var(--r2);font-size:15px;font-weight:800;color:#fff;cursor:pointer;font-family:inherit;display:flex;align-items:center;justify-content:center;gap:8px;transition:opacity .2s;margin-top:20px}
+.pay-btn:hover{opacity:.9}
+.pay-btn:disabled{opacity:.5;cursor:not-allowed}
+.pay-btn-spinner{width:18px;height:18px;border:2px solid rgba(255,255,255,0.3);border-top-color:#fff;border-radius:50%;animation:spin .7s linear infinite;display:none}
+@keyframes spin{to{transform:rotate(360deg)}}
+.pay-btn.loading .pay-btn-spinner{display:block}
+.pay-btn.loading .pay-btn-text{display:none}
+/* Security note */
+.security-note{display:flex;align-items:center;justify-content:center;gap:6px;margin-top:12px;font-size:11px;color:var(--t3)}
+/* Status messages */
+#payment-status{padding:14px;border-radius:var(--r2);margin-top:16px;display:none;font-size:13px;font-weight:600;text-align:center}
+#payment-status.success{background:var(--gn08);color:var(--gn);border:1px solid rgba(13,155,114,0.2)}
+#payment-status.error{background:var(--rd08);color:var(--rd);border:1px solid rgba(220,38,38,0.2)}
+/* Success overlay */
+#success-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:1000;display:none;align-items:center;justify-content:center}
+#success-overlay.show{display:flex}
+.success-card{background:var(--c);border-radius:var(--r);padding:40px;max-width:440px;width:90%;text-align:center;box-shadow:0 20px 60px rgba(0,0,0,0.2)}
+.success-icon{font-size:56px;margin-bottom:16px}
+.success-title{font-size:22px;font-weight:900;color:var(--t1);margin-bottom:8px}
+.success-sub{font-size:13px;color:var(--t3);line-height:1.6;margin-bottom:20px}
+.success-ref{background:var(--tl08);border:1px solid var(--tlb);border-radius:var(--r2);padding:10px 16px;font-size:12px;color:var(--tl);font-weight:700;margin-bottom:24px}
+.success-btn{display:block;padding:13px;background:var(--tl);color:#fff;border-radius:var(--r2);font-size:14px;font-weight:800;cursor:pointer;border:none;font-family:inherit;width:100%;margin-bottom:8px}
+.success-btn.secondary{background:0;border:1.5px solid var(--b);color:var(--t2)}
+/* API status panel */
+.api-panel{background:var(--c);border-radius:var(--r);border:1px solid var(--b);box-shadow:var(--s1);padding:20px 24px;margin-top:16px}
+.api-title{font-size:12px;font-weight:800;color:var(--t2);text-transform:uppercase;letter-spacing:.5px;margin-bottom:12px}
+.api-step{display:flex;align-items:flex-start;gap:10px;padding:8px 0;border-bottom:1px solid var(--b)}
+.api-step:last-child{border-bottom:none}
+.api-step-num{width:22px;height:22px;border-radius:50%;background:var(--bg);border:1.5px solid var(--b);display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:800;color:var(--t3);flex-shrink:0}
+.api-step-num.done{background:var(--gn);border-color:var(--gn);color:#fff}
+.api-step-num.active{background:var(--tl);border-color:var(--tl);color:#fff}
+.api-step-body{flex:1}
+.api-step-title{font-size:12px;font-weight:700;color:var(--t1)}
+.api-step-detail{font-size:10px;color:var(--t3);margin-top:2px;font-family:monospace}
+</style>
+</head>
+<body>
+
+<nav>
+  <div class="nav-logo">Game <span>Connection</span></div>
+  <div class="nav-secure">🔒 Secure Checkout · Powered by Stripe</div>
+</nav>
+
+<main>
+  <!-- Left: Order Summary -->
+  <div>
+    <div class="order-panel">
+      <div class="order-header">
+        <div class="order-event">Game Connection Live 2026</div>
+        <div class="order-title">Standard Booth Application</div>
+        <div class="order-meta">📍 Helsinki & Tallinn · Mar 29 – Apr 3, 2026</div>
+      </div>
+      <div class="order-items">
+        <div class="order-item">
+          <div class="order-item-left">
+            <div class="order-item-name">Standard Booth (3×3m)</div>
+            <div class="order-item-desc">Hall B · Indie Zone · 4 chairs · Back wall · Storage</div>
+          </div>
+          <div class="order-item-price">€899</div>
+        </div>
+        <div class="order-item">
+          <div class="order-item-left">
+            <div class="order-item-name">Extra Monitor (27")</div>
+            <div class="order-item-desc">Full HD display for demo presentations</div>
+          </div>
+          <div class="order-item-price">€299</div>
+        </div>
+        <div class="order-item">
+          <div class="order-item-left">
+            <div class="order-item-name">Social Media Spotlight</div>
+            <div class="order-item-desc">Featured post on GC official channels</div>
+          </div>
+          <div class="order-item-price">€349</div>
+        </div>
+      </div>
+      <div class="order-divider"></div>
+      <div class="order-total">
+        <span class="order-total-label">Total (incl. VAT)</span>
+        <span class="order-total-price">€1,547</span>
+      </div>
+    </div>
+
+    <!-- Test Cards -->
+    <div class="test-info">
+      <div class="test-info-title">🧪 Stripe Test Mode — Use these cards</div>
+      <div class="test-card-row">
+        <span class="test-card-num">4242 4242 4242 4242</span>
+        <span class="test-card-result" style="background:var(--gn08);color:var(--gn)">✅ Succeeds</span>
+      </div>
+      <div class="test-card-row">
+        <span class="test-card-num">4000 0025 0000 3155</span>
+        <span class="test-card-result" style="background:rgba(245,158,11,0.1);color:#f59e0b">🔐 3DS Auth</span>
+      </div>
+      <div class="test-card-row">
+        <span class="test-card-num">4000 0000 0000 9995</span>
+        <span class="test-card-result" style="background:var(--rd08);color:var(--rd)">❌ Declined</span>
+      </div>
+      <div style="font-size:10px;color:var(--t3);margin-top:6px">Expiry: any future date · CVC: any 3 digits</div>
+    </div>
+
+    <!-- API Flow Panel -->
+    <div class="api-panel">
+      <div class="api-title">API Flow Status</div>
+      <div class="api-step">
+        <div class="api-step-num" id="api-step1">1</div>
+        <div class="api-step-body">
+          <div class="api-step-title">Create PaymentIntent</div>
+          <div class="api-step-detail" id="api-detail1">POST /create-payment-intent · amount: €1,547</div>
+        </div>
+      </div>
+      <div class="api-step">
+        <div class="api-step-num" id="api-step2">2</div>
+        <div class="api-step-body">
+          <div class="api-step-title">Mount Stripe Elements</div>
+          <div class="api-step-detail" id="api-detail2">Waiting for Stripe.js to initialize…</div>
+        </div>
+      </div>
+      <div class="api-step">
+        <div class="api-step-num" id="api-step3">3</div>
+        <div class="api-step-body">
+          <div class="api-step-title">Confirm Payment</div>
+          <div class="api-step-detail" id="api-detail3">Waiting for user to submit…</div>
+        </div>
+      </div>
+      <div class="api-step">
+        <div class="api-step-num" id="api-step4">4</div>
+        <div class="api-step-body">
+          <div class="api-step-title">Payment Verified</div>
+          <div class="api-step-detail" id="api-detail4">Pending…</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Right: Payment Form -->
+  <div>
+    <div class="payment-panel">
+      <div class="payment-header">
+        <div class="payment-title">Payment Details</div>
+        <div class="payment-subtitle">Your card will be charged €1,547.00</div>
+      </div>
+      <div class="payment-body">
+        <div class="form-row">
+          <label class="form-label">CARDHOLDER NAME</label>
+          <input class="form-input" type="text" id="cardholder-name" placeholder="Alex Chen" value="Alex Chen">
+        </div>
+        <div class="form-row">
+          <label class="form-label">CARD INFORMATION</label>
+          <div id="card-element"></div>
+          <div id="card-errors"></div>
+        </div>
+        <div class="form-row">
+          <label class="form-label">BILLING EMAIL</label>
+          <input class="form-input" type="email" id="billing-email" placeholder="alex@pixelforge.com" value="alex@pixelforge.com">
+        </div>
+
+        <button class="pay-btn" id="pay-btn" onclick="handlePayment()">
+          <div class="pay-btn-spinner"></div>
+          <span class="pay-btn-text">🔒 Pay €1,547.00</span>
+        </button>
+
+        <div class="security-note">
+          🔒 256-bit SSL encryption · PCI DSS compliant · Powered by Stripe
+        </div>
+
+        <div id="payment-status"></div>
+      </div>
+    </div>
+  </div>
+</main>
+
+<!-- Success Overlay -->
+<div id="success-overlay">
+  <div class="success-card">
+    <div class="success-icon">🎉</div>
+    <div class="success-title">Payment Successful!</div>
+    <div class="success-sub">Your booth application for <strong>Game Connection Live 2026</strong> has been confirmed. You'll receive a confirmation email shortly.</div>
+    <div class="success-ref" id="success-ref">Payment ID: pi_test_...</div>
+    <button class="success-btn" onclick="location.href='AttendeeDashboard_v1_PC.html'">Go to My Dashboard</button>
+    <button class="success-btn secondary" onclick="location.href='EventPublicPage_v2_PC.html'">View Event Page</button>
+  </div>
+</div>
+
+<script>
+// ═══ STRIPE INITIALIZATION ═══
+var stripe = null;
+var elements = null;
+var cardElement = null;
+var PUBLISHABLE_KEY = 'pk_test_TYooMQauvdEDq54NiTphI7jx'; // Stripe test key
+
+function updateApiStep(step, status, detail) {
+  var el = document.getElementById('api-step' + step);
+  var detailEl = document.getElementById('api-detail' + step);
+  el.className = 'api-step-num ' + status;
+  if (status === 'done') el.textContent = '✓';
+  else if (status === 'active') el.textContent = step;
+  if (detail) detailEl.textContent = detail;
+}
+
+// Initialize Stripe
+try {
+  stripe = Stripe(PUBLISHABLE_KEY);
+  elements = stripe.elements({
+    fonts: [{cssSrc: 'https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;600&display=swap'}]
+  });
+  
+  // Create card element with custom styling
+  cardElement = elements.create('card', {
+    style: {
+      base: {
+        fontFamily: '"DM Sans", -apple-system, sans-serif',
+        fontSize: '14px',
+        color: '#1c1a17',
+        '::placeholder': {color: '#a09890'},
+        iconColor: '#0a7fa8'
+      },
+      invalid: {color: '#dc2626', iconColor: '#dc2626'}
+    }
+  });
+  
+  cardElement.mount('#card-element');
+  
+  cardElement.on('change', function(event) {
+    var displayError = document.getElementById('card-errors');
+    if (event.error) {
+      displayError.textContent = event.error.message;
+    } else {
+      displayError.textContent = '';
+    }
+  });
+  
+  updateApiStep(1, 'done', 'PaymentIntent ready · amount: €1,547 · currency: EUR');
+  updateApiStep(2, 'done', 'Stripe Elements mounted · card element ready for input');
+  updateApiStep(3, 'active', 'Waiting for user to submit payment…');
+  
+} catch(e) {
+  updateApiStep(1, '', 'Stripe.js initialization error: ' + e.message);
+  updateApiStep(2, '', 'Cannot mount elements — Stripe not initialized');
+}
+
+// ═══ PAYMENT HANDLER ═══
+async function handlePayment() {
+  var btn = document.getElementById('pay-btn');
+  var statusEl = document.getElementById('payment-status');
+  
+  btn.disabled = true;
+  btn.classList.add('loading');
+  statusEl.style.display = 'none';
+  
+  updateApiStep(3, 'active', 'Calling stripe.confirmCardPayment()…');
+  
+  try {
+    // In production: fetch clientSecret from backend
+    // const res = await fetch('/create-payment-intent', { method: 'POST', ... });
+    // const { clientSecret } = await res.json();
+    
+    // For demo: simulate the flow
+    await new Promise(resolve => setTimeout(resolve, 1500));
+    
+    var cardholderName = document.getElementById('cardholder-name').value;
+    var billingEmail = document.getElementById('billing-email').value;
+    
+    // Attempt to confirm payment with Stripe
+    var result = await stripe.confirmCardPayment(
+      // In production this comes from backend
+      'pi_test_demo_client_secret',
+      {
+        payment_method: {
+          card: cardElement,
+          billing_details: {
+            name: cardholderName,
+            email: billingEmail
+          }
+        }
+      }
+    );
+    
+    if (result.error) {
+      // Handle specific error types
+      if (result.error.type === 'card_error' || result.error.type === 'validation_error') {
+        showError(result.error.message);
+        updateApiStep(3, '', 'Payment failed: ' + result.error.message);
+      } else if (result.error.message && result.error.message.includes('No such payment_intent')) {
+        // Demo mode: this is expected without a real backend
+        // Simulate success for demonstration
+        simulateSuccess();
+      } else {
+        showError(result.error.message || 'An unexpected error occurred.');
+        updateApiStep(3, '', 'Error: ' + result.error.message);
+      }
+    } else if (result.paymentIntent && result.paymentIntent.status === 'succeeded') {
+      handleSuccess(result.paymentIntent.id);
+    }
+    
+  } catch(e) {
+    // If Stripe call fails (e.g., invalid test key), simulate the demo flow
+    simulateSuccess();
+  }
+  
+  btn.disabled = false;
+  btn.classList.remove('loading');
+}
+
+function simulateSuccess() {
+  var fakeId = 'pi_test_' + Math.random().toString(36).substr(2, 24);
+  handleSuccess(fakeId);
+}
+
+function handleSuccess(paymentIntentId) {
+  updateApiStep(3, 'done', 'stripe.confirmCardPayment() → status: succeeded');
+  updateApiStep(4, 'done', 'Payment verified · Booth application confirmed');
+  
+  document.getElementById('success-ref').textContent = 'Payment ID: ' + paymentIntentId;
+  document.getElementById('success-overlay').classList.add('show');
+  
+  // Save to localStorage
+  try {
+    localStorage.setItem('_gc_last_payment', JSON.stringify({
+      id: paymentIntentId,
+      amount: 154700,
+      currency: 'eur',
+      description: 'Standard Booth — Game Connection Live 2026',
+      timestamp: new Date().toISOString()
+    }));
+  } catch(e){}
+}
+
+function showError(message) {
+  var statusEl = document.getElementById('payment-status');
+  statusEl.className = 'error';
+  statusEl.textContent = '❌ ' + message;
+  statusEl.style.display = 'block';
+}
+</script>
+</body>
+</html>
