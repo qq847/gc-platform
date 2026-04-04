@@ -2762,7 +2762,8 @@ function renderProjCard(p, idx) {
   const statusStyle = statusColors[(p.status||'').toLowerCase()] || 'background:#f3f4f6;color:#6b7280';
   const genre = genreStr || 'Game';
   const studio = p.tagline || '';
-  const lookingFor = p.looking_for ? '<div style="font-size:11px;color:var(--orange);margin-top:4px">🤝 '+p.looking_for+'</div>' : '';
+  const _lf = Array.isArray(p.looking_for) ? p.looking_for.map(s=>s.replace(/;+/g,'').trim()).filter(Boolean).join(', ') : (p.looking_for||'').replace(/;+/g,'').trim();
+  const lookingFor = _lf ? '<div style="font-size:11px;color:var(--orange);margin-top:4px">🤝 '+_lf+'</div>' : '';
   const plats = (p.platforms||[]).slice(0,3).map(pl=>`<span style="font-size:9px;font-weight:700;padding:1px 7px;border-radius:6px;background:rgba(28,26,23,0.06);color:var(--text2)">${pl}</span>`).join('');
   return `<div class="card" data-type="games" data-feed-type="projects">
     <div style="height:120px;background:linear-gradient(${genreGrad});position:relative;overflow:hidden;border-radius:10px 10px 0 0">
@@ -3428,7 +3429,8 @@ async function _pcProjLoadBatch(reset) {
       const studio = p.tagline || '';
       const desc = p.description ? p.description.slice(0,100)+(p.description.length>100?'…':'') : '';
       const plats = (p.platforms||[]).slice(0,3).map(pl=>`<span style="font-size:9px;font-weight:700;padding:1px 7px;border-radius:6px;background:rgba(28,26,23,0.06);color:var(--text2)">${pl}</span>`).join('');
-      const lookFor = p.looking_for ? `<div style="font-size:11px;color:var(--orange);margin-top:4px">🤝 ${p.looking_for}</div>` : '';
+      const _lfArr = Array.isArray(p.looking_for) ? p.looking_for.map(s=>s.replace(/;+/g,'').trim()).filter(Boolean).join(', ') : (p.looking_for||'').replace(/;+/g,'').trim();
+      const lookFor = _lfArr ? `<div style="font-size:11px;color:var(--orange);margin-top:4px">🤝 ${_lfArr}</div>` : '';
       return `<div class="pc-proj-card">
         <div style="height:110px;${grad};position:relative;display:flex;align-items:center;justify-content:center;overflow:hidden">
           <div style="font-size:42px;opacity:0.35;position:absolute;top:50%;left:50%;transform:translate(-50%,-50%)">${genreIcon}</div>
