@@ -949,6 +949,8 @@
 <!-- ═══ TOP BAR ═══ -->
 <header class="topbar">
   <div class="topbar-left">
+    <a href="EventHQ_Dashboard_v1_PC.html" style="color:rgba(255,255,255,0.6);text-decoration:none;font-size:13px;font-weight:500;display:flex;align-items:center;gap:4px;margin-right:8px">← Event HQ</a>
+    <div class="topbar-sep"></div>
     <div class="logo-mark">
       <div class="logo-icon">GC</div>
       <div class="logo-text">Game Connection</div>
@@ -1920,12 +1922,32 @@
         showToast('Some checklist items need attention.', 'error');
       } else {
         showToast('🎉 Event published successfully!', 'success');
-        setTimeout(() => showToast('Live on gameconnection.com', 'info'), 1000);
+        // Save event to localStorage so EventHub knows we have an event
+        const eventData = {
+          id: 'evt_' + Date.now(),
+          name: document.getElementById('event-name')?.value || 'My Event',
+          status: 'live',
+          publishedAt: new Date().toISOString()
+        };
+        localStorage.setItem('gc_hq_event', JSON.stringify(eventData));
+        setTimeout(() => {
+          showToast('Redirecting to your Event HQ...', 'info');
+          setTimeout(() => { window.location.href = 'EventHQ_Dashboard_v1_PC.html'; }, 1200);
+        }, 1000);
       }
     }, 100);
   }
 
-  function saveDraft() { showToast('Draft saved ✓', 'success'); }
+  function saveDraft() {
+    const draftData = {
+      id: 'draft_' + Date.now(),
+      name: document.getElementById('event-name')?.value || 'Draft Event',
+      status: 'draft',
+      savedAt: new Date().toISOString()
+    };
+    localStorage.setItem('gc_event_draft', JSON.stringify(draftData));
+    showToast('Draft saved ✓', 'success');
+  }
 
   // ══════════════════════════════════════
   // Toast

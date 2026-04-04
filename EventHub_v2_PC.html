@@ -850,7 +850,7 @@ async function gcSignOut() {
     <button class="biz-btn" id="biz-btn" onclick="toggleBizMenu(event)">⚡ For Business <span class="biz-chevron">▼</span></button>
     <div class="biz-menu" id="biz-menu">
       <div class="biz-menu-header">Business Portals</div>
-      <a class="biz-menu-item" href="EventHQ_Dashboard_v1_PC.html">
+      <a class="biz-menu-item" href="#" onclick="bizGoOrganizer(event)">
         <div class="biz-item-icon" style="background:linear-gradient(135deg,#1c1a17,#2a2520)">⚡</div>
         <div class="biz-item-text"><div class="biz-item-title">Organizer</div><div class="biz-item-desc">Manage your event end-to-end</div></div>
       </a>
@@ -2704,7 +2704,10 @@ function renderEvtCard(ev, idx) {
         <div class="evt-meta-i">📍 ${loc}</div>
         ${att ? '<div class="evt-meta-i">'+att+'</div>' : ''}
       </div>
-      <button class="btn-view" onclick="event.stopPropagation();switchMode('calendar')">View Details</button>
+      <div style="display:flex;gap:8px">
+        <button class="btn-view" onclick="event.stopPropagation();switchMode('calendar')" style="flex:1">View Details</button>
+        <a href="EventPublicPage_v3_PC.html" target="_blank" class="btn-view" style="flex:1;text-align:center;text-decoration:none;background:rgba(13,155,114,0.1);color:#0d9b72;border-color:rgba(13,155,114,0.3)">🌐 Event Page</a>
+      </div>
     </div>
   </div>`;
 }
@@ -3929,9 +3932,9 @@ function calRenderCard(ev) {
       (desc ? '<div class="card-desc">' + desc + '</div>' : '') +
       '<div class="card-actions">' +        '<button class="action-btn" data-evid="' + (ev.id||'') + '" data-title="' + (ev.title||'').replace(/"/g,'&quot;') + '" data-start="' + (ev.start_date||'') + '" data-end="' + (ev.end_date||'') + '" data-loc="' + (ev.is_online ? 'Online' : [ev.city,ev.country].filter(Boolean).join(', ')).replace(/"/g,'&quot;') + '" data-url="' + (ev.online_url||'') + '" onclick="calAddToIcsByEl(event,this)">📅 Add to Cal</button>' +        '<button class="action-btn" onclick="fdShowToast(&quot;Saved!&quot;)">🔖 Save</button>' +
         '<button class="action-btn primary going-btn" id="going-btn-' + (ev.id||'') + '" data-evid="' + (ev.id||'') + '" data-going="false" onclick="calGoingToggle(this)">✅ I\'m Going</button>' +
+        '<a class="action-link" href="EventPublicPage_v3_PC.html" target="_blank">🌐 View Event</a>' +
         websiteBtn +
-      '</div>' +
-    '</div>' +
+      '</div>' +'</div>' +
   '</div>';
 }
 
@@ -4270,6 +4273,19 @@ document.addEventListener('click', function(e) {
     document.getElementById('biz-btn').classList.remove('open');
   }
 });
+
+function bizGoOrganizer(e) {
+  e.preventDefault();
+  // Check if user has an existing event in localStorage
+  const existingEvent = localStorage.getItem('gc_hq_event') || localStorage.getItem('gc_event_draft');
+  if (existingEvent) {
+    // Has existing event — go to dashboard
+    window.location.href = 'EventHQ_Dashboard_v1_PC.html';
+  } else {
+    // No event yet — start the setup wizard
+    window.location.href = 'EventSetupWizard_v3_PC.html';
+  }
+}
 
 // ═══ COUNTRY FILTER FUNCTIONS ═══
 window._allCountries = []; // cache from stats API
