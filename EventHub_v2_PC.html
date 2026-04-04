@@ -1979,6 +1979,12 @@ async function gcSignOut() {
           </div>
         </div>
 
+        <!-- Bio card -->
+        <div id="pp-bio-card" style="display:none;background:#fff;border-radius:14px;padding:16px 20px;border:1px solid #e4e6ea">
+          <div style="font-size:9px;font-weight:800;letter-spacing:1.5px;color:var(--text3);text-transform:uppercase;margin-bottom:8px">About</div>
+          <div id="pp-bio-text" style="font-size:12px;color:var(--text2);line-height:1.6"></div>
+        </div>
+
         <!-- AI Matches card -->
         <div id="pp-match-card" style="display:none;background:linear-gradient(135deg,rgba(232,100,10,0.06),rgba(245,158,11,0.03));border:1px solid rgba(232,100,10,0.2);border-radius:14px;padding:16px">
           <div style="font-size:9px;font-weight:800;letter-spacing:1.5px;color:#e8640a;text-transform:uppercase;margin-bottom:12px">&#10022; Your AI Matches</div>
@@ -2157,6 +2163,12 @@ async function gcSignOut() {
             <button onclick="signOutUser()" style="width:100%;padding:10px;border-radius:10px;border:1.5px solid #dc2626;background:#fff;color:#dc2626;font-size:12px;font-weight:700;cursor:pointer;text-align:left">Sign Out of All Devices</button>
             <button style="width:100%;padding:10px;border-radius:10px;border:1.5px solid #ddd;background:#fff;color:#666;font-size:12px;font-weight:600;cursor:pointer;text-align:left">Delete Account</button>
           </div>
+        </div>
+
+        <!-- People You May Know -->
+        <div style="background:#fff;border-radius:14px;padding:20px 24px;border:1px solid #e4e6ea">
+          <div style="font-size:11px;font-weight:700;letter-spacing:1px;color:var(--text3);text-transform:uppercase;margin-bottom:14px">People You May Know</div>
+          <div id="pp-people-list" style="display:flex;flex-direction:column;gap:10px"></div>
         </div>
 
       </div>
@@ -3031,6 +3043,18 @@ function populateProfilePanel(data){
   if(expTitle) expTitle.textContent = profile.title || 'Member';
   if(expCo) expCo.textContent = company;
 
+  // Bio card
+  const bioCard = document.getElementById('pp-bio-card');
+  const bioText = document.getElementById('pp-bio-text');
+  const bio = profile.bio || _GC_DEMO_MEMBERS.find(m => m.email === profile.email)?.bio || '';
+  if (bioCard && bioText && bio) {
+    bioText.textContent = bio;
+    bioCard.style.display = 'block';
+  }
+
+  // People You May Know
+  loadProfilePeople(selections);
+
   // Load games from Supabase (if developer role)
   const roles = selections.roles || [];
   const isDeveloper = roles.some(r => /developer|studio|indie|game.*maker/i.test(r)) || true; // show for all users
@@ -3141,17 +3165,185 @@ async function loadProfileGames(showSendKey) {
 })();
 
 // ═══ MESSAGES DRAWER JS ═══
+// ═══ DEMO MEMBERS DATA — 15 real-feel industry professionals ═══
+const _GC_DEMO_MEMBERS = [
+  {id:'m01',name:'Marc Dubois',email:'marc.dubois@devolverdigital.com',company:'Devolver Digital',title:'VP Acquisitions, Europe',role:'publisher',country:'France',city:'Paris',color:'linear-gradient(135deg,#2d2d2d,#d95f2b)',initials:'MD',online:true,
+    bio:'VP of Acquisitions at Devolver Digital Europe. 15 years in game publishing. Looking for bold, unconventional games with strong creative vision. We love weird.',
+    interests:['Indie Publishing','Action','Narrative','PC'],
+    looking_for:['Source new games','Scout new titles','Discover studios']},
+  {id:'m02',name:'Jin Park',email:'jin.park@riotgames.com',company:'Riot Games',title:'Senior Producer, Publishing',role:'publisher',country:'South Korea',city:'Seoul',color:'linear-gradient(135deg,#c0392b,#e74c3c)',initials:'JP',online:true,
+    bio:'Producer at Riot Games, working on external partnerships and publishing initiatives. Previously at Nexon and Krafton. Focused on competitive and live-service games.',
+    interests:['Live Service','Competitive','Mobile','Asia Pacific'],
+    looking_for:['Source new games','Build partnerships','Discover studios']},
+  {id:'m03',name:'Sophie Mäkinen',email:'sophie.makinen@supercell.com',company:'Supercell',title:'Head of Indie Publishing',role:'publisher',country:'Finland',city:'Helsinki',color:'linear-gradient(135deg,#0a2a3a,#0891b2)',initials:'SM',online:false,
+    bio:'Head of Indie Publishing at Supercell. We invest in and publish mobile games with breakthrough potential. Looking for studios with strong retention mechanics.',
+    interests:['Mobile','Casual','Monetization','Retention'],
+    looking_for:['Source new games','Scout new titles','Build partnerships']},
+  {id:'m04',name:'Thomas Weber',email:'thomas.weber@11bitstudios.com',company:'11 bit studios',title:'Director of Business Development',role:'publisher',country:'Poland',city:'Warsaw',color:'linear-gradient(135deg,#0a1a3a,#1d4ed8)',initials:'TW',online:false,
+    bio:'Business Development Director at 11 bit studios. We publish meaningful games that matter — titles with strong narrative and emotional depth.',
+    interests:['Narrative','Meaningful Games','PC','Console'],
+    looking_for:['Source new games','Discover studios','Network with peers']},
+  {id:'m05',name:'Lisa Chen',email:'lisa.chen@a16zgames.com',company:'a16z Games',title:'General Partner',role:'investor',country:'United States',city:'San Francisco',color:'linear-gradient(135deg,#2d1a4a,#6366f1)',initials:'LC',online:true,
+    bio:'Partner at a16z Games. We back exceptional founders building the next generation of games. Ticket size $1M–$20M. Particularly interested in AI-native games.',
+    interests:['VC','AI Games','New Platforms','Series A'],
+    looking_for:['Scout new titles','Discover studios','Raise funding']},
+  {id:'m06',name:'David Kim',email:'david.kim@krafton.com',company:'KRAFTON',title:'Investment Director',role:'investor',country:'South Korea',city:'Seoul',color:'linear-gradient(135deg,#1a3a6b,#2e6bc4)',initials:'DK',online:false,
+    bio:'Investment Director at KRAFTON. We invest globally in game studios and gaming technology. Focus on early-stage studios with proven teams. $500K–$5M initial checks.',
+    interests:['Early Stage','Game Studios','Asia','Shooter'],
+    looking_for:['Scout new titles','Discover studios','Build partnerships']},
+  {id:'m07',name:'Anna Volkov',email:'anna.volkov@bitkraft.vc',company:'BITKRAFT Ventures',title:'Principal',role:'investor',country:'Germany',city:'Berlin',color:'linear-gradient(135deg,#2d1a4a,#7c3aed)',initials:'AV',online:true,
+    bio:'Principal at BITKRAFT Ventures, the leading gaming-focused VC. I lead investments in interactive entertainment, esports, and gaming infrastructure. Former game designer.',
+    interests:['Gaming VC','Esports','Interactive Entertainment','Europe'],
+    looking_for:['Scout new titles','Discover studios','Network with peers']},
+  {id:'m08',name:'Sarah Chen',email:'sarah.chen@pixelforge.io',company:'PixelForge Games',title:'Co-founder & Lead Developer',role:'developer',country:'Canada',city:'Vancouver',color:'linear-gradient(135deg,#2d1a4a,#4f46e5)',initials:'SC',online:true,
+    bio:'Indie game developer and co-founder of PixelForge Games. Shipped 3 titles on Steam, currently working on a narrative RPG. Looking for a publishing deal.',
+    interests:['RPG','Narrative Games','Unity','Steam'],
+    looking_for:['Find co-publishing deals','Meet investors','Pitch my game / studio']},
+  {id:'m09',name:'Marcos Silva',email:'marcos.silva@ironwoodinteractive.com',company:'Ironwood Interactive',title:'Founder & Game Director',role:'developer',country:'Brazil',city:'São Paulo',color:'linear-gradient(135deg,#1a4a2e,#0d9b72)',initials:'MS',online:false,
+    bio:'Solo dev turned studio founder. Built Ironwood Interactive from a 2-person team to 12. Specializing in strategy games with deep systemic design. GDC speaker 2024.',
+    interests:['Strategy','Systems Design','Unreal Engine','PC Gaming'],
+    looking_for:['Raise funding','Find co-publishing deals','Build partnerships']},
+  {id:'m10',name:'Yuki Tanaka',email:'yuki.tanaka@moonriselabs.jp',company:'Moonrise Labs',title:'Senior Game Designer',role:'developer',country:'Japan',city:'Tokyo',color:'linear-gradient(135deg,#7a1a1a,#dc2626)',initials:'YT',online:false,
+    bio:'Game designer at Moonrise Labs, Tokyo. 8 years in mobile gaming, now pivoting to console. Passionate about accessible game design and cross-cultural storytelling.',
+    interests:['Mobile','Console','Accessibility','Japanese Market'],
+    looking_for:['Find co-publishing deals','Explore events','Network with peers']},
+  {id:'m11',name:'Emma Kim',email:'emma.kim@subwavestudio.com',company:'Subwave Studio',title:'Creative Director',role:'developer',country:'South Korea',city:'Seoul',color:'linear-gradient(135deg,#2d1a4a,#7c3aed)',initials:'EK',online:true,
+    bio:'Indie dev, composer, and artist. Founded Subwave Studio in 2021. Our debut title Deep Signal won Best Audio at Indie Game Fest 2025. Currently in pre-production on a horror puzzle game.',
+    interests:['Horror','Puzzle','Audio Design','Indie'],
+    looking_for:['Pitch my game / studio','Meet investors','Find co-publishing deals']},
+  {id:'m12',name:'Alex Zhang',email:'alex.zhang@akihabarastudio.com',company:'Akihabara Studio',title:'Founder & Producer',role:'developer',country:'China',city:'Shanghai',color:'linear-gradient(135deg,#3a2a00,#f59e0b)',initials:'AZ',online:false,
+    bio:'Founder of Akihabara Studio. Our puzzle game Phantom Circuit has 50K wishlists on Steam. Seeking publisher for global launch.',
+    interests:['Puzzle','RPG','Steam','Global Publishing'],
+    looking_for:['Find co-publishing deals','Pitch my game / studio','Explore events']},
+  {id:'m13',name:'James Wright',email:'james.wright@gamesindustry.biz',company:'GamesIndustry.biz',title:'Senior Editor',role:'media',country:'United Kingdom',city:'London',color:'linear-gradient(135deg,#1a1a1a,#374151)',initials:'JW',online:false,
+    bio:'Senior Editor at GamesIndustry.biz covering the business of games. 10 years reporting on publishing deals, studio acquisitions, and industry trends.',
+    interests:['Games Journalism','Business News','Publishing Deals','M&A'],
+    looking_for:['Network with peers','Explore events','Do market research']},
+  {id:'m14',name:'Priya Sharma',email:'priya.sharma@gamespot.com',company:'GameSpot',title:'Staff Writer & Critic',role:'media',country:'India',city:'Mumbai',color:'linear-gradient(135deg,#3a0a1a,#db2777)',initials:'PS',online:true,
+    bio:'Games journalist and critic at GameSpot. Specializing in indie games, accessibility, and the intersection of games and culture. Speaker at GDC 2025.',
+    interests:['Indie Games','Accessibility','Diversity','Narrative'],
+    looking_for:['Network with peers','Explore events','Do market research']},
+  {id:'m15',name:'Felix Müller',email:'felix.mueller@indiegamefest.com',company:'Indie Game Fest',title:'Founder & Event Director',role:'organizer',country:'Germany',city:'Berlin',color:'linear-gradient(135deg,#3a1a00,#e8640a)',initials:'FM',online:false,
+    bio:'Founder and Director of Indie Game Fest, Europe\'s premier indie B2B event. 8 years organizing game industry events. Previously at Gamescom and Nordic Game.',
+    interests:['Event Management','B2B Matchmaking','Indie Games','Europe'],
+    looking_for:['Build partnerships','Network with peers','Explore events']},
+];
+
+// Role badge colors
+const _ROLE_COLORS = {
+  publisher:'background:#fdf0ea;color:#e8640a',
+  investor:'background:#f0f4ff;color:#2563eb',
+  developer:'background:#f0fdf4;color:#16a34a',
+  media:'background:#fdf4ff;color:#9333ea',
+  organizer:'background:#fff7ed;color:#ea580c',
+};
+
+function loadProfilePeople(selections) {
+  const list = document.getElementById('pp-people-list');
+  if (!list) return;
+  // Pick 6 members to show (mix of roles)
+  const picks = _GC_DEMO_MEMBERS.slice(0, 6);
+  list.innerHTML = picks.map(m => {
+    const roleStyle = _ROLE_COLORS[m.role] || 'background:#f3f4f6;color:#374151';
+    return `<div style="display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid #f3f4f6">
+      <div style="width:38px;height:38px;border-radius:50%;background:${m.color};display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:800;color:#fff;flex-shrink:0;position:relative">
+        ${m.initials}
+        <div style="position:absolute;bottom:0;right:0;width:10px;height:10px;border-radius:50%;background:${m.online ? '#0d9b72' : '#d1d5db'};border:2px solid #fff"></div>
+      </div>
+      <div style="flex:1;min-width:0">
+        <div style="font-size:12px;font-weight:700;color:var(--text1)">${m.name}</div>
+        <div style="font-size:10px;color:var(--text2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${m.title} · ${m.company}</div>
+        <span style="font-size:9px;font-weight:700;padding:2px 7px;border-radius:10px;${roleStyle}">${m.role.charAt(0).toUpperCase()+m.role.slice(1)}</span>
+      </div>
+      <button onclick="startConversation('${m.id}')" style="padding:5px 12px;border-radius:20px;border:1.5px solid var(--orange);background:#fff;color:var(--orange);font-size:11px;font-weight:700;cursor:pointer;flex-shrink:0">Connect</button>
+    </div>`;
+  }).join('');
+}
+
+function startConversation(memberId) {
+  const member = _GC_DEMO_MEMBERS.find(m => m.id === memberId);
+  if (!member) return;
+  // Check if conversation already exists
+  let idx = pcMsgData.findIndex(d => d.memberId === memberId);
+  if (idx === -1) {
+    // Create new conversation
+    const newConv = {
+      memberId: memberId,
+      name: member.name,
+      company: member.company + ' · ' + member.title,
+      initials: member.initials,
+      color: member.color,
+      online: member.online,
+      unread: 0,
+      messages: [{
+        me: false,
+        text: `Hi! I noticed your profile on Game Connection. I'd love to connect and explore potential collaboration opportunities.`,
+        time: 'Just now'
+      }]
+    };
+    pcMsgData.unshift(newConv);
+    idx = 0;
+  }
+  openMsgDrawer();
+  setTimeout(() => openPcChat(idx), 100);
+}
+
 const pcMsgData = [
-  {name:'Sarah Chen',company:'Devolver Digital · Publisher',initials:'SC',color:'linear-gradient(135deg,#2d2d2d,#d95f2b)',online:true,unread:3,messages:[{me:false,text:"Hi! I came across your studio's profile. We've been looking for unique RPG titles. Would you be open to a chat?",time:'10:14 AM'},{me:true,text:"Hi Sarah! Absolutely, we'd love to connect. We're in the final stages of our demo build for 'Echoes of Yun'.",time:'10:32 AM'},{me:false,text:"'Echoes of Yun' sounds intriguing — the blend of Chinese mythology with roguelite mechanics is really fresh. Can you share a pitch deck?",time:'10:45 AM'},{me:true,text:'Of course! Here is our press kit link. The demo trailer is also included. We are targeting a Q3 2025 release window.',time:'11:02 AM'},{me:false,text:'Just watched the trailer — the art direction is stunning. Our team is going to do a full review this week.',time:'2:18 PM'},{me:false,text:'Looking forward to reviewing your demo build!',time:'2:20 PM'}]},
-  {name:'Marc Dubois',company:'Ubisoft · Director',initials:'MD',color:'linear-gradient(135deg,#2c3e7a,#4a6cf7)',online:false,unread:1,messages:[{me:false,text:'Bonjour! I saw you are attending GDC this year. Would you be interested in a quick coffee meeting?',time:'9:00 AM'},{me:true,text:'Hi Marc, definitely! When are you free during the week?',time:'9:45 AM'},{me:false,text:'Wednesday afternoon works best for me — say 3pm at the Yerba Buena lounge?',time:'10:15 AM'},{me:true,text:'Wednesday 3pm works perfectly. Looking forward to it!',time:'10:30 AM'},{me:false,text:'See you at the GDC booth on Wednesday then!',time:'11:00 AM'}]},
-  {name:'Jin Park',company:'Riot Games · Producer',initials:'JP',color:'linear-gradient(135deg,#c0392b,#e74c3c)',online:true,unread:0,messages:[{me:false,text:"Riot's new experimental division is exploring co-development with indie studios. Your work caught our attention.",time:'Yesterday'},{me:true,text:"That's incredible to hear! We'd absolutely love to explore that.",time:'Yesterday'},{me:false,text:"I'll share the co-dev proposal doc by EOD",time:'Today 9:30 AM'}]},
-  {name:'Emma Thompson',company:'Indie Fund · Investor',initials:'ET',color:'linear-gradient(135deg,#0d9b72,#27ae60)',online:false,unread:2,messages:[{me:false,text:'Hi! Indie Fund is interested in supporting narrative-focused indie games. Are you currently fundraising?',time:'Yesterday'},{me:true,text:"Hi Emma! Yes, we're closing our seed round. We're raising $400K to complete development.",time:'Yesterday'},{me:false,text:'Could you send over your pitch deck?',time:'Today 11:00 AM'}]},
-  {name:'Yuki Tanaka',company:'Square Enix · Licensing',initials:'YT',color:'linear-gradient(135deg,#7b5ea7,#9b59b6)',online:false,unread:0,messages:[{me:false,text:"Square Enix Licensing is exploring third-party collaborations. Your studio's aesthetic is a strong match.",time:'2 days ago'},{me:false,text:'The licensing terms look reasonable on our end',time:'Today 7:00 AM'}]},
-  {name:'Alex Rodriguez',company:'Kongregate · Publishing',initials:'AR',color:'linear-gradient(135deg,#e67e22,#f39c12)',online:false,unread:0,messages:[{me:false,text:'Hey, just following up from our meeting last week at the indie showcase.',time:'Mon'},{me:true,text:"Hi Alex! Yes, we're still in the evaluation phase.",time:'Mon'},{me:false,text:'Following up from our meeting last week',time:'Mon'}]},
-  {name:'Li Wei',company:'NetEase · BD Director',initials:'LW',color:'linear-gradient(135deg,#c0392b,#1a6b8a)',online:true,unread:1,messages:[{me:false,text:'中国市场机会不容错过，我们可以聊聊',time:'Mon'}]},
-  {name:'Anna Kowalski',company:'CD Projekt · Producer',initials:'AK',color:'linear-gradient(135deg,#8b1a1a,#c0392b)',online:false,unread:0,messages:[{me:false,text:'Joint dev agreement draft is ready for review',time:'Sun'}]},
-  {name:'David Kim',company:'Krafton · VP',initials:'DK',color:'linear-gradient(135deg,#1a3a6b,#2e6bc4)',online:false,unread:0,messages:[{me:false,text:"Krafton has been actively acquiring studios with strong creative IP.",time:'Mar 15'}]},
-  {name:'Tom Richards',company:'Team17 · Publishing',initials:'TR',color:'linear-gradient(135deg,#2d6a4f,#52b788)',online:false,unread:0,messages:[{me:false,text:"We love the concept — very on-brand for us",time:'Mar 12'}]}
+  {memberId:'m02',name:'Jin Park',company:'Riot Games · Senior Producer',initials:'JP',color:'linear-gradient(135deg,#c0392b,#e74c3c)',online:true,unread:3,messages:[
+    {me:false,text:"Riot's new experimental division is exploring co-development with indie studios. Your work on the narrative side really caught our attention.",time:'10:14 AM'},
+    {me:true,text:"That's incredible to hear! We'd absolutely love to explore that. We've been building something that could be a great fit.",time:'10:32 AM'},
+    {me:false,text:"Great! Can you share a brief overview of your current project? Specifically interested in the core loop and target audience.",time:'10:45 AM'},
+    {me:true,text:"Of course! I'll send over our one-pager and the latest build video. We're targeting a global audience, PC + console.",time:'11:02 AM'},
+    {me:false,text:"Perfect. I'll review with the team this week and get back to you by Friday.",time:'2:18 PM'},
+    {me:false,text:"Looking forward to seeing the demo build!",time:'2:20 PM'}
+  ]},
+  {memberId:'m01',name:'Marc Dubois',company:'Devolver Digital · VP Acquisitions',initials:'MD',color:'linear-gradient(135deg,#2d2d2d,#d95f2b)',online:true,unread:1,messages:[
+    {me:false,text:'Bonjour! I came across your studio profile on Game Connection. We have been actively looking for bold, unconventional projects.',time:'9:00 AM'},
+    {me:true,text:'Hi Marc! Big fan of Devolver. We think our project would be a strong fit — it has that irreverent edge you guys are known for.',time:'9:45 AM'},
+    {me:false,text:'Ha! That is exactly what we want to hear. Send me your pitch deck and a playable build if you have one.',time:'10:15 AM'},
+    {me:true,text:'Sending it over now. The build is rough but the core loop is solid. Would love your honest feedback.',time:'10:30 AM'},
+    {me:false,text:'Just downloaded it. Will play tonight and follow up tomorrow.',time:'11:00 AM'}
+  ]},
+  {memberId:'m05',name:'Lisa Chen',company:'a16z Games · General Partner',initials:'LC',color:'linear-gradient(135deg,#2d1a4a,#6366f1)',online:true,unread:2,messages:[
+    {me:false,text:'Hi! I follow your studio on Twitter and love what you are building. a16z Games is actively investing in narrative-driven experiences.',time:'Yesterday'},
+    {me:true,text:'Hi Lisa! Wow, this is exciting. We are actually closing our seed round right now. Would love to chat.',time:'Yesterday'},
+    {me:false,text:'Could you send over your pitch deck and cap table? I would like to review before we schedule a call.',time:'Today 11:00 AM'}
+  ]},
+  {memberId:'m03',name:'Sophie Mäkinen',company:'Supercell · Head of Indie Publishing',initials:'SM',color:'linear-gradient(135deg,#0a2a3a,#0891b2)',online:false,unread:0,messages:[
+    {me:false,text:"Supercell's indie publishing program is looking for mobile-first studios with strong retention design. Your studio came up in our research.",time:'2 days ago'},
+    {me:true,text:'Hi Sophie! We actually have a mobile version in development. Would love to share our retention metrics.',time:'2 days ago'},
+    {me:false,text:'Great! Send them over when ready. We are particularly interested in D7 and D30 retention.',time:'Today 7:00 AM'}
+  ]},
+  {memberId:'m07',name:'Anna Volkov',company:'BITKRAFT Ventures · Principal',initials:'AV',color:'linear-gradient(135deg,#2d1a4a,#7c3aed)',online:true,unread:0,messages:[
+    {me:false,text:'BITKRAFT is very active in the European indie space right now. We saw your talk at Nordic Game — impressive vision.',time:'Mon'},
+    {me:true,text:'Thank you Anna! We have been following BITKRAFT for a while. Would love to explore a potential fit.',time:'Mon'},
+    {me:false,text:'Let us set up a call for next week. I will send a calendar invite.',time:'Mon'}
+  ]},
+  {memberId:'m04',name:'Thomas Weber',company:'11 bit studios · BD Director',initials:'TW',color:'linear-gradient(135deg,#0a1a3a,#1d4ed8)',online:false,unread:0,messages:[
+    {me:false,text:'11 bit studios is always looking for games that say something meaningful. Your project has that quality.',time:'Mon'},
+    {me:true,text:'That means a lot coming from 11 bit. This War of Mine was a huge inspiration for our narrative approach.',time:'Mon'},
+    {me:false,text:'Glad to hear it. Joint dev agreement draft is ready for review when you are.',time:'Sun'}
+  ]},
+  {memberId:'m06',name:'David Kim',company:'KRAFTON · Investment Director',initials:'DK',color:'linear-gradient(135deg,#1a3a6b,#2e6bc4)',online:false,unread:0,messages:[
+    {me:false,text:'KRAFTON has been actively acquiring studios with strong creative IP. We are interested in your studio.',time:'Mar 15'},
+    {me:true,text:'Hi David, we are open to conversations. What kind of deal structure are you typically looking at?',time:'Mar 15'},
+    {me:false,text:'We do both minority investments and full acquisitions. Happy to discuss what works best for you.',time:'Mar 16'}
+  ]},
+  {memberId:'m13',name:'James Wright',company:'GamesIndustry.biz · Senior Editor',initials:'JW',color:'linear-gradient(135deg,#1a1a1a,#374151)',online:false,unread:0,messages:[
+    {me:false,text:'Hi! I am writing a piece on indie studios making waves in 2026. Would you be open to a brief interview?',time:'Mar 12'},
+    {me:true,text:'Hi James! Absolutely, we would love the coverage. What is the angle of the piece?',time:'Mar 12'},
+    {me:false,text:'Focusing on studios that are redefining what indie games can be. Your work fits perfectly.',time:'Mar 13'}
+  ]},
+  {memberId:'m15',name:'Felix Müller',company:'Indie Game Fest · Event Director',initials:'FM',color:'linear-gradient(135deg,#3a1a00,#e8640a)',online:false,unread:0,messages:[
+    {me:false,text:'We would love to feature your studio at Indie Game Fest Berlin 2026. Would you be interested in a booth?',time:'Mar 10'},
+    {me:true,text:'Hi Felix! Yes, absolutely. We have been wanting to attend IGF for years. What are the booth options?',time:'Mar 10'},
+    {me:false,text:'I will send over the exhibitor package. We have a great indie zone this year with 200+ developers.',time:'Mar 11'}
+  ]},
+  {memberId:'m14',name:'Priya Sharma',company:'GameSpot · Staff Writer',initials:'PS',color:'linear-gradient(135deg,#3a0a1a,#db2777)',online:true,unread:0,messages:[
+    {me:false,text:'Your game was recommended to me by three different developers this week. That is a good sign! Would love to do a preview.',time:'Mar 8'},
+    {me:true,text:'Hi Priya! We are huge fans of your coverage. A GameSpot preview would be amazing.',time:'Mar 8'},
+    {me:false,text:'Great! Can you send a review build? I am targeting a preview for early May.',time:'Mar 9'}
+  ]}
 ];
 
 let pcCurrentChat = null;
