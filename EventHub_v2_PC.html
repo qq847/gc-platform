@@ -3470,6 +3470,7 @@ async function _pcProjLoadBatch(reset) {
 // ═══ COMPANIES PANEL JS — REAL DATA FROM SUPABASE ═══
 var cpTypeFilter = 'all', cpRegionFilter = 'all';
 let _cpOffset = 0, _cpTotal = 0, _cpLoading = false;
+let _cpSeenNames = new Set(); // global dedup set for companies
 const _CP_TYPE_COLORS = {
   publisher:'#fff3ee;color:#d95f2b',
   developer:'#e6f4f1;color:#0d9b72',
@@ -3513,6 +3514,7 @@ async function cpRender() {
   if (_cpLoading) return;
   _cpLoading = true;
   _cpOffset = 0;
+  _cpSeenNames = new Set();
   const list = document.getElementById('cp-list');
   if (!list) { _cpLoading = false; return; }
   list.innerHTML = '<div style="text-align:center;padding:60px;color:#aaa;font-size:13px">Loading companies…</div>';
@@ -3531,8 +3533,15 @@ async function _cpLoadBatch(reset) {
     const r = await fetch(url, {headers:{..._SB_H,'Prefer':'count=exact'}});
     const cr = r.headers.get('content-range');
     _cpTotal = cr ? parseInt(cr.split('/')[1])||0 : 0;
-    const data = await r.json();
-    _cpOffset += (data||[]).length;
+    const rawData = await r.json();
+    // Deduplicate by name using global set (cross-batch dedup)
+    const data = (rawData||[]).filter(c => {
+      const key = (c.name||'').toLowerCase().trim();
+      if (_cpSeenNames.has(key)) return false;
+      _cpSeenNames.add(key);
+      return true;
+    });
+    _cpOffset += (rawData||[]).length;
     const list = document.getElementById('cp-list');
     if (!list) return;
     const html = (data||[]).map(function(c, i) {
