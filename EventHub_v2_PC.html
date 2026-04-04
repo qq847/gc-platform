@@ -2027,21 +2027,13 @@ async function gcSignOut() {
 
         <!-- Games & Projects -->
         <div style="background:#fff;border-radius:14px;padding:20px 24px;border:1px solid #e4e6ea">
-          <div style="font-size:11px;font-weight:700;letter-spacing:1px;color:var(--text3);text-transform:uppercase;margin-bottom:14px">Games &amp; Projects</div>
-          <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px">
-            <div style="border-radius:10px;overflow:hidden;border:1px solid #e4e6ea">
-              <div style="height:70px;background:linear-gradient(135deg,#1a3a6b,#4a6cf7);display:flex;align-items:flex-end;padding:8px">
-                <span style="font-size:9px;font-weight:700;background:rgba(0,0,0,0.4);color:#fff;padding:2px 7px;border-radius:10px">Lead</span>
-              </div>
-              <div style="padding:8px 10px"><div style="font-size:12px;font-weight:700;color:var(--text1)">Project Aurora</div><div style="font-size:10px;color:var(--text2)">RPG &middot; PC</div></div>
-            </div>
-            <div style="border-radius:10px;overflow:hidden;border:1px solid #e4e6ea">
-              <div style="height:70px;background:linear-gradient(135deg,#0d2137,#0a7fa8);display:flex;align-items:flex-end;padding:8px">
-                <span style="font-size:9px;font-weight:700;background:rgba(0,0,0,0.4);color:#fff;padding:2px 7px;border-radius:10px">Designer</span>
-              </div>
-              <div style="padding:8px 10px"><div style="font-size:12px;font-weight:700;color:var(--text1)">Neon Runners</div><div style="font-size:10px;color:var(--text2)">Action &middot; Mobile</div></div>
-            </div>
-            <div style="border-radius:10px;border:1.5px dashed #ddd;background:#fafafa;display:flex;align-items:center;justify-content:center;height:110px;color:#aaa;font-size:12px;cursor:pointer">+ Add project</div>
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px">
+            <div style="font-size:11px;font-weight:700;letter-spacing:1px;color:var(--text3);text-transform:uppercase">Games &amp; Projects</div>
+            <span id="pp-games-count" style="font-size:10px;color:var(--text3)"></span>
+          </div>
+          <div id="pp-games-grid" style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px">
+            <!-- Dynamically loaded by loadProfileGames() -->
+            <div style="border-radius:10px;border:1.5px dashed #ddd;background:#fafafa;display:flex;align-items:center;justify-content:center;min-height:110px;color:#aaa;font-size:12px;cursor:pointer" onclick="switchMode('projects')">+ Browse Projects</div>
           </div>
         </div>
 
@@ -3064,8 +3056,69 @@ function populateProfilePanel(data){
   const expCo = document.getElementById('pp-exp-company');
   if(expTitle) expTitle.textContent = profile.title || 'Member';
   if(expCo) expCo.textContent = company;
+
+  // Load games from Supabase (if developer role)
+  const roles = selections.roles || [];
+  const isDeveloper = roles.some(r => /developer|studio|indie|game.*maker/i.test(r)) || true; // show for all users
+  loadProfileGames(isDeveloper);
 }
 
+async function loadProfileGames(showSendKey) {
+  const grid = document.getElementById('pp-games-grid');
+  const countEl = document.getElementById('pp-games-count');
+  if (!grid) return;
+
+  // Genre → gradient mapping
+  const _GENRE_GRADS = {
+    'RPG':'135deg,#1a3a6b,#4a6cf7', 'Action':'135deg,#7a1a1a,#e53935',
+    'Strategy':'135deg,#1a4a2e,#0d9b72', 'Puzzle':'135deg,#2d1a4a,#7c3aed',
+    'Adventure':'135deg,#0a2a3a,#0a7fa8', 'Simulation':'135deg,#1a3a00,#52b788',
+    'Sports':'135deg,#0a3a1a,#22c55e', 'Horror':'135deg,#0a0a0a,#374151',
+    'Shooter':'135deg,#3a1a00,#d95f2b', 'Platformer':'135deg,#0a1a3a,#1d4ed8',
+    'Racing':'135deg,#3a2a00,#f59e0b', 'Fighting':'135deg,#3a0a0a,#dc2626',
+    'Casual':'135deg,#1a2a3a,#0ea5e9', 'Indie':'135deg,#2a1a3a,#8b5cf6',
+    'VR':'135deg,#0a1a2a,#0891b2', 'Mobile':'135deg,#1a0a3a,#7c3aed',
+  };
+  const _GENRE_ICONS = {
+    'RPG':'⚔️','Action':'🔥','Strategy':'🧠','Puzzle':'🧩','Adventure':'🗺️',
+    'Simulation':'🏙️','Sports':'⚽','Horror':'👻','Shooter':'🎯','Platformer':'🎮',
+    'Racing':'🏎️','Fighting':'🥊','Casual':'🎈','Indie':'✨','VR':'🥽','Mobile':'📱',
+  };
+
+  try {
+    // Load recent public projects from Supabase
+    const r = await fetch(_SB_URL + '/rest/v1/game_projects?select=id,title,tagline,genre,status,platforms&is_public=eq.true&order=created_at.desc&limit=6', {headers: _SB_H});
+    const data = await r.json();
+    if (!data || !data.length) {
+      grid.innerHTML = '<div style="border-radius:10px;border:1.5px dashed #ddd;background:#fafafa;display:flex;align-items:center;justify-content:center;min-height:110px;color:#aaa;font-size:12px;cursor:pointer" onclick="switchMode(\'projects\')">+ Browse Projects</div>';
+      return;
+    }
+    if (countEl) countEl.textContent = data.length + ' projects';
+    grid.innerHTML = data.map(p => {
+      const genreStr = Array.isArray(p.genre) ? (p.genre[0]||'') : (p.genre||'');
+      const genreKey = Object.keys(_GENRE_GRADS).find(k => genreStr.toLowerCase().includes(k.toLowerCase())) || '';
+      const grad = _GENRE_GRADS[genreKey] || '135deg,#1a3a6b,#4a6cf7';
+      const icon = _GENRE_ICONS[genreKey] || '🎮';
+      const genre = genreStr || 'Game';
+      const status = (p.status||'').replace(/_/g,' ').replace(/\b\w/g,c=>c.toUpperCase());
+      const sendKeyBtn = showSendKey ? `<button onclick="openTestKeyModal('${p.id}','${(p.title||'').replace(/'/g,'\\\'')}')" style="width:100%;margin-top:6px;padding:5px 0;border-radius:7px;border:none;background:linear-gradient(135deg,#7c3aed,#5b21b6);color:#fff;font-size:10px;font-weight:700;cursor:pointer">🎁 Send Test Key</button>` : '';
+      return `<div style="border-radius:10px;overflow:hidden;border:1px solid #e4e6ea">
+        <div style="height:70px;background:linear-gradient(${grad});position:relative;display:flex;align-items:center;justify-content:center;overflow:hidden">
+          <span style="font-size:28px;opacity:0.3">${icon}</span>
+          <div style="position:absolute;bottom:6px;left:8px"><span style="font-size:8px;font-weight:700;background:rgba(0,0,0,0.4);color:#fff;padding:2px 6px;border-radius:8px">${status||'Open'}</span></div>
+        </div>
+        <div style="padding:8px 10px">
+          <div style="font-size:12px;font-weight:700;color:var(--text1);line-height:1.3">${p.title}</div>
+          <div style="font-size:10px;color:var(--text2);margin-top:1px">${genre}</div>
+          ${sendKeyBtn}
+        </div>
+      </div>`;
+    }).join('') + '<div style="border-radius:10px;border:1.5px dashed #ddd;background:#fafafa;display:flex;align-items:center;justify-content:center;min-height:80px;color:#aaa;font-size:11px;cursor:pointer" onclick="switchMode(\'projects\')">+ More Projects</div>';
+   } catch(e) {
+    console.warn('loadProfileGames error', e);
+    grid.innerHTML = '<div style="border-radius:10px;border:1.5px dashed #ddd;background:#fafafa;display:flex;align-items:center;justify-content:center;min-height:110px;color:#aaa;font-size:12px;cursor:pointer" onclick="switchMode(\'projects\')">+ Browse Projects</div>';
+  }
+}
 // ═══ MESSAGES DRAWER CSS (injected via style) ═══
 (function(){
   var s = document.createElement('style');
