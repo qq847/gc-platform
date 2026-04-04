@@ -2746,8 +2746,9 @@ function renderProjCard(p, idx) {
     'VR':['🥽','135deg,#0a1a2a,#0891b2'],
     'Mobile':['📱','135deg,#1a0a3a,#7c3aed'],
   };
-  // Handle genre as string or array
-  const genreStr = Array.isArray(p.genre) ? (p.genre[0]||'') : (p.genre||'');
+  // Handle genre as string or array, strip trailing semicolons
+  const _genreRaw0 = Array.isArray(p.genre) ? (p.genre[0]||'') : (p.genre||'');
+  const genreStr = _genreRaw0.replace(/;+/g,'').trim();
   const genreKey = Object.keys(_GENRE_STYLE).find(k => genreStr.toLowerCase().includes(k.toLowerCase())) || '';
   const [genreIcon, genreGrad] = _GENRE_STYLE[genreKey] || ['🎮', '135deg,#1a3a6b,#4a6cf7'];
   const statusColors = {
@@ -3095,7 +3096,8 @@ async function loadProfileGames(showSendKey) {
     }
     if (countEl) countEl.textContent = data.length + ' projects';
     grid.innerHTML = data.map(p => {
-      const genreStr = Array.isArray(p.genre) ? (p.genre[0]||'') : (p.genre||'');
+      const genreRaw = Array.isArray(p.genre) ? (p.genre[0]||'') : (p.genre||'');
+      const genreStr = genreRaw.replace(/;+/g,'').trim();
       const genreKey = Object.keys(_GENRE_GRADS).find(k => genreStr.toLowerCase().includes(k.toLowerCase())) || '';
       const grad = _GENRE_GRADS[genreKey] || '135deg,#1a3a6b,#4a6cf7';
       const icon = _GENRE_ICONS[genreKey] || '🎮';
@@ -3415,7 +3417,7 @@ async function _pcProjLoadBatch(reset) {
         'Mobile':['📱','135deg,#1a0a3a,#7c3aed'],
       };
       const html = (data||[]).map((p, i) => {
-      const _genreStr = Array.isArray(p.genre) ? (p.genre[0]||'') : (p.genre||'');
+      const _genreStr = (Array.isArray(p.genre) ? (p.genre[0]||'') : (p.genre||'')).replace(/;+/g,'').trim();
       const genreKey = Object.keys(_GENRE_STYLE).find(k => _genreStr.toLowerCase().includes(k.toLowerCase())) || '';
       const [genreIcon, genreGrad] = _GENRE_STYLE[genreKey] || ['🎮', '135deg,#1a3a6b,#4a6cf7'];
       const grad = `linear-gradient(${genreGrad})`;
