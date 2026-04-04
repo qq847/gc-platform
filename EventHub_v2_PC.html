@@ -1090,6 +1090,7 @@ async function gcSignOut() {
       <button class="msg-icon-btn" onclick="togglePcMsgSearch()" title="Search">
         <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="11" cy="11" r="7"/><line x1="16.5" y1="16.5" x2="22" y2="22"/></svg>
       </button>
+      <button class="msg-icon-btn" onclick="openNewConvPanel()" title="New Conversation" style="font-size:16px;font-weight:300;line-height:1">&#9998;</button>
       <button class="msg-icon-btn" onclick="closeMsgDrawer()" title="Close">
         <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
       </button>
@@ -1098,6 +1099,17 @@ async function gcSignOut() {
   <!-- Search bar -->
   <div id="pc-msg-search-bar" style="display:none;padding:0 16px 10px">
     <input type="text" placeholder="Search conversations…" style="width:100%;padding:7px 12px;border:1.5px solid var(--border);border-radius:8px;font-size:13px;font-family:inherit;outline:none;background:#fff" oninput="filterPcMsgList(this.value)">
+  </div>
+  <!-- New Conversation Panel (overlay) -->
+  <div id="pc-new-conv-panel" style="display:none;position:absolute;inset:0;top:57px;background:#fff;z-index:10;flex-direction:column">
+    <div style="padding:14px 16px;border-bottom:1px solid #e0dfdc;display:flex;align-items:center;gap:10px">
+      <button onclick="closeNewConvPanel()" style="background:none;border:none;cursor:pointer;color:var(--text3);font-size:18px;line-height:1;padding:0">←</button>
+      <div style="font-size:14px;font-weight:700;color:var(--text1)">New Conversation</div>
+    </div>
+    <div style="padding:10px 16px">
+      <input type="text" id="pc-new-conv-search" placeholder="Search people…" oninput="filterNewConvList(this.value)" style="width:100%;padding:8px 12px;border:1.5px solid var(--border);border-radius:8px;font-size:13px;font-family:inherit;outline:none;background:var(--bg)">
+    </div>
+    <div id="pc-new-conv-list" style="flex:1;overflow-y:auto;padding:0 8px 16px"></div>
   </div>
   <!-- Two-pane layout -->
   <div class="msg-drawer-body">
@@ -3291,7 +3303,116 @@ function startConversation(memberId) {
   setTimeout(() => openPcChat(idx), 100);
 }
 
-const pcMsgData = [
+// ─── Messages: localStorage persistence ───
+const _MSG_STORE_KEY = 'gc_messages_v1';
+function _msgLoad() {
+  try { const s = localStorage.getItem(_MSG_STORE_KEY); if (s) return JSON.parse(s); } catch(e){}
+  return null;
+}
+function _msgSave() {
+  try { localStorage.setItem(_MSG_STORE_KEY, JSON.stringify(pcMsgData)); } catch(e){}
+}
+function _msgUpdateBadge() {
+  const total = pcMsgData.reduce((n,d) => n + (d.unread||0), 0);
+  const badge = document.getElementById('nav-msg-badge');
+  if (!badge) return;
+  if (total > 0) { badge.textContent = total > 9 ? '9+' : total; badge.style.display = 'flex'; }
+  else { badge.style.display = 'none'; }
+}
+
+// ─── Auto-reply engine ───
+const _AUTO_REPLIES = {
+  publisher: [
+    "Sounds great! Let me loop in our acquisitions team.",
+    "Very interesting. Can you share your latest build?",
+    "We'd love to see your pitch deck. Send it over!",
+    "Our publishing committee meets next Thursday — I'll add you to the agenda.",
+    "Love the direction. What's your target launch window?"
+  ],
+  investor: [
+    "Interesting metrics. What's your current MRR?",
+    "We're actively deploying in this space. Let's schedule a call.",
+    "Can you share your cap table and financial projections?",
+    "Our thesis aligns well with what you're building.",
+    "I'll forward this to our investment committee."
+  ],
+  media: [
+    "Great! I'll add you to my preview list.",
+    "Can you send a review build? I'm targeting next month.",
+    "Love the concept. Would make a great feature piece.",
+    "I'll reach out to set up an interview next week."
+  ],
+  organizer: [
+    "We have a few booth slots left — I'll reserve one for you!",
+    "Our indie zone is perfect for your studio. Let me send the exhibitor pack.",
+    "Would you be interested in a speaking slot as well?"
+  ],
+  default: [
+    "Thanks for reaching out! I'll get back to you shortly.",
+    "Noted! Let me check with my team.",
+    "Sounds promising. Let's connect next week.",
+    "Great to hear from you. I'll review and follow up."
+  ]
+};
+function _autoReply(convIdx) {
+  const d = pcMsgData[convIdx];
+  if (!d) return;
+  const member = _GC_DEMO_MEMBERS.find(m => m.id === d.memberId);
+  const role = member ? member.role : 'default';
+  const pool = _AUTO_REPLIES[role] || _AUTO_REPLIES.default;
+  const reply = pool[Math.floor(Math.random() * pool.length)];
+  const now = new Date();
+  const time = (now.getHours()<10?'0':'')+now.getHours()+':'+(now.getMinutes()<10?'0':'')+now.getMinutes();
+  d.messages.push({ me: false, text: reply, time });
+  _msgSave();
+  // If this chat is open, render the new bubble
+  if (pcCurrentChat === convIdx) {
+    const msgs = document.getElementById('pc-chat-messages');
+    const div = document.createElement('div');
+    div.style.cssText = 'display:flex;flex-direction:row;align-items:flex-end;gap:8px';
+    const bubble = document.createElement('div');
+    bubble.style.cssText = 'max-width:70%;padding:10px 14px;border-radius:16px 16px 16px 4px;font-size:13px;line-height:1.5;color:var(--text1);background:#f4f2ee';
+    bubble.textContent = reply;
+    const meta = document.createElement('div');
+    meta.style.cssText = 'font-size:9px;color:var(--text3);flex-shrink:0;padding-bottom:3px';
+    meta.textContent = time;
+    div.appendChild(bubble); div.appendChild(meta);
+    msgs.appendChild(div);
+    msgs.scrollTop = msgs.scrollHeight;
+  } else {
+    d.unread = (d.unread||0) + 1;
+    _msgUpdateBadge();
+    renderPcMsgList();
+  }
+}
+
+// ─── New Conversation panel ───
+function openNewConvPanel() {
+  const panel = document.getElementById('pc-new-conv-panel');
+  panel.style.display = 'flex';
+  renderNewConvList('');
+  document.getElementById('pc-new-conv-search').value = '';
+  document.getElementById('pc-new-conv-search').focus();
+}
+function closeNewConvPanel() {
+  document.getElementById('pc-new-conv-panel').style.display = 'none';
+}
+function renderNewConvList(q) {
+  const list = document.getElementById('pc-new-conv-list');
+  const members = _GC_DEMO_MEMBERS.filter(m => !q || m.name.toLowerCase().includes(q.toLowerCase()) || m.company.toLowerCase().includes(q.toLowerCase()));
+  list.innerHTML = members.map(m => `
+    <div onclick="startConversation('${m.id}');closeNewConvPanel()" style="display:flex;align-items:center;gap:10px;padding:10px 8px;border-radius:8px;cursor:pointer;transition:.15s" onmouseover="this.style.background='var(--bg)'" onmouseout="this.style.background=''">
+      <div style="width:38px;height:38px;border-radius:50%;background:${m.color};display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:800;color:#fff;flex-shrink:0">${m.initials}</div>
+      <div style="flex:1;min-width:0">
+        <div style="font-size:13px;font-weight:700;color:var(--text1)">${m.name}</div>
+        <div style="font-size:11px;color:var(--text3);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${m.company} · ${m.title}</div>
+      </div>
+      ${pcMsgData.some(d=>d.memberId===m.id) ? '<div style="font-size:10px;color:var(--orange);font-weight:700">Active</div>' : ''}
+    </div>`).join('');
+}
+function filterNewConvList(q) { renderNewConvList(q); }
+
+const _pcMsgDefaults = [
   {memberId:'m02',name:'Jin Park',company:'Riot Games · Senior Producer',initials:'JP',color:'linear-gradient(135deg,#c0392b,#e74c3c)',online:true,unread:3,messages:[
     {me:false,text:"Riot's new experimental division is exploring co-development with indie studios. Your work on the narrative side really caught our attention.",time:'10:14 AM'},
     {me:true,text:"That's incredible to hear! We'd absolutely love to explore that. We've been building something that could be a great fit.",time:'10:32 AM'},
@@ -3349,13 +3470,17 @@ const pcMsgData = [
   ]}
 ];
 
+// Initialize pcMsgData from localStorage or use defaults
+const _savedMsgs = _msgLoad();
+const pcMsgData = _savedMsgs && _savedMsgs.length > 0 ? _savedMsgs : _pcMsgDefaults;
+
 let pcCurrentChat = null;
 
 function openMsgDrawer() {
   document.getElementById('msg-drawer').classList.add('open');
   document.getElementById('msg-drawer-overlay').classList.add('open');
-  // Hide badge
-  document.getElementById('nav-msg-badge').style.display = 'none';
+  // Update badge
+  _msgUpdateBadge();
   renderPcMsgList();
 }
 
@@ -3424,6 +3549,12 @@ function renderPcMsgList() {
 function openPcChat(idx) {
   const d = pcMsgData[idx];
   pcCurrentChat = idx;
+  // Clear unread for this conversation
+  if (d.unread > 0) {
+    d.unread = 0;
+    _msgSave();
+    _msgUpdateBadge();
+  }
   // Mark active
   document.querySelectorAll('.pc-conv-item').forEach((el, i) => {
     el.classList.toggle('active', pcMsgData.indexOf(d) === idx);
@@ -3465,10 +3596,15 @@ function pcSendMsgKey(e) { if (e.key === 'Enter') pcSendMsgBtn(); }
 function pcSendMsgBtn() {
   const inp = document.getElementById('pc-chat-input');
   const text = inp.value.trim();
-  if (!text) return;
+  if (!text || pcCurrentChat === null) return;
   const msgs = document.getElementById('pc-chat-messages');
   const now = new Date();
   const time = (now.getHours()<10?'0':'')+now.getHours()+':'+(now.getMinutes()<10?'0':'')+now.getMinutes();
+  // Save to data model
+  const d = pcMsgData[pcCurrentChat];
+  d.messages.push({ me: true, text, time });
+  _msgSave();
+  // Render bubble
   const div = document.createElement('div');
   div.style.cssText = 'display:flex;flex-direction:row-reverse;align-items:flex-end;gap:8px';
   const bubble = document.createElement('div');
@@ -3482,11 +3618,16 @@ function pcSendMsgBtn() {
   msgs.appendChild(div);
   msgs.scrollTop = msgs.scrollHeight;
   inp.value = '';
+  // Update conv list preview
+  renderPcMsgList();
+  // Trigger auto-reply after 1.5-3s
+  const delay = 1500 + Math.random() * 1500;
+  setTimeout(() => _autoReply(pcCurrentChat), delay);
 }
 
-// Show messages badge on load (simulated unread)
+// Show messages badge on load based on actual unread count
 document.addEventListener('DOMContentLoaded', function() {
-  document.getElementById('nav-msg-badge').style.display = 'flex';
+  _msgUpdateBadge();
 });
 
 // ═══ PROJECTS PANEL JS — REAL DATA FROM SUPABASE ═══
