@@ -171,6 +171,10 @@ body{background:#e8e4da;font-family:"DM Sans","PingFang SC",sans-serif;color:#1c
 .ev-btn-cal{background:var(--teal-dim);border:1px solid var(--teal-border);color:var(--teal)}
 .ev-btn-cal:hover{background:rgba(10,127,168,0.18)}
 .ev-btn-web{background:rgba(0,0,0,0.05);border:1px solid var(--border);color:var(--text2)}
+.ev-btn-going{background:rgba(0,0,0,0.05);border:1px solid var(--border);color:var(--text2)}
+.ev-btn-going.on{background:rgba(34,197,94,0.12);border:1px solid rgba(34,197,94,0.4);color:#16a34a;font-weight:700}
+.ev-btn-share{background:rgba(0,0,0,0.05);border:1px solid var(--border);color:var(--text2)}
+.ev-btn-share:hover{background:rgba(0,0,0,0.09)}
 .ev-btn-web:hover{background:rgba(0,0,0,0.09)}
 
 /* ── EMPTY STATE ── */
@@ -200,7 +204,7 @@ body{background:#e8e4da;font-family:"DM Sans","PingFang SC",sans-serif;color:#1c
   display:flex;align-items:flex-start;
   z-index:1000;
 }
-.nav-item{flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;cursor:pointer;padding:2px 0}
+/* legacy nav removed */
 .nav-ico{width:24px;height:24px;display:flex;align-items:center;justify-content:center}
 .nav-lbl{font-size:9px;font-weight:700;color:var(--text3);letter-spacing:.3px;text-transform:uppercase}
 .nav-item.active .nav-lbl{color:var(--teal)}
@@ -562,6 +566,9 @@ function renderCard(ev) {
     html += '<a class="ev-btn ev-btn-primary" href="'+ev.online_url+'" target="_blank" rel="noopener" onclick="event.stopPropagation()">🔗 Website</a>';
   }
   html += '<button class="ev-btn ev-btn-cal" onclick="event.stopPropagation();openCalSheet('+evIdStr+')">📅 Add to Cal</button>';
+  var isGoing = !!goingEvs[ev.id];
+  html += '<button class="ev-btn ev-btn-going'+(isGoing?' on':'')+'" id="going-'+ev.id+'" onclick="event.stopPropagation();toggleGoing('+evIdStr+')">'+(isGoing?'✓ Going':'Going?')+'</button>';
+  html += '<button class="ev-btn ev-btn-share" onclick="event.stopPropagation();shareEvent('+evIdStr+')">↑ Share</button>';
   html += '</div>';
   html += '</div>';
   html += '</div>';
@@ -778,6 +785,34 @@ function toggleSave(id) {
   var btn = document.querySelector('#evc-'+id+' .ev-save');
   if (btn) { btn.classList.toggle('on', !!savedEvs[id]); btn.textContent = savedEvs[id] ? '★' : '☆'; }
   renderTopBar();
+}
+function toggleGoing(id) {
+  goingEvs[id] = !goingEvs[id];
+  if (!goingEvs[id]) delete goingEvs[id];
+  localStorage.setItem('gc_going_events', JSON.stringify(goingEvs));
+  var btn = document.getElementById('going-'+id);
+  if (btn) {
+    btn.classList.toggle('on', !!goingEvs[id]);
+    btn.textContent = goingEvs[id] ? '✓ Going' : 'Going?';
+  }
+}
+function shareEvent(id) {
+  var ev = _loadedEvents[id];
+  if (!ev) return;
+  var title = ev.title || 'Event';
+  var startDate = ev.start_date ? new Date(ev.start_date).toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'}) : '';
+  var location = [ev.city, ev.country].filter(Boolean).join(', ');
+  var text = title + (startDate ? ' · ' + startDate : '') + (location ? ' · ' + location : '');
+  var url = ev.online_url || window.location.href;
+  if (navigator.share) {
+    navigator.share({ title: title, text: text, url: url }).catch(function(){});
+  } else {
+    navigator.clipboard.writeText(text + '\n' + url).then(function(){
+      alert('Link copied to clipboard!');
+    }).catch(function(){
+      prompt('Copy this link:', url);
+    });
+  }
 }
 
 // ── CALENDAR SHEET ──────────────────────────────────────────
