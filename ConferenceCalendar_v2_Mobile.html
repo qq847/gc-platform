@@ -64,13 +64,14 @@ body{background:#e8e4da;font-family:"DM Sans","PingFang SC",sans-serif;color:#1c
 .dpill.open{border-color:rgba(0,0,0,0.25);box-shadow:0 2px 8px rgba(0,0,0,0.1);}
 /* Dropdown popover */
 .dpop{
-  display:none;position:absolute;top:calc(100% + 6px);left:0;
+  display:none;position:fixed;
   background:#fff;border-radius:12px;
   border:1px solid rgba(0,0,0,0.09);
   box-shadow:0 8px 24px rgba(0,0,0,0.14);
-  padding:8px;z-index:500;
+  padding:8px;z-index:9000;
+  max-height:80vh;overflow-y:auto;
 }
-.dpill.open .dpop{display:block;}
+.dpop.visible{display:block;}
 /* Year popover */
 .dpop-years{display:flex;flex-direction:column;gap:3px;min-width:88px;}
 .dpop-y{padding:7px 14px;border-radius:8px;font-size:12px;font-weight:600;color:var(--text2);cursor:pointer;text-align:center;transition:background .1s;}
@@ -676,34 +677,61 @@ async function loadStats() {
 }
 
 // ── INTERACTIONS ────────────────────────────────────────────
+function positionDrop(pillId, popId) {
+  var pill = document.getElementById(pillId);
+  var pop  = document.getElementById(popId);
+  if (!pill || !pop) return;
+  var r = pill.getBoundingClientRect();
+  var top = r.bottom + 6;
+  var left = r.left;
+  // Ensure it doesn't go off-screen right
+  var maxW = window.innerWidth - 12;
+  pop.style.top  = top + 'px';
+  pop.style.left = left + 'px';
+  pop.style.maxWidth = (maxW - left) + 'px';
+}
 function toggleDrop(which, e) {
   e.stopPropagation();
-  var yearPill  = document.getElementById('dpill-year');
-  var monthPill = document.getElementById('dpill-month');
+  var yearPop  = document.getElementById('dpop-year');
+  var monthPop = document.getElementById('dpop-month');
   if (which === 'year') {
-    var isOpen = yearPill.classList.contains('open');
-    yearPill.classList.toggle('open', !isOpen);
-    monthPill.classList.remove('open');
+    var isOpen = yearPop && yearPop.classList.contains('visible');
+    if (monthPop) monthPop.classList.remove('visible');
+    if (!isOpen) {
+      positionDrop('dpill-year', 'dpop-year');
+      if (yearPop) yearPop.classList.add('visible');
+    document.getElementById('dpill-year').classList.add('open');
+    } else {
+      if (yearPop) yearPop.classList.remove('visible');
+      document.getElementById('dpill-year').classList.remove('open');
+    }
   } else {
-    var isOpen = monthPill.classList.contains('open');
-    monthPill.classList.toggle('open', !isOpen);
-    yearPill.classList.remove('open');
+    var isOpen = monthPop && monthPop.classList.contains('visible');
+    if (yearPop) yearPop.classList.remove('visible');
+    if (!isOpen) {
+      positionDrop('dpill-month', 'dpop-month');
+      if (monthPop) monthPop.classList.add('visible');
+      document.getElementById('dpill-month').classList.add('open');
+    } else {
+      if (monthPop) monthPop.classList.remove('visible');
+      document.getElementById('dpill-month').classList.remove('open');
+    }
   }
 }
 document.addEventListener('click', function() {
-  var yp = document.getElementById('dpill-year');
-  var mp = document.getElementById('dpill-month');
-  if (yp) yp.classList.remove('open');
-  if (mp) mp.classList.remove('open');
+  var yp = document.getElementById('dpop-year');
+  var mp = document.getElementById('dpop-month');
+  if (yp) yp.classList.remove('visible');
+  if (mp) mp.classList.remove('visible');
 });
 function pickYear(y) {
   selYear = y; selMonth = 0;
-  document.getElementById('dpill-year').classList.remove('open');
+  var _yp=document.getElementById('dpop-year');if(_yp)_yp.classList.remove('visible');
   loadStats().then(function(){ loadEvents(true); });
 }
 function pickMonth(m) {
   selMonth = (selMonth === m) ? 0 : m;
-  document.getElementById('dpill-month').classList.remove('open');
+  var _mp=document.getElementById('dpop-month');if(_mp)_mp.classList.remove('visible');
   renderMonthDrop();
   loadEvents(true);
 }
