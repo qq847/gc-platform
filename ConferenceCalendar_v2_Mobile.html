@@ -509,12 +509,6 @@ function buildParams(offset) {
   // Map tags to API type filter (use first matching tag)
   var typeTag = selTags.find(function(t){ return TAG_TYPE_MAP[t]; });
   if (typeTag) params.set('type', TAG_TYPE_MAP[typeTag]);
-  if (showSavedOnly) {
-    // Filter to saved IDs
-    var savedIds = Object.keys(savedEvs).filter(function(k){ return savedEvs[k]; });
-    if (savedIds.length) params.set('ids', savedIds.join(','));
-    else params.set('ids', 'none');
-  }
   return params;
 }
 
@@ -589,9 +583,54 @@ async function loadEvents(reset) {
 
   if (reset) {
     _state.offset = 0;
-    _loadedEvents = {};
+    if (!showSavedOnly) _loadedEvents = {};
     if (listEl) listEl.innerHTML = '<div class="ev-loading"><div class="ev-spinner"></div><div>Loading events…</div></div>';
     if (loadMore) loadMore.style.display = 'none';
+  }
+
+  // ── SAVED-ONLY MODE: render from local cache ──────────────
+  if (showSavedOnly) {
+    var savedIds = Object.keys(savedEvs).filter(function(k){ return savedEvs[k]; });
+    if (!savedIds.length) {
+      if (listEl) listEl.innerHTML = '<div class="empty"><div class="empty-icon">★</div><div class="empty-title">No saved events</div><div class="empty-sub">Tap ☆ on any event to save it here.</div></div>';
+      if (loadMore) loadMore.style.display = 'none';
+      _state.total = 0;
+      _state.loading = false;
+      renderTopBar();
+      return;
+    }
+    var cachedEvs = savedIds.map(function(id){ return _loadedEvents[id]; }).filter(Boolean);
+    if (!cachedEvs.length) {
+      if (listEl) listEl.innerHTML = '<div class="empty"><div class="empty-icon">★</div><div class="empty-title">' + savedIds.length + ' saved event' + (savedIds.length > 1 ? 's' : '') + '</div><div class="empty-sub">Scroll down in the full list to load saved events into view first.</div></div>';
+      if (loadMore) loadMore.style.display = 'none';
+      _state.total = savedIds.length;
+      _state.loading = false;
+      renderTopBar();
+      return;
+    }
+    cachedEvs.sort(function(a, b){ return (a.start_date || '').localeCompare(b.start_date || ''); });
+    _state.total = cachedEvs.length;
+    if (listEl) listEl.innerHTML = '';
+    var sg = {}; var so = [];
+    cachedEvs.forEach(function(ev) {
+      var mNum = getMonthNum(ev.start_date);
+      if (!sg[mNum]) { sg[mNum] = []; so.push(mNum); }
+      sg[mNum].push(ev);
+    });
+    so = so.filter(function(v, i){ return so.indexOf(v) === i; });
+    var shtml = '';
+    so.forEach(function(mNum) {
+      var evs = sg[mNum];
+      shtml += '<div class="month-group" id="mg-' + mNum + '">';
+      shtml += '<div class="mg-header"><span class="mg-month">' + MONTHS_LONG[mNum - 1] + '</span><span class="mg-year">' + selYear + '</span><span class="mg-count">' + evs.length + '</span></div>';
+      shtml += '<div class="mg-cards">' + evs.map(renderCard).join('') + '</div>';
+      shtml += '</div>';
+    });
+    if (listEl) listEl.innerHTML = shtml;
+    if (loadMore) loadMore.style.display = 'none';
+    _state.loading = false;
+    renderTopBar();
+    return;
   }
 
   var params = buildParams(_state.offset);
