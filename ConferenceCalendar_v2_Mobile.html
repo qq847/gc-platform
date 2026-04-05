@@ -397,15 +397,51 @@ var _state = {
 var MONTHS_SHORT = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
 var MONTHS_LONG  = ["January","February","March","April","May","June","July","August","September","October","November","December"];
 
-// TAG → API type mapping
+// TAG → API type mapping (only conference/tradeshow are valid API type values)
 var TAG_TYPE_MAP = {
-  'Conference': 'conference',
-  'Trade Show': 'tradeshow',
-  'B2B': 'b2b',
-  'Developer': 'developer',
-  'Consumer': 'consumer',
-  'Online': 'online'
+  'conference': 'conference',
+  'tradeshow':  'tradeshow'
 };
+
+// Region lists for frontend filtering
+var ASIA_COUNTRIES = ['Japan','China','South Korea','Korea','Taiwan','Singapore','Thailand','Indonesia','Malaysia','Philippines','India','Vietnam','Hong Kong','Australia','New Zealand','Pakistan','Bangladesh'];
+var EUROPE_COUNTRIES = ['Germany','France','United Kingdom','UK','Spain','Italy','Netherlands','Sweden','Finland','Norway','Denmark','Poland','Czech Republic','Czechia','Austria','Switzerland','Belgium','Portugal','Greece','Hungary','Romania','Croatia','Serbia','Bulgaria','Slovakia','Slovenia','Cyprus','Malta','Estonia','Latvia','Lithuania','Ukraine','Russia','Belarus','Turkey','Israel'];
+var AMERICAS_COUNTRIES = ['United States','USA','Canada','Brazil','Mexico','Argentina','Colombia','Chile','Peru','Uruguay','Venezuela','Ecuador','Bolivia','Paraguay','Cuba'];
+
+// Check if an event matches a single tag (frontend logic)
+function matchTag(ev, tag) {
+  var t = tag.toLowerCase();
+  var title = (ev.title || '').toLowerCase();
+  var desc  = (ev.description || '').toLowerCase();
+  if (t === 'conference') return ev.type === 'conference';
+  if (t === 'tradeshow')  return ev.type === 'tradeshow';
+  if (t === 'b2b')        return ev.has_buyers || ev.has_deal_room || title.indexOf('b2b') !== -1 || title.indexOf('business') !== -1 || desc.indexOf('b2b') !== -1;
+  if (t === 'developer')  return ev.has_conference || title.indexOf('developer') !== -1 || title.indexOf(' dev ') !== -1 || title.indexOf('devgamm') !== -1 || title.indexOf('gdc') !== -1 || title.indexOf('develop') !== -1;
+  if (t === 'consumer')   return title.indexOf('consumer') !== -1 || title.indexOf('expo') !== -1 || title.indexOf('show') !== -1 || title.indexOf('fest') !== -1 || title.indexOf('con ') !== -1;
+  if (t === 'platform')   return ev.has_deal_room || ev.has_buyers || title.indexOf('platform') !== -1 || title.indexOf('game connection') !== -1;
+  if (t === 'live') {
+    var now = new Date().toISOString().split('T')[0];
+    return ev.start_date <= now && (!ev.end_date || ev.end_date >= now);
+  }
+  if (t === 'asia')        return ASIA_COUNTRIES.indexOf(ev.country) !== -1 || ev.is_online === false && ASIA_COUNTRIES.some(function(c){ return (ev.country||'').indexOf(c) !== -1; });
+  if (t === 'europe')      return EUROPE_COUNTRIES.indexOf(ev.country) !== -1;
+  if (t === 'northamerica') return AMERICAS_COUNTRIES.indexOf(ev.country) !== -1;
+  return false;
+}
+
+// Check if an event matches all active tags (AND across dimensions, OR within same dimension)
+function matchesTags(ev) {
+  if (!selTags.length) return true;
+  // Separate tags into type-group and region-group and special-group
+  var typeTags    = selTags.filter(function(t){ return ['conference','tradeshow'].indexOf(t.toLowerCase()) !== -1; });
+  var regionTags  = selTags.filter(function(t){ return ['asia','europe','northamerica'].indexOf(t.toLowerCase()) !== -1; });
+  var specialTags = selTags.filter(function(t){ return ['b2b','developer','consumer','platform','live'].indexOf(t.toLowerCase()) !== -1; });
+  // Within each group: OR logic (match any). Across groups: AND logic.
+  if (typeTags.length   && !typeTags.some(function(t){   return matchTag(ev, t); })) return false;
+  if (regionTags.length && !regionTags.some(function(t){ return matchTag(ev, t); })) return false;
+  if (specialTags.length && !specialTags.some(function(t){ return matchTag(ev, t); })) return false;
+  return true;
+}
 
 // ── COUNTRY FLAG HELPER ─────────────────────────────────────
 function getFlag(country) {
@@ -509,9 +545,14 @@ function buildParams(offset) {
   } else {
     params.set('from_date', today);
   }
-  // Map tags to API type filter (use first matching tag)
-  var typeTag = selTags.find(function(t){ return TAG_TYPE_MAP[t]; });
-  if (typeTag) params.set('type', TAG_TYPE_MAP[typeTag]);
+  // Only pass type to API if exactly ONE type tag is selected and no other tags
+  // (API only supports single type; multi-select uses frontend filtering)
+  var typeTags = selTags.filter(function(t){ return TAG_TYPE_MAP[t.toLowerCase()]; });
+  var nonTypeTags = selTags.filter(function(t){ return !TAG_TYPE_MAP[t.toLowerCase()]; });
+  if (typeTags.length === 1 && nonTypeTags.length === 0) {
+    params.set('type', TAG_TYPE_MAP[typeTags[0].toLowerCase()]);
+  }
+  // For all other tag combinations, fetch without type filter and do frontend filtering
   return params;
 }
 
@@ -644,11 +685,27 @@ async function loadEvents(reset) {
 
     if (json.success) {
       var events = json.data || [];
-      _state.total  = json.total || 0;
       _state.offset += events.length;
 
-      // Cache events for cal sheet
+      // Cache events for cal sheet (before filtering)
       events.forEach(function(ev){ _loadedEvents[ev.id] = ev; });
+
+      // Frontend tag filtering (for tags that API doesn't support natively)
+      var needsFrontendFilter = selTags.length > 0 && !(
+        selTags.length === 1 &&
+        TAG_TYPE_MAP[selTags[0].toLowerCase()]
+      );
+      if (needsFrontendFilter) {
+        events = events.filter(matchesTags);
+      }
+
+      // Update total: use API total for unfiltered, use filtered count for frontend-filtered
+      if (needsFrontendFilter) {
+        // We can't know the true total without scanning all pages; show filtered count so far
+        _state.total = (_state.offset < (json.total || 0)) ? json.total : _state.offset;
+      } else {
+        _state.total = json.total || 0;
+      }
 
       if (reset) {
         if (!events.length) {
