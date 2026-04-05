@@ -407,7 +407,7 @@ var selectedAddons = {};
 var addonPrices = {monitor:299, meeting:199, catering:149, badge:99, social:349};
 var addonNames = {monitor:'Extra Monitor', meeting:'Private Meeting Room', catering:'Catering Package', badge:'Extra Badges ×2', social:'Social Media Spotlight'};
 
-var stepLabels = ['Select a Booth Type','Company Details →','Add-ons & Extras →','Review Application →','Pay €0'];
+var stepLabels = ['Select a Booth Type','Company Details →','Add-ons & Extras →','Next: Review →','Submit & Pay €0'];
 var stepTexts = ['Step 1 of 5 — Select booth type','Step 2 of 5 — Company details','Step 3 of 5 — Optional add-ons','Step 4 of 5 — Review your application','Step 5 of 5 — Complete payment'];
 
 function selectBooth(type) {
@@ -441,10 +441,13 @@ function updateFooter() {
   if (currentStep === 1) {
     btn.textContent = selectedBooth ? ('Next: Company Details →') : 'Select a Booth Type';
     btn.style.opacity = selectedBooth ? '1' : '0.5';
+  } else if (currentStep === 4) {
+    btn.textContent = 'Submit & Pay €' + calcTotal().toLocaleString();
+    btn.style.opacity = '1';
   } else if (currentStep === 5) {
     btn.textContent = 'Submit & Pay €' + calcTotal().toLocaleString();
   } else {
-    btn.textContent = ['','Next: Company Details →','Next: Add-ons →','Next: Review →','Submit & Pay €'+calcTotal(),''][currentStep];
+    btn.textContent = ['','Next: Company Details →','Next: Add-ons →','Next: Review →',''][currentStep];
     btn.style.opacity = '1';
   }
 }
@@ -484,10 +487,10 @@ function nextStep() {
       return;
     }
   }
-  if (currentStep === 4) {
-    // Populate review
-    document.getElementById('r-booth-type').textContent = boothNames[selectedBooth];
-    document.getElementById('r-booth-size').textContent = boothSizes[selectedBooth];
+  if (currentStep === 3) {
+    // Populate review (entering step 4)
+    document.getElementById('r-booth-type').textContent = boothNames[selectedBooth] || '—';
+    document.getElementById('r-booth-size').textContent = boothSizes[selectedBooth] || '—';
     document.getElementById('r-company').textContent = document.getElementById('f-company').value || '—';
     document.getElementById('r-contact').textContent = document.getElementById('f-contact').value || '—';
     document.getElementById('r-email').textContent = document.getElementById('f-email').value || '—';
