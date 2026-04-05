@@ -293,9 +293,9 @@ body{background:#e8e4da;font-family:"DM Sans","PingFang SC",sans-serif;color:#1c
 <div class="topbar">
 
   <div class="tb-meta">
-    <span class="tb-count" id="tb-count">48 events</span>
-    <div class="tb-dot"></div>
-    <span class="tb-countries" id="tb-countries">22 countries</span>
+    <span class="tb-count" id="tb-count"></span>
+    <div class="tb-dot" id="tb-dot" style="display:none"></div>
+    <span class="tb-countries" id="tb-countries"></span>
   </div>
   <button class="tb-saved-btn" id="tb-saved-btn" onclick="toggleSavedFilter()">
     <span>&#9733;</span>
@@ -451,11 +451,14 @@ function getMonthNum(dateStr) {
 function renderTopBar() {
   var tc  = document.getElementById('tb-count');
   var tco = document.getElementById('tb-countries');
+  var tdot = document.getElementById('tb-dot');
   var tsn = document.getElementById('tb-saved-num');
   var tsb = document.getElementById('tb-saved-btn');
   var savedCount = Object.keys(savedEvs).filter(function(k){ return savedEvs[k]; }).length;
-  if (tc)  tc.textContent  = _state.total.toLocaleString() + ' events';
-  if (tco) tco.textContent = _state.totalCountries + ' countries';
+  if (tc)  tc.textContent  = _state.total ? _state.total.toLocaleString() + ' events' : '';
+  if (tco) tco.textContent = _state.totalCountries ? _state.totalCountries + ' countries' : '';
+  // Show dot only when both values are ready
+  if (tdot) tdot.style.display = (_state.total && _state.totalCountries) ? 'block' : 'none';
   if (tsn) tsn.textContent = savedCount;
   if (tsb) tsb.classList.toggle('on', showSavedOnly);
 }
@@ -714,11 +717,13 @@ async function loadStats() {
     var json = await resp.json();
     if (json.success) {
       _state.monthCounts    = json.months || {};
-      _state.total          = json.total  || 0;
+      // Do NOT set _state.total here — let loadEvents set the authoritative total
       _state.totalCountries = Object.keys(json.countries || {}).length;
       renderYearDrop();
       renderMonthDrop();
-      renderTopBar();
+      // Only update countries display, not total count
+      var tco = document.getElementById('tb-countries');
+      if (tco) tco.textContent = _state.totalCountries + ' countries';
     }
   } catch(e) { /* ignore */ }
 }
@@ -945,8 +950,10 @@ function loadMoreEvents() {
   if (listEl) listEl.parentNode.insertBefore(spinner, listEl.nextSibling);
 })();
 
-// Load stats first (for month counts), then load events
-loadStats().then(function() { loadEvents(true); });
+// Load stats and events in parallel — stats provides month counts and countries,
+// events provides the authoritative total count. No sequential dependency needed.
+loadStats();
+loadEvents(true);
 
 </script>
 
