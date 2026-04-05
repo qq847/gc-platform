@@ -241,6 +241,43 @@ body{background:#e8e4da;font-family:"DM Sans","PingFang SC",sans-serif;color:#1c
 .gc-bn:hover .gc-bn-i svg{stroke:#6b6660;}
 .gc-page-content{padding-bottom:58px;}
 
+
+/* LOAD MORE */
+.load-more-btn {
+  display: block;
+  width: calc(100% - 32px);
+  margin: 12px 16px 24px;
+  padding: 14px;
+  background: #fff;
+  border: 1.5px solid var(--bdr);
+  border-radius: 12px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--tx2);
+  cursor: pointer;
+  text-align: center;
+  transition: background .15s, color .15s;
+}
+.load-more-btn:hover { background: var(--bg2); color: var(--tx1); }
+.ev-loading {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  padding: 48px 16px;
+  color: var(--tx3);
+  font-size: 13px;
+}
+.ev-spinner {
+  width: 28px; height: 28px;
+  border: 2.5px solid var(--bdr);
+  border-top-color: var(--ac);
+  border-radius: 50%;
+  animation: spin .8s linear infinite;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+.ev-card.ended { opacity: 0.6; }
+.mg-cards { display: flex; flex-direction: column; gap: 8px; }
 </style>
 
 </head>
@@ -302,29 +339,7 @@ body{background:#e8e4da;font-family:"DM Sans","PingFang SC",sans-serif;color:#1c
 <!-- EVENT LIST -->
 <div id="event-list"></div>
 
-<!-- BOTTOM NAV -->
 
-    <span class="nav-lbl">Home</span>
-  </div>
-  <div class="nav-item">
-    <div class="nav-ico"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="var(--text3)" stroke-width="2"><path d="M17,21v-2a4,4,0,0,0-4-4H5a4,4,0,0,0-4,4v2"/><circle cx="9" cy="7" r="4"/></svg></div>
-    <span class="nav-lbl">People</span>
-  </div>
-  <div class="nav-item">
-    <div class="nav-ico"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="var(--text3)" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8,21 L16,21"/><path d="M12,17 L12,21"/></svg></div>
-    <span class="nav-lbl">Projects</span>
-  </div>
-  <div class="nav-item active">
-    <div class="nav-ico"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="var(--teal)" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="3" y1="9" x2="21" y2="9"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="16" y1="2" x2="16" y2="6"/></svg></div>
-    <span class="nav-lbl" style="color:var(--teal)">Events</span>
-  </div>
-  <div class="nav-item">
-    <div class="nav-ico"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="var(--text3)" stroke-width="2"><path d="M21,15a2,2,0,0,1-2,2H7l-4,4V5A2,2,0,0,1,5,3H19a2,2,0,0,1,2,2Z"/></svg></div>
-    <span class="nav-lbl">Messages</span>
-  </div>
-</div>
-
-</div><!-- /app -->
 
 <!-- ADD TO CALENDAR SHEET -->
 <div class="cal-sheet" id="cal-sheet" onclick="if(event.target===this)closeCalSheet()">
@@ -351,144 +366,101 @@ body{background:#e8e4da;font-family:"DM Sans","PingFang SC",sans-serif;color:#1c
 </div>
 
 <script>
-// ── DATA ──────────────────────────────────────────────────
-var EVENTS = [
-  // Jan
-  {id:1, name:"DICE Summit 2026", dateStart:"Jan 27", dateEnd:"Jan 29", month:"Jan", year:2026, city:"Las Vegas", country:"USA", flag:"🇺🇸", region:"NorthAmerica", types:["B2B","Developer"], desc:"Annual gathering of gaming executives and industry leaders. DICE stands for Design, Innovate, Communicate, Entertain.", link:"https://www.dicesummit.org/", attendance:"1,000+", focus:"Leadership, Innovation", hasLive:false, isOnPlatform:false},
-  {id:2, name:"Global Games Pitch", dateStart:"Jan 15", dateEnd:"Jan 16", month:"Jan", year:2026, city:"Online", country:"Online", flag:"🌐", region:"Online", types:["B2B","Developer"], desc:"International pitching competition for indie game developers seeking funding and publishing deals.", link:"https://globalgamespitch.com/", attendance:"500+", focus:"Funding, Pitching", hasLive:false, isOnPlatform:false},
-
-  // Feb
-  {id:3, name:"GGJ (Global Game Jam)", dateStart:"Feb 20", dateEnd:"Feb 22", month:"Feb", year:2026, city:"Worldwide", country:"Global", flag:"🌍", region:"NorthAmerica", types:["Developer"], desc:"The world's largest game creation event. Thousands of developers create games simultaneously across hundreds of sites worldwide.", link:"https://globalgamejam.org/", attendance:"50,000+", focus:"Game Development, Community", hasLive:false, isOnPlatform:false},
-  {id:4, name:"Casual Connect Tel Aviv", dateStart:"Feb 10", dateEnd:"Feb 12", month:"Feb", year:2026, city:"Tel Aviv", country:"Israel", flag:"🇮🇱", region:"Europe", types:["B2B","Developer"], desc:"Business-focused mobile and casual games conference with high-quality networking and expert speakers.", link:"https://casualconnect.org/", attendance:"2,000+", focus:"Mobile, Casual Games", hasLive:false, isOnPlatform:false},
-
-  // Mar
-  {id:5, name:"GDC 2026", dateStart:"Mar 17", dateEnd:"Mar 21", month:"Mar", year:2026, city:"San Francisco", country:"USA", flag:"🇺🇸", region:"NorthAmerica", types:["B2B","Developer"], desc:"The world's largest professional game industry event. Thousands of talks, tutorials, summits, and networking events over 5 days.", link:"https://gdconf.com/", attendance:"30,000+", focus:"All verticals, most important dev conference", hasLive:false, isOnPlatform:false},
-  {id:6, name:"PAX East 2026", dateStart:"Mar 26", dateEnd:"Mar 29", month:"Mar", year:2026, city:"Boston", country:"USA", flag:"🇺🇸", region:"NorthAmerica", types:["Consumer","Developer"], desc:"One of the largest gaming festivals in North America, blending consumer excitement with developer community.", link:"https://east.paxsite.com/", attendance:"80,000+", focus:"Consumer, Tabletop, Digital", hasLive:false, isOnPlatform:false},
-  {id:7, name:"SXSW Gaming 2026", dateStart:"Mar 13", dateEnd:"Mar 15", month:"Mar", year:2026, city:"Austin", country:"USA", flag:"🇺🇸", region:"NorthAmerica", types:["Consumer","B2B"], desc:"The gaming track of SXSW — panels, demos, and networking at the intersection of games, tech, and culture.", link:"https://www.sxsw.com/", attendance:"10,000+", focus:"Culture, Indie, Business", hasLive:false, isOnPlatform:false},
-  {id:8, name:"Game Connection America 2026", dateStart:"Mar 17", dateEnd:"Mar 18", month:"Mar", year:2026, city:"San Francisco", country:"USA", flag:"🇺🇸", region:"NorthAmerica", types:["B2B"], desc:"Co-located with GDC. One-on-one meetings between developers, publishers, and service providers. Your platform's namesake.", link:"https://www.game-connection.com/", attendance:"3,000+", focus:"B2B Meetings, Publishing Deals", hasLive:true, isOnPlatform:true},
-
-  // Apr
-  {id:9, name:"Reboot Develop Blue 2026", dateStart:"Apr 23", dateEnd:"Apr 25", month:"Apr", year:2026, city:"Dubrovnik", country:"Croatia", flag:"🇭🇷", region:"Europe", types:["Developer","B2B"], desc:"Boutique game developer conference on the Adriatic coast. Known for high-quality talks and intimate networking.", link:"https://rebootdevelop.hr/", attendance:"1,500+", focus:"Development, Indie, AA/AAA", hasLive:false, isOnPlatform:false},
-  {id:10, name:"Taipei Game Show 2026", dateStart:"Apr 10", dateEnd:"Apr 13", month:"Apr", year:2026, city:"Taipei", country:"Taiwan", flag:"🇹🇼", region:"Asia", types:["Consumer","B2B"], desc:"Asia's leading consumer and B2B game show. Strong gateway to the Southeast Asian market.", link:"https://www.tgs.org.tw/", attendance:"250,000+", focus:"Asia Market, Consumer, B2B", hasLive:false, isOnPlatform:false},
-  {id:11, name:"Pixel Havana 2026", dateStart:"Apr 8", dateEnd:"Apr 10", month:"Apr", year:2026, city:"Havana", country:"Cuba", flag:"🇨🇺", region:"NorthAmerica", types:["Developer"], desc:"Latin America's pioneering game developers conference, fostering local dev talent and international collaboration.", link:"https://www.pixelhavana.com/", attendance:"800+", focus:"Latin America, Indie", hasLive:false, isOnPlatform:false},
-
-  // May
-  {id:12, name:"Nordic Game 2026", dateStart:"May 20", dateEnd:"May 22", month:"May", year:2026, city:"Malmö", country:"Sweden", flag:"🇸🇪", region:"Europe", types:["B2B","Developer"], desc:"Premier Nordic games industry conference. Strong focus on game deals, publishing, and the thriving Scandinavian development scene.", link:"https://nordicgame.com/", attendance:"3,000+", focus:"Nordic Market, Publishing", hasLive:false, isOnPlatform:false},
-  {id:13, name:"A MAZE. Berlin 2026", dateStart:"May 6", dateEnd:"May 10", month:"May", year:2026, city:"Berlin", country:"Germany", flag:"🇩🇪", region:"Europe", types:["Developer"], desc:"International games and playful media festival celebrating artistic and experimental games.", link:"https://amaze-festival.com/", attendance:"2,000+", focus:"Art Games, Indie, Experimental", hasLive:false, isOnPlatform:false},
-  {id:14, name:"Game Connection Asia 2026", dateStart:"May 14", dateEnd:"May 15", month:"May", year:2026, city:"Singapore", country:"Singapore", flag:"🇸🇬", region:"Asia", types:["B2B"], desc:"B2B-focused one-on-one meeting event in Singapore, gateway to Southeast Asian game market.", link:"https://www.game-connection.com/", attendance:"1,500+", focus:"Asia B2B, Publishing", hasLive:true, isOnPlatform:true},
-  {id:15, name:"Quo Vadis 2026", dateStart:"May 5", dateEnd:"May 7", month:"May", year:2026, city:"Berlin", country:"Germany", flag:"🇩🇪", region:"Europe", types:["Developer","B2B"], desc:"Premier Berlin games conference, combining high-quality developer talks with industry networking.", link:"https://qvconf.com/", attendance:"2,500+", focus:"Development, Business", hasLive:false, isOnPlatform:false},
-
-  // Jun
-  {id:16, name:"E3 2026", dateStart:"Jun 9", dateEnd:"Jun 11", month:"Jun", year:2026, city:"Los Angeles", country:"USA", flag:"🇺🇸", region:"NorthAmerica", types:["Consumer","B2B"], desc:"The iconic Electronic Entertainment Expo returns. Major publisher announcements, consumer excitement, and industry networking.", link:"https://www.e3expo.com/", attendance:"60,000+", focus:"Consumer, AAA Announcements", hasLive:false, isOnPlatform:false},
-  {id:17, name:"Guerrilla Collective 2026", dateStart:"Jun 6", dateEnd:"Jun 8", month:"Jun", year:2026, city:"Online", country:"Online", flag:"🌐", region:"Online", types:["Developer","Consumer"], desc:"Multi-day indie game showcase streaming event, amplifying independent developers to global audiences.", link:"https://guerrillacollective.com/", attendance:"500K+ viewers", focus:"Indie Showcase, Online", hasLive:false, isOnPlatform:false},
-  {id:18, name:"Summer Game Fest 2026", dateStart:"Jun 5", dateEnd:"Jun 5", month:"Jun", year:2026, city:"Los Angeles", country:"USA", flag:"🇺🇸", region:"NorthAmerica", types:["Consumer"], desc:"Major games showcase event preceding E3 week. Multiple publisher showcases and game announcements.", link:"https://www.summergamefest.com/", attendance:"200K+ live", focus:"Consumer, Announcements", hasLive:false, isOnPlatform:false},
-
-  // Jul
-  {id:19, name:"BitSummit 2026", dateStart:"Jul 17", dateEnd:"Jul 19", month:"Jul", year:2026, city:"Kyoto", country:"Japan", flag:"🇯🇵", region:"Asia", types:["Developer","Consumer"], desc:"Japan's premier independent game festival. Essential for reaching the Japanese indie market.", link:"https://bitsummit.org/", attendance:"5,000+", focus:"Japanese Indie, Asia Market", hasLive:false, isOnPlatform:false},
-  {id:20, name:"China Joy 2026", dateStart:"Jul 30", dateEnd:"Aug 2", month:"Jul", year:2026, city:"Shanghai", country:"China", flag:"🇨🇳", region:"Asia", types:["Consumer","B2B"], desc:"China's largest game and entertainment expo. Critical access point for the world's largest gaming market.", link:"https://www.chinajoy.net/", attendance:"350,000+", focus:"China Market, Consumer, Mobile", hasLive:false, isOnPlatform:false},
-  {id:21, name:"Develop:Brighton 2026", dateStart:"Jul 8", dateEnd:"Jul 10", month:"Jul", year:2026, city:"Brighton", country:"UK", flag:"🇬🇧", region:"Europe", types:["Developer","B2B"], desc:"UK's leading game developer conference with an intimate atmosphere, strong indie presence, and quality talks.", link:"https://www.developconference.com/", attendance:"2,500+", focus:"Development, UK Market", hasLive:false, isOnPlatform:false},
-
-  // Aug
-  {id:22, name:"Gamescom 2026", dateStart:"Aug 26", dateEnd:"Aug 30", month:"Aug", year:2026, city:"Cologne", country:"Germany", flag:"🇩🇪", region:"Europe", types:["Consumer","B2B"], desc:"The world's largest games trade fair. 5 days, 300,000+ visitors, thousands of exhibitors from 60+ countries.", link:"https://www.gamescom.de/", attendance:"300,000+", focus:"World's biggest, Consumer + B2B", hasLive:false, isOnPlatform:false},
-  {id:23, name:"devcom 2026", dateStart:"Aug 24", dateEnd:"Aug 25", month:"Aug", year:2026, city:"Cologne", country:"Germany", flag:"🇩🇪", region:"Europe", types:["Developer"], desc:"Developer-focused conference co-located with Gamescom. Workshops, talks, and networking for game makers.", link:"https://www.devcom.games/", attendance:"3,000+", focus:"Developer Education, Pre-Gamescom", hasLive:false, isOnPlatform:false},
-  {id:24, name:"PAX West 2026", dateStart:"Aug 28", dateEnd:"Aug 31", month:"Aug", year:2026, city:"Seattle", country:"USA", flag:"🇺🇸", region:"NorthAmerica", types:["Consumer","Developer"], desc:"The original PAX. Seattle-based gaming festival celebrating video games, tabletop games, and gaming culture.", link:"https://west.paxsite.com/", attendance:"80,000+", focus:"Consumer, Community", hasLive:false, isOnPlatform:false},
-  {id:25, name:"BIC Festival 2026", dateStart:"Aug 20", dateEnd:"Aug 23", month:"Aug", year:2026, city:"Busan", country:"South Korea", flag:"🇰🇷", region:"Asia", types:["Developer","Consumer"], desc:"Busan Indie Connect — South Korea's biggest indie game festival and networking event.", link:"https://www.bicfestival.com/", attendance:"20,000+", focus:"Korean Indie, Asia", hasLive:false, isOnPlatform:false},
-
-  // Sep
-  {id:26, name:"Tokyo Game Show 2026", dateStart:"Sep 24", dateEnd:"Sep 27", month:"Sep", year:2026, city:"Chiba", country:"Japan", flag:"🇯🇵", region:"Asia", types:["Consumer","B2B"], desc:"Asia's largest game trade show. Essential for Japanese and Asian market access. Strong B2B days Monday-Tuesday.", link:"https://tgs.cesa.or.jp/", attendance:"250,000+", focus:"Japan Market, Consumer, B2B", hasLive:false, isOnPlatform:false},
-  {id:27, name:"Indie Dev Day 2026", dateStart:"Sep 19", dateEnd:"Sep 20", month:"Sep", year:2026, city:"Barcelona", country:"Spain", flag:"🇪🇸", region:"Europe", types:["Developer","Consumer"], desc:"Barcelona's indie game festival, celebrating European independent game development.", link:"https://indiedevday.es/", attendance:"5,000+", focus:"European Indie", hasLive:false, isOnPlatform:false},
-  {id:28, name:"PAX Australia 2026", dateStart:"Sep 11", dateEnd:"Sep 13", month:"Sep", year:2026, city:"Melbourne", country:"Australia", flag:"🇦🇺", region:"Asia", types:["Consumer","Developer"], desc:"Australia and New Zealand's largest gaming event. Growing developer community and consumer showcase.", link:"https://aus.paxsite.com/", attendance:"60,000+", focus:"APAC Consumer, Oceania", hasLive:false, isOnPlatform:false},
-
-  // Oct
-  {id:29, name:"Gamescom Asia 2026", dateStart:"Oct 16", dateEnd:"Oct 19", month:"Oct", year:2026, city:"Singapore", country:"Singapore", flag:"🇸🇬", region:"Asia", types:["B2B","Consumer"], desc:"Asian edition of Gamescom. Southeast Asia's premier B2B and consumer gaming event.", link:"https://www.gamescom.asia/", attendance:"30,000+", focus:"Southeast Asia, B2B", hasLive:false, isOnPlatform:false},
-  {id:30, name:"WN Conference", dateStart:"Oct 20", dateEnd:"Oct 22", month:"Oct", year:2026, city:"Amsterdam", country:"Netherlands", flag:"🇳🇱", region:"Europe", types:["B2B"], desc:"White Nights Conference — major B2B mobile and PC gaming event covering Western and Eastern European markets.", link:"https://wnconf.com/", attendance:"2,500+", focus:"Mobile, B2B, Eastern Europe", hasLive:false, isOnPlatform:false},
-  {id:31, name:"Brazilian Games Showcase", dateStart:"Oct 8", dateEnd:"Oct 9", month:"Oct", year:2026, city:"São Paulo", country:"Brazil", flag:"🇧🇷", region:"NorthAmerica", types:["Developer","B2B"], desc:"Brazil's leading games industry showcase, highlighting the rapidly growing Brazilian development scene.", link:"https://www.braziliangames.com/", attendance:"1,500+", focus:"Latin America, Indie", hasLive:false, isOnPlatform:false},
-  {id:32, name:"G-STAR 2026", dateStart:"Oct 20", dateEnd:"Oct 23", month:"Oct", year:2026, city:"Busan", country:"South Korea", flag:"🇰🇷", region:"Asia", types:["Consumer","B2B"], desc:"Korea's biggest international game exhibition. Strong B2B halls alongside massive consumer expo floors.", link:"https://www.gstar.or.kr/", attendance:"200,000+", focus:"Korea Market, Consumer + B2B", hasLive:false, isOnPlatform:false},
-
-  // Nov
-  {id:33, name:"DreamHack Atlanta 2026", dateStart:"Nov 20", dateEnd:"Nov 22", month:"Nov", year:2026, city:"Atlanta", country:"USA", flag:"🇺🇸", region:"NorthAmerica", types:["Consumer"], desc:"North American DreamHack festival — LAN party, esports, consumer gaming, and cosplay culture.", link:"https://dreamhack.com/", attendance:"40,000+", focus:"LAN, Esports, Consumer", hasLive:false, isOnPlatform:false},
-  {id:34, name:"PAX Unplugged 2026", dateStart:"Nov 20", dateEnd:"Nov 22", month:"Nov", year:2026, city:"Philadelphia", country:"USA", flag:"🇺🇸", region:"NorthAmerica", types:["Consumer"], desc:"Dedicated tabletop gaming festival — board games, TTRPGs, card games, and analog game culture.", link:"https://unplugged.paxsite.com/", attendance:"30,000+", focus:"Tabletop, Consumer", hasLive:false, isOnPlatform:false},
-  {id:35, name:"Pocket Gamer Connects Helsinki", dateStart:"Nov 3", dateEnd:"Nov 4", month:"Nov", year:2026, city:"Helsinki", country:"Finland", flag:"🇫🇮", region:"Europe", types:["B2B","Developer"], desc:"Mobile gaming business conference with MeetToMatch, expert talks, and focused B2B networking.", link:"https://www.pocketgamer.biz/connects/", attendance:"1,500+", focus:"Mobile, B2B", hasLive:false, isOnPlatform:false},
-  {id:36, name:"Slush 2026", dateStart:"Nov 18", dateEnd:"Nov 19", month:"Nov", year:2026, city:"Helsinki", country:"Finland", flag:"🇫🇮", region:"Europe", types:["B2B"], desc:"World's leading startup event. Strong gaming and tech startup presence, major investor networking.", link:"https://www.slush.org/", attendance:"13,000+", focus:"Startup, Investment, Tech", hasLive:false, isOnPlatform:false},
-
-  // Dec
-  {id:37, name:"Game Connection Europe 2026", dateStart:"Dec 3", dateEnd:"Dec 4", month:"Dec", year:2026, city:"Paris", country:"France", flag:"🇫🇷", region:"Europe", types:["B2B"], desc:"The original Game Connection. One-on-one B2B meeting event for developers, publishers, and service providers. Co-located with LeGameConf.", link:"https://www.game-connection.com/", attendance:"2,500+", focus:"B2B Meetings, Europe HQ", hasLive:true, isOnPlatform:true},
-  {id:38, name:"The Game Awards 2026", dateStart:"Dec 10", dateEnd:"Dec 10", month:"Dec", year:2026, city:"Los Angeles", country:"USA", flag:"🇺🇸", region:"NorthAmerica", types:["Consumer"], desc:"The biggest night in gaming. Major game announcements, world premieres, and industry awards ceremony.", link:"https://thegameawards.com/", attendance:"200M+ viewers", focus:"Awards, Consumer, Announcements", hasLive:false, isOnPlatform:false},
-  {id:39, name:"DreamHack Winter 2026", dateStart:"Dec 4", dateEnd:"Dec 7", month:"Dec", year:2026, city:"Jönköping", country:"Sweden", flag:"🇸🇪", region:"Europe", types:["Consumer"], desc:"The original DreamHack. Legendary Swedish LAN festival celebrating gaming culture since 1994.", link:"https://dreamhack.com/", attendance:"30,000+", focus:"LAN, Consumer, Culture", hasLive:false, isOnPlatform:false},
-
-  // Additional key events
-  {id:40, name:"Unite 2026", dateStart:"Jun 15", dateEnd:"Jun 17", month:"Jun", year:2026, city:"Amsterdam", country:"Netherlands", flag:"🇳🇱", region:"Europe", types:["Developer"], desc:"Unity's annual developer conference. Engine updates, sessions, and networking for Unity creators.", link:"https://unity.com/unite", attendance:"5,000+", focus:"Unity Engine, Developer", hasLive:false, isOnPlatform:false},
-  {id:41, name:"Unreal Fest 2026", dateStart:"Sep 10", dateEnd:"Sep 12", month:"Sep", year:2026, city:"Orlando", country:"USA", flag:"🇺🇸", region:"NorthAmerica", types:["Developer"], desc:"Epic's annual event for Unreal Engine developers. Engine deep-dives, industry talks, and hands-on workshops.", link:"https://www.unrealengine.com/", attendance:"3,000+", focus:"Unreal Engine, Developer", hasLive:false, isOnPlatform:false},
-  {id:42, name:"GamesBeat Summit 2026", dateStart:"Apr 28", dateEnd:"Apr 29", month:"Apr", year:2026, city:"Los Angeles", country:"USA", flag:"🇺🇸", region:"NorthAmerica", types:["B2B","Developer"], desc:"VentureBeat's games industry summit exploring the future of gaming through business and tech lens.", link:"https://events.venturebeat.com/", attendance:"1,000+", focus:"Business, Investment, AI", hasLive:false, isOnPlatform:false},
-  {id:43, name:"Pocket Gamer Connects San Francisco", dateStart:"Mar 9", dateEnd:"Mar 10", month:"Mar", year:2026, city:"San Francisco", country:"USA", flag:"🇺🇸", region:"NorthAmerica", types:["B2B","Developer"], desc:"Mobile-focused B2B conference co-located with GDC week. MeetToMatch system and expert stages.", link:"https://www.pocketgamer.biz/connects/", attendance:"2,000+", focus:"Mobile, B2B, GDC Week", hasLive:false, isOnPlatform:false},
-  {id:44, name:"Gamescom Opening Night Live 2026", dateStart:"Aug 23", dateEnd:"Aug 23", month:"Aug", year:2026, city:"Cologne", country:"Germany", flag:"🇩🇪", region:"Europe", types:["Consumer"], desc:"Geoff Keighley's pre-Gamescom showcase. Major game announcements and world premieres streamed globally.", link:"https://www.gamescom.de/", attendance:"100M+ viewers", focus:"Consumer, Announcements", hasLive:false, isOnPlatform:false},
-  {id:45, name:"IndieDevDay Barcelona", dateStart:"Oct 4", dateEnd:"Oct 5", month:"Oct", year:2026, city:"Barcelona", country:"Spain", flag:"🇪🇸", region:"Europe", types:["Developer","Consumer"], desc:"Europe's dedicated indie game festival in Barcelona, with awards, networking, and developer talks.", link:"https://indiedevday.es/", attendance:"4,000+", focus:"European Indie, Community", hasLive:false, isOnPlatform:false},
-  {id:46, name:"Casual Connect Asia", dateStart:"May 25", dateEnd:"May 27", month:"May", year:2026, city:"Bangkok", country:"Thailand", flag:"🇹🇭", region:"Asia", types:["B2B","Developer"], desc:"Mobile and casual games conference for the Southeast Asian market. Strong publishing and investment focus.", link:"https://casualconnect.org/", attendance:"1,500+", focus:"Mobile, Southeast Asia", hasLive:false, isOnPlatform:false},
-  {id:47, name:"WePlay Esports Forum", dateStart:"Feb 4", dateEnd:"Feb 6", month:"Feb", year:2026, city:"Kyiv", country:"Ukraine", flag:"🇺🇦", region:"Europe", types:["B2B"], desc:"Annual esports industry forum covering esports business models, rights, and investment.", link:"https://weplay.tv/", attendance:"1,000+", focus:"Esports Business", hasLive:false, isOnPlatform:false},
-  {id:48, name:"CGC (Casual Gaming Conference)", dateStart:"Mar 30", dateEnd:"Apr 1", month:"Mar", year:2026, city:"Tel Aviv", country:"Israel", flag:"🇮🇱", region:"Europe", types:["B2B","Developer"], desc:"Business conference for casual, social, and mobile games. Strong investor and publisher presence.", link:"https://cgconf.com/", attendance:"1,200+", focus:"Casual, Mobile, B2B", hasLive:false, isOnPlatform:false},
-];
+// ── API CONFIG ─────────────────────────────────────────────
+const CAL_API   = 'https://gc-platform-api.vercel.app/api/events';
+const STATS_API = 'https://gc-platform-api.vercel.app/api/events/stats';
+const PAGE_SIZE = 30;
 
 // ── STATE ──────────────────────────────────────────────────
-var selYear   = 2026;
-var selMonth  = "All";
-var selTags   = [];       // multi-select tags array
+var selYear    = 2026;
+var selMonth   = 0;       // 0 = All, 1-12 = month number
+var selTags    = [];      // multi-select tags
 var showSavedOnly = false;
-var savedEvs  = {};
-var openId    = null;
-var calPendingId = null;
+var openId     = null;
+var savedEvs   = JSON.parse(localStorage.getItem('gc_saved_events') || '{}');
 
-try { var _s = localStorage.getItem('_GC_MY_SCHEDULE'); if(_s) savedEvs = JSON.parse(_s); } catch(e){}
+// API state
+var _state = {
+  loading: false,
+  offset: 0,
+  total: 0,
+  monthCounts: {},
+  totalCountries: 0
+};
 
-var MONTHS = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
-var MONTH_NAMES = {Jan:"January",Feb:"February",Mar:"March",Apr:"April",May:"May",Jun:"June",Jul:"July",Aug:"August",Sep:"September",Oct:"October",Nov:"November",Dec:"December"};
+var MONTHS_SHORT = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
+var MONTHS_LONG  = ["January","February","March","April","May","June","July","August","September","October","November","December"];
 
-// Available years (only those with data)
-function getAvailableYears() {
-  var ys = {};
-  EVENTS.forEach(function(e){ ys[e.year] = 1; });
-  return Object.keys(ys).map(Number).sort();
+// TAG → API type mapping
+var TAG_TYPE_MAP = {
+  'Conference': 'conference',
+  'Trade Show': 'tradeshow',
+  'B2B': 'b2b',
+  'Developer': 'developer',
+  'Consumer': 'consumer',
+  'Online': 'online'
+};
+
+// ── COUNTRY FLAG HELPER ─────────────────────────────────────
+function getFlag(country) {
+  var flags = {
+    'United States':'🇺🇸','USA':'🇺🇸','Germany':'🇩🇪','Japan':'🇯🇵','France':'🇫🇷',
+    'United Kingdom':'🇬🇧','UK':'🇬🇧','Spain':'🇪🇸','Italy':'🇮🇹','Netherlands':'🇳🇱',
+    'Sweden':'🇸🇪','Finland':'🇫🇮','Norway':'🇳🇴','Denmark':'🇩🇰','Poland':'🇵🇱',
+    'South Korea':'🇰🇷','Korea':'🇰🇷','China':'🇨🇳','Taiwan':'🇹🇼','Singapore':'🇸🇬',
+    'Australia':'🇦🇺','Canada':'🇨🇦','Brazil':'🇧🇷','Mexico':'🇲🇽','Argentina':'🇦🇷',
+    'Israel':'🇮🇱','Turkey':'🇹🇷','Ukraine':'🇺🇦','Russia':'🇷🇺','India':'🇮🇳',
+    'Thailand':'🇹🇭','Indonesia':'🇮🇩','Malaysia':'🇲🇾','Philippines':'🇵🇭',
+    'Czech Republic':'🇨🇿','Czechia':'🇨🇿','Austria':'🇦🇹','Switzerland':'🇨🇭',
+    'Belgium':'🇧🇪','Portugal':'🇵🇹','Greece':'🇬🇷','Hungary':'🇭🇺','Romania':'🇷🇴',
+    'Croatia':'🇭🇷','Serbia':'🇷🇸','Bulgaria':'🇧🇬','Slovakia':'🇸🇰','Slovenia':'🇸🇮',
+    'Cyprus':'🇨🇾','Malta':'🇲🇹','Estonia':'🇪🇪','Latvia':'🇱🇻','Lithuania':'🇱🇹',
+    'United Arab Emirates':'🇦🇪','UAE':'🇦🇪','Saudi Arabia':'🇸🇦','Egypt':'🇪🇬',
+    'South Africa':'🇿🇦','Nigeria':'🇳🇬','Kenya':'🇰🇪',
+    'Colombia':'🇨🇴','Chile':'🇨🇱','Peru':'🇵🇪','Uruguay':'🇺🇾',
+    'Online':'🌐','Global':'🌐','Worldwide':'🌐','Virtual':'🌐'
+  };
+  return flags[country] || '🌍';
 }
 
-// ── FILTER ──────────────────────────────────────────────────
-function getFiltered() {
-  return EVENTS.filter(function(ev) {
-    if (ev.year !== selYear) return false;
-    if (selMonth !== "All" && ev.month !== selMonth) return false;
-    if (showSavedOnly && !savedEvs[ev.id]) return false;
-    if (selTags.length === 0) return true;
-    // multi-select: event must match ALL selected tags (AND logic)
-    return selTags.every(function(tag) {
-      if (tag === "platform") return ev.isOnPlatform;
-      if (tag === "live")     return ev.hasLive;
-      var matchType   = ev.types.indexOf(tag) !== -1;
-      var matchRegion = ev.region === tag;
-      return matchType || matchRegion;
-    });
-  });
+// ── FORMAT HELPERS ──────────────────────────────────────────
+function fmtDate(dateStr) {
+  if (!dateStr) return '—';
+  var d = new Date(dateStr);
+  if (isNaN(d)) return dateStr;
+  return MONTHS_SHORT[d.getUTCMonth()] + ' ' + d.getUTCDate();
+}
+function fmtAttendees(n) {
+  if (!n || n === 0) return '';
+  if (n >= 1000000) return (n/1000000).toFixed(0) + 'M+';
+  if (n >= 1000) return Math.round(n/1000) + 'K+';
+  return n + '+';
+}
+function getMonthNum(dateStr) {
+  if (!dateStr) return 0;
+  return new Date(dateStr).getUTCMonth() + 1; // 1-12
 }
 
-// ── RENDER TOPBAR ──────────────────────────────────────────
+// ── RENDER TOP BAR ──────────────────────────────────────────
 function renderTopBar() {
-  var list = getFiltered();
-  var cs = {};
-  EVENTS.filter(function(e){ return e.year===selYear; }).forEach(function(e){ cs[e.country]=1; });
-  var savedCount = Object.keys(savedEvs).filter(function(k){ return savedEvs[k]; }).length;
-  var tc = document.getElementById('tb-count');
+  var tc  = document.getElementById('tb-count');
   var tco = document.getElementById('tb-countries');
   var tsn = document.getElementById('tb-saved-num');
   var tsb = document.getElementById('tb-saved-btn');
-  if (tc) tc.textContent = list.length + ' event' + (list.length!==1?'s':'');
-  if (tco) tco.textContent = Object.keys(cs).length + ' countries';
+  var savedCount = Object.keys(savedEvs).filter(function(k){ return savedEvs[k]; }).length;
+  if (tc)  tc.textContent  = _state.total.toLocaleString() + ' events';
+  if (tco) tco.textContent = _state.totalCountries + ' countries';
   if (tsn) tsn.textContent = savedCount;
   if (tsb) tsb.classList.toggle('on', showSavedOnly);
 }
 
 // ── RENDER YEAR DROPDOWN ────────────────────────────────────
 function renderYearDrop() {
-  var el = document.getElementById('dpop-years-list');
+  var el  = document.getElementById('dpop-years-list');
   var lbl = document.getElementById('dpill-year-label');
   if (!el) return;
-  var years = getAvailableYears();
+  // Only show years that have data
+  var years = [2026, 2027];
   el.innerHTML = years.map(function(y) {
     return '<div class="dpop-y'+(y===selYear?' active':'')+'" onclick="event.stopPropagation();pickYear('+y+')">' + y + '</div>';
   }).join('');
@@ -497,113 +469,213 @@ function renderYearDrop() {
 
 // ── RENDER MONTH DROPDOWN ───────────────────────────────────
 function renderMonthDrop() {
-  var el = document.getElementById('dpop-months-grid');
+  var el  = document.getElementById('dpop-months-grid');
   var lbl = document.getElementById('dpill-month-label');
   if (!el) return;
-  var counts = {};
-  EVENTS.filter(function(e){ return e.year===selYear; }).forEach(function(e){ counts[e.month]=(counts[e.month]||0)+1; });
-  el.innerHTML = MONTHS.map(function(m) {
-    var has = counts[m] > 0;
-    var cls = 'dpop-m' + (has?' has':'') + (selMonth===m?' active':'') + (!has?' nodata':'');
+  var counts = _state.monthCounts || {};
+  var items = MONTHS_SHORT.map(function(m, i) {
+    var num = i + 1;
+    var cnt = counts[num] || 0;
+    var has = cnt > 0;
+    var isActive = selMonth === num;
+    var cls = 'dpop-m' + (has ? ' has' : '') + (isActive ? ' active' : '') + (!has ? ' nodata' : '');
     var dot = has ? '<span class="dpop-m-dot"></span>' : '';
-    return '<div class="'+cls+'" onclick="event.stopPropagation();'+(has?'pickMonth(\''+m+'\')':'')+'">' + MONTH_NAMES[m] + dot + '</div>';
-  }).join('');
-  if (lbl) lbl.textContent = selMonth === "All" ? "All months" : (MONTH_NAMES[selMonth] || selMonth);
+    var cntBadge = has ? '<span class="dpop-m-cnt">'+cnt+'</span>' : '';
+    return '<div class="'+cls+'" onclick="event.stopPropagation();'+(has?'pickMonth('+num+')':'')+'">' + MONTHS_LONG[i] + dot + cntBadge + '</div>';
+  });
+  el.innerHTML = items.join('');
+  if (lbl) lbl.textContent = selMonth === 0 ? 'All months' : MONTHS_LONG[selMonth - 1];
 }
 
-function renderList() {
-  var list = getFiltered();
-  var el = document.getElementById('event-list');
+// ── BUILD API PARAMS ────────────────────────────────────────
+function buildParams(offset) {
+  var today = new Date().toISOString().split('T')[0];
+  var params = new URLSearchParams({
+    year: selYear,
+    limit: PAGE_SIZE,
+    offset: offset || 0
+  });
+  if (selMonth > 0) {
+    params.set('month', selMonth);
+  } else {
+    params.set('from_date', today);
+  }
+  // Map tags to API type filter (use first matching tag)
+  var typeTag = selTags.find(function(t){ return TAG_TYPE_MAP[t]; });
+  if (typeTag) params.set('type', TAG_TYPE_MAP[typeTag]);
+  if (showSavedOnly) {
+    // Filter to saved IDs
+    var savedIds = Object.keys(savedEvs).filter(function(k){ return savedEvs[k]; });
+    if (savedIds.length) params.set('ids', savedIds.join(','));
+    else params.set('ids', 'none');
+  }
+  return params;
+}
 
-  if (!list.length) {
-    el.innerHTML = '<div class="empty"><div class="empty-icon">📅</div><div class="empty-title">No events found</div><div class="empty-sub">Try a different filter or month.</div></div>';
-    return;
+// ── RENDER CARD ─────────────────────────────────────────────
+function renderCard(ev) {
+  var startDate = fmtDate(ev.start_date);
+  var endDate   = fmtDate(ev.end_date);
+  var dayNum    = ev.start_date ? new Date(ev.start_date).getUTCDate() : '—';
+  var monAbbr   = ev.start_date ? MONTHS_SHORT[new Date(ev.start_date).getUTCMonth()] : '';
+  var flag      = ev.is_online ? '🌐' : getFlag(ev.country);
+  var city      = ev.is_online ? 'Online' : (ev.city || '');
+  var country   = ev.is_online ? '' : (ev.country || '');
+  var location  = city + (country && !ev.is_online ? ', ' + country : '');
+  var attendance = fmtAttendees(ev.attendee_count);
+  var duration  = (startDate === endDate || !ev.end_date) ? startDate : startDate + ' – ' + endDate;
+  var isOpen    = openId === ev.id;
+  var isSaved   = !!savedEvs[ev.id];
+  var isLive    = ev.status === 'live';
+  var isEnded   = ev.status === 'ended';
+
+  // Type badges
+  var typeLabel = ev.type ? (ev.type.charAt(0).toUpperCase() + ev.type.slice(1).replace('tradeshow','Trade Show')) : '';
+  var badgeHtml = typeLabel ? '<span class="ev-badge eb-type">'+typeLabel+'</span>' : '';
+  if (isLive) badgeHtml = '<span class="ev-badge eb-live">🔴 LIVE</span>' + badgeHtml;
+  if (ev.has_buyers) badgeHtml += '<span class="ev-badge eb-b2b">B2B</span>';
+
+  var cardClass = 'ev-card' + (isOpen ? ' open' : '') + (isLive ? ' has-live' : '') + (isEnded ? ' ended' : '');
+  var dateBoxClass = 'ev-date-box' + (isLive ? ' live-date' : '');
+  var evIdStr = JSON.stringify(ev.id);
+
+  var html = '<div class="'+cardClass+'" id="evc-'+ev.id+'" onclick="toggleCard('+evIdStr+')">';
+  html += '<div class="ev-head">';
+  html += '<div class="'+dateBoxClass+'"><div class="ev-date-day">'+dayNum+'</div><div class="ev-date-mon">'+monAbbr+'</div></div>';
+  html += '<div class="ev-main">';
+  html += '<div class="ev-badges">'+badgeHtml+'</div>';
+  html += '<div class="ev-name">'+(ev.title || 'Untitled')+'</div>';
+  html += '<div class="ev-meta"><span class="ev-loc"><span class="ev-flag">'+flag+'</span>'+location+'</span>'+(attendance?'<div class="ev-meta-dot"></div><span>'+attendance+'</span>':'')+'</div>';
+  html += '</div>';
+  html += '<div class="ev-actions">';
+  html += '<button class="ev-save'+(isSaved?' on':'')+'" onclick="event.stopPropagation();toggleSave('+evIdStr+')">'+(isSaved?'★':'☆')+'</button>';
+  html += '</div>';
+  html += '</div>';
+  // Expanded detail
+  var desc = ev.description ? ev.description.substring(0, 200) + (ev.description.length > 200 ? '…' : '') : '';
+  html += '<div class="ev-detail" onclick="event.stopPropagation()">';
+  html += '<div class="ev-detail-dates">📅 '+duration+(location?' &nbsp;·&nbsp; '+location:'')+'</div>';
+  if (desc) html += '<div class="ev-detail-desc">'+desc+'</div>';
+  html += '<div class="ev-btns">';
+  if (ev.online_url) {
+    html += '<a class="ev-btn ev-btn-primary" href="'+ev.online_url+'" target="_blank" rel="noopener" onclick="event.stopPropagation()">🔗 Website</a>';
+  }
+  html += '<button class="ev-btn ev-btn-cal" onclick="event.stopPropagation();openCalSheet('+evIdStr+')">📅 Add to Cal</button>';
+  html += '</div>';
+  html += '</div>';
+  html += '</div>';
+  return html;
+}
+
+// ── LOAD EVENTS FROM API ────────────────────────────────────
+var _loadedEvents = {}; // cache by id for cal sheet
+
+async function loadEvents(reset) {
+  if (_state.loading) return;
+  _state.loading = true;
+
+  var listEl   = document.getElementById('event-list');
+  var loadMore = document.getElementById('load-more-btn');
+  var spinner  = document.getElementById('load-spinner');
+
+  if (reset) {
+    _state.offset = 0;
+    _loadedEvents = {};
+    if (listEl) listEl.innerHTML = '<div class="ev-loading"><div class="ev-spinner"></div><div>Loading events…</div></div>';
+    if (loadMore) loadMore.style.display = 'none';
   }
 
-  // Group by month
-  var groups = {};
-  var order  = [];
-  list.forEach(function(ev) {
-    if (!groups[ev.month]) { groups[ev.month] = []; order.push(ev.month); }
-    groups[ev.month].push(ev);
-  });
-  order = order.filter(function(v,i){ return order.indexOf(v)===i; });
+  var params = buildParams(_state.offset);
 
-  var html = '<div class="ev-list-wrap">';
-  order.forEach(function(month) {
-    var evs = groups[month];
-    html += '<div class="month-group">';
-    html += '<div class="mg-header"><span class="mg-month">'+MONTH_NAMES[month]+'</span><span class="mg-year">'+selYear+'</span><span class="mg-count">'+evs.length+'</span></div>';
-    evs.forEach(function(ev) {
-      var isOpen  = openId === ev.id;
-      var isSaved = !!savedEvs[ev.id];
-      var dayNum  = ev.dateStart.split(' ')[1] || '—';
-      var monAbbr = ev.dateStart.split(' ')[0] || '';
+  try {
+    var resp = await fetch(CAL_API + '?' + params.toString());
+    var json = await resp.json();
 
-      // Type badges
-      var badgeHtml = ev.types.map(function(t) {
-        var cls = t==='B2B'?'eb-b2b':t==='Developer'?'eb-dev':t==='Consumer'?'eb-consumer':'eb-online';
-        return '<span class="ev-badge '+cls+'">'+t+'</span>';
-      }).join('');
-      if (ev.hasLive) badgeHtml += '<span class="ev-badge eb-live">🔴 LIVE</span>';
-      else if (ev.isOnPlatform) badgeHtml += '<span class="ev-badge eb-platform">ON PLATFORM</span>';
+    if (json.success) {
+      var events = json.data || [];
+      _state.total  = json.total || 0;
+      _state.offset += events.length;
 
-      var duration = ev.dateStart === ev.dateEnd ? ev.dateStart : ev.dateStart + ' – ' + ev.dateEnd;
+      // Cache events for cal sheet
+      events.forEach(function(ev){ _loadedEvents[ev.id] = ev; });
 
-      var cardClass = 'ev-card';
-      if (isOpen) cardClass += ' open';
-      if (ev.hasLive) cardClass += ' has-live';
-      else if (ev.isOnPlatform) cardClass += ' is-platform';
-
-      var clickHandler = ev.isOnPlatform ? 'openPlatformPage('+ev.id+')' : 'toggleCard('+ev.id+')';
-      var dateBoxClass = 'ev-date-box' + (ev.hasLive ? ' live-date' : '');
-
-      html += '<div class="'+cardClass+'" id="evc-'+ev.id+'" onclick="'+clickHandler+'">';
-      html += '<div class="ev-head">';
-      html += '<div class="'+dateBoxClass+'"><div class="ev-date-day">'+dayNum+'</div><div class="ev-date-mon">'+monAbbr+'</div></div>';
-      html += '<div class="ev-main">';
-      html += '<div class="ev-badges">'+badgeHtml+'</div>';
-      html += '<div class="ev-name">'+ev.name+'</div>';
-      html += '<div class="ev-meta"><span class="ev-loc"><span class="ev-flag">'+ev.flag+'</span>'+ev.city+', '+ev.country+'</span><div class="ev-meta-dot"></div><span>'+ev.attendance+'</span></div>';
-      html += '</div>';
-      html += '<div class="ev-actions">';
-      html += '<button class="ev-save'+(isSaved?' on':'')+'" onclick="event.stopPropagation();toggleSave('+ev.id+')">'+(isSaved?'★':'☆')+'</button>';
-      html += '</div>';
-      html += '</div>';
-
-      // Expanded detail
-      html += '<div class="ev-detail" onclick="event.stopPropagation()">';
-      html += '<div class="ev-detail-dates">📅 '+duration+' &nbsp;·&nbsp; '+ev.city+', '+ev.country+'</div>';
-      html += '<div class="ev-detail-desc">'+ev.desc+'</div>';
-      html += '<div class="ev-detail-tags"><span class="ev-detail-tag">'+ev.focus+'</span><span class="ev-detail-tag">'+ev.attendance+' attendees</span></div>';
-      html += '<div class="ev-btns">';
-      if (ev.isOnPlatform) {
-        html += '<button class="ev-btn ev-btn-platform" onclick="event.stopPropagation();openPlatformPage('+ev.id+')">🚀 View on Platform</button>';
-      } else if (ev.link) {
-        html += '<a class="ev-btn ev-btn-primary" href="'+ev.link+'" target="_blank" rel="noopener" onclick="event.stopPropagation()">🔗 Website</a>';
+      if (reset) {
+        if (!events.length) {
+          listEl.innerHTML = '<div class="empty"><div class="empty-icon">📅</div><div class="empty-title">No events found</div><div class="empty-sub">Try a different filter or month.</div></div>';
+          _state.loading = false;
+          renderTopBar();
+          return;
+        }
+        listEl.innerHTML = '';
       }
-      html += '<button class="ev-btn ev-btn-cal" onclick="event.stopPropagation();openCalSheet('+ev.id+')">📅 Add to Calendar</button>';
-      html += '</div>';
-      html += '</div>';
 
-      html += '</div>';
-    });
-    html += '</div>';
-  });
-  html += '</div>';
+      // Group by month and render
+      var groups = {};
+      var order  = [];
+      events.forEach(function(ev) {
+        var mNum = getMonthNum(ev.start_date);
+        if (!groups[mNum]) { groups[mNum] = []; order.push(mNum); }
+        groups[mNum].push(ev);
+      });
+      order = order.filter(function(v,i){ return order.indexOf(v)===i; });
 
-  el.innerHTML = html;
+      // If reset, create fresh groups; if load more, append to last group or add new
+      var html = '';
+      order.forEach(function(mNum) {
+        var evs = groups[mNum];
+        var mName = MONTHS_LONG[mNum - 1];
+        // Check if this month group already exists in DOM
+        var existingGroup = document.getElementById('mg-' + mNum);
+        if (existingGroup && !reset) {
+          // Append cards to existing group
+          var existingList = existingGroup.querySelector('.mg-cards');
+          if (existingList) {
+            existingList.innerHTML += evs.map(renderCard).join('');
+          }
+        } else {
+          html += '<div class="month-group" id="mg-'+mNum+'">';
+          html += '<div class="mg-header"><span class="mg-month">'+mName+'</span><span class="mg-year">'+selYear+'</span><span class="mg-count">'+(_state.monthCounts[mNum]||evs.length)+'</span></div>';
+          html += '<div class="mg-cards">'+evs.map(renderCard).join('')+'</div>';
+          html += '</div>';
+        }
+      });
+      if (html) listEl.innerHTML += html;
+
+      // Show/hide load more
+      var shown = _state.offset;
+      var total = _state.total;
+      if (loadMore) {
+        loadMore.style.display = shown < total ? 'block' : 'none';
+        loadMore.textContent = 'Load more (' + (total - shown).toLocaleString() + ' remaining)';
+      }
+
+      renderTopBar();
+    }
+  } catch(e) {
+    if (listEl && reset) {
+      listEl.innerHTML = '<div class="empty"><div class="empty-icon">⚠️</div><div class="empty-title">Failed to load</div><div class="empty-sub">'+e.message+'</div></div>';
+    }
+  }
+  _state.loading = false;
 }
 
-function renderAll() {
-  renderTopBar();
-  renderYearDrop();
-  renderMonthDrop();
-  renderList();
+// ── LOAD STATS (month counts + countries) ──────────────────
+async function loadStats() {
+  try {
+    var resp = await fetch(STATS_API + '?year=' + selYear);
+    var json = await resp.json();
+    if (json.success) {
+      _state.monthCounts    = json.months || {};
+      _state.total          = json.total  || 0;
+      _state.totalCountries = Object.keys(json.countries || {}).length;
+      renderYearDrop();
+      renderMonthDrop();
+      renderTopBar();
+    }
+  } catch(e) { /* ignore */ }
 }
 
-// ── INTERACTIONS ──────────────────────────────────────────
-// Dropdown toggle
+// ── INTERACTIONS ────────────────────────────────────────────
 function toggleDrop(which, e) {
   e.stopPropagation();
   var yearPill  = document.getElementById('dpill-year');
@@ -618,54 +690,52 @@ function toggleDrop(which, e) {
     yearPill.classList.remove('open');
   }
 }
-// Close dropdowns when clicking outside
 document.addEventListener('click', function() {
   var yp = document.getElementById('dpill-year');
   var mp = document.getElementById('dpill-month');
   if (yp) yp.classList.remove('open');
   if (mp) mp.classList.remove('open');
 });
-
 function pickYear(y) {
-  selYear = y; selMonth = "All";
+  selYear = y; selMonth = 0;
   document.getElementById('dpill-year').classList.remove('open');
-  renderAll();
+  loadStats().then(function(){ loadEvents(true); });
 }
 function pickMonth(m) {
-  selMonth = (selMonth === m) ? "All" : m;
+  selMonth = (selMonth === m) ? 0 : m;
   document.getElementById('dpill-month').classList.remove('open');
-  renderAll();
+  renderMonthDrop();
+  loadEvents(true);
 }
-
-// Multi-select tag toggle
 function toggleTag(tag, btn) {
   var idx = selTags.indexOf(tag);
   if (idx === -1) { selTags.push(tag); btn.classList.add('active'); }
   else            { selTags.splice(idx,1); btn.classList.remove('active'); }
   var clearBtn = document.getElementById('clear-ftag');
   if (clearBtn) clearBtn.classList.toggle('show', selTags.length > 0);
-  renderAll();
+  loadEvents(true);
 }
 function clearTags() {
   selTags = [];
   document.querySelectorAll('.ftag').forEach(function(b){ b.classList.remove('active'); });
   var clearBtn = document.getElementById('clear-ftag');
   if (clearBtn) clearBtn.classList.remove('show');
-  renderAll();
+  loadEvents(true);
 }
-
-// Saved filter toggle
 function toggleSavedFilter() {
   showSavedOnly = !showSavedOnly;
-  renderAll();
+  var tsb = document.getElementById('tb-saved-btn');
+  if (tsb) tsb.classList.toggle('on', showSavedOnly);
+  loadEvents(true);
 }
-
-
-// (setYear/setMonth/setFilter replaced by pickYear/pickMonth/toggleTag)
-
 function toggleCard(id) {
   openId = openId === id ? null : id;
-  renderList();
+  // Re-render just the open/close state
+  var allCards = document.querySelectorAll('.ev-card');
+  allCards.forEach(function(c){
+    var cid = c.id.replace('evc-','');
+    c.classList.toggle('open', cid === String(id) && openId !== null);
+  });
   if (openId) {
     setTimeout(function() {
       var el = document.getElementById('evc-'+id);
@@ -673,95 +743,108 @@ function toggleCard(id) {
     }, 50);
   }
 }
-
-function openPlatformPage(id) {
-  location.href = 'EventPublicPage_v3_Mobile.html';
-}
-
 function toggleSave(id) {
-  if (savedEvs[id]) delete savedEvs[id];
-  else savedEvs[id] = true;
-  try { localStorage.setItem('_GC_MY_SCHEDULE', JSON.stringify(savedEvs)); } catch(e){}
-  renderStats();
-  // Update just the save button
-  var card = document.getElementById('evc-'+id);
-  if (card) {
-    var btn = card.querySelector('.ev-save');
-    if (btn) {
-      btn.classList.toggle('on', !!savedEvs[id]);
-      btn.textContent = savedEvs[id] ? '★' : '☆';
-    }
-  }
+  savedEvs[id] = !savedEvs[id];
+  if (!savedEvs[id]) delete savedEvs[id];
+  localStorage.setItem('gc_saved_events', JSON.stringify(savedEvs));
+  var btn = document.querySelector('#evc-'+id+' .ev-save');
+  if (btn) { btn.classList.toggle('on', !!savedEvs[id]); btn.textContent = savedEvs[id] ? '★' : '☆'; }
+  renderTopBar();
 }
 
-// ── CALENDAR ─────────────────────────────────────────────
+// ── CALENDAR SHEET ──────────────────────────────────────────
+var calPendingId = null;
 function openCalSheet(id) {
   calPendingId = id;
-  var ev = EVENTS.filter(function(e){ return e.id===id; })[0];
+  var ev = _loadedEvents[id];
   if (!ev) return;
-  document.getElementById('cal-ev-name').textContent = ev.name;
-  document.getElementById('cal-ev-meta').textContent = ev.dateStart + (ev.dateEnd!==ev.dateStart?' – '+ev.dateEnd:'') + ' · ' + ev.city + ', ' + ev.country;
-  document.getElementById('cal-sheet').classList.add('open');
-  document.body.style.overflow = 'hidden';
+  var nameEl = document.getElementById('cal-ev-name');
+  var metaEl = document.getElementById('cal-ev-meta');
+  if (nameEl) nameEl.textContent = ev.title || '';
+  if (metaEl) metaEl.textContent = fmtDate(ev.start_date) + (ev.end_date && ev.end_date !== ev.start_date ? ' – ' + fmtDate(ev.end_date) : '') + ' · ' + (ev.is_online ? 'Online' : [ev.city, ev.country].filter(Boolean).join(', '));
+  var sheet = document.getElementById('cal-sheet');
+  if (sheet) { sheet.classList.add('open'); document.body.style.overflow = 'hidden'; }
 }
 function closeCalSheet() {
-  document.getElementById('cal-sheet').classList.remove('open');
-  document.body.style.overflow = '';
+  var sheet = document.getElementById('cal-sheet');
+  if (sheet) { sheet.classList.remove('open'); document.body.style.overflow = ''; }
 }
 function addToGoogleCal() {
-  var ev = EVENTS.filter(function(e){ return e.id===calPendingId; })[0];
+  var ev = _loadedEvents[calPendingId];
   if (!ev) return;
-  var monthIdx = MONTHS.indexOf(ev.dateStart.split(' ')[0]);
-  var day = ev.dateStart.split(' ')[1];
-  var startDate = ev.year + '' + String(monthIdx+1).padStart(2,'0') + String(parseInt(day)).padStart(2,'0');
-  var monthIdx2 = MONTHS.indexOf(ev.dateEnd.split(' ')[0]);
-  var day2 = ev.dateEnd.split(' ')[1];
-  var endDate = ev.year + '' + String(monthIdx2+1).padStart(2,'0') + String(parseInt(day2)+1).padStart(2,'0');
+  var s = ev.start_date ? ev.start_date.replace(/-/g,'') : '';
+  var e = ev.end_date   ? ev.end_date.replace(/-/g,'')   : s;
+  // Add 1 day to end for Google Cal (exclusive end)
+  if (e) {
+    var ed = new Date(ev.end_date || ev.start_date);
+    ed.setUTCDate(ed.getUTCDate() + 1);
+    e = ed.toISOString().split('T')[0].replace(/-/g,'');
+  }
   var url = 'https://calendar.google.com/calendar/render?action=TEMPLATE'
-    + '&text=' + encodeURIComponent(ev.name)
-    + '&dates=' + startDate + '/' + endDate
-    + '&details=' + encodeURIComponent(ev.desc + '\n\n' + ev.link)
-    + '&location=' + encodeURIComponent(ev.city + ', ' + ev.country);
+    + '&text=' + encodeURIComponent(ev.title || '')
+    + '&dates=' + s + '/' + e
+    + '&details=' + encodeURIComponent((ev.description || '') + '\n\n' + (ev.online_url || ''))
+    + '&location=' + encodeURIComponent(ev.is_online ? 'Online' : [ev.city, ev.country].filter(Boolean).join(', '));
   window.open(url, '_blank');
   closeCalSheet();
 }
 function downloadICS() {
-  var ev = EVENTS.filter(function(e){ return e.id===calPendingId; })[0];
+  var ev = _loadedEvents[calPendingId];
   if (!ev) return;
-  var monthIdx = MONTHS.indexOf(ev.dateStart.split(' ')[0]);
-  var day = ev.dateStart.split(' ')[1];
-  var startDate = ev.year + '' + String(monthIdx+1).padStart(2,'0') + String(parseInt(day)).padStart(2,'0');
-  var monthIdx2 = MONTHS.indexOf(ev.dateEnd.split(' ')[0]);
-  var day2 = ev.dateEnd.split(' ')[1];
-  var endDate = ev.year + '' + String(monthIdx2+1).padStart(2,'0') + String(parseInt(day2)+1).padStart(2,'0');
+  var s = ev.start_date ? ev.start_date.replace(/-/g,'') : '';
+  var ed = new Date(ev.end_date || ev.start_date);
+  ed.setUTCDate(ed.getUTCDate() + 1);
+  var e = ed.toISOString().split('T')[0].replace(/-/g,'');
   var ics = ['BEGIN:VCALENDAR','VERSION:2.0','PRODID:-//Game Connection//Conference Calendar//EN',
     'BEGIN:VEVENT',
-    'DTSTART;VALUE=DATE:'+startDate,
-    'DTEND;VALUE=DATE:'+endDate,
-    'SUMMARY:'+ev.name,
-    'LOCATION:'+ev.city+', '+ev.country,
-    'DESCRIPTION:'+ev.desc.replace(/\n/g,'\\n')+'\\n\\n'+ev.link,
+    'DTSTART;VALUE=DATE:'+s,
+    'DTEND;VALUE=DATE:'+e,
+    'SUMMARY:'+(ev.title||''),
+    'LOCATION:'+(ev.is_online ? 'Online' : [ev.city,ev.country].filter(Boolean).join(', ')),
+    'DESCRIPTION:'+(ev.description||'').replace(/\n/g,'\\n')+'\\n\\n'+(ev.online_url||''),
     'END:VEVENT','END:VCALENDAR'].join('\r\n');
   var blob = new Blob([ics], {type:'text/calendar'});
   var a = document.createElement('a');
   a.href = URL.createObjectURL(blob);
-  a.download = ev.name.replace(/[^a-zA-Z0-9]/g,'_')+'.ics';
+  a.download = (ev.title||'event').replace(/[^a-zA-Z0-9]/g,'_')+'.ics';
   a.click();
   closeCalSheet();
 }
 function copyEventLink() {
-  var ev = EVENTS.filter(function(e){ return e.id===calPendingId; })[0];
+  var ev = _loadedEvents[calPendingId];
   if (!ev) return;
-  var text = ev.name + '\n' + ev.dateStart + (ev.dateEnd!==ev.dateStart?' – '+ev.dateEnd:'') + ' · ' + ev.city + '\n' + ev.link;
+  var text = (ev.title||'') + '\n' + fmtDate(ev.start_date) + (ev.end_date && ev.end_date !== ev.start_date ? ' – '+fmtDate(ev.end_date) : '') + ' · ' + (ev.is_online ? 'Online' : [ev.city,ev.country].filter(Boolean).join(', ')) + '\n' + (ev.online_url||'');
   if (navigator.clipboard) {
     navigator.clipboard.writeText(text).then(function(){ closeCalSheet(); });
-  } else {
-    closeCalSheet();
-  }
+  } else { closeCalSheet(); }
+}
+
+// ── LOAD MORE BUTTON ────────────────────────────────────────
+function loadMoreEvents() {
+  loadEvents(false);
 }
 
 // ── INIT ──────────────────────────────────────────────────
-renderAll();
+// Add load-more button to DOM if not present
+(function() {
+  var listEl = document.getElementById('event-list');
+  if (listEl && !document.getElementById('load-more-btn')) {
+    var btn = document.createElement('button');
+    btn.id = 'load-more-btn';
+    btn.className = 'load-more-btn';
+    btn.style.display = 'none';
+    btn.onclick = loadMoreEvents;
+    listEl.parentNode.insertBefore(btn, listEl.nextSibling);
+  }
+  var spinner = document.createElement('div');
+  spinner.id = 'load-spinner';
+  spinner.style.display = 'none';
+  if (listEl) listEl.parentNode.insertBefore(spinner, listEl.nextSibling);
+})();
+
+// Load stats first (for month counts), then load events
+loadStats().then(function() { loadEvents(true); });
+
 </script>
 
 
