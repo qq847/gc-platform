@@ -89,16 +89,40 @@ body{background:#e8e4da;font-family:"DM Sans","PingFang SC",sans-serif;color:#1c
 /* Filter divider */
 .filter-div{flex-shrink:0;width:1px;height:18px;background:rgba(0,0,0,0.1);margin:0 2px;}
 /* Tag pill (multi-select) */
-.ftag{flex-shrink:0;padding:6px 12px;border-radius:20px;border:1.5px solid var(--border);background:transparent;font-size:11px;font-weight:600;color:var(--text2);cursor:pointer;font-family:inherit;white-space:nowrap;transition:all .15s;}
-.ftag.active{color:#fff;}
-.ftag[data-f="B2B"].active{background:var(--teal);border-color:var(--teal);}
-.ftag[data-f="Consumer"].active{background:var(--purple);border-color:var(--purple);}
-.ftag[data-f="Developer"].active{background:var(--green);border-color:var(--green);}
-.ftag[data-f="Asia"].active{background:var(--orange);border-color:var(--orange);}
-.ftag[data-f="Europe"].active{background:#2563eb;border-color:#2563eb;}
-.ftag[data-f="NorthAmerica"].active{background:#dc2626;border-color:#dc2626;}
-.ftag[data-f="platform"].active{background:#f59e0b;border-color:#f59e0b;}
-.ftag[data-f="live"].active{background:var(--red);border-color:var(--red);}
+/* Tag pills */
+.ftag{flex-shrink:0;padding:5px 11px;border-radius:20px;border:1.5px solid var(--border);background:var(--card);font-size:11px;font-weight:600;color:var(--text2);cursor:pointer;font-family:inherit;white-space:nowrap;transition:all .15s;display:flex;align-items:center;gap:4px;box-shadow:var(--s1);}
+.ftag:hover:not(.active){border-color:rgba(0,0,0,0.2);color:var(--text1);}
+.ftag.active{color:#fff;border-color:transparent;}
+/* Tag count badge */
+.ftag-cnt{display:inline-flex;align-items:center;justify-content:center;background:rgba(0,0,0,0.12);color:inherit;font-size:9px;font-weight:700;padding:0 5px;border-radius:8px;min-width:16px;height:14px;line-height:1;}
+.ftag.active .ftag-cnt{background:rgba(255,255,255,0.28);}
+/* Per-tag active colors */
+.ftag[data-f="conference"].active{background:#1e40af;}
+.ftag[data-f="tradeshow"].active{background:#0d9b72;}
+.ftag[data-f="online"].active{background:#6366f1;}
+.ftag[data-f="b2b"].active{background:var(--teal);}
+.ftag[data-f="country_us"].active{background:#b91c1c;}
+.ftag[data-f="country_uk"].active{background:#1d4ed8;}
+.ftag[data-f="country_de"].active{background:#374151;}
+.ftag[data-f="country_cn"].active{background:#dc2626;}
+.ftag[data-f="country_jp"].active{background:#be185d;}
+.ftag[data-f="country_au"].active{background:#0369a1;}
+.ftag[data-f="country_ca"].active{background:#b45309;}
+.ftag[data-f="country_br"].active{background:#15803d;}
+.ftag[data-f="ai"].active{background:#7c3aed;}
+.ftag[data-f="indie"].active{background:#d97706;}
+.ftag[data-f="developer"].active{background:#0d9b72;}
+.ftag[data-f="igaming"].active{background:#dc2626;}
+/* Country tags: dashed border */
+.ftag-country{border-style:dashed;}
+.ftag-country.active{border-style:solid;}
+/* Expand/collapse toggle */
+.ftag-expand{flex-shrink:0;width:28px;height:28px;border-radius:50%;border:1.5px solid var(--border);background:var(--card);display:flex;align-items:center;justify-content:center;cursor:pointer;box-shadow:var(--s1);transition:all .15s;}
+.ftag-expand svg{transition:transform .2s;}
+.ftag-expand.open svg{transform:rotate(180deg);}
+/* Hidden tags (collapsed) */
+.ftag-extra{display:none;}
+.ftag-extra.visible{display:flex;}
 /* Clear multi-select */
 .clear-ftag{flex-shrink:0;display:none;align-items:center;gap:3px;padding:5px 9px;border-radius:20px;background:rgba(0,0,0,0.06);border:none;font-size:10px;font-weight:700;color:var(--text2);cursor:pointer;font-family:inherit;}
 .clear-ftag.show{display:flex;}
@@ -327,15 +351,28 @@ body{background:#e8e4da;font-family:"DM Sans","PingFang SC",sans-serif;color:#1c
   </div>
   <!-- Divider -->
   <div class="filter-div"></div>
-  <!-- Tags (multi-select) -->
-  <button class="ftag" data-f="platform" onclick="toggleTag('platform',this)">Platform</button>
-  <button class="ftag" data-f="B2B" onclick="toggleTag('B2B',this)">B2B</button>
-  <button class="ftag" data-f="Developer" onclick="toggleTag('Developer',this)">Developer</button>
-  <button class="ftag" data-f="Consumer" onclick="toggleTag('Consumer',this)">Consumer</button>
-  <button class="ftag" data-f="live" onclick="toggleTag('live',this)">Live Now</button>
-  <button class="ftag" data-f="Asia" onclick="toggleTag('Asia',this)">Asia</button>
-  <button class="ftag" data-f="Europe" onclick="toggleTag('Europe',this)">Europe</button>
-  <button class="ftag" data-f="NorthAmerica" onclick="toggleTag('NorthAmerica',this)">Americas</button>
+  <!-- Tags row 1 (always visible) -->
+  <button class="ftag" data-f="conference" onclick="toggleTag('conference',this)">&#127908; Conference <span class="ftag-cnt" id="tcnt-conference"></span></button>
+  <button class="ftag" data-f="tradeshow" onclick="toggleTag('tradeshow',this)">&#127970; Trade Show <span class="ftag-cnt" id="tcnt-tradeshow"></span></button>
+  <button class="ftag" data-f="online" onclick="toggleTag('online',this)">&#127760; Online <span class="ftag-cnt" id="tcnt-online"></span></button>
+  <button class="ftag" data-f="b2b" onclick="toggleTag('b2b',this)">&#129309; B2B <span class="ftag-cnt" id="tcnt-b2b"></span></button>
+  <button class="ftag ftag-country" data-f="country_us" onclick="toggleTag('country_us',this)">&#127482;&#127480; USA <span class="ftag-cnt" id="tcnt-country_us"></span></button>
+  <button class="ftag ftag-country" data-f="country_uk" onclick="toggleTag('country_uk',this)">&#127468;&#127463; UK <span class="ftag-cnt" id="tcnt-country_uk"></span></button>
+  <!-- Expand toggle -->
+  <button class="ftag-expand" id="ftag-expand-btn" onclick="toggleTagExpand()" title="More filters">
+    <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="6 9 12 15 18 9"/></svg>
+  </button>
+  <!-- Tags row 2 (hidden by default) -->
+  <button class="ftag ftag-country ftag-extra" data-f="country_de" onclick="toggleTag('country_de',this)">&#127465;&#127466; Germany <span class="ftag-cnt" id="tcnt-country_de"></span></button>
+  <button class="ftag ftag-country ftag-extra" data-f="country_cn" onclick="toggleTag('country_cn',this)">&#127464;&#127475; China <span class="ftag-cnt" id="tcnt-country_cn"></span></button>
+  <button class="ftag ftag-country ftag-extra" data-f="country_jp" onclick="toggleTag('country_jp',this)">&#127471;&#127477; Japan <span class="ftag-cnt" id="tcnt-country_jp"></span></button>
+  <button class="ftag ftag-country ftag-extra" data-f="country_au" onclick="toggleTag('country_au',this)">&#127462;&#127482; Australia <span class="ftag-cnt" id="tcnt-country_au"></span></button>
+  <button class="ftag ftag-country ftag-extra" data-f="country_ca" onclick="toggleTag('country_ca',this)">&#127464;&#127462; Canada <span class="ftag-cnt" id="tcnt-country_ca"></span></button>
+  <button class="ftag ftag-country ftag-extra" data-f="country_br" onclick="toggleTag('country_br',this)">&#127463;&#127479; Brazil <span class="ftag-cnt" id="tcnt-country_br"></span></button>
+  <button class="ftag ftag-extra" data-f="ai" onclick="toggleTag('ai',this)">&#129302; AI <span class="ftag-cnt" id="tcnt-ai"></span></button>
+  <button class="ftag ftag-extra" data-f="indie" onclick="toggleTag('indie',this)">&#127918; Indie <span class="ftag-cnt" id="tcnt-indie"></span></button>
+  <button class="ftag ftag-extra" data-f="developer" onclick="toggleTag('developer',this)">&#128187; Developer <span class="ftag-cnt" id="tcnt-developer"></span></button>
+  <button class="ftag ftag-extra" data-f="igaming" onclick="toggleTag('igaming',this)">&#127920; iGaming <span class="ftag-cnt" id="tcnt-igaming"></span></button>
   <!-- Clear button -->
   <button class="clear-ftag" id="clear-ftag" onclick="clearTags()">&#10005; Clear</button>
 </div>
@@ -397,50 +434,87 @@ var _state = {
 var MONTHS_SHORT = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
 var MONTHS_LONG  = ["January","February","March","April","May","June","July","August","September","October","November","December"];
 
-// TAG → API type mapping (only conference/tradeshow are valid API type values)
-var TAG_TYPE_MAP = {
-  'conference': 'conference',
-  'tradeshow':  'tradeshow'
+// TAG → API param mapping
+// Each tag maps to: { apiParam, apiValue } for direct API filtering
+// or { frontend: true } for client-side filtering
+var TAG_API_MAP = {
+  'conference':  { param: 'type',       value: 'conference' },
+  'tradeshow':   { param: 'type',       value: 'tradeshow' },
+  'online':      { param: 'is_online',  value: 'true' },
+  'b2b':         { param: 'has_buyers', value: 'true' },
+  'country_us':  { param: 'country',    value: 'United States' },
+  'country_uk':  { param: 'country',    value: 'United Kingdom' },
+  'country_de':  { param: 'country',    value: 'Germany' },
+  'country_cn':  { param: 'country',    value: 'China' },
+  'country_jp':  { param: 'country',    value: 'Japan' },
+  'country_au':  { param: 'country',    value: 'Australia' },
+  'country_ca':  { param: 'country',    value: 'Canada' },
+  'country_br':  { param: 'country',    value: 'Brazil' },
+  'ai':          { param: 'search',     value: 'AI' },
+  'indie':       { param: 'search',     value: 'indie' },
+  'developer':   { param: 'search',     value: 'developer' },
+  'igaming':     { param: 'search',     value: 'iGaming' }
 };
 
-// Region lists for frontend filtering
-var ASIA_COUNTRIES = ['Japan','China','South Korea','Korea','Taiwan','Singapore','Thailand','Indonesia','Malaysia','Philippines','India','Vietnam','Hong Kong','Australia','New Zealand','Pakistan','Bangladesh'];
-var EUROPE_COUNTRIES = ['Germany','France','United Kingdom','UK','Spain','Italy','Netherlands','Sweden','Finland','Norway','Denmark','Poland','Czech Republic','Czechia','Austria','Switzerland','Belgium','Portugal','Greece','Hungary','Romania','Croatia','Serbia','Bulgaria','Slovakia','Slovenia','Cyprus','Malta','Estonia','Latvia','Lithuania','Ukraine','Russia','Belarus','Turkey','Israel'];
-var AMERICAS_COUNTRIES = ['United States','USA','Canada','Brazil','Mexico','Argentina','Colombia','Chile','Peru','Uruguay','Venezuela','Ecuador','Bolivia','Paraguay','Cuba'];
+// Tag groups for OR/AND logic
+// Same group = OR; different groups = AND
+var TAG_GROUPS = {
+  'conference':  'type',
+  'tradeshow':   'type',
+  'online':      'special',
+  'b2b':         'special',
+  'country_us':  'country',
+  'country_uk':  'country',
+  'country_de':  'country',
+  'country_cn':  'country',
+  'country_jp':  'country',
+  'country_au':  'country',
+  'country_ca':  'country',
+  'country_br':  'country',
+  'ai':          'topic',
+  'indie':       'topic',
+  'developer':   'topic',
+  'igaming':     'topic'
+};
 
-// Check if an event matches a single tag (frontend logic)
+// Frontend match for a single tag (used when API can't handle multi-param combos)
 function matchTag(ev, tag) {
   var t = tag.toLowerCase();
   var title = (ev.title || '').toLowerCase();
   var desc  = (ev.description || '').toLowerCase();
-  if (t === 'conference') return ev.type === 'conference';
-  if (t === 'tradeshow')  return ev.type === 'tradeshow';
-  if (t === 'b2b')        return ev.has_buyers || ev.has_deal_room || title.indexOf('b2b') !== -1 || title.indexOf('business') !== -1 || desc.indexOf('b2b') !== -1;
-  if (t === 'developer')  return ev.has_conference || title.indexOf('developer') !== -1 || title.indexOf(' dev ') !== -1 || title.indexOf('devgamm') !== -1 || title.indexOf('gdc') !== -1 || title.indexOf('develop') !== -1;
-  if (t === 'consumer')   return title.indexOf('consumer') !== -1 || title.indexOf('expo') !== -1 || title.indexOf('show') !== -1 || title.indexOf('fest') !== -1 || title.indexOf('con ') !== -1;
-  if (t === 'platform')   return ev.has_deal_room || ev.has_buyers || title.indexOf('platform') !== -1 || title.indexOf('game connection') !== -1;
-  if (t === 'live') {
-    var now = new Date().toISOString().split('T')[0];
-    return ev.start_date <= now && (!ev.end_date || ev.end_date >= now);
-  }
-  if (t === 'asia')        return ASIA_COUNTRIES.indexOf(ev.country) !== -1 || ev.is_online === false && ASIA_COUNTRIES.some(function(c){ return (ev.country||'').indexOf(c) !== -1; });
-  if (t === 'europe')      return EUROPE_COUNTRIES.indexOf(ev.country) !== -1;
-  if (t === 'northamerica') return AMERICAS_COUNTRIES.indexOf(ev.country) !== -1;
+  if (t === 'conference')  return ev.type === 'conference';
+  if (t === 'tradeshow')   return ev.type === 'tradeshow';
+  if (t === 'online')      return ev.is_online === true;
+  if (t === 'b2b')         return ev.has_buyers === true || ev.has_deal_room === true;
+  if (t === 'country_us')  return ev.country === 'United States' || ev.country === 'USA';
+  if (t === 'country_uk')  return ev.country === 'United Kingdom' || ev.country === 'UK';
+  if (t === 'country_de')  return ev.country === 'Germany';
+  if (t === 'country_cn')  return ev.country === 'China';
+  if (t === 'country_jp')  return ev.country === 'Japan';
+  if (t === 'country_au')  return ev.country === 'Australia';
+  if (t === 'country_ca')  return ev.country === 'Canada';
+  if (t === 'country_br')  return ev.country === 'Brazil';
+  if (t === 'ai')          return title.indexOf('ai ') !== -1 || title.indexOf(' ai') !== -1 || title.indexOf('artificial') !== -1 || desc.indexOf('artificial intelligence') !== -1;
+  if (t === 'indie')       return title.indexOf('indie') !== -1 || desc.indexOf('indie') !== -1;
+  if (t === 'developer')   return title.indexOf('developer') !== -1 || title.indexOf('devgamm') !== -1 || title.indexOf('gdc') !== -1;
+  if (t === 'igaming')     return title.indexOf('igaming') !== -1 || title.indexOf('igame') !== -1 || desc.indexOf('igaming') !== -1;
   return false;
 }
 
-// Check if an event matches all active tags (AND across dimensions, OR within same dimension)
+// Check if event matches all active tags (OR within group, AND across groups)
 function matchesTags(ev) {
   if (!selTags.length) return true;
-  // Separate tags into type-group and region-group and special-group
-  var typeTags    = selTags.filter(function(t){ return ['conference','tradeshow'].indexOf(t.toLowerCase()) !== -1; });
-  var regionTags  = selTags.filter(function(t){ return ['asia','europe','northamerica'].indexOf(t.toLowerCase()) !== -1; });
-  var specialTags = selTags.filter(function(t){ return ['b2b','developer','consumer','platform','live'].indexOf(t.toLowerCase()) !== -1; });
-  // Within each group: OR logic (match any). Across groups: AND logic.
-  if (typeTags.length   && !typeTags.some(function(t){   return matchTag(ev, t); })) return false;
-  if (regionTags.length && !regionTags.some(function(t){ return matchTag(ev, t); })) return false;
-  if (specialTags.length && !specialTags.some(function(t){ return matchTag(ev, t); })) return false;
-  return true;
+  // Group selected tags
+  var groups = {};
+  selTags.forEach(function(t) {
+    var g = TAG_GROUPS[t.toLowerCase()] || 'other';
+    if (!groups[g]) groups[g] = [];
+    groups[g].push(t);
+  });
+  // Each group must have at least one match (AND across groups)
+  return Object.keys(groups).every(function(g) {
+    return groups[g].some(function(t) { return matchTag(ev, t); });
+  });
 }
 
 // ── COUNTRY FLAG HELPER ─────────────────────────────────────
@@ -545,14 +619,16 @@ function buildParams(offset) {
   } else {
     params.set('from_date', today);
   }
-  // Only pass type to API if exactly ONE type tag is selected and no other tags
-  // (API only supports single type; multi-select uses frontend filtering)
-  var typeTags = selTags.filter(function(t){ return TAG_TYPE_MAP[t.toLowerCase()]; });
-  var nonTypeTags = selTags.filter(function(t){ return !TAG_TYPE_MAP[t.toLowerCase()]; });
-  if (typeTags.length === 1 && nonTypeTags.length === 0) {
-    params.set('type', TAG_TYPE_MAP[typeTags[0].toLowerCase()]);
+  // If exactly ONE tag is selected, pass it directly to the API for server-side filtering
+  // (most efficient; avoids loading all events just to filter client-side)
+  if (selTags.length === 1) {
+    var tag = selTags[0].toLowerCase();
+    var mapping = TAG_API_MAP[tag];
+    if (mapping) {
+      params.set(mapping.param, mapping.value);
+    }
   }
-  // For all other tag combinations, fetch without type filter and do frontend filtering
+  // For multi-tag or unmapped tags: fetch without extra filters, apply frontend matchesTags()
   return params;
 }
 
@@ -691,9 +767,11 @@ async function loadEvents(reset) {
       events.forEach(function(ev){ _loadedEvents[ev.id] = ev; });
 
       // Frontend tag filtering (for tags that API doesn't support natively)
+      // Single tag with API mapping = server-side filtered, no frontend needed
+      // Multi-tag or no mapping = need frontend filtering
       var needsFrontendFilter = selTags.length > 0 && !(
         selTags.length === 1 &&
-        TAG_TYPE_MAP[selTags[0].toLowerCase()]
+        TAG_API_MAP[selTags[0].toLowerCase()]
       );
       if (needsFrontendFilter) {
         events = events.filter(matchesTags);
@@ -988,6 +1066,55 @@ function loadMoreEvents() {
   loadEvents(false);
 }
 
+// ── TAG EXPAND/COLLAPSE ─────────────────────────────────────
+function toggleTagExpand() {
+  var btn = document.getElementById('ftag-expand-btn');
+  var extras = document.querySelectorAll('.ftag-extra');
+  var isOpen = btn && btn.classList.contains('open');
+  if (btn) btn.classList.toggle('open', !isOpen);
+  extras.forEach(function(el) { el.classList.toggle('visible', !isOpen); });
+}
+
+// ── LOAD TAG COUNTS ─────────────────────────────────────────
+// Fetch counts for each tag from the API and update the count badges
+async function loadTagCounts() {
+  var today = new Date().toISOString().split('T')[0];
+  var base = CAL_API + '?year=' + selYear + '&limit=1&from_date=' + today;
+  // Map of tag id -> API URL
+  var tagQueries = [
+    { id: 'conference', url: base + '&type=conference' },
+    { id: 'tradeshow',  url: base + '&type=tradeshow' },
+    { id: 'online',     url: base + '&is_online=true' },
+    { id: 'b2b',        url: base + '&has_buyers=true' },
+    { id: 'country_us', url: base + '&country=United+States' },
+    { id: 'country_uk', url: base + '&country=United+Kingdom' },
+    { id: 'country_de', url: base + '&country=Germany' },
+    { id: 'country_cn', url: base + '&country=China' },
+    { id: 'country_jp', url: base + '&country=Japan' },
+    { id: 'country_au', url: base + '&country=Australia' },
+    { id: 'country_ca', url: base + '&country=Canada' },
+    { id: 'country_br', url: base + '&country=Brazil' },
+    { id: 'ai',         url: base + '&search=AI' },
+    { id: 'indie',      url: base + '&search=indie' },
+    { id: 'developer',  url: base + '&search=developer' },
+    { id: 'igaming',    url: base + '&search=iGaming' }
+  ];
+  // Fetch all in parallel
+  var results = await Promise.allSettled(tagQueries.map(function(q) {
+    return fetch(q.url).then(function(r){ return r.json(); }).then(function(j){ return { id: q.id, total: j.total || 0 }; });
+  }));
+  results.forEach(function(r) {
+    if (r.status === 'fulfilled') {
+      var el = document.getElementById('tcnt-' + r.value.id);
+      if (el) {
+        var n = r.value.total;
+        el.textContent = n >= 1000 ? Math.round(n/100)/10 + 'k' : n;
+        el.style.display = n > 0 ? '' : 'none';
+      }
+    }
+  });
+}
+
 // ── INIT ──────────────────────────────────────────────────
 // Add load-more button to DOM if not present
 (function() {
@@ -1006,10 +1133,10 @@ function loadMoreEvents() {
   if (listEl) listEl.parentNode.insertBefore(spinner, listEl.nextSibling);
 })();
 
-// Load stats and events in parallel — stats provides month counts and countries,
-// events provides the authoritative total count. No sequential dependency needed.
+// Load stats, events, and tag counts in parallel
 loadStats();
 loadEvents(true);
+loadTagCounts();
 
 </script>
 
