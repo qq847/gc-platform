@@ -621,31 +621,6 @@ body{height:100%;overflow:hidden;font-family:"DM Sans","PingFang SC",-apple-syst
   <div id="fd-toast"></div>
 </div>
 
-<!-- BOTTOM NAV -->
-<div class="bnav">
-  <div class="bn" id="bn-home" onclick="fdNavTo('home')">
-    <div class="bn-i">
-      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--t3)" stroke-width="2" id="bn-home-icon"><path d="M3 12L12 4l9 8v8h-6v-5H9v5H3z"/></svg>
-    </div>
-    <span class="bn-l">Home</span>
-  </div>
-  <div class="bn" onclick="location.href='LetsMeet_Browse_v1_Mobile.html'"><div class="bn-i"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--t3)" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg></div><span class="bn-l">People</span></div>
-  <div class="bn" onclick="location.href='ExhibitorBrowse_v1_Mobile.html'"><div class="bn-i"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--t3)" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/></svg></div><span class="bn-l">Projects</span></div>
-  <div class="bn on" id="bn-events" onclick="fdNavTo('events')">
-    <div class="bn-i">
-      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--tl)" stroke-width="2" id="bn-events-icon"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="3" y1="9" x2="21" y2="9"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="16" y1="2" x2="16" y2="6"/></svg>
-    </div>
-    <span class="bn-l">Events</span>
-  </div>
-  <div class="bn" id="bn-msg" onclick="msgNavTo()">
-    <div class="bn-i" style="position:relative">
-      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--t3)" stroke-width="2" id="bn-msg-icon"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
-      <span id="bn-msg-badge" style="display:none;position:absolute;top:-3px;right:-5px;background:var(--rd);color:#fff;font-size:8px;font-weight:800;padding:1px 4px;border-radius:8px;min-width:14px;text-align:center;border:1.5px solid var(--bg)"></span>
-    </div>
-    <span class="bn-l">Messages</span>
-  </div>
-  <div class="bn" onclick="location.href='AttendeeDashboard_v1_Mobile.html'"><div class="bn-i"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--t3)" stroke-width="2"><circle cx="12" cy="7" r="4"/><path d="M20 21a8 8 0 1 0-16 0"/></svg></div><span class="bn-l">Profile</span></div>
-</div>
 
 </div><!-- /app -->
 
@@ -994,34 +969,22 @@ var _fdOpen = false;
 
 function fdNavTo(tab) {
   var panel  = document.getElementById('fd-panel');
-  var bnHome = document.getElementById('bn-home');
-  var bnEv   = document.getElementById('bn-events');
-  var hiHome = document.getElementById('bn-home-icon');
-  var hiEv   = document.getElementById('bn-events-icon');
   var hubHdr = document.querySelector('.hdr');
   var hubBod = document.getElementById('body');
   // Close messages panel
   var msgPanel = document.getElementById('msg-panel');
   if (msgPanel) msgPanel.classList.remove('msg-open');
-  var bnMsg = document.getElementById('bn-msg');
-  if (bnMsg) bnMsg.classList.remove('on');
-  var hiMsg = document.getElementById('bn-msg-icon');
-  if (hiMsg) hiMsg.setAttribute('stroke','var(--t3)');
   _msgOpen = false;
 
   if (tab === 'home') {
     _fdOpen = true;
     panel.classList.add('fd-open');
-    bnHome.classList.add('on');   hiHome.setAttribute('stroke','var(--tl)');
-    bnEv.classList.remove('on'); hiEv.setAttribute('stroke','var(--t3)');
     hubHdr.style.display = 'none';
     hubBod.style.display = 'none';
     if (!window._fdInited) { fdRenderFeed(); window._fdInited = true; }
   } else {
     _fdOpen = false;
     panel.classList.remove('fd-open');
-    bnHome.classList.remove('on'); hiHome.setAttribute('stroke','var(--t3)');
-    bnEv.classList.add('on');      hiEv.setAttribute('stroke','var(--tl)');
     hubHdr.style.display = '';
     hubBod.style.display = '';
   }
@@ -1303,25 +1266,15 @@ function getMemberById(id) {
 function msgNavTo() {
   _msgOpen = !_msgOpen;
   var panel = document.getElementById('msg-panel');
-  var bnMsg = document.getElementById('bn-msg');
-  var hiMsg = document.getElementById('bn-msg-icon');
   // Close other panels
   document.getElementById('fd-panel').classList.remove('fd-open');
-  document.getElementById('bn-home').classList.remove('on');
-  document.getElementById('bn-home-icon').setAttribute('stroke','var(--t3)');
-  document.getElementById('bn-events').classList.remove('on');
-  document.getElementById('bn-events-icon').setAttribute('stroke','var(--t3)');
   document.querySelector('.hdr').style.display = '';
   document.getElementById('body').style.display = '';
   if (_msgOpen) {
     panel.classList.add('msg-open');
-    bnMsg.classList.add('on');
-    hiMsg.setAttribute('stroke','var(--tl)');
     renderMsgList();
   } else {
     panel.classList.remove('msg-open');
-    bnMsg.classList.remove('on');
-    hiMsg.setAttribute('stroke','var(--t3)');
   }
 }
 
@@ -1330,12 +1283,10 @@ function renderMsgList() {
   var list = document.getElementById('msg-list');
   var totalUnread = convos.reduce(function(s,c){return s+(c.unread||0);},0);
   var badge = document.getElementById('msg-unread-badge');
-  var navBadge = document.getElementById('bn-msg-badge');
   if (totalUnread > 0) {
     badge.textContent = totalUnread; badge.style.display = '';
-    navBadge.textContent = totalUnread; navBadge.style.display = '';
   } else {
-    badge.style.display = 'none'; navBadge.style.display = 'none';
+    badge.style.display = 'none';
   }
   var groups = [
     {label:'PINNED', items: convos.slice(0,2)},
@@ -1519,11 +1470,7 @@ function startMsgConvo(memberId) {
 (function() {
   var convos = _msgLoad();
   var totalUnread = convos.reduce(function(s,c){return s+(c.unread||0);},0);
-  if (totalUnread > 0) {
-    var navBadge = document.getElementById('bn-msg-badge');
-    navBadge.textContent = totalUnread;
-    navBadge.style.display = '';
-  }
+  // badge display handled by renderMsgList
 })();
 
 </script>
