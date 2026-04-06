@@ -850,7 +850,7 @@ async function gcSignOut() {
     <button class="biz-btn" id="biz-btn" onclick="toggleBizMenu(event)">⚡ For Business <span class="biz-chevron">▼</span></button>
     <div class="biz-menu" id="biz-menu">
       <div class="biz-menu-header">Business Portals</div>
-      <a class="biz-menu-item" href="#" onclick="bizGoOrganizer(event)">
+      <a class="biz-menu-item" href="EventHQ_Dashboard_v1_PC.html">
         <div class="biz-item-icon" style="background:linear-gradient(135deg,#1c1a17,#2a2520)">⚡</div>
         <div class="biz-item-text"><div class="biz-item-title">Organizer</div><div class="biz-item-desc">Manage your event end-to-end</div></div>
       </a>
@@ -1090,7 +1090,6 @@ async function gcSignOut() {
       <button class="msg-icon-btn" onclick="togglePcMsgSearch()" title="Search">
         <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="11" cy="11" r="7"/><line x1="16.5" y1="16.5" x2="22" y2="22"/></svg>
       </button>
-      <button class="msg-icon-btn" onclick="openNewConvPanel()" title="New Conversation" style="font-size:16px;font-weight:300;line-height:1">&#9998;</button>
       <button class="msg-icon-btn" onclick="closeMsgDrawer()" title="Close">
         <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
       </button>
@@ -1099,17 +1098,6 @@ async function gcSignOut() {
   <!-- Search bar -->
   <div id="pc-msg-search-bar" style="display:none;padding:0 16px 10px">
     <input type="text" placeholder="Search conversations…" style="width:100%;padding:7px 12px;border:1.5px solid var(--border);border-radius:8px;font-size:13px;font-family:inherit;outline:none;background:#fff" oninput="filterPcMsgList(this.value)">
-  </div>
-  <!-- New Conversation Panel (overlay) -->
-  <div id="pc-new-conv-panel" style="display:none;position:absolute;inset:0;top:57px;background:#fff;z-index:10;flex-direction:column">
-    <div style="padding:14px 16px;border-bottom:1px solid #e0dfdc;display:flex;align-items:center;gap:10px">
-      <button onclick="closeNewConvPanel()" style="background:none;border:none;cursor:pointer;color:var(--text3);font-size:18px;line-height:1;padding:0">←</button>
-      <div style="font-size:14px;font-weight:700;color:var(--text1)">New Conversation</div>
-    </div>
-    <div style="padding:10px 16px">
-      <input type="text" id="pc-new-conv-search" placeholder="Search people…" oninput="filterNewConvList(this.value)" style="width:100%;padding:8px 12px;border:1.5px solid var(--border);border-radius:8px;font-size:13px;font-family:inherit;outline:none;background:var(--bg)">
-    </div>
-    <div id="pc-new-conv-list" style="flex:1;overflow-y:auto;padding:0 8px 16px"></div>
   </div>
   <!-- Two-pane layout -->
   <div class="msg-drawer-body">
@@ -2606,8 +2594,8 @@ async function loadHomeFeedBatch(reset) {
   const today = new Date().toISOString().split('T')[0];
   try {
     const [evRes, prRes] = await Promise.all([
-      fetch(_SB_URL+'/rest/v1/events?select=id,title,type,status,city,country,start_date,end_date,attendee_count,exhibitor_count&status=neq.ended&start_date=gte.'+today+'&order=start_date.asc&limit='+BATCH+'&offset='+_feedEvtOffset, {headers:{..._SB_H,'Prefer':'count=exact'}}),
-      fetch(_SB_URL+'/rest/v1/game_projects?select=id,title,tagline,genre,status,looking_for,platforms&is_public=eq.true&order=created_at.desc&limit='+BATCH+'&offset='+_feedProjOffset, {headers:{..._SB_H,'Prefer':'count=exact'}})
+      fetch(_SB_URL+'/rest/v1/events?select=id,title,type,status,city,country,start_date,end_date,attendee_count,exhibitor_count,cover_image_url&status=neq.ended&start_date=gte.'+today+'&order=start_date.asc&limit='+BATCH+'&offset='+_feedEvtOffset, {headers:{..._SB_H,'Prefer':'count=exact'}}),
+      fetch(_SB_URL+'/rest/v1/game_projects?select=id,title,tagline,genre,status,looking_for,platforms,cover_image_url&is_public=eq.true&order=created_at.desc&limit='+BATCH+'&offset='+_feedProjOffset, {headers:{..._SB_H,'Prefer':'count=exact'}})
     ]);
     const parseCount = r => { const cr = r.headers.get('content-range'); return cr ? parseInt(cr.split('/')[1])||0 : 0; };
     _feedEvtTotal = parseCount(evRes);
@@ -2671,6 +2659,44 @@ function renderNewsCard(item) {
   </a>`;
 }
 
+// ── Known event banner images (keyword → image URL) ──
+const _EVT_BANNERS = {
+  'gdc':         'https://upload.wikimedia.org/wikipedia/commons/thumb/2/2e/GDC_2019_logo.png/320px-GDC_2019_logo.png',
+  'game developers conference': 'https://upload.wikimedia.org/wikipedia/commons/thumb/2/2e/GDC_2019_logo.png/320px-GDC_2019_logo.png',
+  'gamescom':    'https://upload.wikimedia.org/wikipedia/commons/thumb/5/5a/Gamescom_logo.svg/320px-Gamescom_logo.svg.png',
+  'chinajoy':    'https://upload.wikimedia.org/wikipedia/commons/thumb/1/1b/ChinaJoy_logo.png/320px-ChinaJoy_logo.png',
+  'tgs':         'https://upload.wikimedia.org/wikipedia/commons/thumb/2/2e/Tokyo_Game_Show_logo.svg/320px-Tokyo_Game_Show_logo.svg.png',
+  'tokyo game show': 'https://upload.wikimedia.org/wikipedia/commons/thumb/2/2e/Tokyo_Game_Show_logo.svg/320px-Tokyo_Game_Show_logo.svg.png',
+  'e3':          'https://upload.wikimedia.org/wikipedia/commons/thumb/0/0b/E3_2018_logo.svg/320px-E3_2018_logo.svg.png',
+  'pax':         'https://images.unsplash.com/photo-1511512578047-dfb367046420?w=600&q=80',
+  'ign':         'https://images.unsplash.com/photo-1542751371-adc38448a05e?w=600&q=80',
+  'game connection': 'https://images.unsplash.com/photo-1511512578047-dfb367046420?w=600&q=80',
+  'gc west':     'https://images.unsplash.com/photo-1511512578047-dfb367046420?w=600&q=80',
+  'gc europe':   'https://images.unsplash.com/photo-1540575467063-178a50c2df87?w=600&q=80',
+  'gc asia':     'https://images.unsplash.com/photo-1540575467063-178a50c2df87?w=600&q=80',
+  'devcom':      'https://images.unsplash.com/photo-1540575467063-178a50c2df87?w=600&q=80',
+  'gamelab':     'https://images.unsplash.com/photo-1540575467063-178a50c2df87?w=600&q=80',
+  'casual connect': 'https://images.unsplash.com/photo-1511512578047-dfb367046420?w=600&q=80',
+  'pocket gamer': 'https://images.unsplash.com/photo-1511512578047-dfb367046420?w=600&q=80',
+  'pgc':         'https://images.unsplash.com/photo-1511512578047-dfb367046420?w=600&q=80',
+  'nordic game': 'https://images.unsplash.com/photo-1540575467063-178a50c2df87?w=600&q=80',
+  'white nights': 'https://images.unsplash.com/photo-1540575467063-178a50c2df87?w=600&q=80',
+  'g-star':      'https://images.unsplash.com/photo-1542751371-adc38448a05e?w=600&q=80',
+  'gstar':       'https://images.unsplash.com/photo-1542751371-adc38448a05e?w=600&q=80',
+  'sigma':       'https://images.unsplash.com/photo-1540575467063-178a50c2df87?w=600&q=80',
+  'dice':        'https://images.unsplash.com/photo-1511512578047-dfb367046420?w=600&q=80',
+  'next':        'https://images.unsplash.com/photo-1540575467063-178a50c2df87?w=600&q=80',
+  'gamesindustry': 'https://images.unsplash.com/photo-1542751371-adc38448a05e?w=600&q=80',
+};
+
+function _getEvtBannerUrl(title) {
+  const t = (title||'').toLowerCase();
+  for (const [kw, url] of Object.entries(_EVT_BANNERS)) {
+    if (t.includes(kw)) return url;
+  }
+  return null;
+}
+
 function renderEvtCard(ev, idx) {
   // Event type → icon + gradient
   const _EVT_STYLE = {
@@ -2694,21 +2720,25 @@ function renderEvtCard(ev, idx) {
   const att = ev.attendee_count ? '👥 '+Number(ev.attendee_count).toLocaleString()+' Attendees' : (ev.exhibitor_count ? '🏪 '+ev.exhibitor_count+' Exhibitors' : '');
   const typeLabel = {conference:'CONFERENCE',trade_show:'TRADE SHOW',tradeshow:'TRADE SHOW',awards:'AWARDS',esports:'ESPORTS',festival:'FESTIVAL',meetup:'MEETUP',online:'ONLINE',summit:'SUMMIT',expo:'EXPO'}[typeKey] || (ev.type||'EVENT').toUpperCase();
   const isLive = ev.status === 'live';
+  // Determine banner image: DB field > keyword mapping > gradient fallback
+  const bannerUrl = ev.cover_image_url || _getEvtBannerUrl(ev.title);
+  const bannerBg = bannerUrl
+    ? `background-image:url('${bannerUrl}');background-size:cover;background-position:center;`
+    : `background:linear-gradient(${evtGrad});`;
   return `<div class="card" data-type="events" data-feed-type="events">
-    <div style="height:140px;background:linear-gradient(${evtGrad});position:relative;overflow:hidden;border-radius:10px 10px 0 0">
-      <div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center">
-        <span style="font-size:56px;opacity:0.2">${evtIcon}</span>
-      </div>
-      <div style="position:absolute;top:12px;left:14px;display:flex;align-items:center;gap:6px">
-        <span style="font-size:9px;font-weight:800;padding:2px 8px;border-radius:10px;background:rgba(255,255,255,0.18);color:#fff;letter-spacing:.5px">${typeLabel}</span>
+    <div style="height:160px;${bannerBg}position:relative;overflow:hidden;border-radius:10px 10px 0 0">
+      ${!bannerUrl ? `<div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center"><span style="font-size:56px;opacity:0.2">${evtIcon}</span></div>` : ''}
+      <div style="position:absolute;inset:0;background:linear-gradient(to bottom, rgba(0,0,0,0.15) 0%, rgba(0,0,0,0) 40%, rgba(0,0,0,0.65) 100%)"></div>
+      <div style="position:absolute;top:12px;left:14px;display:flex;align-items:center;gap:6px;z-index:1">
+        <span style="font-size:9px;font-weight:800;padding:2px 8px;border-radius:10px;background:rgba(0,0,0,0.45);backdrop-filter:blur(4px);color:#fff;letter-spacing:.5px">${typeLabel}</span>
         ${isLive ? '<span style="font-size:9px;font-weight:800;padding:2px 8px;border-radius:10px;background:rgba(229,57,53,0.9);color:#fff;animation:pulse-badge 1.5s infinite">🔴 LIVE</span>' : ''}
       </div>
-      <div style="position:absolute;bottom:0;left:0;right:0;padding:10px 14px;background:linear-gradient(transparent,rgba(0,0,0,0.55))">
-        <div style="font-size:14px;font-weight:800;color:#fff;line-height:1.3;text-shadow:0 1px 3px rgba(0,0,0,0.4)">${ev.title}</div>
+      <div style="position:absolute;bottom:0;left:0;right:0;padding:10px 14px;z-index:1">
+        <div style="font-size:14px;font-weight:800;color:#fff;line-height:1.3;text-shadow:0 1px 4px rgba(0,0,0,0.6)">${ev.title}</div>
       </div>
-      <div style="position:absolute;top:12px;right:14px;text-align:right">
-        <div style="font-size:22px;font-weight:900;color:rgba(255,255,255,0.9);line-height:1">${day}</div>
-        <div style="font-size:10px;font-weight:700;color:rgba(255,255,255,0.7);letter-spacing:1px">${mon}</div>
+      <div style="position:absolute;top:12px;right:14px;text-align:right;z-index:1">
+        <div style="font-size:22px;font-weight:900;color:#fff;line-height:1;text-shadow:0 1px 4px rgba(0,0,0,0.5)">${day}</div>
+        <div style="font-size:10px;font-weight:700;color:rgba(255,255,255,0.85);letter-spacing:1px">${mon}</div>
       </div>
     </div>
     <div class="card-event-body">
@@ -2716,12 +2746,39 @@ function renderEvtCard(ev, idx) {
         <div class="evt-meta-i">📍 ${loc}</div>
         ${att ? '<div class="evt-meta-i">'+att+'</div>' : ''}
       </div>
-      <div style="display:flex;gap:8px">
-        <button class="btn-view" onclick="event.stopPropagation();switchMode('calendar')" style="flex:1">View Details</button>
-        <a href="EventPublicPage_v3_PC.html" target="_blank" class="btn-view" style="flex:1;text-align:center;text-decoration:none;background:rgba(13,155,114,0.1);color:#0d9b72;border-color:rgba(13,155,114,0.3)">🌐 Event Page</a>
-      </div>
+      <button class="btn-view" onclick="event.stopPropagation();switchMode('calendar')">View Details</button>
     </div>
   </div>`;
+}
+
+// ── IGDB image cache to avoid duplicate fetches ──
+const _igdbImgCache = {};
+async function _fetchIgdbImg(title, cardId) {
+  if (_igdbImgCache[title] !== undefined) {
+    if (_igdbImgCache[title]) _applyProjCardImg(cardId, _igdbImgCache[title]);
+    return;
+  }
+  _igdbImgCache[title] = null; // mark as fetching
+  try {
+    const r = await fetch('https://www.igdb.com/search_autocomplete_all?q=' + encodeURIComponent(title));
+    const d = await r.json();
+    const gs = d.game_suggest || [];
+    if (gs.length && gs[0].cloudinary) {
+      const imgUrl = 'https://images.igdb.com/igdb/image/upload/t_screenshot_big/' + gs[0].cloudinary + '.jpg';
+      _igdbImgCache[title] = imgUrl;
+      _applyProjCardImg(cardId, imgUrl);
+    }
+  } catch(e) { /* silent fail, keep gradient */ }
+}
+function _applyProjCardImg(cardId, imgUrl) {
+  const el = document.getElementById(cardId);
+  if (!el) return;
+  el.style.backgroundImage = `url('${imgUrl}')`;
+  el.style.backgroundSize = 'cover';
+  el.style.backgroundPosition = 'center';
+  // Remove the placeholder icon once image loads
+  const placeholder = el.querySelector('.proj-placeholder-icon');
+  if (placeholder) placeholder.style.opacity = '0';
 }
 
 function renderProjCard(p, idx) {
@@ -2764,17 +2821,28 @@ function renderProjCard(p, idx) {
   const lookingFor = _lf ? '<div style="font-size:11px;color:var(--orange);margin-top:4px">🤝 '+_lf+'</div>' : '';
   const _validPlats = [...new Set((p.platforms||[]).filter(pl=>pl&&!pl.includes('Please Select')&&!pl.includes('please select')))].slice(0,3);
   const plats = _validPlats.map(pl=>`<span style="font-size:9px;font-weight:700;padding:1px 7px;border-radius:6px;background:rgba(28,26,23,0.06);color:var(--text2)">${pl}</span>`).join('');
+  // Use DB cover_image_url if available (full URL), else trigger IGDB async fetch
+  const cardBannerId = 'proj-banner-' + (p.id || idx);
+  const hasCover = p.cover_image_url && p.cover_image_url.startsWith('http');
+  const initBg = hasCover
+    ? `background-image:url('${p.cover_image_url}');background-size:cover;background-position:center;`
+    : `background:linear-gradient(${genreGrad});`;
+  // Trigger async IGDB fetch if no cover
+  if (!hasCover) {
+    setTimeout(() => _fetchIgdbImg(p.title, cardBannerId), 50);
+  }
   return `<div class="card" data-type="games" data-feed-type="projects">
-    <div style="height:120px;background:linear-gradient(${genreGrad});position:relative;overflow:hidden;border-radius:10px 10px 0 0">
-      <div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center">
+    <div id="${cardBannerId}" style="height:160px;${initBg}position:relative;overflow:hidden;border-radius:10px 10px 0 0;transition:background 0.3s">
+      <div class="proj-placeholder-icon" style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;transition:opacity 0.4s">
         <span style="font-size:48px;opacity:0.2">${genreIcon}</span>
       </div>
-      <div style="position:absolute;top:10px;left:12px">
-        <span style="font-size:9px;font-weight:800;padding:2px 8px;border-radius:10px;background:rgba(255,255,255,0.18);color:#fff;letter-spacing:.5px">🎮 PROJECT DB</span>
+      <div style="position:absolute;inset:0;background:linear-gradient(to bottom, rgba(0,0,0,0.1) 0%, rgba(0,0,0,0) 40%, rgba(0,0,0,0.6) 100%)"></div>
+      <div style="position:absolute;top:10px;left:12px;z-index:1">
+        <span style="font-size:9px;font-weight:800;padding:2px 8px;border-radius:10px;background:rgba(0,0,0,0.45);backdrop-filter:blur(4px);color:#fff;letter-spacing:.5px">🎮 PROJECT DB</span>
       </div>
-      <div style="position:absolute;top:10px;right:12px;font-size:9px;font-weight:700;color:rgba(255,255,255,0.6);letter-spacing:.5px">${genre.toUpperCase()}</div>
-      <div style="position:absolute;bottom:10px;left:12px">
-        <span style="font-size:10px;font-weight:800;padding:3px 10px;border-radius:20px;${statusStyle}">${statusLabel}</span>
+      <div style="position:absolute;top:10px;right:12px;font-size:9px;font-weight:700;color:rgba(255,255,255,0.85);letter-spacing:.5px;z-index:1;text-shadow:0 1px 3px rgba(0,0,0,0.5)">${genre.toUpperCase()}</div>
+      <div style="position:absolute;bottom:10px;left:12px;z-index:1">
+        <span style="font-size:10px;font-weight:800;padding:3px 10px;border-radius:20px;background:rgba(0,0,0,0.5);backdrop-filter:blur(4px);color:#fff">${statusLabel}</span>
       </div>
     </div>
     <div style="padding:14px">
@@ -3303,119 +3371,7 @@ function startConversation(memberId) {
   setTimeout(() => openPcChat(idx), 100);
 }
 
-// ─── Messages: localStorage persistence ───
-const _MSG_STORE_KEY = 'gc_messages_v1';
-function _msgLoad() {
-  try { const s = localStorage.getItem(_MSG_STORE_KEY); if (s) return JSON.parse(s); } catch(e){}
-  return null;
-}
-function _msgSave() {
-  try { localStorage.setItem(_MSG_STORE_KEY, JSON.stringify(pcMsgData)); } catch(e){}
-}
-function _msgUpdateBadge() {
-  const total = pcMsgData.reduce((n,d) => n + (d.unread||0), 0);
-  const badge = document.getElementById('nav-msg-badge');
-  if (!badge) return;
-  if (total > 0) { badge.textContent = total > 9 ? '9+' : total; badge.style.display = 'flex'; }
-  else { badge.style.display = 'none'; }
-}
-
-// ─── Auto-reply engine ───
-const _AUTO_REPLIES = {
-  publisher: [
-    "Sounds great! Let me loop in our acquisitions team.",
-    "Very interesting. Can you share your latest build?",
-    "We'd love to see your pitch deck. Send it over!",
-    "Our publishing committee meets next Thursday — I'll add you to the agenda.",
-    "Love the direction. What's your target launch window?"
-  ],
-  investor: [
-    "Interesting metrics. What's your current MRR?",
-    "We're actively deploying in this space. Let's schedule a call.",
-    "Can you share your cap table and financial projections?",
-    "Our thesis aligns well with what you're building.",
-    "I'll forward this to our investment committee."
-  ],
-  media: [
-    "Great! I'll add you to my preview list.",
-    "Can you send a review build? I'm targeting next month.",
-    "Love the concept. Would make a great feature piece.",
-    "I'll reach out to set up an interview next week."
-  ],
-  organizer: [
-    "We have a few booth slots left — I'll reserve one for you!",
-    "Our indie zone is perfect for your studio. Let me send the exhibitor pack.",
-    "Would you be interested in a speaking slot as well?"
-  ],
-  default: [
-    "Thanks for reaching out! I'll get back to you shortly.",
-    "Noted! Let me check with my team.",
-    "Sounds promising. Let's connect next week.",
-    "Great to hear from you. I'll review and follow up."
-  ]
-};
-function _autoReply(convIdx) {
-  const d = pcMsgData[convIdx];
-  if (!d) return;
-  const member = _GC_DEMO_MEMBERS.find(m => m.id === d.memberId);
-  const role = member ? member.role : 'default';
-  const pool = _AUTO_REPLIES[role] || _AUTO_REPLIES.default;
-  const reply = pool[Math.floor(Math.random() * pool.length)];
-  const now = new Date();
-  const time = (now.getHours()<10?'0':'')+now.getHours()+':'+(now.getMinutes()<10?'0':'')+now.getMinutes();
-  d.messages.push({ me: false, text: reply, time });
-  _msgSave();
-  // If this chat is open, render the new bubble
-  if (pcCurrentChat === convIdx) {
-    const msgs = document.getElementById('pc-chat-messages');
-    const div = document.createElement('div');
-    div.style.cssText = 'display:flex;flex-direction:row;align-items:flex-end;gap:8px';
-    const bubble = document.createElement('div');
-    bubble.style.cssText = 'max-width:70%;padding:10px 14px;border-radius:16px 16px 16px 4px;font-size:13px;line-height:1.5;color:var(--text1);background:#f4f2ee';
-    bubble.textContent = reply;
-    const meta = document.createElement('div');
-    meta.style.cssText = 'font-size:9px;color:var(--text3);flex-shrink:0;padding-bottom:3px';
-    meta.textContent = time;
-    div.appendChild(bubble); div.appendChild(meta);
-    msgs.appendChild(div);
-    msgs.scrollTop = msgs.scrollHeight;
-  } else {
-    d.unread = (d.unread||0) + 1;
-    _msgUpdateBadge();
-    renderPcMsgList();
-  }
-}
-
-// ─── New Conversation panel ───
-function openNewConvPanel() {
-  const panel = document.getElementById('pc-new-conv-panel');
-  panel.style.display = 'flex';
-  renderNewConvList('');
-  document.getElementById('pc-new-conv-search').value = '';
-  document.getElementById('pc-new-conv-search').focus();
-}
-function closeNewConvPanel() {
-  document.getElementById('pc-new-conv-panel').style.display = 'none';
-}
-function renderNewConvList(q) {
-  const list = document.getElementById('pc-new-conv-list');
-  const members = _GC_DEMO_MEMBERS.filter(m => !q || m.name.toLowerCase().includes(q.toLowerCase()) || m.company.toLowerCase().includes(q.toLowerCase()));
-  list.innerHTML = members.map(m => `
-    <div onclick="startConversation('${m.id}');closeNewConvPanel()" style="display:flex;align-items:center;gap:10px;padding:10px 8px;border-radius:8px;cursor:pointer;transition:.15s" onmouseover="this.style.background='var(--bg)'" onmouseout="this.style.background=''">
-      <div style="width:38px;height:38px;border-radius:50%;background:${m.color};display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:800;color:#fff;flex-shrink:0">${m.initials}</div>
-      <div style="flex:1;min-width:0">
-        <div style="font-size:13px;font-weight:700;color:var(--text1)">${m.name}</div>
-        <div style="font-size:11px;color:var(--text3);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${m.company} · ${m.title}</div>
-      </div>
-      ${pcMsgData.some(d=>d.memberId===m.id) ? '<div style="font-size:10px;color:var(--orange);font-weight:700">Active</div>' : ''}
-    </div>`).join('');
-}
-function filterNewConvList(q) { renderNewConvList(q); }
-
-const _pcMsgDefaults = [
-  {memberId:'m08',name:'Sarah Chen',company:'PixelForge Games · Co-founder & Lead Developer',initials:'SC',color:'linear-gradient(135deg,#2d1a4a,#4f46e5)',online:true,unread:0,messages:[
-    {me:false,text:'Hi! I noticed your profile on Game Connection. I\'d love to connect and explore potential collaboration opportunities.',time:'Just now'}
-  ]},
+const pcMsgData = [
   {memberId:'m02',name:'Jin Park',company:'Riot Games · Senior Producer',initials:'JP',color:'linear-gradient(135deg,#c0392b,#e74c3c)',online:true,unread:3,messages:[
     {me:false,text:"Riot's new experimental division is exploring co-development with indie studios. Your work on the narrative side really caught our attention.",time:'10:14 AM'},
     {me:true,text:"That's incredible to hear! We'd absolutely love to explore that. We've been building something that could be a great fit.",time:'10:32 AM'},
@@ -3473,17 +3429,13 @@ const _pcMsgDefaults = [
   ]}
 ];
 
-// Initialize pcMsgData from localStorage or use defaults
-const _savedMsgs = _msgLoad();
-const pcMsgData = _savedMsgs && _savedMsgs.length > 0 ? _savedMsgs : _pcMsgDefaults;
-
 let pcCurrentChat = null;
 
 function openMsgDrawer() {
   document.getElementById('msg-drawer').classList.add('open');
   document.getElementById('msg-drawer-overlay').classList.add('open');
-  // Update badge
-  _msgUpdateBadge();
+  // Hide badge
+  document.getElementById('nav-msg-badge').style.display = 'none';
   renderPcMsgList();
 }
 
@@ -3552,12 +3504,6 @@ function renderPcMsgList() {
 function openPcChat(idx) {
   const d = pcMsgData[idx];
   pcCurrentChat = idx;
-  // Clear unread for this conversation
-  if (d.unread > 0) {
-    d.unread = 0;
-    _msgSave();
-    _msgUpdateBadge();
-  }
   // Mark active
   document.querySelectorAll('.pc-conv-item').forEach((el, i) => {
     el.classList.toggle('active', pcMsgData.indexOf(d) === idx);
@@ -3599,15 +3545,10 @@ function pcSendMsgKey(e) { if (e.key === 'Enter') pcSendMsgBtn(); }
 function pcSendMsgBtn() {
   const inp = document.getElementById('pc-chat-input');
   const text = inp.value.trim();
-  if (!text || pcCurrentChat === null) return;
+  if (!text) return;
   const msgs = document.getElementById('pc-chat-messages');
   const now = new Date();
   const time = (now.getHours()<10?'0':'')+now.getHours()+':'+(now.getMinutes()<10?'0':'')+now.getMinutes();
-  // Save to data model
-  const d = pcMsgData[pcCurrentChat];
-  d.messages.push({ me: true, text, time });
-  _msgSave();
-  // Render bubble
   const div = document.createElement('div');
   div.style.cssText = 'display:flex;flex-direction:row-reverse;align-items:flex-end;gap:8px';
   const bubble = document.createElement('div');
@@ -3621,16 +3562,11 @@ function pcSendMsgBtn() {
   msgs.appendChild(div);
   msgs.scrollTop = msgs.scrollHeight;
   inp.value = '';
-  // Update conv list preview
-  renderPcMsgList();
-  // Trigger auto-reply after 1.5-3s
-  const delay = 1500 + Math.random() * 1500;
-  setTimeout(() => _autoReply(pcCurrentChat), delay);
 }
 
-// Show messages badge on load based on actual unread count
+// Show messages badge on load (simulated unread)
 document.addEventListener('DOMContentLoaded', function() {
-  _msgUpdateBadge();
+  document.getElementById('nav-msg-badge').style.display = 'flex';
 });
 
 // ═══ PROJECTS PANEL JS — REAL DATA FROM SUPABASE ═══
@@ -4076,9 +4012,9 @@ function calRenderCard(ev) {
       (desc ? '<div class="card-desc">' + desc + '</div>' : '') +
       '<div class="card-actions">' +        '<button class="action-btn" data-evid="' + (ev.id||'') + '" data-title="' + (ev.title||'').replace(/"/g,'&quot;') + '" data-start="' + (ev.start_date||'') + '" data-end="' + (ev.end_date||'') + '" data-loc="' + (ev.is_online ? 'Online' : [ev.city,ev.country].filter(Boolean).join(', ')).replace(/"/g,'&quot;') + '" data-url="' + (ev.online_url||'') + '" onclick="calAddToIcsByEl(event,this)">📅 Add to Cal</button>' +        '<button class="action-btn" onclick="fdShowToast(&quot;Saved!&quot;)">🔖 Save</button>' +
         '<button class="action-btn primary going-btn" id="going-btn-' + (ev.id||'') + '" data-evid="' + (ev.id||'') + '" data-going="false" onclick="calGoingToggle(this)">✅ I\'m Going</button>' +
-        '<a class="action-link" href="EventPublicPage_v3_PC.html" target="_blank">🌐 View Event</a>' +
         websiteBtn +
-      '</div>' +'</div>' +
+      '</div>' +
+    '</div>' +
   '</div>';
 }
 
@@ -4417,19 +4353,6 @@ document.addEventListener('click', function(e) {
     document.getElementById('biz-btn').classList.remove('open');
   }
 });
-
-function bizGoOrganizer(e) {
-  e.preventDefault();
-  // Check if user has an existing event in localStorage
-  const existingEvent = localStorage.getItem('gc_hq_event') || localStorage.getItem('gc_event_draft');
-  if (existingEvent) {
-    // Has existing event — go to dashboard
-    window.location.href = 'EventHQ_Dashboard_v1_PC.html';
-  } else {
-    // No event yet — start the setup wizard
-    window.location.href = 'EventSetupWizard_v3_PC.html';
-  }
-}
 
 // ═══ COUNTRY FILTER FUNCTIONS ═══
 window._allCountries = []; // cache from stats API
