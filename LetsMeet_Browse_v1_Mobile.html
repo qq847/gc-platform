@@ -1,722 +1,147 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-  <title>Let's Meet – Browse</title>
-  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" />
-  <style>
-    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=no">
+<title>People — Game Connection</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+html,body{height:100%;overflow-x:hidden}
+body{background:#e8e4da;font-family:"DM Sans","PingFang SC",sans-serif;color:#1c1a17}
+.app{max-width:480px;margin:0 auto;min-height:100vh;background:#e8e4da;padding-bottom:80px}
+
+:root{
+  --teal:#0a7fa8;--teal-dim:rgba(10,127,168,0.1);--teal-border:rgba(10,127,168,0.22);
+  --green:#0d9b72;--green-dim:rgba(13,155,114,0.1);--green-border:rgba(13,155,114,0.25);
+  --orange:#d95f2b;--orange-dim:rgba(217,95,43,0.1);--orange-border:rgba(217,95,43,0.25);
+  --purple:#7c3aed;--purple-dim:rgba(124,58,237,0.1);--purple-border:rgba(124,58,237,0.25);
+  --blue:#2563eb;--blue-dim:rgba(37,99,235,0.1);--blue-border:rgba(37,99,235,0.25);
+  --red:#dc2626;--red-dim:rgba(220,38,38,0.1);--red-border:rgba(220,38,38,0.3);
+  --card:#fff;--border:rgba(0,0,0,0.09);--border2:rgba(0,0,0,0.05);
+  --text1:#1c1a17;--text2:#6b6660;--text3:#a09890;
+  --s1:0 1px 3px rgba(0,0,0,0.07),0 0 1px rgba(0,0,0,0.04);
+  --s2:0 2px 8px rgba(0,0,0,0.1),0 1px 2px rgba(0,0,0,0.06);
+}
+
+/* ── TOP BAR ── */
+.topbar{
+  background:rgba(232,228,218,0.97);padding:10px 14px;
+  display:flex;align-items:center;gap:8px;
+  border-bottom:1px solid var(--border);
+  position:sticky;top:0;z-index:200;
+  backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);
+}
+.tb-back{width:30px;height:30px;border-radius:50%;background:rgba(0,0,0,0.06);border:none;display:flex;align-items:center;justify-content:center;cursor:pointer;flex-shrink:0;}
+.tb-meta{flex:1;display:flex;align-items:center;gap:5px;min-width:0;overflow:hidden;}
+.tb-count{font-size:13px;font-weight:700;color:var(--text1);white-space:nowrap;}
+.tb-dot{width:3px;height:3px;border-radius:50%;background:var(--text3);flex-shrink:0;}
+.tb-sub{font-size:12px;color:var(--text2);white-space:nowrap;}
+.tb-icon-btn{width:30px;height:30px;border-radius:50%;background:rgba(0,0,0,0.06);border:none;display:flex;align-items:center;justify-content:center;cursor:pointer;flex-shrink:0;color:var(--text2);}
+.tb-icon-btn:hover{background:rgba(0,0,0,0.1);}
+.tb-notif-dot{position:absolute;top:5px;right:5px;width:7px;height:7px;border-radius:50%;background:var(--red);border:1.5px solid #e8e4da;}
+
+/* ── FILTER ROW ── */
+.filter-row{display:flex;gap:6px;padding:10px 14px 10px;overflow-x:auto;scrollbar-width:none;align-items:center;}
+.filter-row::-webkit-scrollbar{display:none}
+.ftag{flex-shrink:0;padding:5px 11px;border-radius:20px;border:1.5px solid var(--border);background:var(--card);font-size:11px;font-weight:600;color:var(--text2);cursor:pointer;font-family:inherit;white-space:nowrap;transition:all .15s;display:flex;align-items:center;gap:4px;box-shadow:var(--s1);}
+.ftag:hover:not(.active){border-color:rgba(0,0,0,0.2);color:var(--text1);}
+.ftag.active{color:#fff;border-color:transparent;background:var(--text1);}
+.ftag[data-f="developer"].active{background:#0a7fa8;}
+.ftag[data-f="publisher"].active{background:#d95f2b;}
+.ftag[data-f="investor"].active{background:#0d9b72;}
+.ftag[data-f="press"].active{background:#7c3aed;}
+
+/* ── SEARCH BAR ── */
+.search-wrap{padding:0 14px 10px;display:none;}
+.search-wrap.show{display:block;}
+.search-box{display:flex;align-items:center;background:var(--card);border:1.5px solid var(--border);border-radius:20px;padding:0 12px;gap:8px;box-shadow:var(--s1);}
+.search-box:focus-within{border-color:var(--teal);}
+.search-input{flex:1;border:none;outline:none;background:transparent;font-family:"DM Sans",sans-serif;font-size:13px;color:var(--text1);padding:9px 0;}
+.search-input::placeholder{color:var(--text3);}
+.search-clear{background:none;border:none;cursor:pointer;color:var(--text3);font-size:14px;padding:0;display:none;}
+.search-clear.visible{display:block;}
+
+/* ── SECTION HEADER ── */
+.section-header{display:flex;align-items:center;justify-content:space-between;padding:6px 14px 8px;}
+.section-title{font-size:11px;font-weight:800;letter-spacing:1.5px;text-transform:uppercase;color:var(--orange);}
+.section-count{font-size:11px;color:var(--text3);font-weight:500;background:rgba(0,0,0,0.05);padding:2px 8px;border-radius:10px;}
+
+/* ── CARD LIST ── */
+.card-list{padding:0 12px;display:flex;flex-direction:column;gap:8px;}
+
+/* ── PERSON CARD ── */
+.person-card{
+  background:var(--card);border-radius:14px;
+  border:1px solid rgba(0,0,0,0.07);
+  box-shadow:0 1px 4px rgba(0,0,0,0.05),0 0 0 0.5px rgba(0,0,0,0.03);
+  overflow:hidden;cursor:pointer;
+  transition:box-shadow .15s,transform .1s;
+}
+.person-card:active{transform:scale(.99)}
+
+.pc-head{display:flex;align-items:center;padding:12px 12px 10px;gap:10px;}
+.pc-avatar{
+  width:42px;height:42px;border-radius:50%;flex-shrink:0;
+  display:flex;align-items:center;justify-content:center;
+  font-size:15px;font-weight:700;color:#fff;position:relative;
+}
+.pc-avatar-online{position:absolute;bottom:1px;right:1px;width:10px;height:10px;border-radius:50%;background:var(--green);border:2px solid #fff;}
+.pc-info{flex:1;min-width:0;}
+.pc-name{font-size:14px;font-weight:700;color:var(--text1);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.pc-role{font-size:11px;color:var(--text2);margin-top:1px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.pc-company{font-size:11px;color:var(--teal);font-weight:600;margin-top:1px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.pc-right{display:flex;flex-direction:column;align-items:flex-end;gap:5px;flex-shrink:0;}
+.pc-type-badge{font-size:9px;font-weight:800;padding:2px 8px;border-radius:20px;letter-spacing:.3px;}
+.badge-developer{background:var(--teal-dim);border:1px solid var(--teal-border);color:var(--teal);}
+.badge-publisher{background:var(--orange-dim);border:1px solid var(--orange-border);color:var(--orange);}
+.badge-investor{background:var(--green-dim);border:1px solid var(--green-border);color:var(--green);}
+.badge-press{background:var(--purple-dim);border:1px solid var(--purple-border);color:var(--purple);}
+
+/* Tags row */
+.pc-tags{display:flex;gap:4px;padding:0 12px 8px;flex-wrap:nowrap;overflow-x:auto;scrollbar-width:none;}
+.pc-tags::-webkit-scrollbar{display:none;}
+.pc-tag{flex-shrink:0;padding:2px 8px;border-radius:20px;font-size:10px;font-weight:600;background:rgba(0,0,0,0.05);border:1px solid var(--border);color:var(--text2);}
+
+/* Action row */
+.pc-actions{display:flex;align-items:center;padding:0 12px 11px;gap:7px;}
+.pc-btn{display:inline-flex;align-items:center;gap:4px;font-size:11px;font-weight:600;padding:6px 12px;border-radius:8px;cursor:pointer;font-family:inherit;transition:all .15s;border:none;white-space:nowrap;}
+.pc-btn-meet{background:var(--orange);color:#fff;}
+.pc-btn-meet:hover{opacity:.88}
+.pc-btn-pending{background:rgba(255,193,7,0.12);border:1px solid rgba(255,193,7,0.4);color:#b45309;cursor:default;}
+.pc-btn-accepted{background:var(--green-dim);border:1px solid var(--green-border);color:var(--green);cursor:default;}
+.pc-btn-msg{background:rgba(0,0,0,0.05);border:1px solid var(--border);color:var(--text2);}
+.pc-btn-msg:hover{background:rgba(0,0,0,0.09);}
+.pc-expand-toggle{margin-left:auto;display:flex;align-items:center;gap:3px;font-size:10px;color:var(--text3);font-weight:600;}
+.pc-expand-toggle svg{transition:transform .2s;}
+.person-card.open .pc-expand-toggle svg{transform:rotate(180deg);}
+
+/* ── EXPANDED DETAIL ── */
+.pc-detail{display:none;padding:0 12px 12px;border-top:1px solid var(--border2);}
+.person-card.open .pc-detail{display:block;}
+.pc-detail-label{font-size:10px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.8px;margin:10px 0 5px;}
+.pc-detail-bio{font-size:12px;color:var(--text2);line-height:1.6;}
+.pc-detail-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-top:2px;}
+.pc-stat-box{background:rgba(0,0,0,0.03);border-radius:8px;padding:8px 6px;text-align:center;border:1px solid var(--border);}
+.pc-stat-val{font-size:14px;font-weight:800;color:var(--text1);}
+.pc-stat-lbl{font-size:9px;color:var(--text3);margin-top:1px;font-weight:600;}
+.pc-detail-interests{display:flex;flex-wrap:wrap;gap:5px;margin-top:2px;}
+.pc-interest-tag{padding:3px 9px;border-radius:20px;font-size:10px;font-weight:600;background:rgba(0,0,0,0.05);border:1px solid var(--border);color:var(--text2);}
+.pc-detail-contact{font-size:12px;color:var(--teal);font-weight:500;margin-top:2px;}
+
+/* ── EMPTY STATE ── */
+.empty{text-align:center;padding:50px 20px;color:var(--text3);display:none;}
+.empty.show{display:block;}
+.empty-icon{font-size:40px;margin-bottom:12px;}
+.empty-title{font-size:14px;font-weight:700;color:var(--text2);margin-bottom:6px;}
+.empty-sub{font-size:12px;line-height:1.6;}
+
+/* ── TOAST ── */
+.toast{position:fixed;bottom:80px;left:50%;transform:translateX(-50%) translateY(20px);background:#1c1a17;color:#fff;padding:9px 18px;border-radius:24px;font-size:12px;font-weight:600;opacity:0;pointer-events:none;transition:all .3s;z-index:3000;white-space:nowrap;}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
 
-    :root {
-      --orange: #d95f2b;
-      --teal: #0a7fa8;
-      --green: #0d9b72;
-      --bg: #e8e4da;
-      --card: #fff;
-      --text: #1a1a1a;
-      --muted: #6b6b6b;
-      --border: #e0dcd3;
-      --nav-h: 56px;
-      --tab-h: 64px;
-    }
-
-    body {
-      font-family: 'DM Sans', sans-serif;
-      background: #c8c4bc;
-      min-height: 100vh;
-      display: flex;
-      justify-content: center;
-      align-items: flex-start;
-    }
-
-    .phone-wrap {
-      width: 100%;
-      max-width: 480px;
-      min-height: 100vh;
-      background: var(--bg);
-      position: relative;
-      overflow: hidden;
-      display: flex;
-      flex-direction: column;
-    }
-
-    /* ── TOP NAV ── */
-    .top-nav {
-      position: fixed;
-      top: 0;
-      left: 50%;
-      transform: translateX(-50%);
-      width: 100%;
-      max-width: 480px;
-      height: var(--nav-h);
-      background: var(--card);
-      border-bottom: 1px solid var(--border);
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      padding: 0 16px;
-      z-index: 100;
-      box-shadow: 0 1px 4px rgba(0,0,0,.06);
-    }
-
-    .nav-logo {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-    }
-
-    .nav-logo-icon {
-      width: 30px;
-      height: 30px;
-      background: var(--orange);
-      border-radius: 8px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 16px;
-    }
-
-    .nav-logo-text {
-      font-weight: 700;
-      font-size: 16px;
-      color: var(--text);
-      letter-spacing: -.3px;
-    }
-
-    .nav-logo-text span { color: var(--orange); }
-
-    .nav-actions { display: flex; align-items: center; gap: 4px; }
-
-    .nav-btn {
-      width: 38px;
-      height: 38px;
-      border: none;
-      background: transparent;
-      border-radius: 10px;
-      cursor: pointer;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      color: var(--text);
-      font-size: 18px;
-      transition: background .15s;
-      position: relative;
-    }
-    .nav-btn:hover { background: var(--bg); }
-
-    .notif-dot {
-      position: absolute;
-      top: 7px; right: 7px;
-      width: 7px; height: 7px;
-      background: var(--orange);
-      border-radius: 50%;
-      border: 1.5px solid #fff;
-    }
-
-    /* ── SCROLLABLE CONTENT ── */
-    .content {
-      margin-top: var(--nav-h);
-      margin-bottom: var(--tab-h);
-      overflow-y: auto;
-      flex: 1;
-      -webkit-overflow-scrolling: touch;
-    }
-
-    /* ── SEARCH ── */
-    .search-wrap {
-      padding: 14px 16px 10px;
-      position: sticky;
-      top: 0;
-      background: var(--bg);
-      z-index: 50;
-    }
-
-    .search-box {
-      display: flex;
-      align-items: center;
-      background: var(--card);
-      border: 1.5px solid var(--border);
-      border-radius: 12px;
-      padding: 0 14px;
-      gap: 10px;
-      transition: border-color .2s;
-    }
-    .search-box:focus-within { border-color: var(--teal); }
-
-    .search-icon { color: var(--muted); font-size: 16px; flex-shrink: 0; }
-
-    .search-input {
-      flex: 1;
-      border: none;
-      outline: none;
-      background: transparent;
-      font-family: 'DM Sans', sans-serif;
-      font-size: 14px;
-      color: var(--text);
-      padding: 12px 0;
-    }
-    .search-input::placeholder { color: #aaa; }
-
-    .search-clear {
-      background: none; border: none; cursor: pointer;
-      color: #aaa; font-size: 16px; padding: 0;
-      display: none;
-    }
-    .search-clear.visible { display: block; }
-
-    /* ── FILTER CHIPS ── */
-    .filter-scroll {
-      display: flex;
-      gap: 8px;
-      padding: 4px 16px 14px;
-      overflow-x: auto;
-      -webkit-overflow-scrolling: touch;
-      scrollbar-width: none;
-    }
-    .filter-scroll::-webkit-scrollbar { display: none; }
-
-    .chip {
-      flex-shrink: 0;
-      padding: 7px 16px;
-      border-radius: 20px;
-      font-family: 'DM Sans', sans-serif;
-      font-size: 13px;
-      font-weight: 600;
-      cursor: pointer;
-      border: 1.5px solid var(--border);
-      background: var(--card);
-      color: var(--muted);
-      transition: all .18s;
-      white-space: nowrap;
-    }
-    .chip.active {
-      background: var(--orange);
-      border-color: var(--orange);
-      color: #fff;
-    }
-    .chip:hover:not(.active) { border-color: var(--orange); color: var(--orange); }
-
-    /* ── SECTION HEADER ── */
-    .section-header {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      padding: 0 16px 12px;
-    }
-    .section-title {
-      font-size: 15px;
-      font-weight: 700;
-      color: var(--text);
-    }
-    .section-count {
-      font-size: 13px;
-      color: var(--muted);
-      font-weight: 500;
-    }
-
-    /* ── CARD LIST ── */
-    .card-list {
-      display: flex;
-      flex-direction: column;
-      gap: 12px;
-      padding: 0 16px 16px;
-    }
-
-    .attendee-card {
-      background: var(--card);
-      border-radius: 14px;
-      overflow: hidden;
-      box-shadow: 0 1px 4px rgba(0,0,0,.06);
-      border: 1px solid var(--border);
-      transition: box-shadow .2s, transform .15s;
-      cursor: pointer;
-    }
-    .attendee-card:hover { box-shadow: 0 4px 16px rgba(0,0,0,.1); transform: translateY(-1px); }
-    .attendee-card.expanded { box-shadow: 0 6px 20px rgba(0,0,0,.12); }
-
-    .card-main {
-      display: flex;
-      align-items: center;
-      gap: 14px;
-      padding: 14px 14px 10px;
-    }
-
-    .avatar {
-      width: 52px;
-      height: 52px;
-      border-radius: 50%;
-      flex-shrink: 0;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-weight: 700;
-      font-size: 18px;
-      color: #fff;
-      text-transform: uppercase;
-      position: relative;
-    }
-
-    .avatar-online {
-      position: absolute;
-      bottom: 1px; right: 1px;
-      width: 12px; height: 12px;
-      background: var(--green);
-      border: 2px solid #fff;
-      border-radius: 50%;
-    }
-
-    .card-info { flex: 1; min-width: 0; }
-    .card-name {
-      font-size: 15px;
-      font-weight: 700;
-      color: var(--text);
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-    }
-    .card-role {
-      font-size: 12px;
-      color: var(--muted);
-      margin-top: 2px;
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-    }
-    .card-company {
-      font-size: 12px;
-      color: var(--teal);
-      font-weight: 600;
-      margin-top: 1px;
-    }
-
-    .card-badge {
-      flex-shrink: 0;
-      padding: 4px 10px;
-      border-radius: 20px;
-      font-size: 11px;
-      font-weight: 700;
-      letter-spacing: .2px;
-    }
-
-    .badge-developer { background: #e8f4fb; color: var(--teal); }
-    .badge-publisher { background: #fdf0ea; color: var(--orange); }
-    .badge-investor  { background: #eaf7f2; color: var(--green); }
-    .badge-press     { background: #f3f0fb; color: #7c5cbf; }
-
-    /* Tags row */
-    .card-tags {
-      display: flex;
-      gap: 6px;
-      padding: 0 14px 10px;
-      flex-wrap: nowrap;
-      overflow-x: auto;
-      scrollbar-width: none;
-    }
-    .card-tags::-webkit-scrollbar { display: none; }
-
-    .tag {
-      flex-shrink: 0;
-      padding: 3px 10px;
-      border-radius: 6px;
-      font-size: 11px;
-      font-weight: 600;
-      background: #f0ece4;
-      color: #555;
-    }
-
-    /* Action row */
-    .card-action {
-      padding: 0 14px 14px;
-    }
-
-    .btn-request {
-      width: 100%;
-      padding: 11px;
-      border-radius: 10px;
-      border: none;
-      font-family: 'DM Sans', sans-serif;
-      font-size: 14px;
-      font-weight: 700;
-      cursor: pointer;
-      transition: all .18s;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 6px;
-    }
-
-    .btn-send {
-      background: var(--orange);
-      color: #fff;
-    }
-    .btn-send:hover { background: #c45422; }
-    .btn-send:active { transform: scale(.98); }
-
-    .btn-pending {
-      background: #fff8e1;
-      color: #c68a00;
-      border: 1.5px solid #ffd54f;
-      cursor: default;
-    }
-
-    .btn-accepted {
-      background: #eaf7f2;
-      color: var(--green);
-      border: 1.5px solid #a5d6c3;
-      cursor: default;
-    }
-
-    /* ── EXPANDED DETAIL ── */
-    .card-detail {
-      display: none;
-      border-top: 1px solid var(--border);
-      padding: 14px;
-      background: #fafafa;
-    }
-    .card-detail.open { display: block; }
-
-    .detail-section-label {
-      font-size: 11px;
-      font-weight: 700;
-      color: var(--muted);
-      text-transform: uppercase;
-      letter-spacing: .6px;
-      margin-bottom: 6px;
-      margin-top: 12px;
-    }
-    .detail-section-label:first-child { margin-top: 0; }
-
-    .detail-bio {
-      font-size: 13px;
-      color: var(--text);
-      line-height: 1.55;
-    }
-
-    .detail-stats {
-      display: grid;
-      grid-template-columns: 1fr 1fr 1fr;
-      gap: 8px;
-      margin-top: 4px;
-    }
-
-    .stat-box {
-      background: var(--card);
-      border-radius: 10px;
-      padding: 10px 8px;
-      text-align: center;
-      border: 1px solid var(--border);
-    }
-    .stat-val {
-      font-size: 16px;
-      font-weight: 700;
-      color: var(--text);
-    }
-    .stat-lbl {
-      font-size: 10px;
-      color: var(--muted);
-      margin-top: 2px;
-      font-weight: 500;
-    }
-
-    .detail-interests {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 6px;
-      margin-top: 4px;
-    }
-
-    .interest-tag {
-      padding: 4px 10px;
-      border-radius: 6px;
-      font-size: 12px;
-      font-weight: 600;
-      background: var(--bg);
-      color: var(--text);
-      border: 1px solid var(--border);
-    }
-
-    .detail-contact {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      font-size: 13px;
-      color: var(--teal);
-      margin-top: 4px;
-      font-weight: 500;
-    }
-
-    .expand-toggle {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      padding: 6px 0 10px;
-      color: var(--muted);
-      font-size: 12px;
-      font-weight: 600;
-      gap: 4px;
-      cursor: pointer;
-      user-select: none;
-    }
-    .expand-toggle svg {
-      transition: transform .25s;
-    }
-    .attendee-card.expanded .expand-toggle svg {
-      transform: rotate(180deg);
-    }
-
-    /* ── EMPTY STATE ── */
-    .empty-state {
-      display: none;
-      flex-direction: column;
-      align-items: center;
-      padding: 60px 24px;
-      color: var(--muted);
-      text-align: center;
-    }
-    .empty-state.show { display: flex; }
-    .empty-emoji { font-size: 48px; margin-bottom: 16px; }
-    .empty-title { font-size: 16px; font-weight: 700; color: var(--text); margin-bottom: 8px; }
-    .empty-sub { font-size: 14px; }
-
-    /* ── BOTTOM TAB BAR ── */
-    .tab-bar {
-      position: fixed;
-      bottom: 0;
-      left: 50%;
-      transform: translateX(-50%);
-      width: 100%;
-      max-width: 480px;
-      height: var(--tab-h);
-      background: var(--card);
-      border-top: 1px solid var(--border);
-      display: flex;
-      align-items: center;
-      z-index: 100;
-      box-shadow: 0 -2px 12px rgba(0,0,0,.07);
-    }
-
-    .tab-item {
-      flex: 1;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      gap: 3px;
-      cursor: pointer;
-      padding: 8px 0;
-      transition: opacity .15s;
-      position: relative;
-    }
-    .tab-item:hover { opacity: .75; }
-
-    .tab-icon { font-size: 20px; line-height: 1; }
-    .tab-label {
-      font-size: 10px;
-      font-weight: 600;
-      color: var(--muted);
-      letter-spacing: .2px;
-    }
-
-    .tab-item.active .tab-label { color: var(--orange); }
-    .tab-item.active .tab-icon-wrap {
-      background: #fdf0ea;
-      border-radius: 10px;
-      padding: 4px 12px 2px;
-    }
-
-    .tab-icon-wrap {
-      padding: 4px 12px 2px;
-    }
-
-    /* ── MODAL OVERLAY ── */
-    .modal-overlay {
-      display: none;
-      position: fixed;
-      inset: 0;
-      background: rgba(0,0,0,.45);
-      z-index: 200;
-      justify-content: flex-end;
-      flex-direction: column;
-      align-items: center;
-    }
-    .modal-overlay.open { display: flex; }
-
-    .modal-sheet {
-      width: 100%;
-      max-width: 480px;
-      background: var(--card);
-      border-radius: 20px 20px 0 0;
-      max-height: 85vh;
-      overflow-y: auto;
-      animation: slideUp .3s ease;
-    }
-
-    @keyframes slideUp {
-      from { transform: translateY(100%); }
-      to   { transform: translateY(0); }
-    }
-
-    .modal-handle {
-      width: 36px; height: 4px;
-      background: #ddd;
-      border-radius: 2px;
-      margin: 12px auto 0;
-    }
-
-    .modal-header {
-      display: flex;
-      align-items: flex-start;
-      gap: 14px;
-      padding: 16px 20px 12px;
-      border-bottom: 1px solid var(--border);
-    }
-
-    .modal-avatar {
-      width: 64px; height: 64px;
-      border-radius: 50%;
-      flex-shrink: 0;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 24px;
-      font-weight: 700;
-      color: #fff;
-    }
-
-    .modal-info { flex: 1; }
-    .modal-name { font-size: 18px; font-weight: 700; color: var(--text); }
-    .modal-role { font-size: 13px; color: var(--muted); margin-top: 2px; }
-    .modal-company { font-size: 13px; color: var(--teal); font-weight: 600; margin-top: 2px; }
-
-    .modal-body { padding: 16px 20px 24px; }
-
-    .modal-section { margin-bottom: 18px; }
-
-    .modal-label {
-      font-size: 11px;
-      font-weight: 700;
-      text-transform: uppercase;
-      letter-spacing: .6px;
-      color: var(--muted);
-      margin-bottom: 8px;
-    }
-
-    .modal-bio {
-      font-size: 14px;
-      color: var(--text);
-      line-height: 1.6;
-    }
-
-    .modal-stats {
-      display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: 10px;
-    }
-
-    .modal-stat {
-      background: var(--bg);
-      border-radius: 12px;
-      padding: 12px 8px;
-      text-align: center;
-    }
-    .modal-stat-val { font-size: 18px; font-weight: 700; color: var(--text); }
-    .modal-stat-lbl { font-size: 11px; color: var(--muted); margin-top: 3px; }
-
-    .modal-tags {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 8px;
-    }
-
-    .modal-tag {
-      padding: 5px 12px;
-      border-radius: 8px;
-      font-size: 12px;
-      font-weight: 600;
-      background: var(--bg);
-      color: var(--text);
-      border: 1px solid var(--border);
-    }
-
-    .modal-actions {
-      display: flex;
-      gap: 10px;
-      padding: 0 20px 20px;
-    }
-
-    .btn-close-modal {
-      flex: 0 0 44px;
-      height: 44px;
-      border-radius: 10px;
-      border: 1.5px solid var(--border);
-      background: transparent;
-      font-size: 18px;
-      cursor: pointer;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      transition: background .15s;
-    }
-    .btn-close-modal:hover { background: var(--bg); }
-
-    .btn-modal-request {
-      flex: 1;
-      padding: 12px;
-      border-radius: 10px;
-      border: none;
-      font-family: 'DM Sans', sans-serif;
-      font-size: 14px;
-      font-weight: 700;
-      cursor: pointer;
-      transition: all .18s;
-    }
-
-    .modal-schedule {
-      flex: 1;
-      padding: 12px;
-      border-radius: 10px;
-      border: 1.5px solid var(--border);
-      background: transparent;
-      font-family: 'DM Sans', sans-serif;
-      font-size: 14px;
-      font-weight: 700;
-      cursor: pointer;
-      color: var(--text);
-      transition: all .15s;
-    }
-    .modal-schedule:hover { border-color: var(--teal); color: var(--teal); }
-
-    /* ── TOAST ── */
-    .toast {
-      position: fixed;
-      bottom: calc(var(--tab-h) + 16px);
-      left: 50%;
-      transform: translateX(-50%) translateY(20px);
-      background: #1a1a1a;
-      color: #fff;
-      padding: 10px 20px;
-      border-radius: 24px;
-      font-size: 13px;
-      font-weight: 600;
-      opacity: 0;
-      pointer-events: none;
-      transition: all .3s;
-      z-index: 300;
-      white-space: nowrap;
-      max-width: calc(480px - 32px);
-      text-align: center;
-    }
-    .toast.show {
-      opacity: 1;
-      transform: translateX(-50%) translateY(0);
-    }
-
-    /* scrollbar global */
-    ::-webkit-scrollbar { width: 0; }
-  
 /* ═══ UNIFIED BOTTOM NAV ═══ */
-.gc-bnav{position:fixed;bottom:0;left:0;right:0;height:58px;background:rgba(255,255,255,0.97);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);border-top:1px solid rgba(0,0,0,0.07);display:flex;align-items:center;padding:0;z-index:9999;max-width:480px;margin:0 auto;}
+.gc-bnav{position:fixed;bottom:0;left:0;right:0;height:58px;background:rgba(232,228,218,0.97);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);border-top:1px solid rgba(0,0,0,0.07);display:flex;align-items:center;padding:0;z-index:9999;max-width:480px;margin:0 auto;}
 .gc-bn{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;cursor:pointer;padding:6px 0;text-decoration:none;color:inherit;position:relative;}
 .gc-bn-i{width:24px;height:24px;display:flex;align-items:center;justify-content:center;}
 .gc-bn-i svg{stroke:#b0aba3;stroke-width:1.8;transition:stroke .15s;}
@@ -725,513 +150,233 @@
 .gc-bn.active .gc-bn-i svg{stroke:#e85d26 !important;}
 .gc-bn:hover .gc-bn-l{color:#6b6660;}
 .gc-bn:hover .gc-bn-i svg{stroke:#6b6660;}
-.gc-page-content{padding-bottom:64px;}
-
-</style>
-<style id="gc-bnav-style">
-.gc-bnav{position:fixed;bottom:0;left:0;right:0;height:64px;background:rgba(255,255,255,0.95);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);border-top:1px solid #e5e7eb;display:flex;align-items:flex-start;padding-top:6px;z-index:9999;max-width:480px;margin:0 auto;}
-.gc-bn{flex:1;display:flex;flex-direction:column;align-items:center;gap:2px;cursor:pointer;padding:2px 0;text-decoration:none;color:inherit;}
-.gc-bn-i{width:22px;height:22px;display:flex;align-items:center;justify-content:center;}
-.gc-bn-l{font-size:9px;font-weight:600;color:#9ca3af;letter-spacing:.2px;text-transform:uppercase;}
-.gc-bn.active .gc-bn-l{color:#e85d26;}
-.gc-bn.active .gc-bn-i svg{stroke:#e85d26 !important;}
-body{padding-bottom:64px;}
 </style>
 </head>
 <body>
+<div class="app">
 
-<div class="phone-wrap" id="app">
-
-  <!-- TOP NAV -->
-  <nav class="top-nav">
-    <button onclick="history.back()" style="background:none;border:none;font-size:20px;cursor:pointer;color:#553c9a;padding:0;line-height:1;flex-shrink:0;">←</button>
-    <div class="nav-logo">
-      <div class="nav-logo-icon">🤝</div>
-      <div class="nav-logo-text">Let's<span>Meet</span></div>
-    </div>
-    <div class="nav-actions">
-      <button class="nav-btn" id="searchToggle" title="Search">
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-      </button>
-      <button class="nav-btn" title="Notifications">
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
-        <span class="notif-dot"></span>
-      </button>
-    </div>
-  </nav>
-
-  <!-- CONTENT -->
-  <div class="content" id="mainContent">
-
-    <!-- SEARCH -->
-    <div class="search-wrap">
-      <div class="search-box">
-        <span class="search-icon">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-        </span>
-        <input class="search-input" id="searchInput" type="text" placeholder="Search attendees, companies…" />
-        <button class="search-clear" id="searchClear">✕</button>
-      </div>
-    </div>
-
-    <!-- FILTER CHIPS -->
-    <div class="filter-scroll" id="filterRow">
-      <div class="chip active" data-filter="all">All</div>
-      <div class="chip" data-filter="developer">Developers</div>
-      <div class="chip" data-filter="publisher">Publishers</div>
-      <div class="chip" data-filter="investor">Investors</div>
-      <div class="chip" data-filter="press">Press</div>
-    </div>
-
-    <!-- SECTION HEADER -->
-    <div class="section-header">
-      <span class="section-title">Attendees</span>
-      <span class="section-count" id="countLabel">8 people</span>
-    </div>
-
-    <!-- CARD LIST -->
-    <div class="card-list" id="cardList"></div>
-
-    <!-- EMPTY STATE -->
-    <div class="empty-state" id="emptyState">
-      <div class="empty-emoji">🔍</div>
-      <div class="empty-title">No matches found</div>
-      <div class="empty-sub">Try a different search term or filter</div>
-    </div>
-
+<!-- TOP BAR -->
+<div class="topbar">
+  <button class="tb-back" onclick="history.back()">
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
+  </button>
+  <div class="tb-meta">
+    <span class="tb-count" id="tb-count">8 people</span>
+    <span class="tb-dot" id="tb-dot"></span>
+    <span class="tb-sub" id="tb-sub">Let's Meet</span>
   </div>
-
-  <!-- BOTTOM TAB BAR -->
-  
-
+  <button class="tb-icon-btn" id="searchToggle" title="Search">
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+  </button>
+  <button class="tb-icon-btn" style="position:relative;" title="Notifications">
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+    <span class="tb-notif-dot"></span>
+  </button>
 </div>
 
-<!-- DETAIL MODAL SHEET -->
-<div class="modal-overlay" id="modalOverlay" onclick="closeModal(event)">
-  <div class="modal-sheet" id="modalSheet">
-    <div class="modal-handle"></div>
-    <div class="modal-header" id="modalHeader"></div>
-    <div class="modal-body" id="modalBody"></div>
-    <div class="modal-actions" id="modalActions"></div>
+<!-- SEARCH BAR -->
+<div class="search-wrap" id="searchWrap">
+  <div class="search-box">
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="color:var(--text3);flex-shrink:0;"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+    <input class="search-input" id="searchInput" type="text" placeholder="Search people, companies…">
+    <button class="search-clear" id="searchClear">✕</button>
   </div>
 </div>
+
+<!-- FILTER ROW -->
+<div class="filter-row" id="filterRow">
+  <button class="ftag active" data-f="all">All</button>
+  <button class="ftag" data-f="developer">Developer</button>
+  <button class="ftag" data-f="publisher">Publisher</button>
+  <button class="ftag" data-f="investor">Investor</button>
+  <button class="ftag" data-f="press">Press</button>
+</div>
+
+<!-- SECTION HEADER -->
+<div class="section-header">
+  <span class="section-title">Attendees</span>
+  <span class="section-count" id="countLabel">8 people</span>
+</div>
+
+<!-- CARD LIST -->
+<div class="card-list" id="cardList"></div>
+
+<!-- EMPTY STATE -->
+<div class="empty" id="emptyState">
+  <div class="empty-icon">🔍</div>
+  <div class="empty-title">No matches found</div>
+  <div class="empty-sub">Try a different search term or filter</div>
+</div>
+
+</div><!-- /app -->
 
 <!-- TOAST -->
 <div class="toast" id="toast"></div>
 
 <script>
-  // ── DATA ──
-  const avatarColors = ['#d95f2b','#0a7fa8','#0d9b72','#7c5cbf','#c44b6b','#d4a017','#2b7ad9','#5f9b0d'];
+const avatarColors = ['#d95f2b','#0a7fa8','#0d9b72','#7c5cbf','#c44b6b','#d4a017','#2b7ad9','#5f9b0d'];
 
-  const attendees = [
-    {
-      id: 1,
-      name: 'Emma Chen',
-      role: 'CEO',
-      company: 'Indie Forge Studio',
-      type: 'developer',
-      tags: ['Indie', 'RPG', 'Mobile'],
-      status: 'none',
-      online: true,
-      bio: 'Passionate game developer with 12+ years building award-winning indie titles. Founded Indie Forge Studio in 2018, specializing in narrative-driven RPGs.',
-      stats: { games: '6 Games', awards: '3 Awards', team: '24 Team' },
-      interests: ['Co-development', 'Publishing Deals', 'Investment'],
-      contact: 'emma@indieforge.co',
-      color: avatarColors[0]
-    },
-    {
-      id: 2,
-      name: 'Marcus Webb',
-      role: 'Publishing Director',
-      company: 'Nordic Games',
-      type: 'publisher',
-      tags: ['Action', 'Strategy', 'PC'],
-      status: 'pending',
-      online: false,
-      bio: 'Leading publisher partnerships at Nordic Games, with a focus on European indie studios. 15 years in the games publishing industry.',
-      stats: { titles: '40+ Titles', studios: '22 Studios', reach: '50M+ Users' },
-      interests: ['Indie Acquisitions', 'Co-publishing', 'Marketing'],
-      contact: 'marcus@nordicgames.no',
-      color: avatarColors[1]
-    },
-    {
-      id: 3,
-      name: 'Sarah Kim',
-      role: 'Principal Partner',
-      company: 'Nexus Ventures',
-      type: 'investor',
-      tags: ['Investment', 'Mobile', 'Web3'],
-      status: 'accepted',
-      online: true,
-      bio: 'Principal Partner at Nexus Ventures focusing on early-stage gaming companies. Portfolio includes 30+ gaming startups across mobile, PC, and emerging platforms.',
-      stats: { portfolio: '$120M', studios: '30+ Studios', exits: '5 Exits' },
-      interests: ['Seed Rounds', 'Series A', 'GameTech'],
-      contact: 'sarah@nexusvc.com',
-      color: avatarColors[2]
-    },
-    {
-      id: 4,
-      name: 'Alex Rivera',
-      role: 'Game Reporter',
-      company: 'GamePress Daily',
-      type: 'press',
-      tags: ['Review', 'Indie', 'Esports'],
-      status: 'none',
-      online: true,
-      bio: 'Senior Game Reporter at GamePress Daily covering indie game launches, industry trends, and esports events. 2M+ monthly readers.',
-      stats: { articles: '1.2K+', readers: '2M+', years: '8 Years' },
-      interests: ['Exclusives', 'Previews', 'Developer Stories'],
-      contact: 'alex@gamepressdaily.com',
-      color: avatarColors[3]
-    },
-    {
-      id: 5,
-      name: 'Yuki Tanaka',
-      role: 'Creative Director',
-      company: 'Pixel Dreams',
-      type: 'developer',
-      tags: ['Platformer', 'Anime', 'Console'],
-      status: 'none',
-      online: false,
-      bio: 'Creative Director at Pixel Dreams, crafting pixel-art platformers inspired by Japanese animation. Led development on 4 console-released titles.',
-      stats: { games: '4 Games', fans: '500K+', awards: '2 Awards' },
-      interests: ['IP Licensing', 'Animation Collab', 'Publishing'],
-      contact: 'yuki@pixeldreams.jp',
-      color: avatarColors[4]
-    },
-    {
-      id: 6,
-      name: 'Lars Eriksson',
-      role: 'Head of Acquisitions',
-      company: 'Scandic Publishing',
-      type: 'publisher',
-      tags: ['Simulation', 'Strategy', 'Nordic'],
-      status: 'pending',
-      online: true,
-      bio: 'Head of Acquisitions at Scandic Publishing, scouting innovative studios across Europe. Closed over 15 publishing deals in the last 3 years.',
-      stats: { deals: '15+ Deals', markets: '12 Markets', budget: '€8M Fund' },
-      interests: ['New IP', 'Simulation Games', 'Localization'],
-      contact: 'lars@scandicpub.se',
-      color: avatarColors[5]
-    },
-    {
-      id: 7,
-      name: 'Priya Patel',
-      role: 'Managing Partner',
-      company: 'GameFund Asia',
-      type: 'investor',
-      tags: ['Mobile', 'Hypercasual', 'APAC'],
-      status: 'none',
-      online: true,
-      bio: 'Managing Partner at GameFund Asia, deploying capital into high-growth mobile gaming companies across APAC. Focus on hypercasual and mid-core titles.',
-      stats: { aum: '$75M AUM', exits: '8 Exits', region: 'APAC' },
-      interests: ['Mobile First', 'APAC Growth', 'Series A/B'],
-      contact: 'priya@gamefundasia.com',
-      color: avatarColors[6]
-    },
-    {
-      id: 8,
-      name: 'Tom Bradley',
-      role: 'Senior Editor',
-      company: 'Level Up Media',
-      type: 'press',
-      tags: ['AAA', 'Narrative', 'VR'],
-      status: 'none',
-      online: false,
-      bio: 'Senior Editor at Level Up Media specializing in narrative games and emerging VR experiences. Host of the "Next Level" podcast with 400K subscribers.',
-      stats: { podcast: '400K Subs', articles: '800+', years: '10 Years' },
-      interests: ['Narrative Games', 'VR/AR', 'Podcast Guests'],
-      contact: 'tom@levelupmedia.com',
-      color: avatarColors[7]
-    }
-  ];
+const attendees = [
+  {id:1,name:'Emma Chen',role:'CEO',company:'Indie Forge Studio',type:'developer',tags:['Indie','RPG','Mobile'],status:'none',online:true,bio:'Passionate game developer with 12+ years building award-winning indie titles. Founded Indie Forge Studio in 2018, specializing in narrative-driven RPGs.',stats:{games:'6 Games',awards:'3 Awards',team:'24 Team'},interests:['Co-development','Publishing Deals','Investment'],contact:'emma@indieforge.co',color:avatarColors[0]},
+  {id:2,name:'Marcus Webb',role:'Publishing Director',company:'Nordic Games',type:'publisher',tags:['Action','Strategy','PC'],status:'pending',online:false,bio:'Leading publisher partnerships at Nordic Games, with a focus on European indie studios. 15 years in the games publishing industry.',stats:{titles:'40+ Titles',studios:'22 Studios',reach:'50M+ Users'},interests:['Indie Acquisitions','Co-publishing','Marketing'],contact:'marcus@nordicgames.no',color:avatarColors[1]},
+  {id:3,name:'Sarah Kim',role:'Principal Partner',company:'Nexus Ventures',type:'investor',tags:['Investment','Mobile','Web3'],status:'accepted',online:true,bio:'Principal Partner at Nexus Ventures focusing on early-stage gaming companies. Portfolio includes 30+ gaming startups across mobile, PC, and emerging platforms.',stats:{portfolio:'$120M',studios:'30+ Studios',exits:'5 Exits'},interests:['Seed Rounds','Series A','GameTech'],contact:'sarah@nexusvc.com',color:avatarColors[2]},
+  {id:4,name:'Alex Rivera',role:'Game Reporter',company:'GamePress Daily',type:'press',tags:['Review','Indie','Esports'],status:'none',online:true,bio:'Senior Game Reporter at GamePress Daily covering indie game launches, industry trends, and esports events. 2M+ monthly readers.',stats:{articles:'1.2K+',readers:'2M+',years:'8 Years'},interests:['Exclusives','Previews','Developer Stories'],contact:'alex@gamepressdaily.com',color:avatarColors[3]},
+  {id:5,name:'Yuki Tanaka',role:'Creative Director',company:'Pixel Dreams',type:'developer',tags:['Platformer','Anime','Console'],status:'none',online:false,bio:'Creative Director at Pixel Dreams, crafting pixel-art platformers inspired by Japanese animation. Led development on 4 console-released titles.',stats:{games:'4 Games',fans:'500K+',awards:'2 Awards'},interests:['IP Licensing','Animation Collab','Publishing'],contact:'yuki@pixeldreams.jp',color:avatarColors[4]},
+  {id:6,name:'Lars Eriksson',role:'Head of Acquisitions',company:'Scandic Publishing',type:'publisher',tags:['Simulation','Strategy','Nordic'],status:'pending',online:true,bio:'Head of Acquisitions at Scandic Publishing, scouting innovative studios across Europe. Closed over 15 publishing deals in the last 3 years.',stats:{deals:'15+ Deals',markets:'12 Markets',budget:'€8M Fund'},interests:['New IP','Simulation Games','Localization'],contact:'lars@scandicpub.se',color:avatarColors[5]},
+  {id:7,name:'Priya Patel',role:'Managing Partner',company:'GameFund Asia',type:'investor',tags:['Mobile','Hypercasual','APAC'],status:'none',online:true,bio:'Managing Partner at GameFund Asia, deploying capital into high-growth mobile gaming companies across APAC. Focus on hypercasual and mid-core titles.',stats:{aum:'$75M AUM',exits:'8 Exits',region:'APAC'},interests:['Mobile First','APAC Growth','Series A/B'],contact:'priya@gamefundasia.com',color:avatarColors[6]},
+  {id:8,name:'Tom Bradley',role:'Senior Editor',company:'Level Up Media',type:'press',tags:['AAA','Narrative','VR'],status:'none',online:false,bio:'Senior Editor at Level Up Media specializing in narrative games and emerging VR experiences. Host of the "Next Level" podcast with 400K subscribers.',stats:{podcast:'400K Subs',articles:'800+',years:'10 Years'},interests:['Narrative Games','VR/AR','Podcast Guests'],contact:'tom@levelupmedia.com',color:avatarColors[7]}
+];
 
-  // State
-  let activeFilter = 'all';
-  let searchQuery = '';
-  let statusMap = {};
-  attendees.forEach(a => { statusMap[a.id] = a.status; });
+let activeFilter = 'all';
+let searchQuery = '';
+let statusMap = {};
+attendees.forEach(a => { statusMap[a.id] = a.status; });
 
-  // ── RENDER ──
-  function filteredAttendees() {
-    return attendees.filter(a => {
-      const matchFilter = activeFilter === 'all' || a.type === activeFilter;
-      const q = searchQuery.toLowerCase();
-      const matchSearch = !q ||
-        a.name.toLowerCase().includes(q) ||
-        a.company.toLowerCase().includes(q) ||
-        a.role.toLowerCase().includes(q) ||
-        a.tags.some(t => t.toLowerCase().includes(q));
-      return matchFilter && matchSearch;
-    });
+function filteredAttendees() {
+  return attendees.filter(a => {
+    const matchFilter = activeFilter === 'all' || a.type === activeFilter;
+    const q = searchQuery.toLowerCase();
+    const matchSearch = !q || a.name.toLowerCase().includes(q) || a.company.toLowerCase().includes(q) || a.role.toLowerCase().includes(q) || a.tags.some(t => t.toLowerCase().includes(q));
+    return matchFilter && matchSearch;
+  });
+}
+
+function getMeetBtn(id) {
+  const s = statusMap[id];
+  if (s === 'pending') return `<button class="pc-btn pc-btn-pending" disabled>⏳ Pending</button>`;
+  if (s === 'accepted') return `<button class="pc-btn pc-btn-accepted" disabled>✓ Accepted</button>`;
+  return `<button class="pc-btn pc-btn-meet" onclick="sendRequest(event,${id})">🤝 Meet</button>`;
+}
+
+function renderCards() {
+  const list = filteredAttendees();
+  const cardList = document.getElementById('cardList');
+  const emptyState = document.getElementById('emptyState');
+  const countLabel = document.getElementById('countLabel');
+  const tbCount = document.getElementById('tb-count');
+
+  const countText = `${list.length} ${list.length === 1 ? 'person' : 'people'}`;
+  countLabel.textContent = countText;
+  tbCount.textContent = countText;
+
+  if (list.length === 0) {
+    cardList.innerHTML = '';
+    emptyState.classList.add('show');
+    return;
   }
+  emptyState.classList.remove('show');
 
-  function getBadgeClass(type) {
-    return `badge-${type}`;
-  }
-
-  function getTypeLabel(type) {
-    const map = { developer: 'Dev', publisher: 'Pub', investor: 'Investor', press: 'Press' };
-    return map[type] || type;
-  }
-
-  function getStatusBtn(id) {
-    const s = statusMap[id];
-    if (s === 'pending') return `<button class="btn-request btn-pending" disabled>⏳ Request Pending</button>`;
-    if (s === 'accepted') return `<button class="btn-request btn-accepted" disabled>✅ Meeting Accepted</button>`;
-    return `<button class="btn-request btn-send" onclick="sendRequest(event, ${id})">🤝 Request Meeting</button>`;
-  }
-
-  function getModalBtnClass(id) {
-    const s = statusMap[id];
-    if (s === 'pending') return 'btn-pending';
-    if (s === 'accepted') return 'btn-accepted';
-    return 'btn-send';
-  }
-
-  function getModalBtnText(id) {
-    const s = statusMap[id];
-    if (s === 'pending') return '⏳ Request Pending';
-    if (s === 'accepted') return '✅ Accepted';
-    return '🤝 Request Meeting';
-  }
-
-  function renderCards() {
-    const list = filteredAttendees();
-    const cardList = document.getElementById('cardList');
-    const emptyState = document.getElementById('emptyState');
-    const countLabel = document.getElementById('countLabel');
-
-    countLabel.textContent = `${list.length} ${list.length === 1 ? 'person' : 'people'}`;
-
-    if (list.length === 0) {
-      cardList.innerHTML = '';
-      emptyState.classList.add('show');
-      return;
-    }
-    emptyState.classList.remove('show');
-
-    cardList.innerHTML = list.map(a => `
-      <div class="attendee-card" id="card-${a.id}" onclick="toggleExpand(event, ${a.id})">
-        <div class="card-main">
-          <div class="avatar" style="background:${a.color}">
-            ${a.name.split(' ').map(n=>n[0]).join('')}
-            ${a.online ? '<span class="avatar-online"></span>' : ''}
-          </div>
-          <div class="card-info">
-            <div class="card-name">${a.name}</div>
-            <div class="card-role">${a.role}</div>
-            <div class="card-company">${a.company}</div>
-          </div>
-          <div class="card-badge ${getBadgeClass(a.type)}">${getTypeLabel(a.type)}</div>
+  cardList.innerHTML = list.map(a => `
+    <div class="person-card" id="card-${a.id}" onclick="toggleExpand(event,${a.id})">
+      <div class="pc-head">
+        <div class="pc-avatar" style="background:${a.color}">
+          ${a.name.split(' ').map(n=>n[0]).join('')}
+          ${a.online ? '<span class="pc-avatar-online"></span>' : ''}
         </div>
-        <div class="card-tags">
-          ${a.tags.map(t=>`<span class="tag">${t}</span>`).join('')}
+        <div class="pc-info">
+          <div class="pc-name">${a.name}</div>
+          <div class="pc-role">${a.role}</div>
+          <div class="pc-company">${a.company}</div>
         </div>
-        <div class="card-action">
-          ${getStatusBtn(a.id)}
-        </div>
-        <div class="expand-toggle">
-          <span>View profile</span>
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
-        </div>
-        <div class="card-detail" id="detail-${a.id}">
-          <div class="detail-section-label">About</div>
-          <div class="detail-bio">${a.bio}</div>
-          <div class="detail-section-label">Stats</div>
-          <div class="detail-stats">
-            ${Object.entries(a.stats).map(([k,v])=>`
-              <div class="stat-box">
-                <div class="stat-val">${v.split(' ')[0]}</div>
-                <div class="stat-lbl">${v.split(' ').slice(1).join(' ')}</div>
-              </div>
-            `).join('')}
-          </div>
-          <div class="detail-section-label">Looking For</div>
-          <div class="detail-interests">
-            ${a.interests.map(i=>`<span class="interest-tag">${i}</span>`).join('')}
-          </div>
-          <div class="detail-section-label">Contact</div>
-          <div class="detail-contact">📧 ${a.contact}</div>
+        <div class="pc-right">
+          <span class="pc-type-badge badge-${a.type}">${a.type.charAt(0).toUpperCase()+a.type.slice(1)}</span>
         </div>
       </div>
-    `).join('');
-  }
-
-  // ── EXPAND CARD ──
-  function toggleExpand(event, id) {
-    // Don't expand if clicking button
-    if (event.target.closest('.btn-request')) return;
-
-    const card = document.getElementById(`card-${id}`);
-    const detail = document.getElementById(`detail-${id}`);
-    const isExpanded = card.classList.contains('expanded');
-
-    // Collapse all
-    document.querySelectorAll('.attendee-card.expanded').forEach(c => {
-      c.classList.remove('expanded');
-      c.querySelector('.card-detail').classList.remove('open');
-    });
-
-    if (!isExpanded) {
-      card.classList.add('expanded');
-      detail.classList.add('open');
-      setTimeout(() => card.scrollIntoView({ behavior: 'smooth', block: 'nearest' }), 100);
-    }
-  }
-
-  // ── SEND REQUEST ──
-  function sendRequest(event, id) {
-    event.stopPropagation();
-    statusMap[id] = 'pending';
-    renderCards();
-    showToast('🤝 Meeting request sent!');
-  }
-
-  // ── MODAL ──
-  function openModal(id) {
-    const a = attendees.find(x => x.id === id);
-    if (!a) return;
-
-    document.getElementById('modalHeader').innerHTML = `
-      <div class="modal-avatar" style="background:${a.color}">
-        ${a.name.split(' ').map(n=>n[0]).join('')}
+      <div class="pc-tags">
+        ${a.tags.map(t=>`<span class="pc-tag">${t}</span>`).join('')}
       </div>
-      <div class="modal-info">
-        <div class="modal-name">${a.name}</div>
-        <div class="modal-role">${a.role}</div>
-        <div class="modal-company">${a.company}</div>
-        <div style="margin-top:6px">
-          <span class="card-badge ${getBadgeClass(a.type)}">${getTypeLabel(a.type)}</span>
-          ${a.online ? '<span style="font-size:11px;color:#0d9b72;margin-left:8px;font-weight:600;">● Online</span>' : '<span style="font-size:11px;color:#aaa;margin-left:8px;">● Offline</span>'}
-        </div>
+      <div class="pc-actions">
+        ${getMeetBtn(a.id)}
+        <button class="pc-btn pc-btn-msg" onclick="event.stopPropagation();showToast('💬 Opening chat…')">Message</button>
+        <span class="pc-expand-toggle">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+        </span>
       </div>
-    `;
-
-    document.getElementById('modalBody').innerHTML = `
-      <div class="modal-section">
-        <div class="modal-label">About</div>
-        <div class="modal-bio">${a.bio}</div>
-      </div>
-      <div class="modal-section">
-        <div class="modal-label">Stats</div>
-        <div class="modal-stats">
-          ${Object.values(a.stats).map(v=>`
-            <div class="modal-stat">
-              <div class="modal-stat-val">${v.split(' ')[0]}</div>
-              <div class="modal-stat-lbl">${v.split(' ').slice(1).join(' ')}</div>
+      <div class="pc-detail" id="detail-${a.id}">
+        <div class="pc-detail-label">About</div>
+        <div class="pc-detail-bio">${a.bio}</div>
+        <div class="pc-detail-label">Stats</div>
+        <div class="pc-detail-stats">
+          ${Object.entries(a.stats).map(([k,v])=>`
+            <div class="pc-stat-box">
+              <div class="pc-stat-val">${v.split(' ')[0]}</div>
+              <div class="pc-stat-lbl">${v.split(' ').slice(1).join(' ')}</div>
             </div>
           `).join('')}
         </div>
-      </div>
-      <div class="modal-section">
-        <div class="modal-label">Looking For</div>
-        <div class="modal-tags">
-          ${a.interests.map(i=>`<span class="modal-tag">${i}</span>`).join('')}
+        <div class="pc-detail-label">Looking For</div>
+        <div class="pc-detail-interests">
+          ${a.interests.map(i=>`<span class="pc-interest-tag">${i}</span>`).join('')}
         </div>
+        <div class="pc-detail-label">Contact</div>
+        <div class="pc-detail-contact">📧 ${a.contact}</div>
       </div>
-      <div class="modal-section">
-        <div class="modal-label">Game Tags</div>
-        <div class="modal-tags">
-          ${a.tags.map(t=>`<span class="modal-tag">${t}</span>`).join('')}
-        </div>
-      </div>
-      <div class="modal-section">
-        <div class="modal-label">Contact</div>
-        <div style="font-size:14px;color:#0a7fa8;font-weight:500;">📧 ${a.contact}</div>
-      </div>
-    `;
+    </div>
+  `).join('');
+}
 
-    const s = statusMap[id];
-    const btnDisabled = (s === 'pending' || s === 'accepted') ? 'disabled' : '';
-    const btnClass = getModalBtnClass(id);
-    const btnText = getModalBtnText(id);
-
-    document.getElementById('modalActions').innerHTML = `
-      <button class="btn-close-modal" onclick="closeModalDirect()">✕</button>
-      <button class="modal-schedule" onclick="showToast('📅 Schedule feature coming soon!')">📅 Schedule</button>
-      <button class="btn-modal-request btn-request ${btnClass}" ${btnDisabled}
-        onclick="modalSendRequest(${id})">${btnText}</button>
-    `;
-
-    document.getElementById('modalOverlay').classList.add('open');
-    document.body.style.overflow = 'hidden';
+function toggleExpand(event, id) {
+  if (event.target.closest('.pc-btn')) return;
+  const card = document.getElementById(`card-${id}`);
+  const isOpen = card.classList.contains('open');
+  document.querySelectorAll('.person-card.open').forEach(c => c.classList.remove('open'));
+  if (!isOpen) {
+    card.classList.add('open');
+    setTimeout(() => card.scrollIntoView({ behavior:'smooth', block:'nearest' }), 100);
   }
+}
 
-  function modalSendRequest(id) {
-    statusMap[id] = 'pending';
-    renderCards();
-    closeModalDirect();
-    showToast('🤝 Meeting request sent!');
-  }
-
-  function closeModal(event) {
-    if (event.target === document.getElementById('modalOverlay')) {
-      closeModalDirect();
-    }
-  }
-
-  function closeModalDirect() {
-    document.getElementById('modalOverlay').classList.remove('open');
-    document.body.style.overflow = '';
-  }
-
-  // ── FILTERS ──
-  document.getElementById('filterRow').addEventListener('click', e => {
-    const chip = e.target.closest('.chip');
-    if (!chip) return;
-    document.querySelectorAll('.chip').forEach(c => c.classList.remove('active'));
-    chip.classList.add('active');
-    activeFilter = chip.dataset.filter;
-    renderCards();
-  });
-
-  // ── SEARCH ──
-  const searchInput = document.getElementById('searchInput');
-  const searchClear = document.getElementById('searchClear');
-
-  searchInput.addEventListener('input', () => {
-    searchQuery = searchInput.value.trim();
-    searchClear.classList.toggle('visible', searchQuery.length > 0);
-    renderCards();
-  });
-
-  searchClear.addEventListener('click', () => {
-    searchInput.value = '';
-    searchQuery = '';
-    searchClear.classList.remove('visible');
-    renderCards();
-    searchInput.focus();
-  });
-
-  // ── TABS ──
-  function showTab(el) {
-    document.querySelectorAll('.tab-item').forEach(t => t.classList.remove('active'));
-    el.classList.add('active');
-    const label = el.querySelector('.tab-label').textContent;
-    if (label !== 'Meet') {
-      showToast(`${label} tab coming soon!`);
-      setTimeout(() => {
-        document.querySelectorAll('.tab-item').forEach(t => t.classList.remove('active'));
-        document.querySelectorAll('.tab-item')[2].classList.add('active');
-      }, 1500);
-    }
-  }
-
-  // ── TOAST ──
-  let toastTimer;
-  function showToast(msg) {
-    const t = document.getElementById('toast');
-    t.textContent = msg;
-    t.classList.add('show');
-    clearTimeout(toastTimer);
-    toastTimer = setTimeout(() => t.classList.remove('show'), 2500);
-  }
-
-  // ── INIT ──
+function sendRequest(event, id) {
+  event.stopPropagation();
+  statusMap[id] = 'pending';
   renderCards();
-</script>
+  showToast('🤝 Meeting request sent!');
+}
 
+// Filter
+document.getElementById('filterRow').addEventListener('click', e => {
+  const btn = e.target.closest('.ftag');
+  if (!btn) return;
+  document.querySelectorAll('.ftag').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  activeFilter = btn.dataset.f;
+  renderCards();
+});
+
+// Search toggle
+document.getElementById('searchToggle').addEventListener('click', () => {
+  const wrap = document.getElementById('searchWrap');
+  wrap.classList.toggle('show');
+  if (wrap.classList.contains('show')) document.getElementById('searchInput').focus();
+});
+
+const searchInput = document.getElementById('searchInput');
+const searchClear = document.getElementById('searchClear');
+searchInput.addEventListener('input', () => {
+  searchQuery = searchInput.value.trim();
+  searchClear.classList.toggle('visible', searchQuery.length > 0);
+  renderCards();
+});
+searchClear.addEventListener('click', () => {
+  searchInput.value = '';
+  searchQuery = '';
+  searchClear.classList.remove('visible');
+  renderCards();
+  searchInput.focus();
+});
+
+// Toast
+let toastTimer;
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => t.classList.remove('show'), 2500);
+}
+
+renderCards();
+</script>
 
 <nav class="gc-bnav">
   <a href="MobileHub_v14.html" class="gc-bn">
