@@ -8,137 +8,332 @@
 <style>
 *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
 html,body{height:100%;overflow-x:hidden}
-body{background:#e8e4da;font-family:"DM Sans","PingFang SC",sans-serif;color:#1c1a17}
-.app{max-width:480px;margin:0 auto;height:100vh;background:#e8e4da;padding-bottom:80px;position:relative;overflow:hidden}
+body{background:#f5f2ee;font-family:"DM Sans","PingFang SC",sans-serif;color:#1c1a17}
 
 :root{
-  --orange:#d95f2b;--teal:#0a7fa8;--green:#0d9b72;
-  --card:#fff;--border:rgba(0,0,0,0.09);--border2:rgba(0,0,0,0.05);
-  --text1:#1c1a17;--text2:#6b6660;--text3:#a09890;
-  --s1:0 1px 3px rgba(0,0,0,0.07),0 0 1px rgba(0,0,0,0.04);
-  --bg:#e8e4da;
+  --orange:#d95f2b;
+  --text1:#1c1a17;
+  --text2:#6b6660;
+  --text3:#a09890;
+  --divider:rgba(0,0,0,0.07);
+  --bg:#f5f2ee;
+  --topbar-bg:rgba(245,242,238,0.97);
 }
+
+.app{max-width:480px;margin:0 auto;height:100vh;background:var(--bg);padding-bottom:58px;position:relative;overflow:hidden;display:flex;flex-direction:column;}
 
 /* ── TOP BAR ── */
 .topbar{
-  background:rgba(232,228,218,0.97);padding:10px 14px;
-  display:flex;align-items:center;gap:8px;
-  border-bottom:1px solid var(--border);
+  background:var(--topbar-bg);
+  padding:12px 16px 0;
+  border-bottom:1px solid var(--divider);
   position:sticky;top:0;z-index:200;
-  backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);
+  backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);
+  flex-shrink:0;
 }
-.tb-title{flex:1;font-size:16px;font-weight:700;color:var(--text1);}
-.tb-badge{display:inline-flex;align-items:center;justify-content:center;background:var(--orange);color:#fff;font-size:10px;font-weight:700;min-width:18px;height:18px;padding:0 5px;border-radius:9px;margin-left:6px;}
-.tb-icon-btn{width:30px;height:30px;border-radius:50%;background:rgba(0,0,0,0.06);border:none;display:flex;align-items:center;justify-content:center;cursor:pointer;flex-shrink:0;color:var(--text2);}
-.tb-icon-btn:hover{background:rgba(0,0,0,0.1);}
-.tb-icon-btn.active{background:rgba(217,95,43,0.12);color:var(--orange);}
-
-/* ── SEARCH BAR ── */
-.search-wrap{padding:0 14px 10px;display:none;}
-.search-wrap.show{display:block;}
-.search-box{display:flex;align-items:center;background:var(--card);border:1.5px solid var(--border);border-radius:20px;padding:0 12px;gap:8px;box-shadow:var(--s1);}
-.search-box:focus-within{border-color:var(--teal);}
-.search-input{flex:1;border:none;outline:none;background:transparent;font-family:"DM Sans",sans-serif;font-size:13px;color:var(--text1);padding:9px 0;}
-.search-input::placeholder{color:var(--text3);}
-
-/* ── SECTION LABEL ── */
-.section-label{
-  font-size:10px;font-weight:800;letter-spacing:1.5px;text-transform:uppercase;
-  color:var(--orange);padding:10px 14px 5px;
+.topbar-row{
+  display:flex;align-items:center;margin-bottom:10px;
 }
-
-/* ── CONV LIST ── */
-.scroll-area{overflow-y:auto;height:calc(100vh - 56px - 58px);-webkit-overflow-scrolling:touch;}
-.conv-list{padding:0 12px;display:flex;flex-direction:column;gap:6px;}
-
-/* ── CONV CARD ── */
-.conv-card{
-  background:var(--card);border-radius:12px;
-  border:1px solid rgba(0,0,0,0.07);
-  box-shadow:0 1px 3px rgba(0,0,0,0.05),0 0 0 0.5px rgba(0,0,0,0.03);
-  display:flex;align-items:center;gap:11px;
-  padding:11px 12px;cursor:pointer;
-  transition:box-shadow .15s,transform .1s;
+.tb-title{flex:1;font-size:18px;font-weight:700;color:var(--text1);}
+.tb-icons{display:flex;align-items:center;gap:4px;}
+.tb-icon-btn{
+  width:34px;height:34px;border-radius:50%;background:transparent;
+  border:none;display:flex;align-items:center;justify-content:center;
+  cursor:pointer;color:var(--text2);
+  transition:background .15s;
+}
+.tb-icon-btn:hover{background:rgba(0,0,0,0.06);}
+.tb-icon-btn.active{color:var(--orange);}
+.tb-avatar{
+  width:34px;height:34px;border-radius:50%;
+  background:linear-gradient(135deg,#2d2d2d,#d95f2b);
+  display:flex;align-items:center;justify-content:center;
+  font-size:12px;font-weight:700;color:#fff;
+  cursor:pointer;flex-shrink:0;
+  border:2px solid rgba(255,255,255,0.6);
   position:relative;
 }
-.conv-card:active{transform:scale(.99);}
-.conv-card.pinned{border-color:rgba(217,95,43,0.18);}
-.pin-dot{position:absolute;top:10px;right:10px;width:6px;height:6px;border-radius:50%;background:var(--orange);}
+.tb-avatar-dot{
+  position:absolute;bottom:0;right:0;width:9px;height:9px;
+  border-radius:50%;background:#22c55e;
+  border:2px solid var(--topbar-bg);
+}
+
+/* ── TABS ── */
+.tabs{
+  display:flex;align-items:center;gap:0;
+}
+.tab{
+  padding:0 4px 10px;margin-right:20px;
+  font-size:14px;font-weight:500;color:var(--text3);
+  cursor:pointer;position:relative;
+  border:none;background:transparent;
+  transition:color .15s;
+  white-space:nowrap;
+}
+.tab.active{color:var(--text1);font-weight:700;}
+.tab.active::after{
+  content:'';position:absolute;bottom:0;left:0;right:0;
+  height:2.5px;background:var(--text1);border-radius:2px;
+}
+.tab-badge{
+  display:inline-flex;align-items:center;justify-content:center;
+  background:var(--orange);color:#fff;
+  font-size:9px;font-weight:700;
+  min-width:16px;height:16px;padding:0 4px;
+  border-radius:8px;margin-left:5px;
+  vertical-align:middle;
+}
+
+/* ── SEARCH BAR ── */
+.search-wrap{
+  padding:10px 16px;
+  background:var(--topbar-bg);
+  border-bottom:1px solid var(--divider);
+  display:none;
+  flex-shrink:0;
+}
+.search-wrap.show{display:block;}
+.search-box{
+  display:flex;align-items:center;
+  background:rgba(0,0,0,0.06);
+  border-radius:10px;padding:0 12px;gap:8px;
+}
+.search-box:focus-within{background:rgba(0,0,0,0.09);}
+.search-input{
+  flex:1;border:none;outline:none;background:transparent;
+  font-family:"DM Sans",sans-serif;font-size:14px;color:var(--text1);
+  padding:9px 0;
+}
+.search-input::placeholder{color:var(--text3);}
+
+/* ── SCROLL AREA ── */
+.scroll-area{
+  flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;
+}
+
+/* ── CONV LIST (Reddit style: no cards, full-width rows) ── */
+.conv-list{
+  padding:0;
+}
+
+.conv-row{
+  display:flex;align-items:center;gap:12px;
+  padding:12px 16px;
+  cursor:pointer;
+  position:relative;
+  transition:background .1s;
+  border-bottom:1px solid var(--divider);
+}
+.conv-row:active{background:rgba(0,0,0,0.04);}
+.conv-row:last-child{border-bottom:none;}
 
 /* Avatar */
 .conv-avatar{
-  width:44px;height:44px;border-radius:50%;flex-shrink:0;
+  width:48px;height:48px;border-radius:50%;flex-shrink:0;
   display:flex;align-items:center;justify-content:center;
-  font-size:15px;font-weight:700;color:#fff;position:relative;
+  font-size:16px;font-weight:700;color:#fff;
+  position:relative;
+  overflow:visible;
 }
-.av-status{position:absolute;bottom:1px;right:1px;width:10px;height:10px;border-radius:50%;border:2px solid var(--card);}
-.av-online{background:var(--green);}
-.av-busy{background:var(--orange);}
+.av-online-dot{
+  position:absolute;bottom:1px;right:1px;
+  width:12px;height:12px;border-radius:50%;
+  background:#22c55e;
+  border:2.5px solid var(--bg);
+}
+.av-busy-dot{
+  position:absolute;bottom:1px;right:1px;
+  width:12px;height:12px;border-radius:50%;
+  background:var(--orange);
+  border:2.5px solid var(--bg);
+}
 
 /* Body */
 .conv-body{flex:1;min-width:0;}
-.conv-row1{display:flex;align-items:baseline;justify-content:space-between;margin-bottom:1px;}
-.conv-name{font-size:14px;font-weight:700;color:var(--text1);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:180px;}
-.conv-time{font-size:10px;color:var(--text3);flex-shrink:0;margin-left:6px;}
-.conv-company{font-size:11px;color:var(--teal);font-weight:500;margin-bottom:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
-.conv-row2{display:flex;align-items:center;justify-content:space-between;gap:6px;}
-.conv-preview{font-size:12px;color:var(--text2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;flex:1;}
-.conv-preview.unread{color:var(--text1);font-weight:600;}
-.unread-badge{background:var(--orange);color:#fff;font-size:9px;font-weight:700;padding:2px 6px;border-radius:10px;min-width:16px;text-align:center;flex-shrink:0;}
+.conv-row1{
+  display:flex;align-items:baseline;
+  justify-content:space-between;
+  margin-bottom:2px;
+}
+.conv-name{
+  font-size:15px;font-weight:500;color:var(--text1);
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+  max-width:220px;
+}
+.conv-name.unread{font-weight:700;}
+.conv-time{
+  font-size:12px;color:var(--text3);
+  flex-shrink:0;margin-left:8px;
+}
+.conv-preview{
+  font-size:13px;color:var(--text3);
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+  line-height:1.4;
+}
+.conv-preview.unread{
+  color:var(--text2);font-weight:500;
+}
+.conv-preview .sender-prefix{color:var(--text3);font-weight:400;}
+
+/* Unread indicator — left border, Reddit style */
+.conv-row.has-unread::before{
+  content:'';
+  position:absolute;left:0;top:50%;transform:translateY(-50%);
+  width:3px;height:32px;border-radius:0 2px 2px 0;
+  background:var(--orange);
+}
+
+/* ── SECTION DIVIDER ── */
+.section-divider{
+  padding:14px 16px 6px;
+  font-size:11px;font-weight:700;letter-spacing:1px;
+  text-transform:uppercase;color:var(--text3);
+}
+
+/* ── EMPTY STATE ── */
+.empty-state{
+  padding:60px 24px;text-align:center;
+}
+.empty-state svg{opacity:.25;margin-bottom:12px;}
+.empty-state p{font-size:14px;color:var(--text3);}
+
+/* ── FAB (new message) ── */
+.fab{
+  position:fixed;bottom:74px;right:calc(50% - 240px + 16px);
+  width:52px;height:52px;border-radius:50%;
+  background:var(--orange);color:#fff;
+  border:none;cursor:pointer;
+  display:flex;align-items:center;justify-content:center;
+  box-shadow:0 4px 16px rgba(217,95,43,0.4);
+  z-index:300;
+  transition:transform .15s,box-shadow .15s;
+}
+.fab:active{transform:scale(.93);box-shadow:0 2px 8px rgba(217,95,43,0.35);}
+@media(max-width:480px){
+  .fab{right:16px;}
+}
 
 /* ── CHAT OVERLAY ── */
 .chat-overlay{
   position:absolute;top:0;left:0;right:0;bottom:0;
   transform:translateX(100%);
-  background:#e8e4da;z-index:500;
+  background:var(--bg);z-index:500;
   display:flex;flex-direction:column;
-  transition:transform .3s cubic-bezier(.25,.46,.45,.94);
+  transition:transform .28s cubic-bezier(.25,.46,.45,.94);
   overflow:hidden;
 }
 .chat-overlay.open{transform:translateX(0);}
 
 .chat-header{
-  background:rgba(232,228,218,0.97);padding:10px 14px;
+  background:var(--topbar-bg);
+  padding:10px 14px;
   display:flex;align-items:center;gap:10px;
-  border-bottom:1px solid var(--border);
-  backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);
+  border-bottom:1px solid var(--divider);
+  backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);
   flex-shrink:0;
 }
-.chat-back{width:30px;height:30px;border-radius:50%;background:rgba(0,0,0,0.06);border:none;display:flex;align-items:center;justify-content:center;cursor:pointer;color:var(--text2);flex-shrink:0;}
-.chat-peer-avatar{width:34px;height:34px;border-radius:50%;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;color:#fff;}
+.chat-back{
+  width:32px;height:32px;border-radius:50%;background:transparent;
+  border:none;display:flex;align-items:center;justify-content:center;
+  cursor:pointer;color:var(--text2);
+  transition:background .15s;
+}
+.chat-back:hover{background:rgba(0,0,0,0.06);}
+.chat-peer-avatar{
+  width:36px;height:36px;border-radius:50%;flex-shrink:0;
+  display:flex;align-items:center;justify-content:center;
+  font-size:13px;font-weight:700;color:#fff;
+}
 .chat-peer-info{flex:1;min-width:0;}
-.chat-peer-name{font-size:14px;font-weight:700;color:var(--text1);}
+.chat-peer-name{font-size:15px;font-weight:700;color:var(--text1);}
 .chat-peer-sub{font-size:11px;color:var(--text2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
-.chat-more-btn{width:30px;height:30px;border-radius:50%;background:rgba(0,0,0,0.06);border:none;display:flex;align-items:center;justify-content:center;cursor:pointer;color:var(--text2);flex-shrink:0;}
+.chat-more-btn{
+  width:32px;height:32px;border-radius:50%;background:transparent;
+  border:none;display:flex;align-items:center;justify-content:center;
+  cursor:pointer;color:var(--text2);
+  transition:background .15s;
+}
+.chat-more-btn:hover{background:rgba(0,0,0,0.06);}
 
-.chat-messages{flex:1;overflow-y:auto;padding:14px 12px;display:flex;flex-direction:column;gap:10px;}
-.date-sep{text-align:center;font-size:10px;color:var(--text3);background:rgba(0,0,0,0.06);padding:3px 10px;border-radius:10px;align-self:center;margin:4px 0;}
-.msg{display:flex;gap:7px;max-width:88%;}
+.chat-messages{
+  flex:1;overflow-y:auto;padding:14px 14px;
+  display:flex;flex-direction:column;gap:8px;
+}
+.date-sep{
+  text-align:center;font-size:11px;color:var(--text3);
+  padding:4px 0;margin:4px 0;align-self:center;
+}
+.msg{display:flex;gap:8px;max-width:86%;}
 .msg.me{align-self:flex-end;flex-direction:row-reverse;}
-.msg-av{width:28px;height:28px;border-radius:50%;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;color:#fff;align-self:flex-end;}
-.msg-bubble{padding:9px 12px;border-radius:14px;font-size:13px;line-height:1.5;}
-.msg:not(.me) .msg-bubble{background:var(--card);color:var(--text1);border-bottom-left-radius:4px;box-shadow:var(--s1);}
-.msg.me .msg-bubble{background:var(--orange);color:#fff;border-bottom-right-radius:4px;}
-.msg-time{font-size:10px;color:var(--text3);align-self:flex-end;white-space:nowrap;}
-.msg.me .msg-time{color:rgba(255,255,255,.65);order:1;}
+.msg-av{
+  width:28px;height:28px;border-radius:50%;flex-shrink:0;
+  display:flex;align-items:center;justify-content:center;
+  font-size:10px;font-weight:700;color:#fff;align-self:flex-end;
+}
+.msg-bubble{
+  padding:9px 13px;border-radius:18px;
+  font-size:14px;line-height:1.5;
+}
+.msg:not(.me) .msg-bubble{
+  background:#fff;color:var(--text1);
+  border-bottom-left-radius:4px;
+  box-shadow:0 1px 2px rgba(0,0,0,0.06);
+}
+.msg.me .msg-bubble{
+  background:var(--orange);color:#fff;
+  border-bottom-right-radius:4px;
+}
+.msg-time{font-size:10px;color:var(--text3);align-self:flex-end;white-space:nowrap;padding-bottom:2px;}
+.msg.me .msg-time{color:rgba(255,255,255,.6);order:1;}
 
 .chat-input-area{
-  background:rgba(232,228,218,0.97);padding:10px 12px;
-  border-top:1px solid var(--border);
+  background:var(--topbar-bg);
+  padding:10px 12px;
+  border-top:1px solid var(--divider);
   display:flex;align-items:center;gap:8px;
   padding-bottom:max(10px,env(safe-area-inset-bottom));
   flex-shrink:0;
 }
-.chat-attach{width:32px;height:32px;border-radius:50%;background:rgba(0,0,0,0.06);border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;color:var(--text2);flex-shrink:0;}
-.chat-input-wrap{flex:1;background:var(--card);border-radius:20px;display:flex;align-items:center;padding:0 12px;border:1px solid var(--border);}
-.chat-input-wrap input{flex:1;border:none;background:transparent;font-family:"DM Sans",sans-serif;font-size:13px;padding:9px 0;outline:none;color:var(--text1);}
+.chat-attach{
+  width:34px;height:34px;border-radius:50%;background:transparent;
+  border:none;cursor:pointer;
+  display:flex;align-items:center;justify-content:center;
+  color:var(--text2);flex-shrink:0;
+}
+.chat-input-wrap{
+  flex:1;background:#fff;border-radius:20px;
+  display:flex;align-items:center;padding:0 14px;
+  border:1px solid rgba(0,0,0,0.1);
+}
+.chat-input-wrap input{
+  flex:1;border:none;background:transparent;
+  font-family:"DM Sans",sans-serif;font-size:14px;
+  padding:9px 0;outline:none;color:var(--text1);
+}
 .chat-input-wrap input::placeholder{color:var(--text3);}
-.chat-send{width:32px;height:32px;border-radius:50%;background:var(--orange);border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;color:#fff;flex-shrink:0;transition:.15s;}
+.chat-send{
+  width:34px;height:34px;border-radius:50%;
+  background:var(--orange);border:none;cursor:pointer;
+  display:flex;align-items:center;justify-content:center;
+  color:#fff;flex-shrink:0;transition:.15s;
+}
 .chat-send:hover{opacity:.88;}
 
-/* ═══ UNIFIED BOTTOM NAV ═══ */
-.gc-bnav{position:fixed;bottom:0;left:0;right:0;height:58px;background:rgba(232,228,218,0.97);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);border-top:1px solid rgba(0,0,0,0.07);display:flex;align-items:center;padding:0;z-index:9999;max-width:480px;margin:0 auto;}
-.gc-bn{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;cursor:pointer;padding:6px 0;text-decoration:none;color:inherit;position:relative;}
+/* ═══ BOTTOM NAV ═══ */
+.gc-bnav{
+  position:fixed;bottom:0;left:0;right:0;height:58px;
+  background:rgba(245,242,238,0.97);
+  backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);
+  border-top:1px solid rgba(0,0,0,0.07);
+  display:flex;align-items:center;padding:0;z-index:9999;
+  max-width:480px;margin:0 auto;
+}
+.gc-bn{
+  flex:1;display:flex;flex-direction:column;align-items:center;
+  justify-content:center;gap:3px;cursor:pointer;padding:6px 0;
+  text-decoration:none;color:inherit;position:relative;
+}
 .gc-bn-i{width:24px;height:24px;display:flex;align-items:center;justify-content:center;}
 .gc-bn-i svg{stroke:#b0aba3;stroke-width:1.8;transition:stroke .15s;}
 .gc-bn-l{font-size:9px;font-weight:600;color:#b0aba3;letter-spacing:.3px;text-transform:uppercase;transition:color .15s;}
@@ -146,6 +341,13 @@ body{background:#e8e4da;font-family:"DM Sans","PingFang SC",sans-serif;color:#1c
 .gc-bn.active .gc-bn-i svg{stroke:#e85d26 !important;}
 .gc-bn:hover .gc-bn-l{color:#6b6660;}
 .gc-bn:hover .gc-bn-i svg{stroke:#6b6660;}
+.gc-bn-badge{
+  position:absolute;top:4px;right:calc(50% - 18px);
+  background:var(--orange);color:#fff;
+  font-size:9px;font-weight:700;
+  min-width:16px;height:16px;padding:0 4px;
+  border-radius:8px;display:flex;align-items:center;justify-content:center;
+}
 </style>
 </head>
 <body>
@@ -153,199 +355,55 @@ body{background:#e8e4da;font-family:"DM Sans","PingFang SC",sans-serif;color:#1c
 
 <!-- TOP BAR -->
 <div class="topbar">
-  <div class="tb-title">
-    Messages
-    <span class="tb-badge">7</span>
+  <div class="topbar-row">
+    <div class="tb-title">Chat</div>
+    <div class="tb-icons">
+      <button class="tb-icon-btn" id="searchToggle" title="Search">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+      </button>
+      <button class="tb-icon-btn" title="Filter">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="4" y1="6" x2="20" y2="6"/><line x1="8" y1="12" x2="16" y2="12"/><line x1="11" y1="18" x2="13" y2="18"/></svg>
+      </button>
+      <div class="tb-avatar" title="Your profile">
+        AZ
+        <div class="tb-avatar-dot"></div>
+      </div>
+    </div>
   </div>
-  <button class="tb-icon-btn" id="searchToggle" title="Search">
-    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-  </button>
-  <button class="tb-icon-btn" title="New message">
-    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
-  </button>
+
+  <!-- TABS -->
+  <div class="tabs">
+    <button class="tab active" data-tab="all">Messages <span class="tab-badge">7</span></button>
+    <button class="tab" data-tab="unread">Unread <span class="tab-badge">4</span></button>
+    <button class="tab" data-tab="requests">Requests <span class="tab-badge">2</span></button>
+  </div>
 </div>
 
-<div class="scroll-area">
-<!-- SEARCH BAR -->
+<!-- SEARCH -->
 <div class="search-wrap" id="searchWrap">
   <div class="search-box">
-    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="color:var(--text3);flex-shrink:0;"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-    <input class="search-input" id="searchInput" type="text" placeholder="Search messages…">
+    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color:var(--text3);flex-shrink:0;"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+    <input class="search-input" id="searchInput" type="text" placeholder="Search conversations…">
   </div>
 </div>
 
-<!-- PINNED -->
-<div class="section-label">📌 Pinned</div>
-<div class="conv-list">
-  <div class="conv-card pinned" onclick="openChat(0)">
-    <div class="pin-dot"></div>
-    <div class="conv-avatar" style="background:linear-gradient(135deg,#2d2d2d,#d95f2b)">SC
-      <div class="av-status av-online"></div>
-    </div>
-    <div class="conv-body">
-      <div class="conv-row1">
-        <span class="conv-name">Sarah Chen</span>
-        <span class="conv-time">2m ago</span>
-      </div>
-      <div class="conv-company">Devolver Digital · Publisher</div>
-      <div class="conv-row2">
-        <span class="conv-preview unread">Looking forward to reviewing your demo build!</span>
-        <span class="unread-badge">3</span>
-      </div>
-    </div>
-  </div>
-
-  <div class="conv-card pinned" onclick="openChat(1)">
-    <div class="pin-dot"></div>
-    <div class="conv-avatar" style="background:linear-gradient(135deg,#2c3e7a,#4a6cf7)">MD
-      <div class="av-status av-busy"></div>
-    </div>
-    <div class="conv-body">
-      <div class="conv-row1">
-        <span class="conv-name">Marc Dubois</span>
-        <span class="conv-time">1h ago</span>
-      </div>
-      <div class="conv-company">Ubisoft · Director</div>
-      <div class="conv-row2">
-        <span class="conv-preview unread">See you at the GDC booth on Wednesday then!</span>
-        <span class="unread-badge">1</span>
-      </div>
-    </div>
+<!-- CONVERSATION LIST -->
+<div class="scroll-area" id="scrollArea">
+  <div class="conv-list" id="convList">
+    <!-- Rendered by JS -->
   </div>
 </div>
 
-<!-- TODAY -->
-<div class="section-label">Today</div>
-<div class="conv-list">
-  <div class="conv-card" onclick="openChat(2)">
-    <div class="conv-avatar" style="background:linear-gradient(135deg,#c0392b,#e74c3c)">JP
-      <div class="av-status av-online"></div>
-    </div>
-    <div class="conv-body">
-      <div class="conv-row1">
-        <span class="conv-name">Jin Park</span>
-        <span class="conv-time">3h ago</span>
-      </div>
-      <div class="conv-company">Riot Games · Producer</div>
-      <div class="conv-row2">
-        <span class="conv-preview">I'll share the co-dev proposal doc by EOD</span>
-      </div>
-    </div>
-  </div>
+<!-- FAB -->
+<button class="fab" title="New message">
+  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+</button>
 
-  <div class="conv-card" onclick="openChat(3)">
-    <div class="conv-avatar" style="background:linear-gradient(135deg,#0d9b72,#27ae60)">ET</div>
-    <div class="conv-body">
-      <div class="conv-row1">
-        <span class="conv-name">Emma Thompson</span>
-        <span class="conv-time">5h ago</span>
-      </div>
-      <div class="conv-company">Indie Fund · Investor</div>
-      <div class="conv-row2">
-        <span class="conv-preview unread">Could you send over your pitch deck?</span>
-        <span class="unread-badge">2</span>
-      </div>
-    </div>
-  </div>
-
-  <div class="conv-card" onclick="openChat(4)">
-    <div class="conv-avatar" style="background:linear-gradient(135deg,#7b5ea7,#9b59b6)">YT</div>
-    <div class="conv-body">
-      <div class="conv-row1">
-        <span class="conv-name">Yuki Tanaka</span>
-        <span class="conv-time">7h ago</span>
-      </div>
-      <div class="conv-company">Square Enix · Licensing</div>
-      <div class="conv-row2">
-        <span class="conv-preview">The licensing terms look reasonable on our end</span>
-      </div>
-    </div>
-  </div>
-</div>
-
-<!-- THIS WEEK -->
-<div class="section-label">This Week</div>
-<div class="conv-list">
-  <div class="conv-card" onclick="openChat(5)">
-    <div class="conv-avatar" style="background:linear-gradient(135deg,#e67e22,#f39c12)">AR</div>
-    <div class="conv-body">
-      <div class="conv-row1">
-        <span class="conv-name">Alex Rodriguez</span>
-        <span class="conv-time">Mon</span>
-      </div>
-      <div class="conv-company">Kongregate · Publishing</div>
-      <div class="conv-row2">
-        <span class="conv-preview">Following up from our meeting last week</span>
-      </div>
-    </div>
-  </div>
-
-  <div class="conv-card" onclick="openChat(6)">
-    <div class="conv-avatar" style="background:linear-gradient(135deg,#c0392b,#1a6b8a)">LW</div>
-    <div class="conv-body">
-      <div class="conv-row1">
-        <span class="conv-name">Li Wei</span>
-        <span class="conv-time">Mon</span>
-      </div>
-      <div class="conv-company">NetEase · BD Director</div>
-      <div class="conv-row2">
-        <span class="conv-preview unread">中国市场机会不容错过，我们可以聊聊</span>
-        <span class="unread-badge">1</span>
-      </div>
-    </div>
-  </div>
-
-  <div class="conv-card" onclick="openChat(7)">
-    <div class="conv-avatar" style="background:linear-gradient(135deg,#8b1a1a,#c0392b)">AK</div>
-    <div class="conv-body">
-      <div class="conv-row1">
-        <span class="conv-name">Anna Kowalski</span>
-        <span class="conv-time">Sun</span>
-      </div>
-      <div class="conv-company">CD Projekt · Producer</div>
-      <div class="conv-row2">
-        <span class="conv-preview">Joint dev agreement draft is ready for review</span>
-      </div>
-    </div>
-  </div>
-</div>
-
-<!-- EARLIER -->
-<div class="section-label">Earlier</div>
-<div class="conv-list">
-  <div class="conv-card" onclick="openChat(8)">
-    <div class="conv-avatar" style="background:linear-gradient(135deg,#1a3a6b,#2e6bc4)">DK</div>
-    <div class="conv-body">
-      <div class="conv-row1">
-        <span class="conv-name">David Kim</span>
-        <span class="conv-time">Mar 15</span>
-      </div>
-      <div class="conv-company">Krafton · VP</div>
-      <div class="conv-row2">
-        <span class="conv-preview">We'd like to schedule a formal discussion</span>
-      </div>
-    </div>
-  </div>
-
-  <div class="conv-card" onclick="openChat(9)">
-    <div class="conv-avatar" style="background:linear-gradient(135deg,#2d6a4f,#52b788)">TR</div>
-    <div class="conv-body">
-      <div class="conv-row1">
-        <span class="conv-name">Tom Richards</span>
-        <span class="conv-time">Mar 12</span>
-      </div>
-      <div class="conv-company">Team17 · Publishing</div>
-      <div class="conv-row2">
-        <span class="conv-preview">We love the concept — very on-brand for us</span>
-      </div>
-    </div>
-  </div><!-- /conv-list (Earlier) -->
-</div><!-- /scroll-area -->
-
+<!-- CHAT OVERLAY -->
 <div class="chat-overlay" id="chatOverlay">
   <div class="chat-header">
     <button class="chat-back" onclick="closeChat()">
-      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
     </button>
     <div class="chat-peer-avatar" id="chatAvatar"></div>
     <div class="chat-peer-info">
@@ -353,54 +411,265 @@ body{background:#e8e4da;font-family:"DM Sans","PingFang SC",sans-serif;color:#1c
       <div class="chat-peer-sub" id="chatSub"></div>
     </div>
     <button class="chat-more-btn">
-      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="5" r="1"/><circle cx="12" cy="12" r="1"/><circle cx="12" cy="19" r="1"/></svg>
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="5" r="1"/><circle cx="12" cy="12" r="1"/><circle cx="12" cy="19" r="1"/></svg>
     </button>
   </div>
   <div class="chat-messages" id="chatMessages"></div>
   <div class="chat-input-area">
     <button class="chat-attach">
-      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"/></svg>
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"/></svg>
     </button>
     <div class="chat-input-wrap">
-      <input placeholder="Type a message…" id="msgInput" onkeydown="sendMsg(event)">
+      <input placeholder="Message…" id="msgInput" onkeydown="sendMsg(event)">
     </div>
     <button class="chat-send" onclick="sendMsgBtn()">
       <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
     </button>
   </div>
-</div><!-- /chat-overlay -->
+</div>
 
 </div><!-- /app -->
 
 <script>
+// ── DATA ──
 const convData = [
-  {name:'Sarah Chen',company:'Devolver Digital · Publisher',initials:'SC',color:'linear-gradient(135deg,#2d2d2d,#d95f2b)',messages:[{me:false,text:"Hi! I came across your studio's profile on Game Connection. We've been looking for unique RPG titles for our upcoming slate. Would you be open to a chat?",time:"10:14 AM"},{me:true,text:"Hi Sarah! Absolutely, we'd love to connect. We're currently in the final stages of our demo build for 'Echoes of Yun'.",time:"10:32 AM"},{me:false,text:"'Echoes of Yun' sounds intriguing — the blend of Chinese mythology with roguelite mechanics is really fresh. Can you share a gameplay trailer or pitch deck?",time:"10:45 AM"},{me:true,text:"Of course! Here's our press kit link: [link]. The demo trailer is also included. We're targeting a Q3 2025 release window.",time:"11:02 AM"},{me:false,text:"Just watched the trailer — the art direction is stunning. Our team is going to do a full review this week.",time:"2:18 PM"},{me:false,text:"Looking forward to reviewing your demo build!",time:"2:20 PM"}]},
-  {name:'Marc Dubois',company:'Ubisoft · Director',initials:'MD',color:'linear-gradient(135deg,#2c3e7a,#4a6cf7)',messages:[{me:false,text:"Bonjour! I saw you're attending GDC this year. Would you be interested in a quick coffee meeting?",time:"9:00 AM"},{me:true,text:"Hi Marc, definitely! GDC is always a great opportunity. When are you free during the week?",time:"9:45 AM"},{me:false,text:"Wednesday afternoon works best for me — say 3pm at the Yerba Buena lounge?",time:"10:15 AM"},{me:true,text:"Wednesday 3pm works perfectly. Looking forward to it!",time:"10:30 AM"},{me:false,text:"See you at the GDC booth on Wednesday then!",time:"11:00 AM"}]},
-  {name:'Jin Park',company:'Riot Games · Producer',initials:'JP',color:'linear-gradient(135deg,#c0392b,#e74c3c)',messages:[{me:false,text:"Hey, Riot's new experimental division is exploring co-development with indie studios. Your work on procedural generation caught our attention.",time:"Yesterday 4:20 PM"},{me:true,text:"That's incredible to hear from Riot! We'd absolutely love to explore that. What kind of scope are you thinking?",time:"Yesterday 5:10 PM"},{me:false,text:"We're thinking a 12-18 month co-dev arrangement for a competitive indie title. Budget is solid and we'd retain minimal creative control.",time:"Yesterday 5:45 PM"},{me:true,text:"That timeline works for us. Would you be able to share an NDA first so we can start detailed discussions?",time:"Yesterday 6:00 PM"},{me:false,text:"I'll share the co-dev proposal doc by EOD",time:"Today 9:30 AM"}]},
-  {name:'Emma Thompson',company:'Indie Fund · Investor',initials:'ET',color:'linear-gradient(135deg,#0d9b72,#27ae60)',messages:[{me:false,text:"Hi! I've been following your studio for a while. Indie Fund is interested in supporting narrative-focused indie games. Are you currently fundraising?",time:"Yesterday 2:00 PM"},{me:true,text:"Hi Emma! Yes, we're currently closing our seed round. We're raising $400K to complete development and build launch marketing.",time:"Yesterday 3:30 PM"},{me:false,text:"That's a reasonable ask for the scope. What's your current MRR or wishlist count on Steam?",time:"Yesterday 4:00 PM"},{me:true,text:"We have 12K Steam wishlists and won Best Narrative at ChinaJoy last year. Happy to share our full financials under NDA.",time:"Yesterday 4:20 PM"},{me:false,text:"Could you send over your pitch deck?",time:"Today 11:00 AM"}]},
-  {name:'Yuki Tanaka',company:'Square Enix · Licensing',initials:'YT',color:'linear-gradient(135deg,#7b5ea7,#9b59b6)',messages:[{me:false,text:"Hello. Square Enix Licensing is exploring third-party collaborations for certain dormant IP assets. Your studio's aesthetic is a strong match.",time:"2 days ago 10:00 AM"},{me:true,text:"This sounds fascinating! We've always admired Square Enix's legacy. Which IP are you referring to?",time:"2 days ago 11:30 AM"},{me:false,text:"I'll be discreet — it's a beloved JRPG franchise from the late 90s. We'd need a small team with strong narrative and pixel art capabilities.",time:"2 days ago 12:00 PM"},{me:true,text:"That aligns perfectly with our team's core skills! We'd love to proceed with an NDA and exploratory discussions.",time:"2 days ago 1:00 PM"},{me:false,text:"The licensing terms look reasonable on our end",time:"Today 7:00 AM"}]},
-  {name:'Alex Rodriguez',company:'Kongregate · Publishing',initials:'AR',color:'linear-gradient(135deg,#e67e22,#f39c12)',messages:[{me:false,text:"Hey, just following up from our meeting last week at the indie showcase.",time:"Mon 3:00 PM"},{me:true,text:"Hi Alex! Yes, we're still in the evaluation phase. We're weighing revenue share terms carefully before committing.",time:"Mon 4:30 PM"},{me:false,text:"Our standard deal is 70/30 dev-friendly with full creative control retained by you. Plus we offer a $50K advance.",time:"Mon 5:00 PM"},{me:true,text:"That's competitive. Can we schedule a follow-up call this week to discuss marketing commitment specifics?",time:"Mon 5:30 PM"},{me:false,text:"Following up from our meeting last week",time:"Mon 5:35 PM"}]},
-  {name:'Li Wei',company:'NetEase · BD Director',initials:'LW',color:'linear-gradient(135deg,#c0392b,#1a6b8a)',messages:[{me:false,text:"你好！我是李伟，NetEase游戏发行BD总监。你们的游戏在国内市场有很大的潜力，我们希望探讨合作可能性。",time:"Mon 9:00 AM"},{me:true,text:"你好李总！非常荣幸收到NetEase的关注。我们一直在考虑中国市场的发行策略，非常愿意进一步交流。",time:"Mon 10:30 AM"},{me:false,text:"太好了！NetEase在中国有3亿活跃用户。我们可以提供本地化、渠道分发和用户运营的全套服务。",time:"Mon 11:00 AM"},{me:false,text:"中国市场机会不容错过，我们可以聊聊",time:"Mon 11:05 AM"}]},
-  {name:'Anna Kowalski',company:'CD Projekt · Producer',initials:'AK',color:'linear-gradient(135deg,#8b1a1a,#c0392b)',messages:[{me:false,text:"Hi! CD Projekt RED is exploring joint development opportunities with smaller studios for a spinoff project.",time:"Sun 11:00 AM"},{me:true,text:"Hi Anna, it would be an honor to work alongside CD Projekt RED. What's the general scope of the collaboration?",time:"Sun 12:30 PM"},{me:false,text:"It's a narrative-driven expansion to an existing franchise. We'd fund 80% of development, you'd contribute the creative direction. 18-month timeline.",time:"Sun 2:00 PM"},{me:true,text:"That's a compelling proposition. Let's connect for a deeper conversation.",time:"Sun 3:00 PM"},{me:false,text:"Joint dev agreement draft is ready for review",time:"Sun 4:00 PM"}]},
-  {name:'David Kim',company:'Krafton · VP',initials:'DK',color:'linear-gradient(135deg,#1a3a6b,#2e6bc4)',messages:[{me:false,text:"Hello. Krafton has been actively acquiring studios with strong creative IP. We came across your studio and believe there could be strategic alignment.",time:"Mar 15 10:00 AM"},{me:true,text:"Hi David, thank you for reaching out. Could you tell me more about what kind of structure you're considering?",time:"Mar 15 11:30 AM"},{me:false,text:"We're exploring both full acquisition and strategic investment models, depending on the studio's goals.",time:"Mar 15 12:00 PM"},{me:false,text:"We'd like to schedule a formal discussion",time:"Mar 15 12:05 PM"}]},
-  {name:'Tom Richards',company:'Team17 · Publishing',initials:'TR',color:'linear-gradient(135deg,#2d6a4f,#52b788)',messages:[{me:false,text:"Hey there! Team17 is always on the lookout for original indie titles. Your concept reminds me of something that would fit well in our label alongside Overcooked and Worms.",time:"Mar 12 2:00 PM"},{me:true,text:"Hi Tom! That's high praise — we're massive fans of the Team17 catalogue. We'd love to explore what a partnership could look like.",time:"Mar 12 3:30 PM"},{me:false,text:"We love the concept — very on-brand for us",time:"Mar 12 4:00 PM"}]}
+  {
+    id:0, name:'Sarah Chen', company:'Devolver Digital · Publisher',
+    initials:'SC', color:'#c0392b',
+    unread:3, online:true, type:'all',
+    preview:"Looking forward to reviewing your demo build!",
+    previewIsMe:false, time:'2m ago',
+    messages:[
+      {me:false,text:"Hi! I came across your studio's profile on Game Connection. We've been looking for unique RPG titles for our upcoming slate. Would you be open to a chat?",time:"10:14"},
+      {me:true,text:"Hi Sarah! Absolutely, we'd love to connect. We're currently in the final stages of our demo build for 'Echoes of Yun'.",time:"10:32"},
+      {me:false,text:"'Echoes of Yun' sounds intriguing — the blend of Chinese mythology with roguelite mechanics is really fresh. Can you share a gameplay trailer or pitch deck?",time:"10:45"},
+      {me:true,text:"Of course! Here's our press kit link: [link]. The demo trailer is also included. We're targeting a Q3 2025 release window.",time:"11:02"},
+      {me:false,text:"Just watched the trailer — the art direction is stunning. Our team is going to do a full review this week.",time:"14:18"},
+      {me:false,text:"Looking forward to reviewing your demo build!",time:"14:20"}
+    ]
+  },
+  {
+    id:1, name:'Marc Dubois', company:'Ubisoft · Director',
+    initials:'MD', color:'#2563eb',
+    unread:1, online:false, busy:true, type:'all',
+    preview:"See you at the GDC booth on Wednesday then!",
+    previewIsMe:false, time:'1h ago',
+    messages:[
+      {me:false,text:"Bonjour! I saw you're attending GDC this year. Would you be interested in a quick coffee meeting?",time:"09:00"},
+      {me:true,text:"Hi Marc, definitely! GDC is always a great opportunity. When are you free during the week?",time:"09:45"},
+      {me:false,text:"Wednesday afternoon works best for me — say 3pm at the Yerba Buena lounge?",time:"10:15"},
+      {me:true,text:"Wednesday 3pm works perfectly. Looking forward to it!",time:"10:30"},
+      {me:false,text:"See you at the GDC booth on Wednesday then!",time:"11:00"}
+    ]
+  },
+  {
+    id:2, name:'Jin Park', company:'Riot Games · Producer',
+    initials:'JP', color:'#dc2626',
+    unread:0, online:true, type:'all',
+    preview:"I'll share the co-dev proposal doc by EOD",
+    previewIsMe:false, time:'3h ago',
+    messages:[
+      {me:false,text:"Hey, Riot's new experimental division is exploring co-development with indie studios. Your work on procedural generation caught our attention.",time:"Yesterday 16:20"},
+      {me:true,text:"That's incredible to hear from Riot! We'd absolutely love to explore that. What kind of scope are you thinking?",time:"Yesterday 17:10"},
+      {me:false,text:"We're thinking a 12-18 month co-dev arrangement for a competitive indie title. Budget is solid and we'd retain minimal creative control.",time:"Yesterday 17:45"},
+      {me:true,text:"That timeline works for us. Would you be able to share an NDA first so we can start detailed discussions?",time:"Yesterday 18:00"},
+      {me:false,text:"I'll share the co-dev proposal doc by EOD",time:"09:30"}
+    ]
+  },
+  {
+    id:3, name:'Emma Thompson', company:'Indie Fund · Investor',
+    initials:'ET', color:'#059669',
+    unread:2, online:false, type:'all',
+    preview:"Could you send over your pitch deck?",
+    previewIsMe:false, time:'5h ago',
+    messages:[
+      {me:false,text:"Hi! I've been following your studio for a while. Indie Fund is interested in supporting narrative-focused indie games. Are you currently fundraising?",time:"Yesterday 14:00"},
+      {me:true,text:"Hi Emma! Yes, we're currently closing our seed round. We're raising $400K to complete development and build launch marketing.",time:"Yesterday 15:30"},
+      {me:false,text:"That's a reasonable ask for the scope. What's your current MRR or wishlist count on Steam?",time:"Yesterday 16:00"},
+      {me:true,text:"We have 12K Steam wishlists and won Best Narrative at ChinaJoy last year. Happy to share our full financials under NDA.",time:"Yesterday 16:20"},
+      {me:false,text:"Could you send over your pitch deck?",time:"11:00"}
+    ]
+  },
+  {
+    id:4, name:'Yuki Tanaka', company:'Square Enix · Licensing',
+    initials:'YT', color:'#7c3aed',
+    unread:0, online:false, type:'all',
+    preview:"The licensing terms look reasonable on our end",
+    previewIsMe:false, time:'7h ago',
+    messages:[
+      {me:false,text:"Hello. Square Enix Licensing is exploring third-party collaborations for certain dormant IP assets. Your studio's aesthetic is a strong match.",time:"2 days ago"},
+      {me:true,text:"This sounds fascinating! We've always admired Square Enix's legacy. Which IP are you referring to?",time:"2 days ago"},
+      {me:false,text:"I'll be discreet — it's a beloved JRPG franchise from the late 90s. We'd need a small team with strong narrative and pixel art capabilities.",time:"2 days ago"},
+      {me:true,text:"That aligns perfectly with our team's core skills! We'd love to proceed with an NDA and exploratory discussions.",time:"2 days ago"},
+      {me:false,text:"The licensing terms look reasonable on our end",time:"07:00"}
+    ]
+  },
+  {
+    id:5, name:'Alex Rodriguez', company:'Kongregate · Publishing',
+    initials:'AR', color:'#d97706',
+    unread:0, online:false, type:'all',
+    preview:"Following up from our meeting last week",
+    previewIsMe:false, time:'Mon',
+    messages:[
+      {me:false,text:"Hey, just following up from our meeting last week at the indie showcase.",time:"Mon 15:00"},
+      {me:true,text:"Hi Alex! Yes, we're still in the evaluation phase. We're weighing revenue share terms carefully before committing.",time:"Mon 16:30"},
+      {me:false,text:"Our standard deal is 70/30 dev-friendly with full creative control retained by you. Plus we offer a $50K advance.",time:"Mon 17:00"},
+      {me:true,text:"That's competitive. Can we schedule a follow-up call this week to discuss marketing commitment specifics?",time:"Mon 17:30"},
+      {me:false,text:"Following up from our meeting last week",time:"Mon 17:35"}
+    ]
+  },
+  {
+    id:6, name:'Li Wei', company:'NetEase · BD Director',
+    initials:'LW', color:'#0891b2',
+    unread:1, online:false, type:'all',
+    preview:"中国市场机会不容错过，我们可以聊聊",
+    previewIsMe:false, time:'Mon',
+    messages:[
+      {me:false,text:"你好！我是李伟，NetEase游戏发行BD总监。你们的游戏在国内市场有很大的潜力，我们希望探讨合作可能性。",time:"Mon 09:00"},
+      {me:true,text:"你好李总！非常荣幸收到NetEase的关注。我们一直在考虑中国市场的发行策略，非常愿意进一步交流。",time:"Mon 10:30"},
+      {me:false,text:"太好了！NetEase在中国有3亿活跃用户。我们可以提供本地化、渠道分发和用户运营的全套服务。",time:"Mon 11:00"},
+      {me:false,text:"中国市场机会不容错过，我们可以聊聊",time:"Mon 11:05"}
+    ]
+  },
+  {
+    id:7, name:'Anna Kowalski', company:'CD Projekt · Producer',
+    initials:'AK', color:'#be123c',
+    unread:0, online:false, type:'all',
+    preview:"You: Joint dev agreement draft is ready for review",
+    previewIsMe:true, time:'Sun',
+    messages:[
+      {me:false,text:"Hi! CD Projekt RED is exploring joint development opportunities with smaller studios for a spinoff project.",time:"Sun 11:00"},
+      {me:true,text:"Hi Anna, it would be an honor to work alongside CD Projekt RED. What's the general scope and timeline?",time:"Sun 12:30"},
+      {me:false,text:"We're targeting an 18-month development cycle. The spinoff would be a standalone narrative experience in the Witcher universe.",time:"Sun 13:00"},
+      {me:true,text:"Joint dev agreement draft is ready for review",time:"Sun 14:00"}
+    ]
+  },
+  {
+    id:8, name:'David Kim', company:'Krafton · VP',
+    initials:'DK', color:'#1d4ed8',
+    unread:0, online:false, type:'all',
+    preview:"We'd like to schedule a formal discussion",
+    previewIsMe:false, time:'Mar 15',
+    messages:[
+      {me:false,text:"Hello. Krafton's new investment arm is evaluating studios with strong multiplayer expertise. We came across your portfolio.",time:"Mar 15"},
+      {me:true,text:"Hi David, thanks for reaching out! We'd love to learn more about Krafton's investment criteria.",time:"Mar 15"},
+      {me:false,text:"We'd like to schedule a formal discussion",time:"Mar 15"}
+    ]
+  },
+  {
+    id:9, name:'Tom Richards', company:'Team17 · Publishing',
+    initials:'TR', color:'#15803d',
+    unread:0, online:false, type:'all',
+    preview:"We love the concept — very on-brand for us",
+    previewIsMe:false, time:'Mar 12',
+    messages:[
+      {me:false,text:"Hey there! Team17 is always on the lookout for original indie titles. Your concept reminds me of something that would fit well in our label alongside Overcooked and Worms.",time:"Mar 12 14:00"},
+      {me:true,text:"Hi Tom! That's high praise — we're massive fans of the Team17 catalogue. We'd love to explore what a partnership could look like.",time:"Mar 12 15:30"},
+      {me:false,text:"We love the concept — very on-brand for us",time:"Mar 12 16:00"}
+    ]
+  },
+  // Requests (type:'request')
+  {
+    id:10, name:'Hiroshi Nakamura', company:'Capcom · Licensing',
+    initials:'HN', color:'#9333ea',
+    unread:1, online:false, type:'request',
+    preview:"Interested in discussing a potential collaboration",
+    previewIsMe:false, time:'2d ago',
+    messages:[
+      {me:false,text:"Hello. I found your studio through Game Connection. Capcom Licensing is interested in discussing a potential collaboration on a mobile spinoff.",time:"2d ago"}
+    ]
+  },
+  {
+    id:11, name:'Priya Sharma', company:'Supercell · BD',
+    initials:'PS', color:'#0369a1',
+    unread:1, online:false, type:'request',
+    preview:"Would love to connect about your mobile project",
+    previewIsMe:false, time:'3d ago',
+    messages:[
+      {me:false,text:"Hi! I'm Priya from Supercell's business development team. I came across your mobile project and would love to connect.",time:"3d ago"}
+    ]
+  }
 ];
 
 let currentChat = null;
+let currentTab = 'all';
 
-function openChat(idx){
-  const d = convData[idx];
-  currentChat = idx;
+// ── RENDER ──
+function getFilteredConvs(tab){
+  if(tab === 'all') return convData.filter(c => c.type !== 'request');
+  if(tab === 'unread') return convData.filter(c => c.unread > 0 && c.type !== 'request');
+  if(tab === 'requests') return convData.filter(c => c.type === 'request');
+  return convData;
+}
+
+function renderList(){
+  const list = document.getElementById('convList');
+  const convs = getFilteredConvs(currentTab);
+  
+  if(convs.length === 0){
+    list.innerHTML = `<div class="empty-state">
+      <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+      <p>No messages here yet</p>
+    </div>`;
+    return;
+  }
+
+  list.innerHTML = convs.map(c => {
+    const hasUnread = c.unread > 0;
+    const statusDot = c.online 
+      ? `<div class="av-online-dot"></div>` 
+      : c.busy ? `<div class="av-busy-dot"></div>` : '';
+    
+    let previewHtml = '';
+    if(c.previewIsMe){
+      previewHtml = `<span class="sender-prefix">You: </span>${c.preview.replace('You: ','')}`;
+    } else {
+      previewHtml = c.preview;
+    }
+
+    return `<div class="conv-row ${hasUnread ? 'has-unread' : ''}" onclick="openChat(${c.id})">
+      <div class="conv-avatar" style="background:${c.color}">
+        ${c.initials}
+        ${statusDot}
+      </div>
+      <div class="conv-body">
+        <div class="conv-row1">
+          <span class="conv-name ${hasUnread ? 'unread' : ''}">${c.name}</span>
+          <span class="conv-time">${c.time}</span>
+        </div>
+        <div class="conv-preview ${hasUnread ? 'unread' : ''}">${previewHtml}</div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+// ── TABS ──
+document.querySelectorAll('.tab').forEach(tab => {
+  tab.addEventListener('click', () => {
+    document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+    tab.classList.add('active');
+    currentTab = tab.dataset.tab;
+    renderList();
+  });
+});
+
+// ── CHAT ──
+function openChat(id){
+  const d = convData.find(c => c.id === id);
+  if(!d) return;
+  currentChat = id;
+  
   document.getElementById('chatName').textContent = d.name;
   document.getElementById('chatSub').textContent = d.company;
   const av = document.getElementById('chatAvatar');
   av.textContent = d.initials;
   av.style.background = d.color;
+
   const msgs = document.getElementById('chatMessages');
   msgs.innerHTML = '<div class="date-sep">Today</div>';
-  d.messages.forEach(m=>{
+  d.messages.forEach(m => {
     const div = document.createElement('div');
-    div.className = 'msg'+(m.me?' me':'');
+    div.className = 'msg' + (m.me ? ' me' : '');
     if(!m.me){
       div.innerHTML = `<div class="msg-av" style="background:${d.color}">${d.initials}</div><div class="msg-bubble">${m.text}</div><span class="msg-time">${m.time}</span>`;
     } else {
@@ -409,6 +678,10 @@ function openChat(idx){
     msgs.appendChild(div);
   });
   msgs.scrollTop = msgs.scrollHeight;
+  
+  // Mark as read
+  d.unread = 0;
+  
   document.getElementById('chatOverlay').classList.add('open');
   document.body.style.overflow = 'hidden';
 }
@@ -416,26 +689,28 @@ function openChat(idx){
 function closeChat(){
   document.getElementById('chatOverlay').classList.remove('open');
   document.body.style.overflow = '';
+  renderList(); // refresh to show read state
 }
 
-function sendMsg(e){if(e.key==='Enter')sendMsgBtn();}
+function sendMsg(e){ if(e.key === 'Enter') sendMsgBtn(); }
 function sendMsgBtn(){
   const inp = document.getElementById('msgInput');
   const text = inp.value.trim();
   if(!text) return;
   const msgs = document.getElementById('chatMessages');
-  const d = convData[currentChat];
+  const d = convData.find(c => c.id === currentChat);
   const div = document.createElement('div');
   div.className = 'msg me';
   const now = new Date();
-  const time = now.getHours().toString().padStart(2,'0')+':'+now.getMinutes().toString().padStart(2,'0');
+  const time = now.getHours().toString().padStart(2,'0') + ':' + now.getMinutes().toString().padStart(2,'0');
   div.innerHTML = `<span class="msg-time">${time}</span><div class="msg-bubble">${text}</div>`;
   msgs.appendChild(div);
   msgs.scrollTop = msgs.scrollHeight;
   inp.value = '';
 }
 
-document.getElementById('searchToggle').addEventListener('click',()=>{
+// ── SEARCH ──
+document.getElementById('searchToggle').addEventListener('click', () => {
   const wrap = document.getElementById('searchWrap');
   wrap.classList.toggle('show');
   const btn = document.getElementById('searchToggle');
@@ -443,7 +718,38 @@ document.getElementById('searchToggle').addEventListener('click',()=>{
   if(wrap.classList.contains('show')) document.getElementById('searchInput').focus();
 });
 
-document.addEventListener('keydown',e=>{if(e.key==='Escape')closeChat();});
+document.getElementById('searchInput').addEventListener('input', e => {
+  const q = e.target.value.toLowerCase();
+  const list = document.getElementById('convList');
+  const convs = getFilteredConvs(currentTab).filter(c => 
+    c.name.toLowerCase().includes(q) || 
+    c.company.toLowerCase().includes(q) ||
+    c.preview.toLowerCase().includes(q)
+  );
+  if(convs.length === 0){
+    list.innerHTML = `<div class="empty-state"><p>No results for "${e.target.value}"</p></div>`;
+    return;
+  }
+  list.innerHTML = convs.map(c => {
+    const hasUnread = c.unread > 0;
+    const statusDot = c.online ? `<div class="av-online-dot"></div>` : c.busy ? `<div class="av-busy-dot"></div>` : '';
+    return `<div class="conv-row ${hasUnread ? 'has-unread' : ''}" onclick="openChat(${c.id})">
+      <div class="conv-avatar" style="background:${c.color}">${c.initials}${statusDot}</div>
+      <div class="conv-body">
+        <div class="conv-row1">
+          <span class="conv-name ${hasUnread ? 'unread' : ''}">${c.name}</span>
+          <span class="conv-time">${c.time}</span>
+        </div>
+        <div class="conv-preview ${hasUnread ? 'unread' : ''}">${c.preview}</div>
+      </div>
+    </div>`;
+  }).join('');
+});
+
+document.addEventListener('keydown', e => { if(e.key === 'Escape') closeChat(); });
+
+// ── INIT ──
+renderList();
 </script>
 
 <nav class="gc-bnav">
@@ -466,6 +772,7 @@ document.addEventListener('keydown',e=>{if(e.key==='Escape')closeChat();});
   <a href="Messages_v1_Mobile.html" class="gc-bn active">
     <div class="gc-bn-i"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg></div>
     <span class="gc-bn-l">Messages</span>
+    <span class="gc-bn-badge">7</span>
   </a>
 </nav>
 </body>
