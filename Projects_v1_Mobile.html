@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <title>Projects & Games – Game Connection</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -20,7 +20,7 @@
   --soft: #a09890;
   --white: #fff;
   --radius: 12px;
-  --tab-h: 64px;
+  --tab-h: 58px;
   --top-h: 56px;
 }
 
@@ -31,6 +31,7 @@ body {
   min-height: 100vh;
   display: flex;
   justify-content: center;
+  padding-bottom: var(--tab-h);
 }
 
 .app {
@@ -127,14 +128,6 @@ body {
 .filter-section {
   padding: 0 16px 4px;
 }
-.filter-label {
-  font-size: 11px;
-  font-weight: 600;
-  color: var(--soft);
-  letter-spacing: .8px;
-  text-transform: uppercase;
-  margin-bottom: 8px;
-}
 .filter-scroll {
   display: flex;
   gap: 8px;
@@ -188,17 +181,26 @@ body {
 
 /* Cover */
 .card-cover {
-  height: 120px;
+  height: 130px;
   position: relative;
   display: flex;
   align-items: flex-end;
   padding: 10px 12px;
   overflow: hidden;
+  background-size: cover;
+  background-position: center;
 }
-.card-cover svg {
+.card-cover-bg {
   position: absolute;
   inset: 0;
   width: 100%; height: 100%;
+  background-size: cover;
+  background-position: center;
+}
+.card-cover-overlay {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(to bottom, rgba(0,0,0,0.1) 0%, rgba(0,0,0,0.55) 100%);
 }
 .card-cover-title {
   position: relative;
@@ -206,8 +208,16 @@ body {
   font-size: 16px;
   font-weight: 700;
   color: #fff;
-  text-shadow: 0 1px 6px rgba(0,0,0,.5);
+  text-shadow: 0 1px 6px rgba(0,0,0,.6);
   line-height: 1.2;
+}
+.card-cover-genre-icon {
+  position: absolute;
+  top: 50%; left: 50%;
+  transform: translate(-50%, -50%);
+  font-size: 48px;
+  opacity: 0.25;
+  z-index: 1;
 }
 .card-status-badge {
   position: absolute;
@@ -221,11 +231,30 @@ body {
   text-transform: uppercase;
   backdrop-filter: blur(4px);
 }
-.badge-publisher { background: rgba(217,95,43,.85); color: #fff; }
-.badge-investment { background: rgba(10,127,168,.85); color: #fff; }
-.badge-development { background: rgba(13,155,114,.85); color: #fff; }
+.badge-seeking_publisher { background: rgba(217,95,43,.85); color: #fff; }
+.badge-seeking_investment { background: rgba(10,127,168,.85); color: #fff; }
+.badge-in_development { background: rgba(13,155,114,.85); color: #fff; }
 .badge-released { background: rgba(28,26,23,.75); color: #fff; }
-.badge-opensource { background: rgba(108,92,50,.75); color: #fff; }
+.badge-beta { background: rgba(245,158,11,.85); color: #fff; }
+.badge-playable_demo { background: rgba(37,99,235,.85); color: #fff; }
+.badge-concept { background: rgba(107,114,128,.75); color: #fff; }
+.badge-default { background: rgba(28,26,23,.65); color: #fff; }
+.card-seeking-badge {
+  position: absolute;
+  top: 10px; right: 10px;
+  z-index: 2;
+  padding: 3px 8px;
+  border-radius: 6px;
+  font-size: 10px;
+  font-weight: 600;
+  background: rgba(0,0,0,.5);
+  color: #fff;
+  backdrop-filter: blur(4px);
+  max-width: 120px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
 
 /* Card body */
 .card-body {
@@ -242,6 +271,9 @@ body {
   font-size: 15px;
   font-weight: 700;
   color: var(--dark);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 .card-genre {
   font-size: 11px;
@@ -251,14 +283,12 @@ body {
   border-radius: 10px;
   flex-shrink: 0;
   margin-top: 2px;
+  white-space: nowrap;
 }
 .card-studio {
   font-size: 12px;
   color: var(--mid);
   margin-bottom: 8px;
-  display: flex;
-  align-items: center;
-  gap: 4px;
 }
 .card-desc {
   font-size: 12px;
@@ -408,41 +438,34 @@ body {
 .detail-btn-share { background: #e8f4f9; color: var(--teal); }
 .detail-btn-share:hover { background: #d2ebf4; }
 
-/* ── BOTTOM TAB BAR ── */
-.tabbar {
-  position: fixed;
-  bottom: 0;
-  left: 50%;
-  transform: translateX(-50%);
-  width: 100%;
-  max-width: 480px;
-  height: var(--tab-h);
-  background: var(--white);
-  border-top: 1px solid #ddd9cf;
-  display: flex;
-  z-index: 100;
-  box-shadow: 0 -4px 20px rgba(0,0,0,.08);
+/* Load more */
+.load-more-wrap {
+  text-align: center;
+  padding: 20px 16px 8px;
 }
-.tab-item {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 3px;
+.load-more-btn {
+  padding: 11px 32px;
+  border-radius: 24px;
+  background: var(--dark);
+  color: #fff;
+  border: none;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 13px;
+  font-weight: 700;
   cursor: pointer;
-  padding: 6px 0;
-  transition: opacity .15s;
+  transition: background .15s;
 }
-.tab-item:active { opacity: .7; }
-.tab-icon { font-size: 20px; }
-.tab-label {
-  font-size: 10px;
-  font-weight: 500;
+.load-more-btn:hover { background: #3a3835; }
+
+/* Loading / empty states */
+.state-msg {
+  text-align: center;
+  padding: 48px 20px;
   color: var(--soft);
 }
-.tab-item.active .tab-label { color: var(--orange); font-weight: 700; }
-.tab-item.active .tab-icon { transform: scale(1.1); }
+.state-msg .state-icon { font-size: 40px; margin-bottom: 12px; }
+.state-msg .state-title { font-size: 16px; font-weight: 600; color: var(--mid); }
+.state-msg .state-sub { font-size: 13px; margin-top: 6px; }
 
 /* Toast */
 .toast {
@@ -463,35 +486,19 @@ body {
 }
 .toast.show { transform: translateX(-50%) translateY(0); }
 
-/* ═══ UNIFIED BOTTOM NAV ═══ */
-.gc-bnav{position:fixed;bottom:0;left:0;right:0;height:64px;background:rgba(255,255,255,0.95);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);border-top:1px solid #e5e7eb;display:flex;align-items:flex-start;padding-top:6px;z-index:9999;max-width:480px;margin:0 auto;}
-.gc-bn{flex:1;display:flex;flex-direction:column;align-items:center;gap:2px;cursor:pointer;padding:2px 0;text-decoration:none;color:inherit;}
-.gc-bn-i{width:22px;height:22px;display:flex;align-items:center;justify-content:center;}
-.gc-bn-l{font-size:9px;font-weight:600;color:#9ca3af;letter-spacing:.2px;text-transform:uppercase;}
+/* ═══ UNIFIED BOTTOM NAV (MobileHub_v14 style) ═══ */
+.gc-bnav{position:fixed;bottom:0;left:0;right:0;height:58px;background:rgba(255,255,255,0.97);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);border-top:1px solid rgba(0,0,0,0.07);display:flex;align-items:center;padding:0;z-index:9999;max-width:480px;margin:0 auto;}
+.gc-bn{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;cursor:pointer;padding:6px 0;text-decoration:none;color:inherit;position:relative;}
+.gc-bn-i{width:24px;height:24px;display:flex;align-items:center;justify-content:center;}
+.gc-bn-i svg{fill:#b0aba3;color:#b0aba3;stroke:none;transition:fill .15s,color .15s;}
+.gc-bn-l{font-size:9px;font-weight:600;color:#b0aba3;letter-spacing:.3px;text-transform:uppercase;transition:color .15s;}
 .gc-bn.active .gc-bn-l{color:#e85d26;}
 .gc-bn.active .gc-bn-i svg{fill:#e85d26;color:#e85d26;}
-.gc-bn:hover .gc-bn-l{color:#e85d26;}
-.gc-page-content{padding-bottom:64px;}
-
-</style>
-<style id="gc-bnav-style">
-.gc-bnav{position:fixed;bottom:0;left:0;right:0;height:64px;background:rgba(255,255,255,0.95);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);border-top:1px solid #e5e7eb;display:flex;align-items:flex-start;padding-top:6px;z-index:9999;max-width:480px;margin:0 auto;}
-.gc-bn{flex:1;display:flex;flex-direction:column;align-items:center;gap:2px;cursor:pointer;padding:2px 0;text-decoration:none;color:inherit;}
-.gc-bn-i{width:22px;height:22px;display:flex;align-items:center;justify-content:center;}
-.gc-bn-l{font-size:9px;font-weight:600;color:#9ca3af;letter-spacing:.2px;text-transform:uppercase;}
-.gc-bn.active .gc-bn-l{color:#e85d26;}
-.gc-bn.active .gc-bn-i svg{fill:#e85d26;color:#e85d26;}
-body{padding-bottom:64px;}
+.gc-bn:hover .gc-bn-l{color:#6b6660;}
+.gc-bn:hover .gc-bn-i svg{fill:#6b6660;color:#6b6660;}
 </style>
 </head>
 <body>
-<div style="position:fixed;top:0;left:50%;transform:translateX(-50%);width:100%;max-width:430px;z-index:9999;background:rgba(255,255,255,0.95);backdrop-filter:blur(10px);border-bottom:1px solid #e5e7eb;padding:10px 16px;display:flex;align-items:center;gap:10px;box-sizing:border-box;">
-  <button onclick="history.back()" style="background:none;border:none;font-size:20px;cursor:pointer;color:#553c9a;padding:0;line-height:1;flex-shrink:0;">&#8592;</button>
-  <span style="font-size:14px;font-weight:700;color:#1c1a17;">Game Connection</span>
-  <a href="MobileHub_v14.html" style="margin-left:auto;font-size:12px;color:#553c9a;text-decoration:none;font-weight:600;">Home</a>
-</div>
-<div style="height:44px;"></div>
-
 <div class="app">
 
   <!-- TOP BAR -->
@@ -501,7 +508,7 @@ body{padding-bottom:64px;}
       <input type="text" id="searchInput" placeholder="Search projects, studios…">
     </div>
     <div class="topbar-icon topbar-notif">🔔</div>
-    <div class="topbar-icon topbar-avatar">QQ</div>
+    <div class="topbar-icon topbar-avatar">GC</div>
   </div>
 
   <!-- CONTENT -->
@@ -510,25 +517,26 @@ body{padding-bottom:64px;}
     <!-- PAGE HEADER -->
     <div class="page-header">
       <div class="page-title">Projects & Games</div>
-      <div class="page-sub" id="pageSubtitle">10 projects from worldwide studios</div>
+      <div class="page-sub" id="pageSubtitle">Loading projects…</div>
     </div>
 
     <!-- STATUS FILTER -->
     <div class="filter-section" style="margin-bottom:10px;">
       <div class="filter-scroll" id="statusFilter">
-        <button class="pill active" data-status="All">All</button>
-        <button class="pill" data-status="Seeking Publisher">🎯 Seeking Publisher</button>
-        <button class="pill" data-status="Seeking Investment">💰 Seeking Investment</button>
-        <button class="pill" data-status="In Development">🛠️ In Development</button>
-        <button class="pill" data-status="Released">✅ Released</button>
-        <button class="pill" data-status="Open Source">🔓 Open Source</button>
+        <button class="pill active" data-status="">All</button>
+        <button class="pill" data-status="seeking_publisher">🎯 Seeking Publisher</button>
+        <button class="pill" data-status="seeking_investment">💰 Seeking Investment</button>
+        <button class="pill" data-status="in_development">🛠️ In Development</button>
+        <button class="pill" data-status="released">✅ Released</button>
+        <button class="pill" data-status="beta">🧪 Beta</button>
+        <button class="pill" data-status="playable_demo">🎮 Playable Demo</button>
       </div>
     </div>
 
     <!-- PLATFORM FILTER -->
     <div class="filter-section" style="margin-bottom:4px;">
       <div class="filter-scroll" id="platformFilter">
-        <button class="pill active" data-platform="All">All Platforms</button>
+        <button class="pill active" data-platform="">All Platforms</button>
         <button class="pill" data-platform="PC">🖥️ PC</button>
         <button class="pill" data-platform="Mobile">📱 Mobile</button>
         <button class="pill" data-platform="Console">🎮 Console</button>
@@ -537,217 +545,205 @@ body{padding-bottom:64px;}
     </div>
 
     <!-- CARDS -->
-    <div class="cards-list" id="cardsList"></div>
+    <div class="cards-list" id="cardsList">
+      <div class="state-msg">
+        <div class="state-icon">⏳</div>
+        <div class="state-title">Loading projects…</div>
+      </div>
+    </div>
 
-  </div>
+    <!-- LOAD MORE -->
+    <div class="load-more-wrap" id="loadMoreWrap" style="display:none;">
+      <button class="load-more-btn" id="loadMoreBtn" onclick="loadMore()">Load More</button>
+    </div>
 
-  <!-- BOTTOM TAB BAR -->
-  <div class="tabbar">
-    <div class="tab-item" onclick="location.href='MobileHub_v14.html'"><div class="tab-icon">🏠</div><div class="tab-label">Home</div></div>
-    <div class="tab-item" onclick="location.href='LetsMeet_Browse_v1_Mobile.html'"><div class="tab-icon">👥</div><div class="tab-label">People</div></div>
-    <div class="tab-item active"><div class="tab-icon">🎮</div><div class="tab-label">Projects</div></div>
-    <div class="tab-item" onclick="location.href='ConferenceCalendar_v2_Mobile.html'"><div class="tab-icon">📅</div><div class="tab-label">Events</div></div>
-    <div class="tab-item" onclick="location.href='Messages_v1_Mobile.html'"><div class="tab-icon">💬</div><div class="tab-label">Messages</div></div>
   </div>
 
 </div>
 
 <div class="toast" id="toast"></div>
 
+<!-- BOTTOM NAV (MobileHub_v14 style) -->
+<nav class="gc-bnav">
+  <a href="MobileHub_v14.html" class="gc-bn">
+    <div class="gc-bn-i"><svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/></svg></div>
+    <span class="gc-bn-l">Home</span>
+  </a>
+  <a href="LetsMeet_Browse_v1_Mobile.html" class="gc-bn">
+    <div class="gc-bn-i"><svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M16 11c1.66 0 3-1.34 3-3s-1.34-3-3-3-3 1.34-3 3 1.34 3 3 3zm-8 0c1.66 0 3-1.34 3-3S9.66 5 8 5 5 6.34 5 8s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5C15 14.17 10.33 13 8 13zm8 0c-.29 0-.62.02-.97.05C16.19 13.9 17 15.02 17 16.5V19h6v-2.5C23 14.17 18.33 13 16 13z" opacity="0.45"/><circle cx="8" cy="8" r="3.2"/><path d="M8 13c-2.33 0-7 1.17-7 3.5V19h14v-2.5C15 14.17 10.33 13 8 13z"/></svg></div>
+    <span class="gc-bn-l">People</span>
+  </a>
+  <a href="Projects_v1_Mobile.html" class="gc-bn active">
+    <div class="gc-bn-i"><svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M21 6H3c-1.1 0-2 .9-2 2v8c0 1.1.9 2 2 2h18c1.1 0 2-.9 2-2V8c0-1.1-.9-2-2-2zm-10 7H8v3H6v-3H3v-2h3V8h2v3h3v2zm4.5 2c-.83 0-1.5-.67-1.5-1.5S14.67 12 15.5 12s1.5.67 1.5 1.5S16.33 15 15.5 15zm3-3c-.83 0-1.5-.67-1.5-1.5S17.67 10 18.5 10s1.5.67 1.5 1.5S19.33 12 18.5 12z"/></svg></div>
+    <span class="gc-bn-l">Projects</span>
+  </a>
+  <a href="ConferenceCalendar_v2_Mobile.html" class="gc-bn">
+    <div class="gc-bn-i"><svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M19 3h-1V1h-2v2H8V1H6v2H5C3.89 3 3 3.9 3 5v14c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 16H5V8h14v11zm-7-9h-2v2h2v-2zm4 0h-2v2h2v-2zm-8 4H6v2h2v-2zm4 0h-2v2h2v-2zm4 0h-2v2h2v-2zm-8-4H6v2h2v-2z"/></svg></div>
+    <span class="gc-bn-l">Events</span>
+  </a>
+  <a href="Messages_v1_Mobile.html" class="gc-bn">
+    <div class="gc-bn-i"><svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2z" opacity="0.15"/><path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm0 14H5.17L4 17.17V4h16v12z"/><circle cx="8.5" cy="11" r="1.3"/><circle cx="12" cy="11" r="1.3"/><circle cx="15.5" cy="11" r="1.3"/></svg></div>
+    <span class="gc-bn-l">Messages</span>
+  </a>
+</nav>
+
 <script>
-const PROJECTS = [
-  {
-    id: 1,
-    name: "Jade Dynasty: Reborn",
-    genre: "Action RPG",
-    studio: "Cloudmist Games",
-    flag: "🇨🇳", city: "Shenzhen", country: "China",
-    status: "Seeking Publisher",
-    platforms: ["PC","Console"],
-    shortDesc: "An epic open-world action RPG blending ancient Chinese mythology with next-gen visuals. 12M polygons, full ray-tracing support.",
-    fullDesc: "Jade Dynasty: Reborn reimagines Chinese wuxia mythology through a massive 40-hour open world. Players master five elemental disciplines while navigating a world where gods and demons clash. Features a groundbreaking dynamic weather system that fundamentally changes gameplay. Built on Unreal Engine 5 with full Lumen lighting.",
-    engine: "Unreal Engine 5",
-    team: "24 people",
-    duration: "3 years",
-    seeking: ["Publishing Deal", "QA Partner", "Marketing Support"],
-    coverGrad: "linear-gradient(135deg, #1a0a3e 0%, #6b21a8 50%, #d95f2b 100%)"
-  },
-  {
-    id: 2,
-    name: "Neon Shanghai 2099",
-    genre: "Cyberpunk Strategy",
-    studio: "ByteForge Studio",
-    flag: "🇨🇳", city: "Shanghai", country: "China",
-    status: "Seeking Investment",
-    platforms: ["PC","Mobile"],
-    shortDesc: "Turn-based strategy meets cyberpunk narrative in a dystopian Shanghai. Control megacorp factions in a city that never sleeps.",
-    fullDesc: "Neon Shanghai 2099 is a deep turn-based strategy game set in a sprawling cyberpunk metropolis. Players manage corporate empires, hack rival systems, and recruit legendary street operatives. Features procedurally generated story missions and a living economy simulation with 200+ unique NPC archetypes.",
-    engine: "Unity 2024",
-    team: "11 people",
-    duration: "2 years",
-    seeking: ["Series A Investment", "Platform Partner", "Localization"],
-    coverGrad: "linear-gradient(135deg, #0a0a2e 0%, #0a7fa8 60%, #00e5ff 100%)"
-  },
-  {
-    id: 3,
-    name: "Verdant Isle",
-    genre: "Cozy Sim",
-    studio: "Mossberg Interactive",
-    flag: "🇸🇪", city: "Stockholm", country: "Sweden",
-    status: "In Development",
-    platforms: ["PC","Mobile","Console"],
-    shortDesc: "A cozy island life simulator with procedurally generated archipelagos. Farm, fish, and forge friendships in your own paradise.",
-    fullDesc: "Verdant Isle invites players to build their dream island community at their own pace. Each island is procedurally generated with unique biomes, secret caves, and seasonal festivals. Deep crafting systems, 80+ NPC characters with full relationship arcs, and a relaxing ambient soundtrack composed live.",
-    engine: "Godot 4.3",
-    team: "6 people",
-    duration: "18 months",
-    seeking: ["Publisher", "Platform Featuring", "Community Partner"],
-    coverGrad: "linear-gradient(135deg, #0d9b72 0%, #0a7fa8 50%, #2dd4bf 100%)"
-  },
-  {
-    id: 4,
-    name: "Echoes of the Rift",
-    genre: "Narrative Adventure",
-    studio: "Parallax Forge",
-    flag: "🇫🇷", city: "Lyon", country: "France",
-    status: "Seeking Publisher",
-    platforms: ["PC","Console"],
-    shortDesc: "A haunting narrative adventure about time fractures and lost memories. Your choices echo across parallel timelines with branching consequences.",
-    fullDesc: "Echoes of the Rift is a narrative-first adventure game with 6 hours of branching story across 3 parallel timelines. Featuring a fully voiced cast of 40 actors, hand-painted environments inspired by French Impressionism, and an original orchestral score. The game explores themes of grief, identity, and the paradox of choice.",
-    engine: "Unreal Engine 5",
-    team: "8 people",
-    duration: "2.5 years",
-    seeking: ["Publishing Deal", "PR & Marketing", "Console Porting"],
-    coverGrad: "linear-gradient(135deg, #1c1a17 0%, #6b21a8 50%, #ec4899 100%)"
-  },
-  {
-    id: 5,
-    name: "Ironclad Protocol",
-    genre: "Tactical Shooter",
-    studio: "Vector North Games",
-    flag: "🇺🇸", city: "Austin", country: "USA",
-    status: "In Development",
-    platforms: ["PC","Console"],
-    shortDesc: "5v5 tactical shooter with destructible environments and asymmetric operator abilities. Think Rainbow Six meets XCOM-style prep phase.",
-    fullDesc: "Ironclad Protocol is a precision tactical shooter where pre-round planning is as critical as gunplay. Teams of 5 select from 16 operators with unique gadgets, then execute their plans in fully destructible arenas. Features a ranked system with season-based map rotations and a deep replay system for tactical review.",
-    engine: "Unreal Engine 5",
-    team: "32 people",
-    duration: "3.5 years",
-    seeking: ["Series B", "Esports Partnership", "Platform Deal"],
-    coverGrad: "linear-gradient(135deg, #1c1a17 0%, #374151 50%, #d95f2b 100%)"
-  },
-  {
-    id: 6,
-    name: "Chromafall",
-    genre: "Puzzle Platformer",
-    studio: "Helix Labs",
-    flag: "🇺🇸", city: "Seattle", country: "USA",
-    status: "Released",
-    platforms: ["PC","Mobile","VR"],
-    shortDesc: "Award-winning puzzle platformer where color IS the mechanic. Absorb hues from the environment to gain abilities and reshape the world.",
-    fullDesc: "Chromafall won 3 indie awards including Best Puzzle Design at PAX 2025. Players manipulate a living, breathing world by absorbing and emitting color wavelengths. Features 80 handcrafted levels, a VR mode with full 6DOF support, and a level editor with Steam Workshop integration boasting 10,000+ community levels.",
-    engine: "Unity 2024",
-    team: "4 people",
-    duration: "2 years",
-    seeking: ["Console Port Partner", "Localization", "Sequel Funding"],
-    coverGrad: "linear-gradient(135deg, #d95f2b 0%, #f59e0b 35%, #0d9b72 70%, #0a7fa8 100%)"
-  },
-  {
-    id: 7,
-    name: "Oni Gaiden",
-    genre: "Beat 'em Up",
-    studio: "Rōnin Pixel Works",
-    flag: "🇯🇵", city: "Osaka", country: "Japan",
-    status: "Seeking Publisher",
-    platforms: ["PC","Console","Mobile"],
-    shortDesc: "A stylish beat 'em up channeling classic Japanese arcade energy with modern roguelite depth. 40 demons. One sword. Your story.",
-    fullDesc: "Oni Gaiden fuses the fluid combat of classic Capcom beat 'em ups with roguelite progression. Each run through the demon-haunted Edo-period city is unique: 200+ ability combinations, branching story events, and a dynamic soundtrack that responds to your combo style. Co-op for up to 3 players.",
-    engine: "Unity 2024",
-    team: "7 people",
-    duration: "22 months",
-    seeking: ["Publishing Deal", "Asian Distribution", "Console Porting"],
-    coverGrad: "linear-gradient(135deg, #7f1d1d 0%, #dc2626 50%, #fbbf24 100%)"
-  },
-  {
-    id: 8,
-    name: "SeoulRacer GT",
-    genre: "Racing",
-    studio: "K-Drive Entertainment",
-    flag: "🇰🇷", city: "Seoul", country: "South Korea",
-    status: "Seeking Investment",
-    platforms: ["PC","Mobile","Console"],
-    shortDesc: "Ultra-realistic street racing through the neon-lit streets of Seoul. Korean car culture meets AAA physics simulation.",
-    fullDesc: "SeoulRacer GT is the most technically accurate recreation of Korean street racing culture ever made. 60 licensed Korean vehicles, 8 meticulously modeled Seoul districts, and a proprietary tire physics engine developed with real racing engineers. Features a mobile companion app for garage management and global tournaments.",
-    engine: "Unreal Engine 5",
-    team: "28 people",
-    duration: "3 years",
-    seeking: ["$5M Series A", "Automotive Licensing", "Esports Deal"],
-    coverGrad: "linear-gradient(135deg, #0a7fa8 0%, #1c1a17 50%, #d95f2b 100%)"
-  },
-  {
-    id: 9,
-    name: "Batik Quest",
-    genre: "Cultural Puzzle",
-    studio: "Nusantara Games",
-    flag: "🇮🇩", city: "Jakarta", country: "Indonesia",
-    status: "In Development",
-    platforms: ["Mobile","PC"],
-    shortDesc: "A culturally-rich puzzle adventure celebrating Indonesian heritage through the art of batik fabric making. Educational and beautiful.",
-    fullDesc: "Batik Quest is a breakthrough cultural game that teaches the traditional Indonesian art of batik through an engaging puzzle adventure. Players travel through 30 regions of the archipelago, collecting natural dyes, learning patterns from master artisans, and unlocking the secrets of each island's unique batik tradition. Developed in partnership with UNESCO.",
-    engine: "Godot 4.3",
-    team: "9 people",
-    duration: "20 months",
-    seeking: ["International Publisher", "Educational Platform", "Grants"],
-    coverGrad: "linear-gradient(135deg, #92400e 0%, #d97706 50%, #0d9b72 100%)"
-  },
-  {
-    id: 10,
-    name: "Project Mekong",
-    genre: "Open World RPG",
-    studio: "Saigon Digital Works",
-    flag: "🇻🇳", city: "Ho Chi Minh City", country: "Vietnam",
-    status: "Open Source",
-    platforms: ["PC"],
-    shortDesc: "Open-source RPG toolkit built from 4 years of dev. The full engine and toolchain are free — we're building the game on top of it.",
-    fullDesc: "Project Mekong started as an internal game engine and grew into the most accessible Southeast Asian game dev platform. The open-source framework includes a full RPG toolkit, localization pipeline for 12 SEA languages, and a visual scripting system designed for developers with limited coding experience. 2,400+ GitHub stars. Now building a flagship game: a sweeping Mekong Delta river adventure.",
-    engine: "Custom (Open Source)",
-    team: "14 people",
-    duration: "4 years",
-    seeking: ["Commercial Partner", "Enterprise License", "Game Investment"],
-    coverGrad: "linear-gradient(135deg, #0d9b72 0%, #065f46 50%, #1c1a17 100%)"
+// ═══ SUPABASE CONFIG ═══
+const _SB_URL = 'https://gucqyrorgtsukqgnfjor.supabase.co';
+const _SB_KEY = 'sb_publishable_-BkWoyQCBVhagJQIgR_zdw_qHvhYZpG';
+const _SB_H = { 'apikey': _SB_KEY, 'Authorization': 'Bearer ' + _SB_KEY };
+
+// ═══ STATE ═══
+const PAGE_SIZE = 20;
+let _offset = 0;
+let _total = 0;
+let _loading = false;
+let _statusFilter = '';
+let _platformFilter = '';
+let _searchQuery = '';
+let _favorites = JSON.parse(localStorage.getItem('gcMobProjFavs') || '[]');
+let _expanded = null;
+let _igdbCache = {};
+
+// ═══ GENRE STYLE MAP ═══
+const _GENRE_GRADS = {
+  'action':     ['🔥', '#7f1d1d,#dc2626'],
+  'rpg':        ['⚔️', '#2d1a4a,#7c3aed'],
+  'shooter':    ['🎯', '#1c1a17,#374151'],
+  'strategy':   ['♟️', '#0a1a3a,#1d4ed8'],
+  'puzzle':     ['🧩', '#1a4a2e,#0d9b72'],
+  'adventure':  ['🗺️', '#1a3a6b,#4a6cf7'],
+  'simulation': ['🌍', '#0d2137,#0a7fa8'],
+  'sports':     ['⚽', '#1a3a1a,#52b788'],
+  'racing':     ['🏎️', '#3a1a00,#be123c'],
+  'horror':     ['👻', '#0a0a0a,#4b0082'],
+  'platformer': ['🏃', '#7a3a00,#d95f2b'],
+  'mmo':        ['🌐', '#0a1a3a,#0a7fa8'],
+  'casual':     ['🎈', '#d95f2b,#f59e0b'],
+  'indie':      ['💡', '#1a3a6b,#4a6cf7'],
+};
+
+function _getGenreStyle(genre) {
+  if (!genre) return ['🎮', '#2a2a2a,#555'];
+  const g = genre.toLowerCase();
+  for (const [key, val] of Object.entries(_GENRE_GRADS)) {
+    if (g.includes(key)) return val;
   }
-];
+  return ['🎮', '#2a2a2a,#555'];
+}
 
-const STATUS_BADGE_CLASS = {
-  "Seeking Publisher": "badge-publisher",
-  "Seeking Investment": "badge-investment",
-  "In Development": "badge-development",
-  "Released": "badge-released",
-  "Open Source": "badge-opensource"
-};
+function _statusLabel(status) {
+  const map = {
+    'seeking_publisher': 'Seeking Publisher',
+    'seeking_investment': 'Seeking Investment',
+    'in_development': 'In Development',
+    'released': 'Released',
+    'beta': 'Beta',
+    'playable_demo': 'Playable Demo',
+    'concept': 'Concept',
+    'soft_launch': 'Soft Launch',
+    'release_candidate': 'Release Candidate',
+  };
+  return map[status] || (status ? status.replace(/_/g,' ').replace(/\b\w/g,c=>c.toUpperCase()) : '');
+}
 
-let state = {
-  status: 'All',
-  platform: 'All',
-  search: '',
-  favorites: JSON.parse(localStorage.getItem('gcProjFavs') || '[]'),
-  expanded: null
-};
+function _badgeClass(status) {
+  const s = (status||'').toLowerCase().replace(/\s+/g,'_');
+  const valid = ['seeking_publisher','seeking_investment','in_development','released','beta','playable_demo','concept'];
+  return valid.includes(s) ? 'badge-'+s : 'badge-default';
+}
 
-function isFav(id) { return state.favorites.includes(id); }
+function _platformIcon(p) {
+  const icons = { PC: '🖥️', Mobile: '📱', Console: '🎮', VR: '🥽', Switch: '🕹️', PS4: '🎮', PS5: '🎮', 'Xbox One': '🎮', 'Xbox Series': '🎮' };
+  return (icons[p] || '') + ' ' + p;
+}
+
+// ═══ IGDB IMAGE FETCH ═══
+async function _fetchIgdbImg(title, bannerId) {
+  if (!title) return;
+  if (_igdbCache[title] !== undefined) {
+    if (_igdbCache[title]) _applyBanner(bannerId, _igdbCache[title]);
+    return;
+  }
+  _igdbCache[title] = null; // mark as pending
+  try {
+    const url = 'https://corsproxy.io/?' + encodeURIComponent(
+      'https://www.igdb.com/search_autocomplete_all?q=' + encodeURIComponent(title)
+    );
+    const r = await fetch(url);
+    const data = await r.json();
+    const games = data.game_suggest || [];
+    if (games.length > 0) {
+      const g = games[0];
+      const imgId = g.cloudinary_id || (g.cover && g.cover.cloudinary_id);
+      if (imgId) {
+        const imgUrl = 'https://images.igdb.com/igdb/image/upload/t_screenshot_big/' + imgId + '.jpg';
+        _igdbCache[title] = imgUrl;
+        _applyBanner(bannerId, imgUrl);
+      }
+    }
+  } catch(e) { /* silently fail, keep gradient */ }
+}
+
+function _applyBanner(bannerId, imgUrl) {
+  const el = document.getElementById(bannerId);
+  if (el) {
+    el.style.backgroundImage = 'url(' + imgUrl + ')';
+    el.style.backgroundSize = 'cover';
+    el.style.backgroundPosition = 'center';
+    // hide the genre icon when real image loads
+    const icon = el.querySelector('.card-cover-genre-icon');
+    if (icon) icon.style.opacity = '0';
+  }
+}
+
+// ═══ FAVORITES ═══
+function isFav(id) { return _favorites.includes(id); }
 function toggleFav(id, e) {
   if (e) e.stopPropagation();
   if (isFav(id)) {
-    state.favorites = state.favorites.filter(f => f !== id);
+    _favorites = _favorites.filter(f => f !== id);
     showToast('Removed from saved');
   } else {
-    state.favorites.push(id);
+    _favorites.push(id);
     showToast('Saved! ✓');
   }
-  localStorage.setItem('gcProjFavs', JSON.stringify(state.favorites));
-  render();
+  localStorage.setItem('gcMobProjFavs', JSON.stringify(_favorites));
+  // update just this card's fav button
+  const card = document.getElementById('mproj-' + id);
+  if (card) {
+    card.classList.toggle('favorited', isFav(id));
+    const btn = card.querySelector('.card-act-btn:first-child');
+    if (btn) { btn.classList.toggle('fav-active', isFav(id)); btn.textContent = isFav(id) ? '♥ Save' : '♡ Save'; }
+    const detailBtn = card.querySelector('.detail-btn-save');
+    if (detailBtn) detailBtn.textContent = isFav(id) ? '♥ Saved' : '♡ Save';
+  }
 }
 
+function toggleExpand(id, e) {
+  if (e) e.stopPropagation();
+  const prev = _expanded;
+  _expanded = (_expanded === id) ? null : id;
+  if (prev !== null) {
+    const prevCard = document.getElementById('mproj-' + prev);
+    if (prevCard) {
+      prevCard.classList.remove('expanded');
+      const arrow = prevCard.querySelector('.card-act-arrow');
+      if (arrow) arrow.textContent = '▼';
+    }
+  }
+  if (_expanded !== null) {
+    const card = document.getElementById('mproj-' + _expanded);
+    if (card) {
+      card.classList.add('expanded');
+      const arrow = card.querySelector('.card-act-arrow');
+      if (arrow) arrow.textContent = '▲';
+      setTimeout(() => card.scrollIntoView({ behavior: 'smooth', block: 'nearest' }), 50);
+    }
+  }
+}
+
+// ═══ TOAST ═══
 function showToast(msg) {
   const t = document.getElementById('toast');
   t.textContent = msg;
@@ -755,118 +751,156 @@ function showToast(msg) {
   setTimeout(() => t.classList.remove('show'), 2000);
 }
 
-function toggleExpand(id, e) {
-  if (e) e.stopPropagation();
-  state.expanded = state.expanded === id ? null : id;
-  render();
-  if (state.expanded === id) {
-    setTimeout(() => {
-      const el = document.getElementById('proj-' + id);
-      if (el) el.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-    }, 50);
-  }
+// ═══ BUILD QUERY URL ═══
+function _buildUrl(offset) {
+  let url = _SB_URL + '/rest/v1/game_projects?select=id,title,tagline,description,genre,status,looking_for,platforms,cover_image_url&is_public=eq.true&order=created_at.desc&limit=' + PAGE_SIZE + '&offset=' + offset;
+  if (_statusFilter) url += '&status=eq.' + encodeURIComponent(_statusFilter);
+  if (_searchQuery) url += '&title=ilike.*' + encodeURIComponent(_searchQuery) + '*';
+  if (_platformFilter) url += '&platforms=cs.["' + encodeURIComponent(_platformFilter) + '"]';
+  return url;
 }
 
-function getFiltered() {
-  return PROJECTS.filter(p => {
-    if (state.status !== 'All' && p.status !== state.status) return false;
-    if (state.platform !== 'All' && !p.platforms.includes(state.platform)) return false;
-    if (state.search) {
-      const q = state.search.toLowerCase();
-      if (!p.name.toLowerCase().includes(q) &&
-          !p.studio.toLowerCase().includes(q) &&
-          !p.genre.toLowerCase().includes(q) &&
-          !p.country.toLowerCase().includes(q)) return false;
-    }
-    return true;
-  });
+// ═══ RENDER A SINGLE CARD ═══
+function _renderCard(p) {
+  const genre = (Array.isArray(p.genre) ? (p.genre[0]||'') : (p.genre||'')).replace(/;+/g,'').trim();
+  const [genreIcon, genreGrad] = _getGenreStyle(genre);
+  const grad = 'linear-gradient(135deg,' + genreGrad + ')';
+  const statusLabel = _statusLabel(p.status);
+  const badgeCls = _badgeClass(p.status);
+  const studio = p.tagline || '';
+  const desc = (p.description || '').slice(0, 140) + ((p.description||'').length > 140 ? '…' : '');
+  const plats = [...new Set((p.platforms||[]).filter(pl => pl && !pl.toLowerCase().includes('please select')))].slice(0,4);
+  const platTags = plats.map(pl => `<span class="platform-tag">${_platformIcon(pl)}</span>`).join('');
+  const _lfArr = Array.isArray(p.looking_for)
+    ? p.looking_for.map(s => (s||'').replace(/;+/g,'').trim()).filter(Boolean)
+    : [(p.looking_for||'').replace(/;+/g,'').trim()].filter(Boolean);
+  const seekBadge = _lfArr.length
+    ? `<span class="card-seeking-badge">${_lfArr[0].length > 22 ? _lfArr[0].slice(0,20)+'…' : _lfArr[0]}</span>`
+    : '';
+  const bannerId = 'mpb-' + p.id;
+  const fav = isFav(p.id);
+
+  // Detail grid items
+  const detailItems = [
+    { label: 'Genre', val: genre || '—' },
+    { label: 'Status', val: statusLabel || '—' },
+    { label: 'Platforms', val: plats.join(', ') || '—' },
+    { label: 'Looking For', val: _lfArr.slice(0,2).join(', ') || '—' },
+  ].map(i => `<div class="detail-item"><div class="detail-item-label">${i.label}</div><div class="detail-item-val">${i.val}</div></div>`).join('');
+
+  const seekTags = _lfArr.map(s => `<span class="seeking-tag">${s}</span>`).join('');
+
+  return `
+  <div class="project-card ${fav ? 'favorited' : ''}" id="mproj-${p.id}">
+    <div class="card-cover" id="${bannerId}" style="background:${grad}" onclick="toggleExpand('${p.id}', event)">
+      <div class="card-cover-overlay"></div>
+      <span class="card-cover-genre-icon">${genreIcon}</span>
+      ${statusLabel ? `<span class="card-status-badge ${badgeCls}">${statusLabel}</span>` : ''}
+      ${seekBadge}
+      <span class="card-cover-title">${p.title || ''}</span>
+    </div>
+    <div class="card-body" onclick="toggleExpand('${p.id}', event)">
+      <div class="card-name-row">
+        <div class="card-name">${p.title || ''}</div>
+        ${genre ? `<div class="card-genre">${genre}</div>` : ''}
+      </div>
+      ${studio ? `<div class="card-studio">${studio}</div>` : ''}
+      ${desc ? `<div class="card-desc">${desc}</div>` : ''}
+      ${platTags ? `<div class="card-platforms">${platTags}</div>` : ''}
+      <div class="card-actions" onclick="event.stopPropagation()">
+        <button class="card-act-btn ${fav ? 'fav-active' : ''}" onclick="toggleFav('${p.id}', event)">${fav ? '♥ Save' : '♡ Save'}</button>
+        <button class="card-act-btn card-act-connect" onclick="showToast('Connect request sent! ✓')">👥 Connect</button>
+        <button class="card-act-arrow" onclick="toggleExpand('${p.id}', event)">▼</button>
+      </div>
+    </div>
+    <div class="card-detail">
+      ${desc ? `<div class="detail-desc">${p.description || ''}</div>` : ''}
+      <div class="detail-grid">${detailItems}</div>
+      ${seekTags ? `<div class="seeking-section"><div class="seeking-title">🤝 Looking For</div><div class="seeking-tags">${seekTags}</div></div>` : ''}
+      <div class="detail-btns">
+        <button class="detail-btn detail-btn-contact" onclick="showToast('Opening contact form…')">✉️ Contact</button>
+        <button class="detail-btn detail-btn-save" onclick="toggleFav('${p.id}', event)">${fav ? '♥ Saved' : '♡ Save'}</button>
+        <button class="detail-btn detail-btn-share" onclick="showToast('Link copied! 🔗')">🔗</button>
+      </div>
+    </div>
+  </div>`;
 }
 
-function platformIcon(p) {
-  const icons = { PC: '🖥️', Mobile: '📱', Console: '🎮', VR: '🥽' };
-  return icons[p] || p;
-}
-
-function render() {
+// ═══ LOAD DATA ═══
+async function loadProjects(reset) {
+  if (_loading) return;
+  _loading = true;
   const list = document.getElementById('cardsList');
-  const projects = getFiltered();
-  document.getElementById('pageSubtitle').textContent = `${projects.length} project${projects.length !== 1 ? 's' : ''} found`;
 
-  if (projects.length === 0) {
-    list.innerHTML = `<div style="text-align:center;padding:48px 20px;color:var(--soft)"><div style="font-size:40px;margin-bottom:12px">🔍</div><div style="font-size:16px;font-weight:600;color:var(--mid)">No projects found</div><div style="font-size:13px;margin-top:6px">Try different filters</div></div>`;
-    return;
+  if (reset) {
+    _offset = 0;
+    list.innerHTML = '<div class="state-msg"><div class="state-icon">⏳</div><div class="state-title">Loading…</div></div>';
   }
 
-  list.innerHTML = projects.map(p => {
-    const fav = isFav(p.id);
-    const expanded = state.expanded === p.id;
-    const platTags = p.platforms.map(pl => `<span class="platform-tag">${platformIcon(pl)} ${pl}</span>`).join('');
-    const seekTags = p.seeking.map(s => `<span class="seeking-tag">${s}</span>`).join('');
-    const detailGridItems = [
-      { label: 'Engine', val: p.engine },
-      { label: 'Team Size', val: p.team },
-      { label: 'In Dev', val: p.duration },
-      { label: 'Status', val: p.status }
-    ].map(i => `<div class="detail-item"><div class="detail-item-label">${i.label}</div><div class="detail-item-val">${i.val}</div></div>`).join('');
+  try {
+    const url = _buildUrl(_offset);
+    const r = await fetch(url, { headers: { ..._SB_H, 'Prefer': 'count=exact' } });
+    const cr = r.headers.get('content-range');
+    _total = cr ? parseInt(cr.split('/')[1]) || 0 : 0;
+    const data = await r.json();
 
-    return `
-    <div class="project-card ${fav ? 'favorited' : ''} ${expanded ? 'expanded' : ''}" id="proj-${p.id}">
-      <div class="card-cover" onclick="toggleExpand(${p.id}, event)">
-        <svg viewBox="0 0 480 120" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
-          <defs>
-            <linearGradient id="cg${p.id}" x1="0%" y1="0%" x2="100%" y2="100%">
-              <stop offset="0%" style="stop-color:${p.coverGrad.match(/#[a-f0-9]{3,6}/gi)?.[0]||'#1c1a17'}"/>
-              <stop offset="50%" style="stop-color:${p.coverGrad.match(/#[a-f0-9]{3,6}/gi)?.[1]||'#374151'}"/>
-              <stop offset="100%" style="stop-color:${p.coverGrad.match(/#[a-f0-9]{3,6}/gi)?.[2]||'#d95f2b'}"/>
-            </linearGradient>
-            <filter id="nf${p.id}"><feTurbulence type="fractalNoise" baseFrequency="0.65" numOctaves="3" stitchTiles="stitch"/><feColorMatrix type="saturate" values="0"/><feBlend in="SourceGraphic" mode="multiply"/></filter>
-          </defs>
-          <rect width="480" height="120" fill="url(#cg${p.id})"/>
-          <rect width="480" height="120" fill="url(#cg${p.id})" opacity="0.3" filter="url(#nf${p.id})"/>
-          <rect width="480" height="40" y="80" fill="url(#overlay${p.id})"/>
-          <defs><linearGradient id="overlay${p.id}" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="transparent"/><stop offset="100%" stop-color="rgba(0,0,0,0.5)"/></linearGradient></defs>
-        </svg>
-        <span class="card-status-badge ${STATUS_BADGE_CLASS[p.status]}">${p.status}</span>
-        <span class="card-cover-title">${p.name}</span>
-      </div>
-      <div class="card-body" onclick="toggleExpand(${p.id}, event)">
-        <div class="card-name-row">
-          <div class="card-name">${p.name}</div>
-          <div class="card-genre">${p.genre}</div>
-        </div>
-        <div class="card-studio">${p.flag} ${p.studio} · ${p.city}</div>
-        <div class="card-desc">${p.shortDesc}</div>
-        <div class="card-platforms">${platTags}</div>
-        <div class="card-actions" onclick="event.stopPropagation()">
-          <button class="card-act-btn ${fav ? 'fav-active' : ''}" onclick="toggleFav(${p.id}, event)">${fav ? '♥' : '♡'} Save</button>
-          <button class="card-act-btn card-act-connect" onclick="showToast('Connect request sent! ✓')">👥 Connect</button>
-          <button class="card-act-arrow" onclick="toggleExpand(${p.id}, event)">${expanded ? '▲' : '▼'}</button>
-        </div>
-      </div>
-      <div class="card-detail">
-        <div class="detail-desc">${p.fullDesc}</div>
-        <div class="detail-grid">${detailGridItems}</div>
-        <div class="seeking-section">
-          <div class="seeking-title">🤝 Seeking</div>
-          <div class="seeking-tags">${seekTags}</div>
-        </div>
-        <div class="detail-btns">
-          <button class="detail-btn detail-btn-contact" onclick="showToast('Opening contact form…')">✉️ Contact</button>
-          <button class="detail-btn detail-btn-save" onclick="toggleFav(${p.id}, event)">${fav ? '♥ Saved' : '♡ Save'}</button>
-          <button class="detail-btn detail-btn-share" onclick="showToast('Link copied! 🔗')">🔗</button>
-        </div>
-      </div>
-    </div>`;
-  }).join('');
+    if (!Array.isArray(data) || data.length === 0) {
+      if (reset) {
+        list.innerHTML = '<div class="state-msg"><div class="state-icon">🔍</div><div class="state-title">No projects found</div><div class="state-sub">Try different filters</div></div>';
+      }
+      document.getElementById('loadMoreWrap').style.display = 'none';
+      _loading = false;
+      return;
+    }
+
+    const html = data.map(_renderCard).join('');
+    if (reset) {
+      list.innerHTML = html;
+    } else {
+      list.insertAdjacentHTML('beforeend', html);
+    }
+
+    // Update subtitle
+    const fmt = n => n >= 1000 ? (n/1000).toFixed(1).replace('.0','')+'K+' : String(n);
+    document.getElementById('pageSubtitle').textContent = fmt(_total) + ' projects from worldwide studios';
+
+    // Async load IGDB images
+    data.forEach(p => {
+      if (p.title) setTimeout(() => _fetchIgdbImg(p.title, 'mpb-' + p.id), 0);
+    });
+
+    _offset += data.length;
+
+    // Load more button
+    const wrap = document.getElementById('loadMoreWrap');
+    const btn = document.getElementById('loadMoreBtn');
+    if (_offset < _total) {
+      wrap.style.display = 'block';
+      btn.textContent = 'Load More (' + (_total - _offset).toLocaleString() + ' remaining)';
+    } else {
+      wrap.style.display = 'none';
+    }
+
+  } catch(e) {
+    console.error('Projects load error:', e);
+    if (reset) {
+      list.innerHTML = '<div class="state-msg"><div class="state-icon">⚠️</div><div class="state-title">Failed to load</div><div class="state-sub">Please check your connection</div></div>';
+    }
+  }
+  _loading = false;
 }
 
-// Filter pills
+function loadMore() {
+  loadProjects(false);
+}
+
+// ═══ FILTERS ═══
 document.querySelectorAll('#statusFilter .pill').forEach(btn => {
   btn.onclick = () => {
     document.querySelectorAll('#statusFilter .pill').forEach(b => b.classList.remove('active'));
     btn.classList.add('active');
-    state.status = btn.dataset.status;
-    render();
+    _statusFilter = btn.dataset.status || '';
+    loadProjects(true);
   };
 });
 
@@ -874,27 +908,23 @@ document.querySelectorAll('#platformFilter .pill').forEach(btn => {
   btn.onclick = () => {
     document.querySelectorAll('#platformFilter .pill').forEach(b => b.classList.remove('active'));
     btn.classList.add('active');
-    state.platform = btn.dataset.platform;
-    render();
+    _platformFilter = btn.dataset.platform || '';
+    loadProjects(true);
   };
 });
 
+// ═══ SEARCH (debounced) ═══
+let _searchTimer = null;
 document.getElementById('searchInput').oninput = e => {
-  state.search = e.target.value.trim();
-  render();
+  clearTimeout(_searchTimer);
+  _searchTimer = setTimeout(() => {
+    _searchQuery = e.target.value.trim();
+    loadProjects(true);
+  }, 400);
 };
 
-render();
+// ═══ INIT ═══
+loadProjects(true);
 </script>
-
-
-<nav class="gc-bnav">
-  <a href="MobileHub_v14.html" class="gc-bn active"><div class="gc-bn-i"><svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/></svg></div><span class="gc-bn-l">Home</span></a>
-  <a href="LetsMeet_Browse_v1_Mobile.html" class="gc-bn"><div class="gc-bn-i"><svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M16 11c1.66 0 3-1.34 3-3s-1.34-3-3-3-3 1.34-3 3 1.34 3 3 3zm-8 0c1.66 0 3-1.34 3-3S9.66 5 8 5 5 6.34 5 8s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5C15 14.17 10.33 13 8 13zm8 0c-.29 0-.62.02-.97.05C16.19 13.9 17 15.02 17 16.5V19h6v-2.5C23 14.17 18.33 13 16 13z" opacity="0.45"/><circle cx="8" cy="8" r="3.2"/><path d="M8 13c-2.33 0-7 1.17-7 3.5V19h14v-2.5C15 14.17 10.33 13 8 13z"/></svg></div><span class="gc-bn-l">People</span></a>
-  <a href="ExhibitorBrowse_v1_Mobile.html" class="gc-bn"><div class="gc-bn-i"><svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M21 6H3c-1.1 0-2 .9-2 2v8c0 1.1.9 2 2 2h18c1.1 0 2-.9 2-2V8c0-1.1-.9-2-2-2zm-10 7H8v3H6v-3H3v-2h3V8h2v3h3v2zm4.5 2c-.83 0-1.5-.67-1.5-1.5S14.67 12 15.5 12s1.5.67 1.5 1.5S16.33 15 15.5 15zm3-3c-.83 0-1.5-.67-1.5-1.5S17.67 10 18.5 10s1.5.67 1.5 1.5S19.33 12 18.5 12z"/></svg></div><span class="gc-bn-l">Projects</span></a>
-  <a href="ConferenceCalendar_v2_Mobile.html" class="gc-bn"><div class="gc-bn-i"><svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M19 3h-1V1h-2v2H8V1H6v2H5C3.89 3 3 3.9 3 5v14c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 16H5V8h14v11zm-7-9h-2v2h2v-2zm4 0h-2v2h2v-2zm-8 4H6v2h2v-2zm4 0h-2v2h2v-2zm4 0h-2v2h2v-2zm-8-4H6v2h2v-2z"/></svg></div><span class="gc-bn-l">Events</span></a>
-  <a href="Messages_v1_Mobile.html" class="gc-bn"><div class="gc-bn-i"><svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2z" opacity="0.15"/><path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm0 14H5.17L4 17.17V4h16v12z"/><circle cx="8.5" cy="11" r="1.3"/><circle cx="12" cy="11" r="1.3"/><circle cx="15.5" cy="11" r="1.3"/></svg></div><span class="gc-bn-l">Messages</span></a>
-  <a href="AttendeeDashboard_v1_Mobile.html" class="gc-bn"><div class="gc-bn-i"><svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M12 12c2.7 0 4.8-2.1 4.8-4.8S14.7 2.4 12 2.4 7.2 4.5 7.2 7.2 9.3 12 12 12zm0 2.4c-3.2 0-9.6 1.6-9.6 4.8v2.4h19.2v-2.4c0-3.2-6.4-4.8-9.6-4.8z"/></svg></div><span class="gc-bn-l">Profile</span></a>
-</nav>
 </body>
 </html>
