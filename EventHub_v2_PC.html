@@ -11,7 +11,7 @@ html,body{height:100%;font-family:"DM Sans","PingFang SC",sans-serif;color:#0000
 body{background:#f3f2ef}
 
 :root{
-  --orange:#0A66C2;--orange-dim:rgba(10,102,194,0.1);--orange-border:rgba(10,102,194,0.25);
+  --orange:#16a34a;--orange-dim:rgba(22,163,74,0.1);--orange-border:rgba(22,163,74,0.25);
   --teal:#0a7fa8;--teal-dim:rgba(10,127,168,0.1);--teal-border:rgba(10,127,168,0.22);
   --green:#0d9b72;--green-dim:rgba(13,155,114,0.1);--green-border:rgba(13,155,114,0.25);
   --purple:#7c3aed;--purple-dim:rgba(124,58,237,0.1);--purple-border:rgba(124,58,237,0.25);
@@ -32,18 +32,18 @@ body{background:#f3f2ef}
   border-bottom:1px solid #e0dfdc;
   display:flex;align-items:center;padding:0 24px;gap:12px;
 }
-.nav-logo{font-size:15px;font-weight:900;color:var(--text1);letter-spacing:-.3px;flex-shrink:0}
-.nav-logo span{color:var(--orange)}
+.nav-logo{font-size:15px;font-weight:900;color:#111111;letter-spacing:-.3px;flex-shrink:0}
+.nav-logo span{color:#16a34a}
 .nav-live-badge{
   display:flex;align-items:center;gap:5px;
-  background:rgba(10,102,194,0.1);border:1px solid rgba(10,102,194,0.25);
+  background:rgba(22,163,74,0.1);border:1px solid rgba(22,163,74,0.25);
   border-radius:6px;padding:3px 10px;flex-shrink:0;
 }
 .live-dot{
   width:6px;height:6px;border-radius:50%;background:var(--orange);
   animation:pulse 1.8s ease-in-out infinite;
 }
-@keyframes pulse{0%,100%{box-shadow:0 0 0 0 rgba(10,102,194,0.6)}60%{box-shadow:0 0 0 5px rgba(10,102,194,0)}}
+@keyframes pulse{0%,100%{box-shadow:0 0 0 0 rgba(22,163,74,0.6)}60%{box-shadow:0 0 0 5px rgba(22,163,74,0)}}
 @keyframes pulse-dot{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.4;transform:scale(1.3)}}
 @keyframes pulse-badge{0%,100%{opacity:1}50%{opacity:.6}}
 @keyframes border-pulse{0%,100%{opacity:1}50%{opacity:.6}}
@@ -54,8 +54,9 @@ body{background:#f3f2ef}
   background:var(--card);border:1px solid #e0dfdc;border-radius:7px;
   display:flex;align-items:center;gap:8px;padding:0 12px;box-shadow:var(--s1);
 }
-.nav-search svg{opacity:.4;flex-shrink:0}
-.nav-search span{font-size:13px;color:var(--text3);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.nav-search svg{opacity:.4;flex-shrink:0;pointer-events:none}
+.nav-search input{flex:1;border:none;outline:none;background:transparent;font-size:13px;color:var(--text1);font-family:inherit;min-width:0}
+.nav-search input::placeholder{color:var(--text3)}
 .nav-gap{flex:1}
 .nav-tabs{display:flex;align-items:stretch;height:var(--nav-h);gap:2px}
 .nav-tab{
@@ -834,7 +835,7 @@ async function gcSignOut() {
   <div class="nav-live-badge"><div class="live-dot"></div><span>LIVE</span></div>
   <div class="nav-search" style="margin-left:8px">
     <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#999" stroke-width="2.2"><circle cx="11" cy="11" r="7"/><line x1="16.5" y1="16.5" x2="22" y2="22"/></svg>
-    <span>Search events…</span>
+    <input type="text" id="global-search-input" placeholder="Search events…" autocomplete="off" oninput="handleGlobalSearch(this.value)" onfocus="updateSearchPlaceholder()">
   </div>
   <div class="nav-gap"></div>
   <div class="nav-tabs">
@@ -2174,6 +2175,14 @@ let currentMode = 'home';
 
 function switchMode(mode) {
   currentMode = mode;
+  // Update global search box
+  const _gsi = document.getElementById('global-search-input');
+  if (_gsi) {
+    _gsi.value = '';
+    if (mode === 'projects') _gsi.placeholder = 'Search projects, studios…';
+    else if (mode === 'news') _gsi.placeholder = 'Search news…';
+    else _gsi.placeholder = 'Search events…';
+  }
   const tabs = document.querySelectorAll('.nav-tab');
   tabs.forEach(t => { t.classList.remove('active'); t.classList.remove('active-teal'); });
   const homePanel = document.getElementById('home-panel');
@@ -2291,6 +2300,41 @@ function updateStats(mode) {
   }
 }
 
+// ── Global Search ──
+let _globalSearchTimer = null;
+function updateSearchPlaceholder() {
+  const inp = document.getElementById('global-search-input');
+  if (!inp) return;
+  const mode = window.currentMode || 'calendar';
+  if (mode === 'projects') inp.placeholder = 'Search projects, studios…';
+  else if (mode === 'news') inp.placeholder = 'Search news…';
+  else inp.placeholder = 'Search events…';
+}
+function handleGlobalSearch(val) {
+  clearTimeout(_globalSearchTimer);
+  _globalSearchTimer = setTimeout(function() {
+    const mode = window.currentMode || 'calendar';
+    if (mode === 'calendar') {
+      if (window._calState) {
+        window._calState.searchKeyword = val.trim();
+        calLoadEvents(true);
+      }
+    } else if (mode === 'projects') {
+      const projInp = document.getElementById('pc-proj-search');
+      if (projInp) {
+        projInp.value = val;
+        _pcProjLoadBatch(true);
+      }
+    } else if (mode === 'news') {
+      // News: filter visible cards by title keyword
+      const kw = val.trim().toLowerCase();
+      document.querySelectorAll('#news-panel .news-card').forEach(card => {
+        const title = (card.querySelector('.news-title') || card).textContent.toLowerCase();
+        card.style.display = (!kw || title.includes(kw)) ? '' : 'none';
+      });
+    }
+  }, 350);
+}
 function selDate(btn) {
   const list = btn.closest('.date-list');
   list.querySelectorAll('.date-btn').forEach(b => b.classList.remove('active'));
