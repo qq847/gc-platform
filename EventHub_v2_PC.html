@@ -329,10 +329,11 @@ body{background:#f3f2ef}
   background:#555 center/cover no-repeat;cursor:pointer;transition:all .2s;
   min-width:200px;max-width:240px;height:72px;box-shadow:var(--s1);
   position:relative;overflow:hidden;
+  justify-content:center;
 }
 .conf-card::before{
   content:'';position:absolute;inset:0;border-radius:9px;
-  background:linear-gradient(90deg,rgba(0,0,0,.62) 0%,rgba(0,0,0,.18) 100%);
+  background:linear-gradient(180deg,rgba(0,0,0,.25) 0%,rgba(0,0,0,.62) 100%);
   transition:opacity .2s;
 }
 .conf-card:hover{box-shadow:var(--s2);transform:translateY(-1px)}
@@ -342,9 +343,9 @@ body{background:#f3f2ef}
   box-shadow:0 2px 14px rgba(0,0,0,0.25);
 }
 .conf-icon{display:none}
-.conf-info{flex:1;min-width:0;position:relative;z-index:1}
-.conf-name{font-size:13px;font-weight:700;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;text-shadow:0 1px 4px rgba(0,0,0,.5)}
-.conf-meta{font-size:10px;color:rgba(255,255,255,.8);margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;text-shadow:0 1px 3px rgba(0,0,0,.4)}
+.conf-info{flex:1;min-width:0;position:relative;z-index:1;text-align:center}
+.conf-name{font-size:13px;font-weight:700;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;text-shadow:0 1px 6px rgba(0,0,0,.7)}
+.conf-meta{font-size:10px;color:rgba(255,255,255,.85);margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;text-shadow:0 1px 4px rgba(0,0,0,.6)}
 .conf-status{
   flex-shrink:0;display:flex;align-items:center;gap:3px;
   font-size:8px;font-weight:800;letter-spacing:.5px;padding:2px 7px;border-radius:20px;
@@ -837,16 +838,18 @@ async function gcSignOut() {
   </div>
   <div class="nav-gap"></div>
   <div class="nav-tabs">
-    <div class="nav-tab active" onclick="switchMode('home')">🏠 Home</div>
+    <!-- Home tab hidden (kept for internal use) -->
+    <div class="nav-tab" data-tab="home" onclick="switchMode('home')" style="display:none">🏠 Home</div>
     <div class="nav-tab-wrap">
-      <div class="nav-tab" onclick="switchMode('calendar')">📅 Calendar</div>
+      <div class="nav-tab active" data-tab="calendar" onclick="switchMode('calendar')">📅 Calendar</div>
       <span class="opp-badge" id="badge-calendar" style="display:none"></span>
     </div>
-    <div class="nav-tab" onclick="switchMode('live')">🔴 Live</div>
-    <div class="nav-tab" onclick="switchMode('projects')">🎮 Projects</div>
-    <div class="nav-tab" onclick="switchMode('companies')">🏢 Companies</div>
-    <div class="nav-tab" onclick="switchMode('news')">📰 News</div>
-
+    <!-- Live tab hidden -->
+    <div class="nav-tab" data-tab="live" onclick="switchMode('live')" style="display:none">🔴 Live</div>
+    <div class="nav-tab" data-tab="news" onclick="switchMode('news')">📰 News</div>
+    <div class="nav-tab" data-tab="projects" onclick="switchMode('projects')">🎮 Projects</div>
+    <!-- Companies tab hidden -->
+    <div class="nav-tab" data-tab="companies" onclick="switchMode('companies')" style="display:none">🏢 Companies</div>
   </div>
   <!-- For Business Dropdown -->
   <div class="biz-dropdown-wrap" id="biz-dropdown-wrap">
@@ -2172,7 +2175,6 @@ let currentMode = 'home';
 function switchMode(mode) {
   currentMode = mode;
   const tabs = document.querySelectorAll('.nav-tab');
-    // tabs[0]=Home, tabs[1]=Calendar, tabs[2]=Live, tabs[3]=Projects, tabs[4]=Companies
   tabs.forEach(t => { t.classList.remove('active'); t.classList.remove('active-teal'); });
   const homePanel = document.getElementById('home-panel');
   const confBar = document.getElementById('conf-bar');
@@ -2188,28 +2190,32 @@ function switchMode(mode) {
   profilePanel.style.display = 'none';
 
   if (mode === 'home') {
-    tabs[0].classList.add('active');
+    const homeTab = document.querySelector('.nav-tab[data-tab="home"]');
+    if (homeTab) homeTab.classList.add('active');
     homePanel.style.display = 'block';
     confBar.style.display = 'none';
     layout.style.display = 'none';
     if (!window._homeFeedInited) { window._homeFeedInited = true; loadHomeFeed(); }
     if (!window._bannerInited) { window._bannerInited = true; setTimeout(bannerInit, 50); }
   } else if (mode === 'projects') {
-    tabs[3].classList.add('active');
+    const projTab = document.querySelector('.nav-tab[data-tab="projects"]');
+    if (projTab) projTab.classList.add('active');
     homePanel.style.display = 'none';
     confBar.style.display = 'none';
     layout.style.display = 'none';
     projectsPanel.style.display = 'flex';
     pcProjRender();
   } else if (mode === 'companies') {
-    tabs[4].classList.add('active');
+    const compTab = document.querySelector('.nav-tab[data-tab="companies"]');
+    if (compTab) compTab.classList.add('active');
     homePanel.style.display = 'none';
     confBar.style.display = 'none';
     layout.style.display = 'none';
     companiesPanel.style.display = 'grid';
     if (!window._cpInited) { window._cpInited = true; cpRender(); }
   } else if (mode === 'news') {
-    tabs[5].classList.add('active');
+    const newsTab = document.querySelector('.nav-tab[data-tab="news"]');
+    if (newsTab) newsTab.classList.add('active');
     homePanel.style.display = 'none';
     confBar.style.display = 'none';
     layout.style.display = 'none';
@@ -2249,9 +2255,11 @@ function switchMode(mode) {
     layout.style.display = 'grid';
 
     if (mode === 'calendar') {
-      tabs[1].classList.add('active');
+      const calTab = document.querySelector('.nav-tab[data-tab="calendar"]');
+      if (calTab) calTab.classList.add('active');
     } else if (mode === 'live') {
-      tabs[2].classList.add('active');
+      const liveTab = document.querySelector('.nav-tab[data-tab="live"]');
+      if (liveTab) liveTab.classList.add('active');
     }
 
     // Toggle left sidebar date sections
@@ -2848,7 +2856,7 @@ function renderProjCard(p, idx) {
 // Init: default to Home view on page load, or switch to profile if ?mode=profile
 document.addEventListener('DOMContentLoaded', function() {
   const urlParams = new URLSearchParams(window.location.search);
-  const initMode = urlParams.get('mode') || 'home';
+  const initMode = urlParams.get('mode') || 'calendar';
   // Clean up the URL query param without reload
   if (urlParams.has('mode')) {
     history.replaceState(null, '', window.location.pathname + window.location.hash);
