@@ -58,6 +58,44 @@ body{background:#f3f2ef}
 .nav-search input{flex:1;border:none;outline:none;background:transparent;font-size:13px;color:var(--text1);font-family:inherit;min-width:0}
 .nav-search input::placeholder{color:var(--text3)}
 .nav-gap{flex:1}
+/* Global Search Dropdown */
+.gs-dropdown{
+  position:fixed;top:var(--nav-h);left:0;right:0;
+  background:#fff;border-bottom:1px solid #e5e7eb;
+  box-shadow:0 8px 24px rgba(0,0,0,0.12);
+  z-index:9999;display:none;
+  max-height:480px;overflow-y:auto;
+}
+.gs-dropdown.open{display:block}
+.gs-section-title{
+  font-size:10px;font-weight:700;color:#9ca3af;
+  letter-spacing:.8px;text-transform:uppercase;
+  padding:12px 20px 6px;
+}
+.gs-item{
+  display:flex;align-items:center;gap:12px;
+  padding:10px 20px;cursor:pointer;
+  border-bottom:1px solid #f3f4f6;
+  transition:background .1s;
+}
+.gs-item:hover{background:#f9fafb}
+.gs-item-icon{
+  width:36px;height:36px;border-radius:6px;
+  background:#f3f4f6;display:flex;align-items:center;
+  justify-content:center;font-size:16px;flex-shrink:0;
+}
+.gs-item-info{flex:1;min-width:0}
+.gs-item-title{font-size:13px;font-weight:600;color:#111;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.gs-item-sub{font-size:11px;color:#6b7280;margin-top:1px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.gs-item-tag{
+  font-size:10px;font-weight:700;padding:2px 8px;
+  border-radius:4px;flex-shrink:0;
+}
+.gs-item-tag.event{background:#e0f2fe;color:#0369a1}
+.gs-item-tag.project{background:#f0fdf4;color:#15803d}
+.gs-empty{padding:24px 20px;text-align:center;color:#9ca3af;font-size:13px}
+.gs-footer{padding:10px 20px;text-align:center;font-size:12px;color:#6b7280;border-top:1px solid #f3f4f6;cursor:pointer}
+.gs-footer:hover{background:#f9fafb;color:#111}
 .nav-tabs{display:flex;align-items:stretch;height:var(--nav-h);gap:2px}
 .nav-tab{
   display:flex;align-items:center;gap:6px;padding:0 16px;
@@ -831,11 +869,10 @@ async function gcSignOut() {
 
 <!-- TOP NAV -->
 <div class="topnav">
-  <div class="nav-logo">GAME<span>CONNECTION</span></div>
-  <div class="nav-live-badge"><div class="live-dot"></div><span>LIVE</span></div>
+  <div class="nav-logo"><img src="assets/gc-logo.png" alt="Game Connection" style="height:32px;width:auto;display:block"></div>
   <div class="nav-search" style="margin-left:8px">
     <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#999" stroke-width="2.2"><circle cx="11" cy="11" r="7"/><line x1="16.5" y1="16.5" x2="22" y2="22"/></svg>
-    <input type="text" id="global-search-input" placeholder="Search events…" autocomplete="off" oninput="handleGlobalSearch(this.value)" onfocus="updateSearchPlaceholder()">
+    <input type="text" id="global-search-input" placeholder="Search events & projects…" autocomplete="off" oninput="handleGlobalSearch(this.value)" onfocus="updateSearchPlaceholder()" onblur="setTimeout(closeGsDropdown,200)">
   </div>
   <div class="nav-gap"></div>
   <div class="nav-tabs">
@@ -888,6 +925,11 @@ async function gcSignOut() {
   </button>
   <a class="nav-ai-btn" id="nav-signin-btn" href="Identity_Login_v1.0_PC.html">Sign In →</a>
   <button class="nav-avatar-btn" id="nav-avatar-btn" style="display:none" onclick="switchMode('profile')"></button>
+</div>
+
+<!-- GLOBAL SEARCH DROPDOWN -->
+<div class="gs-dropdown" id="gs-dropdown">
+  <div id="gs-results-container"></div>
 </div>
 
 <!-- PROFILE DRAWER OVERLAY -->
@@ -2302,36 +2344,194 @@ function updateStats(mode) {
 
 // ── Global Search ──
 let _globalSearchTimer = null;
+let _gsAbortCtrl = null;
+
 function updateSearchPlaceholder() {
   const inp = document.getElementById('global-search-input');
   if (!inp) return;
-  const mode = window.currentMode || 'calendar';
-  if (mode === 'projects') inp.placeholder = 'Search projects, studios…';
-  else if (mode === 'news') inp.placeholder = 'Search news…';
-  else inp.placeholder = 'Search events…';
+  inp.placeholder = 'Search events & projects…';
 }
+
+function closeGsDropdown() {
+  const dd = document.getElementById('gs-dropdown');
+  if (dd) dd.classList.remove('open');
+}
+
+function openGsDropdown() {
+  const dd = document.getElementById('gs-dropdown');
+  if (dd) dd.classList.add('open');
+}
+
+function _gsRenderResults(events, projects, keyword) {
+  const container = document.getElementById('gs-results-container');
+  if (!container) return;
+  const kw = keyword.trim();
+  if (!kw) { closeGsDropdown(); return; }
+
+  let html = '';
+
+  // Events section
+  if (events && events.length > 0) {
+    html += '<div class="gs-section-title">📅 Events</div>';
+    events.slice(0, 5).forEach(ev => {
+      const title = ev.title || ev.name || '';
+      const city = ev.city || '';
+      const country = ev.country || '';
+      const date = ev.start_date ? ev.start_date.slice(0, 10) : '';
+      const loc = [city, country].filter(Boolean).join(', ');
+      const sub = [date, loc].filter(Boolean).join(' · ');
+      html += `<div class="gs-item" onclick="_gsGoEvent('${encodeURIComponent(JSON.stringify({id:ev.id,title}))}')">
+        <div class="gs-item-icon">📅</div>
+        <div class="gs-item-info">
+          <div class="gs-item-title">${_gsHighlight(title, kw)}</div>
+          <div class="gs-item-sub">${sub}</div>
+        </div>
+        <span class="gs-item-tag event">Event</span>
+      </div>`;
+    });
+  }
+
+  // Projects section
+  if (projects && projects.length > 0) {
+    html += '<div class="gs-section-title">🎮 Projects</div>';
+    projects.slice(0, 5).forEach(proj => {
+      const title = proj.title || '';
+      const studio = proj.tagline || '';
+      const genre = proj.genre || '';
+      const sub = [studio, genre].filter(Boolean).join(' · ');
+      const hasCover = proj.cover_image_url && proj.cover_image_url.startsWith('http');
+      const iconHtml = hasCover
+        ? `<img src="${proj.cover_image_url}" style="width:100%;height:100%;object-fit:cover" onerror="this.parentNode.innerHTML='🎮'">`
+        : '🎮';
+      html += `<div class="gs-item" onclick="_gsGoProject(${proj.id || 0})">
+        <div class="gs-item-icon" style="overflow:hidden">${iconHtml}</div>
+        <div class="gs-item-info">
+          <div class="gs-item-title">${_gsHighlight(title, kw)}</div>
+          <div class="gs-item-sub">${sub}</div>
+        </div>
+        <span class="gs-item-tag project">Project</span>
+      </div>`;
+    });
+  }
+
+  if (!html) {
+    html = `<div class="gs-empty">No results found for "${kw}"</div>`;
+  } else {
+    const total = (events ? events.length : 0) + (projects ? projects.length : 0);
+    if (total > 10) {
+      html += `<div class="gs-footer" onclick="_gsViewAll('${encodeURIComponent(kw)}')">View all results for "${kw}" →</div>`;
+    }
+  }
+
+  container.innerHTML = html;
+  openGsDropdown();
+}
+
+function _gsHighlight(text, kw) {
+  if (!kw || !text) return text || '';
+  const escaped = kw.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  return text.replace(new RegExp('(' + escaped + ')', 'gi'), '<mark style="background:#fef08a;padding:0 1px;border-radius:2px">$1</mark>');
+}
+
+function _gsGoEvent(encoded) {
+  try {
+    const data = JSON.parse(decodeURIComponent(encoded));
+    // Switch to calendar tab and search for this event
+    switchMode('calendar');
+    const inp = document.getElementById('global-search-input');
+    if (inp) inp.value = data.title || '';
+    if (window._calState) {
+      window._calState.searchKeyword = data.title || '';
+      calLoadEvents(true);
+    }
+    closeGsDropdown();
+  } catch(e) {}
+}
+
+function _gsGoProject(id) {
+  // Switch to projects tab and keep current search keyword
+  const inp = document.getElementById('global-search-input');
+  const kw = inp ? inp.value.trim() : '';
+  switchMode('projects');
+  if (kw) {
+    setTimeout(() => {
+      const projInp = document.getElementById('pc-proj-search');
+      if (projInp) { projInp.value = kw; _pcProjLoadBatch(true); }
+    }, 200);
+  }
+  closeGsDropdown();
+}
+
+function _gsViewAll(kwEncoded) {
+  const kw = decodeURIComponent(kwEncoded);
+  // Show results in both tabs — switch to calendar with search
+  switchMode('calendar');
+  const inp = document.getElementById('global-search-input');
+  if (inp) inp.value = kw;
+  if (window._calState) {
+    window._calState.searchKeyword = kw;
+    calLoadEvents(true);
+  }
+  closeGsDropdown();
+}
+
 function handleGlobalSearch(val) {
   clearTimeout(_globalSearchTimer);
-  _globalSearchTimer = setTimeout(function() {
+  const kw = val.trim();
+
+  // If empty, close dropdown and also update current tab's search
+  if (!kw) {
+    closeGsDropdown();
+    // Still pass through to current tab
     const mode = window.currentMode || 'calendar';
-    if (mode === 'calendar') {
-      if (window._calState) {
-        window._calState.searchKeyword = val.trim();
-        calLoadEvents(true);
-      }
+    if (mode === 'calendar' && window._calState) {
+      window._calState.searchKeyword = '';
+      calLoadEvents(true);
     } else if (mode === 'projects') {
       const projInp = document.getElementById('pc-proj-search');
-      if (projInp) {
-        projInp.value = val;
-        _pcProjLoadBatch(true);
+      if (projInp) { projInp.value = ''; _pcProjLoadBatch(true); }
+    }
+    return;
+  }
+
+  _globalSearchTimer = setTimeout(async function() {
+    // Abort previous request
+    if (_gsAbortCtrl) _gsAbortCtrl.abort();
+    _gsAbortCtrl = new AbortController();
+    const sig = _gsAbortCtrl.signal;
+
+    try {
+      const encoded = encodeURIComponent(kw);
+      const [evResp, projResp] = await Promise.all([
+        fetch(
+          `${_SB_URL}/rest/v1/events?select=id,title,city,country,start_date,type&or=(title.ilike.*${encoded}*,city.ilike.*${encoded}*)&order=start_date.asc&limit=8`,
+          { headers: _SB_H, signal: sig }
+        ),
+        fetch(
+          `${_SB_URL}/rest/v1/game_projects?select=id,title,tagline,genre,cover_image_url&or=(title.ilike.*${encoded}*,tagline.ilike.*${encoded}*,genre.ilike.*${encoded}*)&is_public=eq.true&limit=8`,
+          { headers: _SB_H, signal: sig }
+        )
+      ]);
+
+      const [events, projects] = await Promise.all([
+        evResp.ok ? evResp.json() : [],
+        projResp.ok ? projResp.json() : []
+      ]);
+
+      _gsRenderResults(events, projects, kw);
+
+      // Also update current tab's inline search
+      const mode = window.currentMode || 'calendar';
+      if (mode === 'calendar' && window._calState) {
+        window._calState.searchKeyword = kw;
+        calLoadEvents(true);
+      } else if (mode === 'projects') {
+        const projInp = document.getElementById('pc-proj-search');
+        if (projInp) { projInp.value = val; _pcProjLoadBatch(true); }
       }
-    } else if (mode === 'news') {
-      // News: filter visible cards by title keyword
-      const kw = val.trim().toLowerCase();
-      document.querySelectorAll('#news-panel .news-card').forEach(card => {
-        const title = (card.querySelector('.news-title') || card).textContent.toLowerCase();
-        card.style.display = (!kw || title.includes(kw)) ? '' : 'none';
-      });
+
+    } catch(e) {
+      if (e.name !== 'AbortError') console.warn('Global search error:', e);
     }
   }, 350);
 }
@@ -2341,19 +2541,9 @@ function selDate(btn) {
   btn.classList.add('active');
 }
 
-function selYear(btn, year) {
-  btn.closest('.year-btns').querySelectorAll('.year-btn-tab').forEach(b => b.classList.remove('active'));
-  btn.classList.add('active');
-}
-
 function selectConf(card) {
   document.querySelectorAll('.conf-card').forEach(c => c.classList.remove('active'));
   card.classList.add('active');
-}
-
-function filterTag(btn, tag) {
-  document.querySelectorAll('.ctag').forEach(b => b.classList.remove('active'));
-  btn.classList.add('active');
 }
 
 function filterFeed(type, btn) {
