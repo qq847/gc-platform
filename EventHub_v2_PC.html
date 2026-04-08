@@ -748,6 +748,8 @@ body{background:#f3f2ef}
   display:flex;align-items:stretch;
 }
 .event-card:hover{border-color:rgba(10,102,194,0.28);box-shadow:var(--s2);transform:translateY(-1px)}
+@keyframes card-highlight{0%{box-shadow:0 0 0 0 rgba(22,163,74,0.7);border-color:rgba(22,163,74,0.8)}50%{box-shadow:0 0 0 6px rgba(22,163,74,0.15);border-color:rgba(22,163,74,0.6)}100%{box-shadow:0 0 0 0 rgba(22,163,74,0);border-color:#e0dfdc}}
+.event-card.highlighted{animation:card-highlight 1.2s ease forwards}
 .card-date{
   width:56px;flex-shrink:0;
   background:var(--orange-dim);border-right:1px solid var(--orange-border);
@@ -2673,6 +2675,60 @@ function selDate(btn) {
 function selectConf(card) {
   document.querySelectorAll('.conf-card').forEach(c => c.classList.remove('active'));
   card.classList.add('active');
+  // Trigger search & highlight
+  const kw = card.dataset.search || '';
+  if (!kw) return;
+  if (window._calState) {
+    window._calState.searchKeyword = kw;
+    calLoadEvents(true).then(function(){ setTimeout(function(){ calHighlightFirst(kw); }, 100); });
+  }
+}
+function calHighlightFirst(kw) {
+  const kwLow = kw.toLowerCase();
+  const cards = document.querySelectorAll('#cal-events-list .event-card');
+  let found = null;
+  cards.forEach(function(c) {
+    if (!found && (c.dataset.title || '').includes(kwLow)) found = c;
+  });
+  if (!found && cards.length > 0) found = cards[0];
+  if (!found) return;
+  const center = found.closest('.center') || document.querySelector('.center');
+  if (center) {
+    const top = found.offsetTop - center.offsetTop - 80;
+    center.scrollTo({ top: Math.max(0, top), behavior: 'smooth' });
+  } else {
+    found.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  }
+  found.classList.remove('highlighted');
+  void found.offsetWidth;
+  found.classList.add('highlighted');
+}
+
+function calJumpToEvent(title) {
+  // First try to find the card in the already-loaded list
+  const kwLow = title.toLowerCase();
+  const existing = document.querySelector('#cal-events-list .event-card[data-title*="' + kwLow.replace(/'/g,"\\'")+'"]');
+  if (existing) {
+    // Card already visible — just scroll & highlight
+    const center = existing.closest('.center') || document.querySelector('.center');
+    if (center) {
+      const top = existing.offsetTop - center.offsetTop - 80;
+      center.scrollTo({ top: Math.max(0, top), behavior: 'smooth' });
+    } else {
+      existing.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
+    existing.classList.remove('highlighted');
+    void existing.offsetWidth;
+    existing.classList.add('highlighted');
+    return;
+  }
+  // Card not in DOM yet — search for it
+  if (window._calState) {
+    window._calState.searchKeyword = title;
+    calLoadEvents(true).then(function(){
+      setTimeout(function(){ calHighlightFirst(kwLow); }, 100);
+    });
+  }
 }
 
 function filterFeed(type, btn) {
@@ -4360,7 +4416,7 @@ function calRenderCard(ev) {
   const isEnded = ev.status === 'ended';
   const cardStyle = isEnded ? 'opacity:0.65;' : '';
   
-  return '<div class="event-card" style="' + cardStyle + '">' +
+  return '<div class="event-card" data-title="' + (ev.title||'').replace(/"/g,'&quot;').toLowerCase() + '" style="' + cardStyle + '">' +
     '<div class="card-date">' +
       '<div class="card-month">' + month + '</div>' +
       '<div class="card-day">' + day + '</div>' +
@@ -4548,7 +4604,8 @@ function calLoadUpcoming(events) {
     const dateStr = monthAbbr + ' ' + s.getDate() + (e && e.getDate() !== s.getDate() ? '–' + e.getDate() : '') + ' · ' + (ev.city || ev.country || 'Online');
     const daysUntil = calDaysUntil(ev.start_date);
     
-    return '<div class="upcoming-item">' +
+    const safeTitle = (ev.title || '').replace(/'/g, "\\'").replace(/"/g, '&quot;');
+    return '<div class="upcoming-item" onclick="calJumpToEvent(\'' + safeTitle + '\')" title="Jump to ' + safeTitle + '">' +
       '<div class="upcoming-dot" style="background:' + color + '"></div>' +
       '<div class="upcoming-info">' +
         '<div class="upcoming-name">' + (ev.title || 'Event') + '</div>' +
