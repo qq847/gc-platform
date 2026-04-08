@@ -3992,7 +3992,7 @@ function renderPcMsgList() {
   });
 }
 
-function openPcChat(idx) {
+async function openPcChat(idx) {
   const d = pcMsgData[idx];
   pcCurrentChat = idx;
   // Mark active
@@ -4007,9 +4007,25 @@ function openPcChat(idx) {
   document.getElementById('pc-chat-name').textContent = d.name;
   document.getElementById('pc-chat-sub').textContent = d.company;
   hdr.style.display = 'flex';
+  // Show input bar
+  document.getElementById('pc-msg-empty').style.display = 'none';
+  const inputBar = document.getElementById('pc-chat-input-bar');
+  inputBar.style.display = 'flex';
+  document.getElementById('pc-chat-input').focus();
   // Render messages
   const msgs = document.getElementById('pc-chat-messages');
   msgs.innerHTML = '<div style="text-align:center;font-size:10px;color:var(--text3);font-weight:600;padding:4px 0 8px">Today</div>';
+  // Try to load real messages if logged in and partner has a real UUID
+  const myUser = gcGetUser();
+  const isRealId = d.memberId && d.memberId.length > 10 && d.memberId.includes('-');
+  if (myUser && isRealId) {
+    const realMsgs = await _pcLoadRealMessages(d.memberId);
+    if (realMsgs && realMsgs.length > 0) {
+      realMsgs.forEach(m => _pcAppendBubble(m, m.sender_id === myUser.id));
+      return;
+    }
+  }
+  // Demo fallback: render from pcMsgData
   d.messages.forEach(m => {
     const div = document.createElement('div');
     div.style.cssText = `display:flex;flex-direction:${m.me ? 'row-reverse' : 'row'};align-items:flex-end;gap:8px`;
@@ -4024,27 +4040,22 @@ function openPcChat(idx) {
     msgs.appendChild(div);
   });
   msgs.scrollTop = msgs.scrollHeight;
-  // Show input bar
-  document.getElementById('pc-msg-empty').style.display = 'none';
-  const inputBar = document.getElementById('pc-chat-input-bar');
-  inputBar.style.display = 'flex';
-  document.getElementById('pc-chat-input').focus();
 }
 
-function pcSendMsgKey(e) { if (e.key === 'Enter') pcSendMsgBtn(); }
+// ─── Real-time messaging constants ───────────────────────────────────────────
+const _MSG_API = 'https://gc-platform-api.vercel.app/api/messages';
+let _msgRealtimeChannel = null;
 
-function pcSendMsgBtn() {
-  const inp = document.getElementById('pc-chat-input');
-  const text = inp.value.trim();
-  if (!text) return;
+// Append a single message bubble to the chat panel
+function _pcAppendBubble(m, isMe) {
   const msgs = document.getElementById('pc-chat-messages');
-  const now = new Date();
+  const now = new Date(m.created_at || Date.now());
   const time = (now.getHours()<10?'0':'')+now.getHours()+':'+(now.getMinutes()<10?'0':'')+now.getMinutes();
   const div = document.createElement('div');
-  div.style.cssText = 'display:flex;flex-direction:row-reverse;align-items:flex-end;gap:8px';
+  div.style.cssText = `display:flex;flex-direction:${isMe ? 'row-reverse' : 'row'};align-items:flex-end;gap:8px`;
   const bubble = document.createElement('div');
-  bubble.style.cssText = 'max-width:70%;padding:10px 14px;border-radius:16px 16px 4px 16px;font-size:13px;line-height:1.5;color:#fff;background:var(--orange)';
-  bubble.textContent = text;
+  bubble.style.cssText = `max-width:70%;padding:10px 14px;border-radius:${isMe ? '16px 16px 4px 16px' : '16px 16px 16px 4px'};font-size:13px;line-height:1.5;color:${isMe ? '#fff' : 'var(--text1)'};background:${isMe ? 'var(--orange)' : '#f4f2ee'}`;
+  bubble.textContent = m.content || m.text || '';
   const meta = document.createElement('div');
   meta.style.cssText = 'font-size:9px;color:var(--text3);flex-shrink:0;padding-bottom:3px';
   meta.textContent = time;
@@ -4052,13 +4063,85 @@ function pcSendMsgBtn() {
   div.appendChild(meta);
   msgs.appendChild(div);
   msgs.scrollTop = msgs.scrollHeight;
-  inp.value = '';
 }
 
-// Show messages badge on load (simulated unread)
+function pcSendMsgKey(e) { if (e.key === 'Enter') pcSendMsgBtn(); }
+async function pcSendMsgBtn() {
+  const inp = document.getElementById('pc-chat-input');
+  const text = inp.value.trim();
+  if (!text) return;
+  inp.value = '';
+  const token = gcGetToken();
+  const d = pcMsgData[pcCurrentChat];
+  if (token && d && d.memberId && d.memberId.length > 10) {
+    // Real mode: send via API
+    try {
+      const resp = await fetch(_MSG_API, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
+        body: JSON.stringify({ receiver_id: d.memberId, content: text })
+      });
+      const result = await resp.json();
+      if (result.success) {
+        _pcAppendBubble({ content: text, created_at: new Date().toISOString() }, true);
+        return;
+      }
+    } catch(e) {}
+  }
+  // Demo fallback
+  _pcAppendBubble({ content: text, created_at: new Date().toISOString() }, true);
+}
+
+// Subscribe to real-time messages for current user
+function _pcSubscribeRealtime(myUserId) {
+  if (_msgRealtimeChannel) {
+    _gcSupabase.removeChannel(_msgRealtimeChannel);
+    _msgRealtimeChannel = null;
+  }
+  _msgRealtimeChannel = _gcSupabase
+    .channel('messages-inbox-' + myUserId)
+    .on('postgres_changes', {
+      event: 'INSERT',
+      schema: 'public',
+      table: 'messages',
+      filter: 'receiver_id=eq.' + myUserId
+    }, (payload) => {
+      const msg = payload.new;
+      const d = pcMsgData[pcCurrentChat];
+      // If this message is from the currently open conversation, append it
+      if (d && msg.sender_id === d.memberId) {
+        _pcAppendBubble(msg, false);
+      } else {
+        // Show badge for new message from other conversation
+        document.getElementById('nav-msg-badge').style.display = 'flex';
+      }
+    })
+    .subscribe();
+}
+
+// Load real messages from API when opening a chat
+async function _pcLoadRealMessages(partnerId) {
+  const token = gcGetToken();
+  if (!token) return null;
+  try {
+    const resp = await fetch(_MSG_API + '/' + partnerId, {
+      headers: { 'Authorization': 'Bearer ' + token }
+    });
+    const result = await resp.json();
+    if (result.success) return result.data;
+  } catch(e) {}
+  return null;
+}
+
+// Show messages badge on load
 document.addEventListener('DOMContentLoaded', function() {
   document.getElementById('nav-msg-badge').style.display = 'flex';
-});
+  // If logged in, subscribe to real-time messages
+  const user = gcGetUser();
+  if (user && user.id) {
+    _pcSubscribeRealtime(user.id);
+  }
+});;
 
 // ═══ PROJECTS PANEL JS — REAL DATA FROM SUPABASE ═══
 let pcProjStatusFilter = '';
