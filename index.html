@@ -3728,7 +3728,7 @@ async function loadProfileGames(showSendKey) {
     .pc-proj-card-desc{font-size:12px;color:#555;line-height:1.55;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;margin-top:4px;flex:1}
     .pc-proj-card-footer{display:flex;align-items:center;justify-content:space-between;margin-top:10px;padding-top:10px;border-top:1px solid #f0ece4;gap:6px}
     .pc-proj-card-plats{display:flex;gap:4px;flex-wrap:wrap}
-    .pc-proj-card-plat{display:inline-flex;align-items:center;width:fit-content;padding:1px 5px;border-radius:4px;font-size:9.5px;font-weight:600;background:#f0ece4;color:#6b6660;white-space:nowrap}
+    .pc-proj-card-plat{display:inline-block;width:auto;max-width:none;padding:1px 6px;border-radius:4px;font-size:9.5px;font-weight:600;background:#f0ece4;color:#6b6660;white-space:nowrap;line-height:1.6}
     .pc-genre-tag{padding:5px 14px;border-radius:20px;border:1.5px solid #e0dbd0;background:#f5f3ef;font-size:12px;font-weight:600;color:#6b6660;cursor:pointer;font-family:inherit;white-space:nowrap;flex-shrink:0;transition:all .15s}
     .pc-genre-tag:hover{border-color:#16a34a;color:#16a34a;background:#f0fdf4}
     .pc-genre-tag.active{border-color:#16a34a;background:#16a34a;color:#fff;font-weight:700}
@@ -4130,7 +4130,7 @@ async function _pcProjLoadBatch(reset) {
   const q = (document.getElementById('pc-proj-search') || {}).value || '';
   const platSel = document.getElementById('pc-proj-plat-sel');
   const platFilter = platSel ? platSel.value : '';
-  let url = _SB_URL + '/rest/v1/game_projects?select=id,title,tagline,description,genre,status,looking_for,platforms,is_featured,source,cover_image_url&is_public=eq.true&order=cover_image_url.desc.nullslast,created_at.desc&limit=' + PAGE + '&offset=' + _pcProjOffset;
+  let url = _SB_URL + '/rest/v1/game_projects?select=id,title,tagline,description,genre,status,looking_for,platforms,is_featured,source,cover_image_url&is_public=eq.true&order=cover_image_url.desc.nullslast%2Ccreated_at.desc&limit=' + PAGE + '&offset=' + _pcProjOffset;
   if (pcProjStatusFilter) url += '&status=eq.' + encodeURIComponent(pcProjStatusFilter);
   if (q) url += '&title=ilike.*' + encodeURIComponent(q) + '*';
   if (platFilter) url += '&platforms=cs.["' + encodeURIComponent(platFilter) + '"]';
@@ -4163,8 +4163,13 @@ async function _pcProjLoadBatch(reset) {
       'VR':['🥽','135deg,#0a1a2a,#0891b2'],
       'Mobile':['📱','135deg,#1a0a3a,#7c3aed'],
     };
+    // Client-side sort: image-first (real URL > empty/null)
+    let rows = (data || []).sort((a, b) => {
+      const aHas = a.cover_image_url && a.cover_image_url.startsWith('http') ? 1 : 0;
+      const bHas = b.cover_image_url && b.cover_image_url.startsWith('http') ? 1 : 0;
+      return bHas - aHas;
+    });
     // Client-side genre filter
-    let rows = data || [];
     if (pcProjGenreFilter) {
       rows = rows.filter(p => {
         const gs = (Array.isArray(p.genre) ? (p.genre[0]||'') : (p.genre||'')).replace(/;+/g,'').trim().toLowerCase();
