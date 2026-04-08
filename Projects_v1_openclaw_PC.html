@@ -329,7 +329,7 @@
   }
   .platform-tag {
     font-size: 11px;
-    padding: 2px 8px;
+    padding: 2px 5px;
     background: #f0ede7;
     color: var(--text-sec);
     border-radius: 6px;
@@ -601,14 +601,7 @@
   <!-- MAIN CONTENT -->
   <main class="main-content">
 
-    <div class="sort-bar">
-      <span>Sort by:</span>
-      <button class="sort-btn active">Latest</button>
-      <button class="sort-btn">Trending</button>
-      <button class="sort-btn">Most Saved</button>
-    </div>
-
-    <div class="projects-grid">
+    <div class="projects-grid" id="projects-grid">
 
       <!-- 1. Echoes of the Jade Dynasty -->
       <div class="proj-card">
@@ -1265,13 +1258,15 @@
     });
   });
 
-  // Sort buttons toggle
-  document.querySelectorAll('.sort-btn').forEach(btn => {
-    btn.addEventListener('click', () => {
-      document.querySelectorAll('.sort-btn').forEach(b => b.classList.remove('active'));
-      btn.classList.add('active');
-    });
-  });
+  // Image-first sort: cards with real <img> cover go before SVG-only cards
+  (function sortImageFirst() {
+    var grid = document.getElementById('projects-grid');
+    if (!grid) return;
+    var cards = Array.from(grid.querySelectorAll('.proj-card'));
+    var withImg = cards.filter(function(c) { return c.querySelector('.card-cover img') !== null; });
+    var withoutImg = cards.filter(function(c) { return c.querySelector('.card-cover img') === null; });
+    withImg.concat(withoutImg).forEach(function(c) { grid.appendChild(c); });
+  })();
 </script>
 </body>
 </html>
