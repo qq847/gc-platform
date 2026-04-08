@@ -2088,8 +2088,10 @@ async function gcSignOut() {
   </div>
 
   <!-- Main Grid -->
-  <div style="flex:1;overflow-y:auto;padding:24px 28px">
-    <div id="pc-proj-cards" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:18px"></div>
+  <div style="flex:1;overflow-y:auto;background:#f3f2ef">
+    <div style="max-width:1280px;margin:0 auto;padding:28px 32px">
+      <div id="pc-proj-cards" style="display:grid;grid-template-columns:repeat(4,1fr);gap:20px"></div>
+    </div>
   </div>
 
 </div><!-- /projects-panel -->
@@ -3753,11 +3755,20 @@ async function loadProfileGames(showSendKey) {
     .pc-proj-filter{width:100%;text-align:left;padding:7px 10px;border-radius:8px;border:none;background:transparent;font-size:12px;font-weight:600;color:var(--text2);cursor:pointer;font-family:inherit;transition:all .15s}
     .pc-proj-filter:hover{background:rgba(0,0,0,0.05);color:var(--text1)}
     .pc-proj-filter.active{background:var(--orange-dim);color:var(--orange)}
-    .pc-proj-card{background:#fff;border-radius:14px;overflow:hidden;box-shadow:0 1px 4px rgba(0,0,0,0.07);cursor:pointer;transition:transform .2s,box-shadow .2s;display:flex;flex-direction:column}
-    .pc-proj-card:hover{transform:translateY(-4px);box-shadow:0 8px 24px rgba(0,0,0,0.13)}
-    .pc-genre-tag{padding:5px 13px;border-radius:20px;border:1.5px solid #e0dbd0;background:#f5f3ef;font-size:12px;font-weight:600;color:#6b6660;cursor:pointer;font-family:inherit;white-space:nowrap;flex-shrink:0;transition:all .15s}
-    .pc-genre-tag:hover{border-color:#0A66C2;color:#0A66C2;background:#fff}
-    .pc-genre-tag.active{border-color:#0A66C2;background:#e8f0fe;color:#0A66C2;font-weight:700}
+    .pc-proj-card{background:#fff;border-radius:14px;overflow:hidden;box-shadow:0 1px 4px rgba(0,0,0,0.07);cursor:pointer;transition:transform .18s,box-shadow .18s;display:flex;flex-direction:column}
+    .pc-proj-card:hover{transform:translateY(-5px);box-shadow:0 12px 32px rgba(0,0,0,0.15)}
+    .pc-proj-card-img{width:100%;aspect-ratio:16/9;object-fit:cover;display:block;background-size:cover;background-position:center;position:relative;overflow:hidden;flex-shrink:0}
+    .pc-proj-card-body{padding:14px 16px 14px;flex:1;display:flex;flex-direction:column;gap:4px}
+    .pc-proj-card-genre{font-size:10px;font-weight:800;letter-spacing:.6px;text-transform:uppercase;color:rgba(255,255,255,0.75)}
+    .pc-proj-card-title{font-size:15px;font-weight:800;color:#1c1a17;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;line-height:1.3}
+    .pc-proj-card-studio{font-size:12px;color:#9ca3af;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+    .pc-proj-card-desc{font-size:12px;color:#555;line-height:1.55;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;margin-top:4px;flex:1}
+    .pc-proj-card-footer{display:flex;align-items:center;justify-content:space-between;margin-top:10px;padding-top:10px;border-top:1px solid #f0ece4;gap:6px}
+    .pc-proj-card-plats{display:flex;gap:4px;flex-wrap:wrap}
+    .pc-proj-card-plat{padding:2px 7px;border-radius:5px;font-size:10px;font-weight:600;background:#f0ece4;color:#6b6660}
+    .pc-genre-tag{padding:5px 14px;border-radius:20px;border:1.5px solid #e0dbd0;background:#f5f3ef;font-size:12px;font-weight:600;color:#6b6660;cursor:pointer;font-family:inherit;white-space:nowrap;flex-shrink:0;transition:all .15s}
+    .pc-genre-tag:hover{border-color:#16a34a;color:#16a34a;background:#f0fdf4}
+    .pc-genre-tag.active{border-color:#16a34a;background:#16a34a;color:#fff;font-weight:700}
   `;
   document.head.appendChild(s);
 })();
@@ -4215,17 +4226,19 @@ async function _pcProjLoadBatch(reset) {
       const _pcBannerId = 'pcpb-' + (p.id || Math.random().toString(36).slice(2));
       setTimeout(() => _fetchIgdbImg(p.title, _pcBannerId), 0);
       return `<div class="pc-proj-card">
-        <div id="${_pcBannerId}" style="height:150px;background:${grad};position:relative;display:flex;align-items:center;justify-content:center;overflow:hidden;flex-shrink:0;background-size:cover;background-position:center">
-          <div style="font-size:52px;opacity:0.3;position:absolute;top:50%;left:50%;transform:translate(-50%,-50%)">${genreIcon}</div>
-          ${sLabel ? `<div style="position:absolute;bottom:10px;left:12px"><span style="font-size:10px;font-weight:700;padding:3px 10px;border-radius:20px;${sStyle}">${sLabel}</span></div>` : ''}
+        <div id="${_pcBannerId}" class="pc-proj-card-img" style="background:${grad};position:relative;display:flex;align-items:center;justify-content:center">
+          <div style="font-size:56px;opacity:0.25;position:absolute;top:50%;left:50%;transform:translate(-50%,-50%)">${genreIcon}</div>
+          ${genre ? `<div class="pc-proj-card-genre" style="position:absolute;top:10px;left:12px">${genre}</div>` : ''}
           ${seekingBadge}
-          ${genre ? `<div style="position:absolute;top:10px;left:12px;font-size:9px;font-weight:800;color:rgba(255,255,255,0.7);letter-spacing:.6px;text-transform:uppercase">${genre}</div>` : ''}
+          ${sLabel ? `<div style="position:absolute;bottom:10px;left:12px"><span style="font-size:10px;font-weight:700;padding:3px 10px;border-radius:20px;${sStyle}">${sLabel}</span></div>` : ''}
         </div>
-        <div style="padding:14px 14px 12px;flex:1;display:flex;flex-direction:column">
-          <div style="font-size:15px;font-weight:700;color:#1c1a17;margin-bottom:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${p.title}</div>
-          ${studio ? `<div style="font-size:12px;color:#6b6660;margin-bottom:8px">${studio}</div>` : '<div style="margin-bottom:8px"></div>'}
-          ${desc ? `<div style="font-size:12px;color:#444;line-height:1.55;margin-bottom:8px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden">${desc}</div>` : ''}
-          <div style="display:flex;gap:5px;flex-wrap:wrap;margin-top:auto;padding-top:8px;border-top:1px solid #f0ece4">${plats}</div>
+        <div class="pc-proj-card-body">
+          <div class="pc-proj-card-title">${p.title}</div>
+          ${studio ? `<div class="pc-proj-card-studio">${studio}</div>` : ''}
+          ${desc ? `<div class="pc-proj-card-desc">${desc}</div>` : ''}
+          <div class="pc-proj-card-footer">
+            <div class="pc-proj-card-plats">${_validPlats.map(pl=>`<span class="pc-proj-card-plat">${pl}</span>`).join('')}</div>
+          </div>
         </div>
       </div>`;
     }).join('');
@@ -4240,7 +4253,7 @@ async function _pcProjLoadBatch(reset) {
       grid.parentElement.appendChild(moreBtn);
     }
     if (_pcProjOffset < _pcProjTotal) {
-      moreBtn.innerHTML = `<button style="padding:10px 32px;border-radius:24px;background:#1c1a17;color:#fff;border:none;font-size:13px;font-weight:700;cursor:pointer;transition:background .15s" onmouseover="this.style.background='#3a3835'" onmouseout="this.style.background='#1c1a17'" onclick="_pcProjLoadBatch(false)">Load More (${(_pcProjTotal - _pcProjOffset).toLocaleString()} remaining)</button>`;
+      moreBtn.innerHTML = `<button style="padding:10px 32px;border-radius:24px;background:#16a34a;color:#fff;border:none;font-size:13px;font-weight:700;cursor:pointer;transition:background .15s" onmouseover="this.style.background='#15803d'" onmouseout="this.style.background='#16a34a'" onclick="_pcProjLoadBatch(false)">Load More (${(_pcProjTotal - _pcProjOffset).toLocaleString()} remaining)</button>`;
     } else {
       moreBtn.innerHTML = '';
     }
