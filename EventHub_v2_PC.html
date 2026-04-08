@@ -4355,7 +4355,9 @@ const STATS_API = 'https://gc-platform-api.vercel.app/api/events/stats';
 window._calState = {
   year: 2026,
   month: 0,        // 0 = all months
+  day: 0,          // 0 = all days
   typeFilter: 'all',
+  activeTags: new Set(), // multi-select tags
   regionFilter: null,
   isOnlineFilter: null,
   attendeeMinFilter: null,
@@ -4448,7 +4450,7 @@ async function calLoadEvents(reset) {
     document.getElementById('cal-footer').style.display = 'none';
   }
   
-  const { year, month, typeFilter, offset } = window._calState;
+  const { year, month, day, typeFilter, offset } = window._calState;
   // Default: start from today if no month filter
   const today = new Date().toISOString().split('T')[0];
   const params = new URLSearchParams({
@@ -4456,13 +4458,25 @@ async function calLoadEvents(reset) {
     offset: offset,
     year: year
   });
-  if (month > 0) {
+  if (day > 0 && month > 0) {
+    // Specific day selected: filter events that START on that exact date
+    const mStr = month.toString().padStart(2,'0');
+    const dStr = day.toString().padStart(2,'0');
+    const dateStr = year + '-' + mStr + '-' + dStr;
+    params.set('from_date', dateStr);
+    params.set('to_date', dateStr);
+    // Remove year filter to avoid conflict
+    params.delete('year');
+  } else if (month > 0) {
     params.set('month', month);
   } else {
     // When showing all months, start from today (skip past events)
     params.set('from_date', today);
   }
-  if (typeFilter && typeFilter !== 'all') params.set('type', typeFilter);
+  // Multi-select tags: apply all active filters
+  const _tags = window._calState.activeTags;
+  const _typeFilter = (_tags.size > 0) ? typeFilter : typeFilter;
+  if (_typeFilter && _typeFilter !== 'all') params.set('type', _typeFilter);
   if (window._calState.regionFilter) params.set('region', window._calState.regionFilter);
   if (window._calState.countryFilter) params.set('country', window._calState.countryFilter);
   if (window._calState.isOnlineFilter) params.set('is_online', 'true');
@@ -4680,53 +4694,78 @@ function calSelMonth(btn, month) {
   calLoadEvents(true);
 }
 
-// Override filterTag to trigger data reload
+// Override filterTag to trigger data reload (multi-select support)
 function filterTag(btn, tag) {
-  document.querySelectorAll('.ctag').forEach(b => b.classList.remove('active'));
-  btn.classList.add('active');
-  // Reset all filters first
-  window._calState.typeFilter = 'all';
-  window._calState.regionFilter = null;
-  window._calState.countryFilter = null;
-  window._calState.isOnlineFilter = null;
-  window._calState.attendeeMinFilter = null;
-  window._calState.hasBuyersFilter = null;
-  window._calState.searchKeyword = null;
+  const _s = window._calState;
+  if (!_s.activeTags) _s.activeTags = new Set();
+
+  if (tag === 'all') {
+    // Clear all selections
+    _s.activeTags.clear();
+    document.querySelectorAll('.ctag').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+  } else {
+    // Toggle this tag
+    if (_s.activeTags.has(tag)) {
+      _s.activeTags.delete(tag);
+      btn.classList.remove('active');
+    } else {
+      _s.activeTags.add(tag);
+      btn.classList.add('active');
+    }
+    // Remove 'All' active state if any specific tag is selected
+    const allBtn = document.querySelector('.ctag[onclick*="\'all\'"]');
+    if (allBtn) allBtn.classList.remove('active');
+    // If no tags selected, re-activate All
+    if (_s.activeTags.size === 0) {
+      if (allBtn) allBtn.classList.add('active');
+    }
+  }
+
+  // Rebuild filter state from activeTags
+  _s.typeFilter = 'all';
+  _s.regionFilter = null;
+  _s.countryFilter = null;
+  _s.isOnlineFilter = null;
+  _s.attendeeMinFilter = null;
+  _s.hasBuyersFilter = null;
+  _s.searchKeyword = null;
   // Clear country filter UI
   const _cInp = document.getElementById('country-search-input');
   if (_cInp) _cInp.value = '';
   const _cBtn = document.getElementById('country-clear-btn');
   if (_cBtn) _cBtn.style.display = 'none';
-  // Map tag to filter params
+
+  // Apply each active tag (last one wins for conflicting filters)
   const typeMap = {
-    'all': () => {},
-    'conference': () => { window._calState.typeFilter = 'conference'; },
-    'tradeshow': () => { window._calState.typeFilter = 'tradeshow'; },
-    'awards': () => { window._calState.typeFilter = 'awards'; },
-    'esports': () => { window._calState.typeFilter = 'esports'; },
-    'b2b': () => { window._calState.hasBuyersFilter = true; },
-    'indie': () => { window._calState.searchKeyword = 'indie'; },
-    'igaming': () => { window._calState.searchKeyword = 'igaming'; },
-    'mobile': () => { window._calState.searchKeyword = 'mobile'; },
-    'vr_ar': () => { window._calState.searchKeyword = 'vr'; },
-    'online': () => { window._calState.isOnlineFilter = true; },
-    'free': () => { window._calState.typeFilter = 'free'; },
-    'large': () => { window._calState.attendeeMinFilter = 10000; },
-    'north_america': () => { window._calState.regionFilter = 'North America'; },
-    'europe': () => { window._calState.regionFilter = 'Europe'; },
-    'asia': () => { window._calState.regionFilter = 'Asia Pacific'; },
-    'latam': () => { window._calState.regionFilter = 'Latin America'; },
-    'mea': () => { window._calState.regionFilter = 'Middle East & Africa'; },
-    'country_us': () => { window._calState.countryFilter = 'United States'; },
-    'country_cn': () => { window._calState.countryFilter = 'China'; },
-    'country_de': () => { window._calState.countryFilter = 'Germany'; },
-    'country_jp': () => { window._calState.countryFilter = 'Japan'; },
-    'country_gb': () => { window._calState.countryFilter = 'United Kingdom'; },
-    'country_kr': () => { window._calState.countryFilter = 'South Korea'; },
-    'country_fr': () => { window._calState.countryFilter = 'France'; },
-    'country_br': () => { window._calState.countryFilter = 'Brazil'; },
+    'conference': () => { _s.typeFilter = 'conference'; },
+    'tradeshow': () => { _s.typeFilter = 'tradeshow'; },
+    'awards': () => { _s.typeFilter = 'awards'; },
+    'esports': () => { _s.typeFilter = 'esports'; },
+    'b2b': () => { _s.hasBuyersFilter = true; },
+    'indie': () => { _s.searchKeyword = (_s.searchKeyword ? _s.searchKeyword + ' indie' : 'indie'); },
+    'igaming': () => { _s.searchKeyword = (_s.searchKeyword ? _s.searchKeyword + ' igaming' : 'igaming'); },
+    'mobile': () => { _s.searchKeyword = (_s.searchKeyword ? _s.searchKeyword + ' mobile' : 'mobile'); },
+    'vr_ar': () => { _s.searchKeyword = (_s.searchKeyword ? _s.searchKeyword + ' vr' : 'vr'); },
+    'online': () => { _s.isOnlineFilter = true; },
+    'free': () => { _s.typeFilter = 'free'; },
+    'large': () => { _s.attendeeMinFilter = 10000; },
+    'north_america': () => { _s.regionFilter = 'North America'; },
+    'europe': () => { _s.regionFilter = 'Europe'; },
+    'asia': () => { _s.regionFilter = 'Asia Pacific'; },
+    'latam': () => { _s.regionFilter = 'Latin America'; },
+    'mea': () => { _s.regionFilter = 'Middle East & Africa'; },
+    'country_us': () => { _s.countryFilter = 'United States'; },
+    'country_cn': () => { _s.countryFilter = 'China'; },
+    'country_de': () => { _s.countryFilter = 'Germany'; },
+    'country_jp': () => { _s.countryFilter = 'Japan'; },
+    'country_gb': () => { _s.countryFilter = 'United Kingdom'; },
+    'country_kr': () => { _s.countryFilter = 'South Korea'; },
+    'country_fr': () => { _s.countryFilter = 'France'; },
+    'country_br': () => { _s.countryFilter = 'Brazil'; },
   };
-  if (typeMap[tag]) typeMap[tag]();
+  _s.activeTags.forEach(function(t) { if (typeMap[t]) typeMap[t](); });
+
   calLoadMonthCounts();  // sync month counts with filter
   calLoadEvents(true);
 }
@@ -4887,10 +4926,23 @@ function miniCalNext() {
 
 function miniCalSelectDay(year, month, day) {
   if (!window._calState) return;
+  // Toggle: clicking same day again clears day filter
+  const isSameDay = (window._calState.year === year && window._calState.month === month && window._calState.day === day);
   window._calState.year = year;
   window._calState.month = month;
+  window._calState.day = isSameDay ? 0 : day;
+  // Update year buttons
   document.querySelectorAll('.year-btn-tab').forEach(b => b.classList.toggle('active', parseInt(b.textContent) === year));
+  // Update month buttons
   document.querySelectorAll('.date-btn[data-month]').forEach(b => b.classList.toggle('active', parseInt(b.dataset.month) === month));
+  // Update mini-cal day selected state
+  document.querySelectorAll('.mini-cal-day').forEach(function(el) { el.classList.remove('selected'); });
+  if (!isSameDay) {
+    const allDays = document.querySelectorAll('.mini-cal-day:not(.empty)');
+    allDays.forEach(function(el) {
+      if (parseInt(el.textContent) === day) el.classList.add('selected');
+    });
+  }
   calLoadEvents(true);
 }
 
@@ -5041,7 +5093,8 @@ function calDownloadIcs(evData) {
 // ── TAG COUNT BADGES ────────────────────────────────────────
 async function calLoadTagCounts() {
   const year = window._calState ? window._calState.year : 2026;
-  const tagConfigs = [
+  // Stats-API based tags (fast, aggregated)
+  const statsTagConfigs = [
     { id: 'all', params: {} },
     { id: 'conference', params: { type: 'conference' } },
     { id: 'tradeshow', params: { type: 'tradeshow' } },
@@ -5063,19 +5116,47 @@ async function calLoadTagCounts() {
     { id: 'country_fr', params: { country: 'France' } },
     { id: 'country_br', params: { country: 'Brazil' } },
   ];
-  for (let i = 0; i < tagConfigs.length; i += 4) {
-    const batch = tagConfigs.slice(i, i + 4);
+  // Events-API based tags (search-keyword based)
+  const eventsTagConfigs = [
+    { id: 'indie', params: { search: 'indie', limit: 1 } },
+    { id: 'igaming', params: { search: 'igaming', limit: 1 } },
+    { id: 'mobile', params: { search: 'mobile', limit: 1 } },
+    { id: 'vr_ar', params: { search: 'vr', limit: 1 } },
+    { id: 'free', params: { search: 'free', limit: 1 } },
+    { id: 'large', params: { attendee_min: 10000, limit: 1 } },
+  ];
+
+  function updateTagBtn(id, n) {
+    const el = document.getElementById('tcnt-' + id);
+    const btn = el ? el.closest('.ctag') : null;
+    if (el) {
+      el.textContent = n > 999 ? Math.round(n/1000) + 'k' : (n > 0 ? n : '');
+      el.style.display = n > 0 ? '' : 'none';
+    }
+    if (btn) btn.style.display = n > 0 ? '' : 'none';
+  }
+
+  // Load stats-based tags in batches of 4
+  for (let i = 0; i < statsTagConfigs.length; i += 4) {
+    const batch = statsTagConfigs.slice(i, i + 4);
     await Promise.all(batch.map(async ({ id, params }) => {
       try {
         const p = new URLSearchParams({ year, ...params });
         const r = await fetch(STATS_API + '?' + p.toString());
         const d = await r.json();
-        const el = document.getElementById('tcnt-' + id);
-        if (el && d.success) {
-          const n = d.upcoming || 0;
-          el.textContent = n > 999 ? Math.round(n/1000) + 'k' : n;
-          el.style.display = n > 0 ? '' : 'none';
-        }
+        if (d.success) updateTagBtn(id, d.total || 0);
+      } catch(e) {}
+    }));
+  }
+  // Load events-based tags in batches of 3
+  for (let i = 0; i < eventsTagConfigs.length; i += 3) {
+    const batch = eventsTagConfigs.slice(i, i + 3);
+    await Promise.all(batch.map(async ({ id, params }) => {
+      try {
+        const p = new URLSearchParams({ year, ...params });
+        const r = await fetch(CAL_API + '?' + p.toString());
+        const d = await r.json();
+        if (d.success) updateTagBtn(id, d.total || 0);
       } catch(e) {}
     }));
   }
