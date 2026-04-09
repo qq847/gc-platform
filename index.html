@@ -3069,13 +3069,8 @@ function switchMode(mode) {
 function updateStats(mode) {
   const calStats = document.getElementById('stats-calendar');
   const liveStats = document.getElementById('stats-live');
-  if (mode === 'calendar') {
-    calStats.style.display = 'flex';
-    liveStats.style.display = 'none';
-  } else {
-    calStats.style.display = 'none';
-    liveStats.style.display = 'flex';
-  }
+  if (calStats) calStats.style.display = mode === 'calendar' ? 'flex' : 'none';
+  if (liveStats) liveStats.style.display = mode === 'live' ? 'flex' : 'none';
 }
 
 // ── Global Search ──
@@ -4843,6 +4838,30 @@ async function _pcProjLoadBatch(reset) {
   if (pcProjStatusFilter) url += '&status=eq.' + encodeURIComponent(pcProjStatusFilter);
   if (q) url += '&title=ilike.*' + encodeURIComponent(q) + '*';
   if (platFilter) url += '&platforms=cs.["' + encodeURIComponent(platFilter) + '"]';
+  if (pcProjGenreFilter) {
+    // genre is a text[] array; use cs.{} (contains) syntax
+    // Build multi-keyword OR to cover both English and Chinese genre names
+    const _genreKeyMap = {
+      'RPG': ['RPG'],
+      'Action': ['Action','动作','ACT'],
+      'Strategy': ['Strategy','策略','SLG'],
+      'Puzzle': ['Puzzle','解谜','PUZ'],
+      'Adventure': ['Adventure','冒险','AVG'],
+      'Simulation': ['Simulation','模拟','SIM'],
+      'Sports': ['Sports','体育','SPT'],
+      'Horror': ['Horror','恐怖'],
+      'Shooter': ['Shooter','射击','FPS','TPS','STG'],
+      'Platformer': ['Platformer','平台'],
+      'Racing': ['Racing','赛车'],
+      'Fighting': ['Fighting','格斗'],
+      'Casual': ['Casual','休闲'],
+      'Indie': ['Indie','独立'],
+      'VR': ['VR'],
+    };
+    const keywords = _genreKeyMap[pcProjGenreFilter] || [pcProjGenreFilter];
+    const orParts = keywords.map(k => 'genre.cs.%7B' + encodeURIComponent(k) + '%7D').join(',');
+    url += '&or=(' + orParts + ')';
+  }
   try {
     const r = await fetch(url, {headers:{..._SB_H,'Prefer':'count=exact'}});
     const cr = r.headers.get('content-range');
@@ -4878,6 +4897,14 @@ async function _pcProjLoadBatch(reset) {
       const bHas = b.cover_image_url && b.cover_image_url.startsWith('http') ? 1 : 0;
       return bHas - aHas;
     });
+    // Client-side dedup by title (temp fix for DB duplicate records)
+    const _seenTitles = new Set();
+    rows = rows.filter(p => {
+      const t = (p.title||'').trim().toLowerCase();
+      if (_seenTitles.has(t)) return false;
+      _seenTitles.add(t);
+      return true;
+    });
     // Client-side genre filter
     if (pcProjGenreFilter) {
       rows = rows.filter(p => {
@@ -4890,9 +4917,9 @@ async function _pcProjLoadBatch(reset) {
       const genreKey = Object.keys(_GENRE_STYLE).find(k => _genreStr.toLowerCase().includes(k.toLowerCase())) || '';
       const [genreIcon, genreGrad] = _GENRE_STYLE[genreKey] || ['🎮', '135deg,#2a2a2a,#555'];
       const grad = `linear-gradient(${genreGrad})`;
-      const sKey = (p.status||'').toLowerCase();
+      const sKey = (p.status||'').replace(/_/g,' ').toLowerCase();
       const sStyle = _PC_STATUS_COLORS[sKey] || 'background:rgba(107,114,128,0.12);color:#6b7280';
-      const sLabel = p.status || '';
+      const sLabel = sKey ? sKey.replace(/\b\w/g, c => c.toUpperCase()) : '';
       const genre = _genreStr || '';
       const studio = p.tagline || '';
       const desc = p.description ? p.description.slice(0,120)+(p.description.length>120?'…':'') : '';
