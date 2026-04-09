@@ -1,0 +1,613 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Submit Project — Game Connection</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --orange:#e8640a;--orange-light:#fdf3ec;
+  --text1:#1c1a17;--text2:#6b6560;--text3:#a09890;
+  --bg:#f4f2ef;--card:#fff;--border:#e0ddd8;
+  --radius:12px;--shadow:0 1px 4px rgba(0,0,0,0.06);
+}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:var(--bg);color:var(--text1);min-height:100vh}
+
+/* ── Top bar ── */
+.topbar{height:48px;background:#fff;border-bottom:1px solid var(--border);display:flex;align-items:center;padding:0 20px;gap:12px;position:sticky;top:0;z-index:100}
+.topbar-logo{width:28px;height:28px;border-radius:7px;background:var(--orange);display:flex;align-items:center;justify-content:center;color:#fff;font-weight:900;font-size:13px;flex-shrink:0}
+.topbar-title{font-size:13px;font-weight:600;color:var(--text2)}
+.topbar-cancel{margin-left:auto;padding:6px 14px;border-radius:8px;border:1px solid var(--border);background:#fff;color:var(--text2);font-size:12px;font-weight:600;cursor:pointer;transition:background .15s}
+.topbar-cancel:hover{background:#f8f7f5}
+
+/* ── Stepper ── */
+.stepper{display:flex;align-items:flex-start;justify-content:center;padding:28px 20px 20px;max-width:560px;margin:0 auto}
+.step-item{display:flex;flex-direction:column;align-items:center;gap:6px;flex:1;position:relative}
+.step-item:not(:last-child)::after{content:'';position:absolute;top:13px;left:calc(50% + 18px);right:calc(-50% + 18px);height:2px;background:var(--border);z-index:0;transition:background .3s}
+.step-item.done:not(:last-child)::after,.step-item.active:not(:last-child)::after{background:var(--orange)}
+.step-circle{width:28px;height:28px;border-radius:50%;border:2px solid var(--border);background:#fff;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:800;color:var(--text3);z-index:1;transition:all .3s;flex-shrink:0}
+.step-item.active .step-circle{border-color:var(--orange);background:var(--orange);color:#fff}
+.step-item.done .step-circle{border-color:var(--orange);background:var(--orange);color:#fff;font-size:13px}
+.step-label{font-size:10px;font-weight:600;color:var(--text3);text-align:center;white-space:nowrap}
+.step-item.active .step-label{color:var(--orange)}
+.step-item.done .step-label{color:var(--orange)}
+
+/* ── Card ── */
+.wizard-card{background:var(--card);border-radius:var(--radius);border:1px solid var(--border);box-shadow:var(--shadow);max-width:560px;margin:0 auto 24px;padding:28px 32px}
+.card-title{font-size:18px;font-weight:800;color:var(--text1);margin-bottom:6px}
+.card-sub{font-size:13px;color:var(--text2);margin-bottom:24px}
+
+/* ── Form elements ── */
+.field{margin-bottom:18px}
+.field label{display:block;font-size:12px;font-weight:700;color:var(--text2);margin-bottom:6px;text-transform:uppercase;letter-spacing:.4px}
+.field label span.req{color:var(--orange)}
+.field label span.opt{font-weight:400;color:var(--text3);text-transform:none;letter-spacing:0}
+.field input,.field textarea,.field select{width:100%;padding:10px 13px;border-radius:9px;border:1.5px solid var(--border);background:#fafaf8;font-size:14px;color:var(--text1);font-family:inherit;transition:border .15s;outline:none}
+.field input:focus,.field textarea:focus,.field select:focus{border-color:var(--orange);background:#fff}
+.field textarea{resize:vertical;min-height:90px;line-height:1.6}
+.field .hint{font-size:11px;color:var(--text3);margin-top:4px}
+.field .char-count{font-size:11px;color:var(--text3);margin-top:4px;text-align:right}
+
+/* ── Chip multi-select ── */
+.chip-group{display:flex;flex-wrap:wrap;gap:7px;margin-top:4px}
+.chip{padding:6px 13px;border-radius:20px;border:1.5px solid var(--border);background:#fff;font-size:12px;font-weight:600;color:var(--text2);cursor:pointer;transition:all .15s;user-select:none}
+.chip:hover{border-color:var(--orange);color:var(--orange)}
+.chip.selected{border-color:var(--orange);background:var(--orange-light);color:var(--orange)}
+
+/* ── Status radio ── */
+.status-group{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:4px}
+.status-opt{padding:10px 8px;border-radius:9px;border:1.5px solid var(--border);background:#fff;text-align:center;cursor:pointer;transition:all .15s;user-select:none}
+.status-opt .s-label{font-size:12px;font-weight:700;color:var(--text2)}
+.status-opt .s-sub{font-size:10px;color:var(--text3);margin-top:2px}
+.status-opt:hover{border-color:var(--orange)}
+.status-opt.selected{border-color:var(--orange);background:var(--orange-light)}
+.status-opt.selected .s-label{color:var(--orange)}
+
+/* ── Cover upload ── */
+.cover-upload{border:2px dashed var(--border);border-radius:10px;background:#fafaf8;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;padding:28px;cursor:pointer;transition:border .15s;position:relative;overflow:hidden;min-height:160px}
+.cover-upload:hover{border-color:var(--orange)}
+.cover-upload.has-image{padding:0;border-style:solid}
+.cover-upload img{width:100%;height:160px;object-fit:cover;display:block;border-radius:8px}
+.cover-upload .cu-icon{font-size:28px}
+.cover-upload .cu-label{font-size:13px;font-weight:600;color:var(--text2)}
+.cover-upload .cu-sub{font-size:11px;color:var(--text3)}
+.cover-upload input[type=file]{position:absolute;inset:0;opacity:0;cursor:pointer}
+.cover-upload .cu-change{position:absolute;bottom:8px;right:8px;padding:4px 10px;border-radius:6px;background:rgba(0,0,0,0.5);color:#fff;font-size:10px;font-weight:700;pointer-events:none}
+
+/* ── Screenshots ── */
+.screenshots-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:8px;margin-top:8px}
+.ss-slot{border-radius:8px;border:1.5px dashed var(--border);background:#fafaf8;aspect-ratio:16/9;display:flex;align-items:center;justify-content:center;cursor:pointer;overflow:hidden;position:relative;transition:border .15s}
+.ss-slot:hover{border-color:var(--orange)}
+.ss-slot img{width:100%;height:100%;object-fit:cover}
+.ss-slot .ss-plus{font-size:18px;color:var(--text3)}
+.ss-slot input[type=file]{position:absolute;inset:0;opacity:0;cursor:pointer}
+
+/* ── Platform grid ── */
+.platform-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-top:4px}
+.plat-opt{padding:10px 6px;border-radius:9px;border:1.5px solid var(--border);background:#fff;text-align:center;cursor:pointer;transition:all .15s;user-select:none}
+.plat-opt .p-icon{font-size:18px;margin-bottom:3px}
+.plat-opt .p-label{font-size:11px;font-weight:600;color:var(--text2)}
+.plat-opt:hover{border-color:var(--orange)}
+.plat-opt.selected{border-color:var(--orange);background:var(--orange-light)}
+.plat-opt.selected .p-label{color:var(--orange)}
+
+/* ── Review table ── */
+.review-table{width:100%;border-collapse:collapse;font-size:13px}
+.review-table tr{border-bottom:1px solid #f0ede8}
+.review-table tr:last-child{border-bottom:none}
+.review-table td{padding:10px 0;vertical-align:top}
+.review-table td:first-child{width:130px;color:var(--text3);font-weight:600;font-size:11px;text-transform:uppercase;letter-spacing:.3px;padding-right:12px}
+.review-table td:last-child{color:var(--text1);font-weight:500}
+
+/* ── Nav buttons ── */
+.nav-row{display:flex;align-items:center;justify-content:space-between;margin-top:24px;padding-top:20px;border-top:1px solid var(--border)}
+.btn-back{padding:10px 20px;border-radius:9px;border:1.5px solid var(--border);background:#fff;color:var(--text2);font-size:13px;font-weight:700;cursor:pointer;transition:background .15s}
+.btn-back:hover{background:#f8f7f5}
+.btn-next{padding:10px 24px;border-radius:9px;border:none;background:var(--orange);color:#fff;font-size:13px;font-weight:700;cursor:pointer;transition:opacity .15s}
+.btn-next:hover{opacity:.9}
+.btn-next:disabled{opacity:.4;cursor:not-allowed}
+
+/* ── Success screen ── */
+.success-screen{text-align:center;padding:48px 32px}
+.success-screen .s-emoji{font-size:52px;margin-bottom:16px}
+.success-screen .s-title{font-size:22px;font-weight:900;color:var(--text1);margin-bottom:8px}
+.success-screen .s-sub{font-size:14px;color:var(--text2);margin-bottom:28px}
+.success-screen .s-btn{display:inline-block;padding:12px 28px;border-radius:10px;background:var(--orange);color:#fff;font-size:14px;font-weight:700;cursor:pointer;text-decoration:none;border:none}
+
+/* ── Validation ── */
+.field input.error,.field textarea.error{border-color:#ef4444}
+.field .err-msg{font-size:11px;color:#ef4444;margin-top:4px;display:none}
+.field.has-error .err-msg{display:block}
+.field.has-error input,.field.has-error textarea{border-color:#ef4444}
+</style>
+</head>
+<body>
+
+<!-- Top bar -->
+<div class="topbar">
+  <div class="topbar-logo">GC</div>
+  <span class="topbar-title">Submit Project</span>
+  <button class="topbar-cancel" onclick="history.back()">Cancel</button>
+</div>
+
+<!-- Stepper -->
+<div class="stepper" id="stepper">
+  <div class="step-item active" id="step-item-1">
+    <div class="step-circle" id="step-circle-1">1</div>
+    <div class="step-label">Basic Info</div>
+  </div>
+  <div class="step-item" id="step-item-2">
+    <div class="step-circle" id="step-circle-2">2</div>
+    <div class="step-label">Media & Platform</div>
+  </div>
+  <div class="step-item" id="step-item-3">
+    <div class="step-circle" id="step-circle-3">3</div>
+    <div class="step-label">Publish</div>
+  </div>
+</div>
+
+<!-- ══ STEP 1: Basic Info ══ -->
+<div id="panel-1" class="wizard-card">
+  <div class="card-title">Basic Information</div>
+  <div class="card-sub">Tell us about your game. Keep it clear and compelling.</div>
+
+  <div class="field" id="field-title">
+    <label>Game Title <span class="req">*</span></label>
+    <input type="text" id="f-title" placeholder="e.g. Neon Abyss 2" maxlength="80">
+    <div class="err-msg">Game title is required.</div>
+  </div>
+
+  <div class="field" id="field-studio">
+    <label>Studio Name <span class="req">*</span></label>
+    <input type="text" id="f-studio" placeholder="e.g. Veewo Games" maxlength="80">
+    <div class="err-msg">Studio name is required.</div>
+  </div>
+
+  <div class="field" id="field-tagline">
+    <label>Tagline <span class="req">*</span> <span class="opt">— one sentence, max 120 chars</span></label>
+    <input type="text" id="f-tagline" placeholder="e.g. A rogue-like dungeon crawler with bullet-hell combat" maxlength="120" oninput="updateCharCount(this,'tc-tagline',120)">
+    <div class="char-count" id="tc-tagline">0 / 120</div>
+    <div class="err-msg">Tagline is required.</div>
+  </div>
+
+  <div class="field">
+    <label>Description <span class="opt">(optional)</span></label>
+    <textarea id="f-desc" placeholder="Describe your game in detail — story, mechanics, what makes it unique..." maxlength="1200" oninput="updateCharCount(this,'tc-desc',1200)"></textarea>
+    <div class="char-count" id="tc-desc">0 / 1200</div>
+  </div>
+
+  <div class="field">
+    <label>Genre <span class="opt">(select all that apply)</span></label>
+    <div class="chip-group" id="genre-chips">
+      <div class="chip" data-val="Action">Action</div>
+      <div class="chip" data-val="RPG">RPG</div>
+      <div class="chip" data-val="Strategy">Strategy</div>
+      <div class="chip" data-val="Puzzle">Puzzle</div>
+      <div class="chip" data-val="Adventure">Adventure</div>
+      <div class="chip" data-val="Simulation">Simulation</div>
+      <div class="chip" data-val="Sports">Sports</div>
+      <div class="chip" data-val="Horror">Horror</div>
+      <div class="chip" data-val="Shooter">Shooter</div>
+      <div class="chip" data-val="Platformer">Platformer</div>
+      <div class="chip" data-val="Racing">Racing</div>
+      <div class="chip" data-val="Fighting">Fighting</div>
+      <div class="chip" data-val="Casual">Casual</div>
+      <div class="chip" data-val="Indie">Indie</div>
+      <div class="chip" data-val="VR">VR</div>
+      <div class="chip" data-val="Mobile">Mobile</div>
+    </div>
+  </div>
+
+  <div class="field">
+    <label>Development Status <span class="req">*</span></label>
+    <div class="status-group" id="status-group">
+      <div class="status-opt selected" data-val="concept">
+        <div class="s-label">Concept</div>
+        <div class="s-sub">Idea stage</div>
+      </div>
+      <div class="status-opt" data-val="in_development">
+        <div class="s-label">In Dev</div>
+        <div class="s-sub">Building now</div>
+      </div>
+      <div class="status-opt" data-val="alpha">
+        <div class="s-label">Alpha</div>
+        <div class="s-sub">Early playable</div>
+      </div>
+      <div class="status-opt" data-val="beta">
+        <div class="s-label">Beta</div>
+        <div class="s-sub">Feature complete</div>
+      </div>
+      <div class="status-opt" data-val="prototype">
+        <div class="s-label">Prototype</div>
+        <div class="s-sub">Demo ready</div>
+      </div>
+      <div class="status-opt" data-val="released">
+        <div class="s-label">Released</div>
+        <div class="s-sub">Live & shipping</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="nav-row">
+    <div></div>
+    <button class="btn-next" onclick="goStep2()">Next: Media & Platform →</button>
+  </div>
+</div>
+
+<!-- ══ STEP 2: Media & Platform ══ -->
+<div id="panel-2" style="display:none">
+  <div class="wizard-card">
+    <div class="card-title">Media & Platform</div>
+    <div class="card-sub">Upload your cover image and tell us where your game will be available.</div>
+
+    <!-- Cover image -->
+    <div class="field" id="field-cover">
+      <label>Cover Image <span class="req">*</span> <span class="opt">— recommended 264×374px (portrait)</span></label>
+      <div class="cover-upload" id="cover-upload-area" onclick="document.getElementById('cover-file').click()">
+        <div class="cu-icon">🖼️</div>
+        <div class="cu-label">Click to upload cover image</div>
+        <div class="cu-sub">JPG, PNG, WebP · max 5MB</div>
+        <input type="file" id="cover-file" accept="image/*" onchange="handleCoverUpload(this)" style="display:none">
+      </div>
+      <div class="err-msg" id="cover-err">Cover image is required.</div>
+    </div>
+
+    <!-- Screenshots -->
+    <div class="field">
+      <label>Screenshots <span class="opt">(up to 5, optional)</span></label>
+      <div class="screenshots-grid" id="ss-grid">
+        <div class="ss-slot" onclick="document.getElementById('ss-file-0').click()">
+          <div class="ss-plus">＋</div>
+          <input type="file" id="ss-file-0" accept="image/*" onchange="handleSsUpload(this,0)" style="display:none">
+        </div>
+        <div class="ss-slot" onclick="document.getElementById('ss-file-1').click()">
+          <div class="ss-plus">＋</div>
+          <input type="file" id="ss-file-1" accept="image/*" onchange="handleSsUpload(this,1)" style="display:none">
+        </div>
+        <div class="ss-slot" onclick="document.getElementById('ss-file-2').click()">
+          <div class="ss-plus">＋</div>
+          <input type="file" id="ss-file-2" accept="image/*" onchange="handleSsUpload(this,2)" style="display:none">
+        </div>
+        <div class="ss-slot" onclick="document.getElementById('ss-file-3').click()">
+          <div class="ss-plus">＋</div>
+          <input type="file" id="ss-file-3" accept="image/*" onchange="handleSsUpload(this,3)" style="display:none">
+        </div>
+        <div class="ss-slot" onclick="document.getElementById('ss-file-4').click()">
+          <div class="ss-plus">＋</div>
+          <input type="file" id="ss-file-4" accept="image/*" onchange="handleSsUpload(this,4)" style="display:none">
+        </div>
+      </div>
+    </div>
+
+    <!-- Video link -->
+    <div class="field">
+      <label>Video Link <span class="opt">(YouTube or Steam trailer, optional)</span></label>
+      <input type="url" id="f-video" placeholder="https://youtube.com/watch?v=...">
+    </div>
+
+    <!-- Platforms -->
+    <div class="field">
+      <label>Target Platforms <span class="opt">(select all that apply)</span></label>
+      <div class="platform-grid" id="platform-grid">
+        <div class="plat-opt" data-val="PC">
+          <div class="p-icon">🖥️</div>
+          <div class="p-label">PC</div>
+        </div>
+        <div class="plat-opt" data-val="Console">
+          <div class="p-icon">🎮</div>
+          <div class="p-label">Console</div>
+        </div>
+        <div class="plat-opt" data-val="Mobile">
+          <div class="p-icon">📱</div>
+          <div class="p-label">Mobile</div>
+        </div>
+        <div class="plat-opt" data-val="VR">
+          <div class="p-icon">🥽</div>
+          <div class="p-label">VR / AR</div>
+        </div>
+        <div class="plat-opt" data-val="Browser">
+          <div class="p-icon">🌐</div>
+          <div class="p-label">Browser</div>
+        </div>
+        <div class="plat-opt" data-val="Switch">
+          <div class="p-icon">🕹️</div>
+          <div class="p-label">Switch</div>
+        </div>
+        <div class="plat-opt" data-val="PlayStation">
+          <div class="p-icon">🔵</div>
+          <div class="p-label">PlayStation</div>
+        </div>
+        <div class="plat-opt" data-val="Xbox">
+          <div class="p-icon">🟢</div>
+          <div class="p-label">Xbox</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="nav-row">
+      <button class="btn-back" onclick="goStep(1)">← Back</button>
+      <button class="btn-next" onclick="goStep3()">Next: Publish →</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══ STEP 3: Collaboration & Publish ══ -->
+<div id="panel-3" style="display:none">
+  <div class="wizard-card">
+    <div class="card-title">Collaboration & Publish</div>
+    <div class="card-sub">What are you looking for? Then review and publish.</div>
+
+    <!-- Looking for -->
+    <div class="field">
+      <label>Looking For <span class="opt">(select all that apply)</span></label>
+      <div class="chip-group" id="lf-chips">
+        <div class="chip" data-val="Publisher">Publisher</div>
+        <div class="chip" data-val="Investor">Investor</div>
+        <div class="chip" data-val="Co-developer">Co-developer</div>
+        <div class="chip" data-val="Distribution">Distribution</div>
+        <div class="chip" data-val="Marketing">Marketing</div>
+        <div class="chip" data-val="QA / Testing">QA / Testing</div>
+        <div class="chip" data-val="Localization">Localization</div>
+        <div class="chip" data-val="None">None</div>
+      </div>
+    </div>
+
+    <!-- Links -->
+    <div class="field">
+      <label>Official Website <span class="opt">(optional)</span></label>
+      <input type="url" id="f-website" placeholder="https://yourgame.com">
+    </div>
+    <div class="field">
+      <label>Steam Page <span class="opt">(optional)</span></label>
+      <input type="url" id="f-steam" placeholder="https://store.steampowered.com/app/...">
+    </div>
+
+    <!-- Review summary -->
+    <div style="background:#fafaf8;border-radius:10px;border:1px solid var(--border);padding:18px 20px;margin-top:8px">
+      <div style="font-size:13px;font-weight:800;color:var(--text1);margin-bottom:14px">Review Summary</div>
+      <table class="review-table" id="review-table">
+        <tr><td>Title</td><td id="rv-title">—</td></tr>
+        <tr><td>Studio</td><td id="rv-studio">—</td></tr>
+        <tr><td>Tagline</td><td id="rv-tagline">—</td></tr>
+        <tr><td>Status</td><td id="rv-status">—</td></tr>
+        <tr><td>Genre</td><td id="rv-genre">—</td></tr>
+        <tr><td>Platforms</td><td id="rv-platforms">—</td></tr>
+        <tr><td>Looking For</td><td id="rv-lf">—</td></tr>
+      </table>
+    </div>
+
+    <div class="nav-row">
+      <button class="btn-back" onclick="goStep(2)">← Back</button>
+      <button class="btn-next" id="btn-publish" onclick="publishProject()">🚀 Publish Project</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══ SUCCESS ══ -->
+<div id="panel-success" style="display:none">
+  <div class="wizard-card">
+    <div class="success-screen">
+      <div class="s-emoji">🎉</div>
+      <div class="s-title">Your project is live!</div>
+      <div class="s-sub">It's now visible to publishers, investors, and the Game Connection community.</div>
+      <a href="index.html?mode=profile" class="s-btn">Go to My Profile →</a>
+    </div>
+  </div>
+</div>
+
+<script>
+// ── State ──────────────────────────────────────────────────────────────────
+const state = {
+  step: 1,
+  title: '', studio: '', tagline: '', desc: '',
+  genres: [], status: 'concept',
+  coverFile: null, coverDataUrl: null,
+  screenshots: [],
+  video: '', platforms: [], lookingFor: [],
+  website: '', steam: ''
+};
+
+// ── Char count ─────────────────────────────────────────────────────────────
+function updateCharCount(el, countId, max) {
+  const n = el.value.length;
+  document.getElementById(countId).textContent = n + ' / ' + max;
+}
+
+// ── Chip toggle ────────────────────────────────────────────────────────────
+document.querySelectorAll('#genre-chips .chip').forEach(c => {
+  c.addEventListener('click', () => {
+    c.classList.toggle('selected');
+    const v = c.dataset.val;
+    const i = state.genres.indexOf(v);
+    if (i === -1) state.genres.push(v); else state.genres.splice(i, 1);
+  });
+});
+
+document.querySelectorAll('#status-group .status-opt').forEach(o => {
+  o.addEventListener('click', () => {
+    document.querySelectorAll('#status-group .status-opt').forEach(x => x.classList.remove('selected'));
+    o.classList.add('selected');
+    state.status = o.dataset.val;
+  });
+});
+
+document.querySelectorAll('#platform-grid .plat-opt').forEach(p => {
+  p.addEventListener('click', () => {
+    p.classList.toggle('selected');
+    const v = p.dataset.val;
+    const i = state.platforms.indexOf(v);
+    if (i === -1) state.platforms.push(v); else state.platforms.splice(i, 1);
+  });
+});
+
+document.querySelectorAll('#lf-chips .chip').forEach(c => {
+  c.addEventListener('click', () => {
+    c.classList.toggle('selected');
+    const v = c.dataset.val;
+    const i = state.lookingFor.indexOf(v);
+    if (i === -1) state.lookingFor.push(v); else state.lookingFor.splice(i, 1);
+  });
+});
+
+// ── Cover upload ───────────────────────────────────────────────────────────
+function handleCoverUpload(input) {
+  const file = input.files[0];
+  if (!file) return;
+  if (file.size > 5 * 1024 * 1024) { alert('File too large. Max 5MB.'); return; }
+  state.coverFile = file;
+  const reader = new FileReader();
+  reader.onload = e => {
+    state.coverDataUrl = e.target.result;
+    const area = document.getElementById('cover-upload-area');
+    area.classList.add('has-image');
+    area.innerHTML = `<img src="${e.target.result}" alt="cover"><div class="cu-change">Change</div>`;
+    area.onclick = () => document.getElementById('cover-file-2').click();
+    // Add hidden file input for re-upload
+    const inp2 = document.createElement('input');
+    inp2.type = 'file'; inp2.id = 'cover-file-2'; inp2.accept = 'image/*';
+    inp2.style.display = 'none';
+    inp2.onchange = () => handleCoverUpload(inp2);
+    area.appendChild(inp2);
+    document.getElementById('field-cover').classList.remove('has-error');
+  };
+  reader.readAsDataURL(file);
+}
+
+// ── Screenshot upload ──────────────────────────────────────────────────────
+function handleSsUpload(input, idx) {
+  const file = input.files[0];
+  if (!file) return;
+  state.screenshots[idx] = file;
+  const reader = new FileReader();
+  reader.onload = e => {
+    const slot = document.querySelectorAll('.ss-slot')[idx];
+    slot.innerHTML = `<img src="${e.target.result}" alt="ss${idx}">`;
+  };
+  reader.readAsDataURL(file);
+}
+
+// ── Step navigation ────────────────────────────────────────────────────────
+function goStep(n) {
+  document.getElementById('panel-' + state.step).style.display = 'none';
+  document.getElementById('step-item-' + state.step).classList.remove('active');
+  if (n > state.step) document.getElementById('step-item-' + state.step).classList.add('done');
+  state.step = n;
+  document.getElementById('panel-' + n).style.display = 'block';
+  document.getElementById('step-item-' + n).classList.add('active');
+  document.getElementById('step-item-' + n).classList.remove('done');
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+function goStep2() {
+  // Validate step 1
+  let ok = true;
+  const title = document.getElementById('f-title').value.trim();
+  const studio = document.getElementById('f-studio').value.trim();
+  const tagline = document.getElementById('f-tagline').value.trim();
+  if (!title) { document.getElementById('field-title').classList.add('has-error'); ok = false; } else document.getElementById('field-title').classList.remove('has-error');
+  if (!studio) { document.getElementById('field-studio').classList.add('has-error'); ok = false; } else document.getElementById('field-studio').classList.remove('has-error');
+  if (!tagline) { document.getElementById('field-tagline').classList.add('has-error'); ok = false; } else document.getElementById('field-tagline').classList.remove('has-error');
+  if (!ok) return;
+  state.title = title; state.studio = studio; state.tagline = tagline;
+  state.desc = document.getElementById('f-desc').value.trim();
+  goStep(2);
+}
+
+function goStep3() {
+  // Validate step 2 — cover required
+  if (!state.coverFile) {
+    document.getElementById('field-cover').classList.add('has-error');
+    document.getElementById('cover-err').style.display = 'block';
+    return;
+  }
+  document.getElementById('field-cover').classList.remove('has-error');
+  document.getElementById('cover-err').style.display = 'none';
+  state.video = document.getElementById('f-video').value.trim();
+  // Populate review
+  document.getElementById('rv-title').textContent = state.title;
+  document.getElementById('rv-studio').textContent = state.studio;
+  document.getElementById('rv-tagline').textContent = state.tagline;
+  document.getElementById('rv-status').textContent = state.status.replace(/_/g,' ').replace(/\b\w/g,c=>c.toUpperCase());
+  document.getElementById('rv-genre').textContent = state.genres.join(', ') || '—';
+  document.getElementById('rv-platforms').textContent = state.platforms.join(', ') || '—';
+  document.getElementById('rv-lf').textContent = '(select below)';
+  goStep(3);
+}
+
+// ── Publish ────────────────────────────────────────────────────────────────
+async function publishProject() {
+  state.website = document.getElementById('f-website').value.trim();
+  state.steam = document.getElementById('f-steam').value.trim();
+  document.getElementById('rv-lf').textContent = state.lookingFor.join(', ') || 'None';
+
+  const btn = document.getElementById('btn-publish');
+  btn.disabled = true;
+  btn.textContent = 'Publishing…';
+
+  try {
+    // Upload cover to Supabase Storage
+    const SB_URL = 'https://gucqyrorgtsukqgnfjor.supabase.co';
+    const SB_KEY = 'sb_publishable_-BkWoyQCBVhagJQIgR_zdw_qHvhYZpG';
+    const ext = state.coverFile.name.split('.').pop().toLowerCase() || 'jpg';
+    const coverPath = `user-uploads/${Date.now()}_cover.${ext}`;
+    const uploadResp = await fetch(`${SB_URL}/storage/v1/object/game-covers/${coverPath}`, {
+      method: 'POST',
+      headers: {
+        'apikey': SB_KEY,
+        'Authorization': 'Bearer ' + SB_KEY,
+        'Content-Type': state.coverFile.type || 'image/jpeg',
+        'x-upsert': 'true'
+      },
+      body: state.coverFile
+    });
+    let coverUrl = null;
+    if (uploadResp.ok) {
+      coverUrl = `${SB_URL}/storage/v1/object/public/game-covers/${coverPath}`;
+    }
+
+    // Insert into game_projects
+    const payload = {
+      title: state.title,
+      tagline: state.tagline,
+      description: state.desc || null,
+      genre: state.genres,
+      status: state.status,
+      platforms: state.platforms,
+      looking_for: state.lookingFor,
+      cover_image_url: coverUrl,
+      trailer_url: state.video || null,
+      is_public: true,
+      source: 'user_submitted'
+    };
+    const insertResp = await fetch(`${SB_URL}/rest/v1/game_projects`, {
+      method: 'POST',
+      headers: {
+        'apikey': SB_KEY,
+        'Authorization': 'Bearer ' + SB_KEY,
+        'Content-Type': 'application/json',
+        'Prefer': 'return=minimal'
+      },
+      body: JSON.stringify(payload)
+    });
+
+    if (insertResp.ok || insertResp.status === 201) {
+      // Success
+      document.getElementById('panel-3').style.display = 'none';
+      document.getElementById('step-item-3').classList.add('done');
+      document.getElementById('panel-success').style.display = 'block';
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    } else {
+      const err = await insertResp.text();
+      throw new Error(err);
+    }
+  } catch(e) {
+    console.error(e);
+    btn.disabled = false;
+    btn.textContent = '🚀 Publish Project';
+    alert('Something went wrong. Please try again.\n' + e.message);
+  }
+}
+</script>
+</body>
+</html>
