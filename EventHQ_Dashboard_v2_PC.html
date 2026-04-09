@@ -444,7 +444,18 @@ function renderModuleGrid(ev){
         card.querySelector('.module-card-status').className = 'module-card-status status-on';
         card.querySelector('.module-card-status').textContent = 'ON';
         card.onclick = null;
-        showToast('✅ '+m.name+' enabled!');
+        // Sync to localStorage
+        try {
+          const events = loadEvents();
+          const idx = events.findIndex(e => e.id === ev.id);
+          if(idx >= 0){
+            if(!events[idx].modules) events[idx].modules = [];
+            if(!events[idx].modules.includes(m.id)) events[idx].modules.push(m.id);
+            localStorage.setItem('gc_events', JSON.stringify(events));
+            ev.modules = events[idx].modules;
+          }
+        } catch(e){}
+        showToast('\u2705 '+m.name+' enabled!');
       };
     }
     grid.appendChild(card);
