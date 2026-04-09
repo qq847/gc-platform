@@ -1,0 +1,2043 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Event Setup — Game Connection</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg: #e8e4da;
+    --orange: #d95f2b;
+    --orange-light: #f4e8e1;
+    --orange-hover: #c2521f;
+    --teal: #0a7fa8;
+    --teal-light: #e0f3fa;
+    --green: #0d9b72;
+    --green-light: #e0f5ee;
+    --white: #fff;
+    --card-radius: 12px;
+    --gray-50: #faf9f7;
+    --gray-100: #f5f4f0;
+    --gray-200: #e8e4da;
+    --gray-300: #d4cfc4;
+    --gray-400: #b0a99a;
+    --gray-500: #857e72;
+    --gray-600: #5c5850;
+    --gray-700: #3e3b36;
+    --gray-800: #2e2b26;
+    --shadow-sm: 0 1px 4px rgba(0,0,0,0.06);
+    --shadow-md: 0 4px 16px rgba(0,0,0,0.08);
+    --shadow-lg: 0 8px 32px rgba(0,0,0,0.12);
+  }
+
+  html, body {
+    min-height: 100vh;
+    background: var(--bg);
+    font-family: 'DM Sans', sans-serif;
+    color: var(--gray-800);
+    font-size: 15px;
+    line-height: 1.6;
+  }
+
+  /* ── Top Bar ── */
+  .topbar {
+    background: var(--white);
+    border-bottom: 1px solid var(--gray-200);
+    padding: 0 40px;
+    height: 56px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+  }
+
+  .topbar-left {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+  }
+
+  .logo-mark {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .logo-icon {
+    width: 32px;
+    height: 32px;
+    background: var(--orange);
+    border-radius: 7px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-weight: 700;
+    font-size: 13px;
+    letter-spacing: -0.5px;
+  }
+
+  .logo-text {
+    font-size: 15px;
+    font-weight: 700;
+    color: var(--gray-800);
+  }
+
+  .topbar-sep {
+    width: 1px;
+    height: 24px;
+    background: var(--gray-300);
+  }
+
+  .topbar-title {
+    font-size: 14px;
+    color: var(--gray-500);
+    font-weight: 500;
+  }
+
+  .topbar-right {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .topbar-user {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 5px 12px 5px 5px;
+    border-radius: 24px;
+    background: var(--gray-100);
+  }
+
+  .user-avatar {
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    background: var(--teal);
+    color: white;
+    font-weight: 700;
+    font-size: 11px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .user-name { font-size: 13px; font-weight: 600; color: var(--gray-700); }
+
+  /* ── Wizard Container ── */
+  .wizard-container {
+    max-width: 960px;
+    margin: 0 auto;
+    padding: 32px 24px 80px;
+  }
+
+  /* ── Page Header ── */
+  .page-header {
+    margin-bottom: 24px;
+  }
+
+  .page-title {
+    font-size: 28px;
+    font-weight: 700;
+    color: var(--gray-800);
+    line-height: 1.2;
+    letter-spacing: -0.3px;
+  }
+
+  .page-subtitle {
+    font-size: 14px;
+    color: var(--gray-500);
+    margin-top: 4px;
+  }
+
+  /* ── Step Progress ── */
+  .step-progress {
+    display: flex;
+    align-items: center;
+    gap: 0;
+    margin-bottom: 32px;
+    background: var(--white);
+    border-radius: var(--card-radius);
+    padding: 6px;
+    box-shadow: var(--shadow-sm);
+  }
+
+  .step-pill {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    padding: 12px 16px;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.2s;
+    user-select: none;
+  }
+
+  .step-pill:hover:not(.active) {
+    background: var(--gray-100);
+  }
+
+  .step-pill .step-num {
+    width: 26px;
+    height: 26px;
+    border-radius: 50%;
+    border: 2px solid var(--gray-300);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 12px;
+    font-weight: 700;
+    color: var(--gray-400);
+    flex-shrink: 0;
+    transition: all 0.2s;
+    background: var(--white);
+  }
+
+  .step-pill .step-text {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--gray-500);
+    transition: color 0.2s;
+  }
+
+  .step-pill.active {
+    background: var(--orange-light);
+  }
+
+  .step-pill.active .step-num {
+    border-color: var(--orange);
+    background: var(--orange);
+    color: white;
+  }
+
+  .step-pill.active .step-text {
+    color: var(--orange);
+  }
+
+  .step-pill.completed .step-num {
+    border-color: var(--green);
+    background: var(--green);
+    color: white;
+    font-size: 11px;
+  }
+
+  .step-pill.completed .step-text {
+    color: var(--green);
+  }
+
+  /* ── Panels ── */
+  .step-panel { display: none; }
+  .step-panel.active { display: block; animation: fadeUp 0.3s ease; }
+
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(12px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  /* ── Card ── */
+  .card {
+    background: var(--white);
+    border-radius: var(--card-radius);
+    padding: 28px;
+    box-shadow: var(--shadow-sm);
+    margin-bottom: 16px;
+  }
+
+  .card-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 20px;
+  }
+
+  .card-icon {
+    width: 36px;
+    height: 36px;
+    border-radius: 9px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 18px;
+    flex-shrink: 0;
+  }
+
+  .card-title {
+    font-size: 17px;
+    font-weight: 700;
+    color: var(--gray-800);
+    line-height: 1.2;
+  }
+
+  .card-desc {
+    font-size: 13px;
+    color: var(--gray-500);
+    margin-top: 2px;
+  }
+
+  /* ── Form ── */
+  .form-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 18px;
+  }
+
+  .form-grid.col-3 { grid-template-columns: 1fr 1fr 1fr; }
+
+  .form-field {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+
+  .form-field.full { grid-column: 1 / -1; }
+
+  .form-label {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--gray-600);
+    display: flex;
+    align-items: center;
+    gap: 5px;
+  }
+
+  .required { color: var(--orange); }
+  .optional { font-size: 11px; font-weight: 400; color: var(--gray-400); }
+
+  .form-input, .form-select, .form-textarea {
+    width: 100%;
+    padding: 10px 14px;
+    border: 1.5px solid var(--gray-300);
+    border-radius: 8px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 14px;
+    color: var(--gray-800);
+    background: var(--white);
+    transition: border-color 0.15s, box-shadow 0.15s;
+    outline: none;
+  }
+
+  .form-input:focus, .form-select:focus, .form-textarea:focus {
+    border-color: var(--teal);
+    box-shadow: 0 0 0 3px rgba(10, 127, 168, 0.08);
+  }
+
+  .form-input.error { border-color: #e53e3e; }
+  .form-input::placeholder, .form-textarea::placeholder { color: var(--gray-400); }
+  .form-textarea { resize: vertical; min-height: 110px; }
+  .form-hint { font-size: 12px; color: var(--gray-400); }
+  .form-error { font-size: 12px; color: #e53e3e; display: none; }
+  .form-error.show { display: block; }
+
+  input[type="date"], input[type="number"] {
+    width: 100%;
+    padding: 10px 14px;
+    border: 1.5px solid var(--gray-300);
+    border-radius: 8px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 14px;
+    color: var(--gray-800);
+    background: var(--white);
+    transition: border-color 0.15s, box-shadow 0.15s;
+    outline: none;
+  }
+
+  input[type="date"]:focus, input[type="number"]:focus {
+    border-color: var(--teal);
+    box-shadow: 0 0 0 3px rgba(10, 127, 168, 0.08);
+  }
+
+  /* ── Event Type Radio ── */
+  .type-group {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+  }
+
+  .type-option {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    padding: 8px 16px;
+    border: 1.5px solid var(--gray-300);
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.15s;
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--gray-600);
+    background: var(--white);
+    user-select: none;
+  }
+
+  .type-option:hover { border-color: var(--gray-400); background: var(--gray-50); }
+  .type-option.selected { border-color: var(--orange); background: var(--orange-light); color: var(--orange); }
+  .type-option input { display: none; }
+
+  /* ── Event Scale Selector ── */
+  .scale-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 12px;
+  }
+
+  .scale-card {
+    border: 2px solid var(--gray-300);
+    border-radius: var(--card-radius);
+    padding: 20px;
+    cursor: pointer;
+    transition: all 0.2s;
+    background: var(--white);
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .scale-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 3px;
+    background: transparent;
+    transition: background 0.2s;
+  }
+
+  .scale-card:hover { border-color: var(--gray-400); transform: translateY(-2px); box-shadow: var(--shadow-md); }
+
+  .scale-card.selected {
+    border-color: var(--teal);
+    background: var(--teal-light);
+  }
+
+  .scale-card.selected::before { background: var(--teal); }
+
+  .scale-icon { font-size: 32px; margin-bottom: 10px; }
+  .scale-name { font-size: 16px; font-weight: 700; color: var(--gray-800); margin-bottom: 4px; }
+  .scale-card.selected .scale-name { color: var(--teal); }
+  .scale-range { font-size: 13px; font-weight: 600; color: var(--teal); margin-bottom: 6px; }
+  .scale-desc { font-size: 12px; color: var(--gray-500); line-height: 1.5; }
+  .scale-modules {
+    margin-top: 10px;
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--gray-400);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+
+  /* ── Location Toggle ── */
+  .loc-toggle {
+    display: flex;
+    background: var(--gray-100);
+    border-radius: 8px;
+    padding: 4px;
+    gap: 2px;
+  }
+
+  .loc-btn {
+    flex: 1;
+    padding: 8px 14px;
+    border: none;
+    border-radius: 6px;
+    background: transparent;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--gray-500);
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+
+  .loc-btn.active {
+    background: var(--white);
+    color: var(--orange);
+    box-shadow: var(--shadow-sm);
+    font-weight: 600;
+  }
+
+  .loc-sub { margin-top: 12px; display: none; }
+  .loc-sub.show { display: block; }
+
+  /* ── Image Upload ── */
+  .upload-zone {
+    border: 2px dashed var(--gray-300);
+    border-radius: 10px;
+    padding: 28px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.15s;
+    text-align: center;
+    background: var(--gray-50);
+    position: relative;
+  }
+
+  .upload-zone:hover, .upload-zone.dragover {
+    border-color: var(--orange);
+    background: var(--orange-light);
+  }
+
+  .upload-zone.has-image {
+    border-style: solid;
+    border-color: var(--green);
+    background: var(--green-light);
+    padding: 14px 20px;
+  }
+
+  .upload-icon { font-size: 32px; margin-bottom: 8px; }
+  .upload-text { font-size: 14px; font-weight: 500; color: var(--gray-600); }
+  .upload-sub { font-size: 12px; color: var(--gray-400); margin-top: 3px; }
+  .upload-browse { color: var(--teal); font-weight: 600; }
+
+  .upload-preview { display: none; align-items: center; gap: 12px; width: 100%; }
+  .upload-preview.show { display: flex; }
+
+  .preview-thumb { width: 72px; height: 52px; border-radius: 6px; object-fit: cover; background: var(--gray-300); }
+  .preview-info { flex: 1; text-align: left; }
+  .preview-name { font-size: 14px; font-weight: 600; color: var(--gray-800); }
+  .preview-size { font-size: 12px; color: var(--gray-400); }
+  .preview-remove { background: none; border: none; color: var(--gray-400); cursor: pointer; font-size: 18px; padding: 4px; transition: color 0.15s; }
+  .preview-remove:hover { color: #e53e3e; }
+
+  /* ═══════════════════════════════════════════
+     STEP 2 — MODULE PICKER (core redesign)
+     ═══════════════════════════════════════════ */
+
+  .module-summary-bar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 14px 20px;
+    background: var(--gray-100);
+    border-radius: 10px;
+    margin-bottom: 20px;
+  }
+
+  .module-summary-left {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .module-count {
+    font-size: 15px;
+    font-weight: 700;
+    color: var(--gray-800);
+  }
+
+  .module-count span { color: var(--teal); }
+
+  .module-preset-label {
+    font-size: 12px;
+    font-weight: 600;
+    padding: 3px 10px;
+    border-radius: 20px;
+    background: var(--teal-light);
+    color: var(--teal);
+  }
+
+  .module-reset-btn {
+    font-size: 13px;
+    color: var(--gray-400);
+    cursor: pointer;
+    background: none;
+    border: none;
+    font-family: 'DM Sans', sans-serif;
+    font-weight: 500;
+    transition: color 0.15s;
+  }
+
+  .module-reset-btn:hover { color: var(--gray-600); }
+
+  .module-section-label {
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: var(--gray-400);
+    margin-bottom: 12px;
+    padding-left: 4px;
+  }
+
+  .modules-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 12px;
+    margin-bottom: 24px;
+  }
+
+  .mod-card {
+    border: 2px solid var(--gray-200);
+    border-radius: var(--card-radius);
+    padding: 18px 20px;
+    display: flex;
+    align-items: flex-start;
+    gap: 14px;
+    transition: all 0.2s;
+    background: var(--white);
+    cursor: pointer;
+    position: relative;
+    user-select: none;
+  }
+
+  .mod-card:hover:not(.locked) {
+    border-color: var(--gray-400);
+    box-shadow: var(--shadow-sm);
+  }
+
+  .mod-card.on {
+    border-color: var(--teal);
+    background: linear-gradient(135deg, rgba(10,127,168,0.03), rgba(10,127,168,0.06));
+  }
+
+  .mod-card.locked {
+    background: var(--gray-100);
+    border-color: var(--gray-200);
+    cursor: default;
+  }
+
+  .mod-card-icon {
+    width: 42px;
+    height: 42px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 20px;
+    flex-shrink: 0;
+    transition: transform 0.2s;
+  }
+
+  .mod-card:hover:not(.locked) .mod-card-icon { transform: scale(1.05); }
+
+  .mod-card-body { flex: 1; min-width: 0; }
+
+  .mod-card-top {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 4px;
+  }
+
+  .mod-card-name {
+    font-size: 15px;
+    font-weight: 700;
+    color: var(--gray-800);
+    line-height: 1.3;
+  }
+
+  .mod-card.on .mod-card-name { color: var(--teal); }
+
+  .mod-card-desc {
+    font-size: 13px;
+    color: var(--gray-500);
+    line-height: 1.45;
+  }
+
+  .mod-card-tags {
+    display: flex;
+    gap: 6px;
+    margin-top: 8px;
+    flex-wrap: wrap;
+  }
+
+  .mod-tag {
+    display: inline-flex;
+    align-items: center;
+    gap: 3px;
+    padding: 2px 8px;
+    border-radius: 20px;
+    font-size: 11px;
+    font-weight: 600;
+  }
+
+  .mod-tag-required { background: var(--gray-200); color: var(--gray-500); }
+  .mod-tag-exclusive { background: linear-gradient(135deg, #6a35d9, #d95f2b); color: white; }
+  .mod-tag-rec { background: var(--green-light); color: var(--green); }
+
+  /* Toggle switch */
+  .toggle {
+    position: relative;
+    width: 40px;
+    height: 22px;
+    flex-shrink: 0;
+  }
+
+  .toggle input { opacity: 0; width: 0; height: 0; position: absolute; }
+
+  .toggle-track {
+    position: absolute;
+    inset: 0;
+    border-radius: 11px;
+    background: var(--gray-300);
+    cursor: pointer;
+    transition: background 0.2s;
+  }
+
+  .toggle-track::before {
+    content: '';
+    position: absolute;
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    background: white;
+    top: 3px;
+    left: 3px;
+    transition: transform 0.2s;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+  }
+
+  .toggle input:checked + .toggle-track { background: var(--teal); }
+  .toggle input:checked + .toggle-track::before { transform: translateX(18px); }
+  .toggle input:disabled + .toggle-track { cursor: default; opacity: 0.5; }
+
+  /* ── Step 3: Registration ── */
+  .participant-chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  .p-chip {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    padding: 8px 16px;
+    border: 1.5px solid var(--gray-300);
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.15s;
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--gray-600);
+    background: var(--white);
+    user-select: none;
+  }
+
+  .p-chip:hover { border-color: var(--gray-400); }
+  .p-chip.on { border-color: var(--teal); background: var(--teal-light); color: var(--teal); }
+  .p-chip .check { width: 16px; height: 16px; border-radius: 4px; border: 2px solid currentColor; display: flex; align-items: center; justify-content: center; font-size: 10px; flex-shrink: 0; }
+  .p-chip.on .check::after { content: '✓'; font-weight: 700; }
+
+  /* Reg Mode */
+  .reg-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 10px;
+  }
+
+  .reg-card {
+    border: 1.5px solid var(--gray-300);
+    border-radius: 10px;
+    padding: 16px;
+    cursor: pointer;
+    transition: all 0.15s;
+    background: var(--white);
+  }
+
+  .reg-card:hover { border-color: var(--gray-400); }
+  .reg-card.selected { border-color: var(--teal); background: var(--teal-light); }
+  .reg-card-icon { font-size: 22px; margin-bottom: 6px; }
+  .reg-card-name { font-size: 14px; font-weight: 700; color: var(--gray-800); margin-bottom: 3px; }
+  .reg-card.selected .reg-card-name { color: var(--teal); }
+  .reg-card-desc { font-size: 12px; color: var(--gray-400); line-height: 1.4; }
+
+  /* YN selector */
+  .yn-row { display: flex; gap: 8px; }
+  .yn-btn {
+    flex: 1;
+    padding: 10px;
+    border: 1.5px solid var(--gray-300);
+    border-radius: 8px;
+    text-align: center;
+    cursor: pointer;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--gray-500);
+    transition: all 0.15s;
+    background: var(--white);
+  }
+  .yn-btn:hover { border-color: var(--gray-400); }
+  .yn-btn.selected { border-color: var(--teal); background: var(--teal-light); color: var(--teal); }
+
+  /* Badge list */
+  .badge-list { display: flex; flex-direction: column; gap: 6px; }
+
+  .badge-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 14px;
+    border: 1px solid var(--gray-200);
+    border-radius: 8px;
+    background: var(--gray-50);
+    transition: background 0.15s;
+  }
+
+  .badge-item:hover { background: var(--gray-100); }
+
+  .badge-dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
+  .badge-name { flex: 1; font-size: 14px; font-weight: 500; color: var(--gray-800); }
+  .badge-name input {
+    border: none; background: transparent; font-family: 'DM Sans', sans-serif;
+    font-size: 14px; font-weight: 500; color: var(--gray-800); outline: none; width: 100%;
+  }
+  .badge-name input:focus { color: var(--teal); }
+  .badge-action {
+    font-size: 12px; color: var(--gray-400); cursor: pointer; font-weight: 500;
+    background: none; border: none; font-family: 'DM Sans', sans-serif;
+    transition: color 0.15s; padding: 2px 4px;
+  }
+  .badge-action:hover { color: #e53e3e; }
+
+  /* ── Step 4: Publish ── */
+  .two-col {
+    display: grid;
+    grid-template-columns: 1fr 380px;
+    gap: 16px;
+    align-items: start;
+  }
+
+  .url-wrap {
+    display: flex;
+    align-items: center;
+    border: 1.5px solid var(--gray-300);
+    border-radius: 8px;
+    overflow: hidden;
+    background: var(--white);
+    transition: border-color 0.15s, box-shadow 0.15s;
+  }
+
+  .url-wrap:focus-within { border-color: var(--teal); box-shadow: 0 0 0 3px rgba(10, 127, 168, 0.08); }
+
+  .url-prefix {
+    padding: 10px 12px;
+    background: var(--gray-100);
+    border-right: 1.5px solid var(--gray-200);
+    font-size: 12px;
+    color: var(--gray-500);
+    white-space: nowrap;
+    font-family: monospace;
+  }
+
+  .url-input {
+    flex: 1; padding: 10px 12px; border: none; outline: none;
+    font-family: monospace; font-size: 14px; color: var(--teal); font-weight: 600; background: transparent;
+  }
+
+  /* Visibility */
+  .vis-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
+
+  .vis-card {
+    border: 1.5px solid var(--gray-300); border-radius: 10px; padding: 14px;
+    cursor: pointer; transition: all 0.15s; text-align: center; background: var(--white);
+  }
+
+  .vis-card:hover { border-color: var(--gray-400); }
+  .vis-card.selected { border-color: var(--orange); background: var(--orange-light); }
+  .vis-icon { font-size: 24px; margin-bottom: 6px; }
+  .vis-name { font-size: 14px; font-weight: 700; color: var(--gray-800); margin-bottom: 3px; }
+  .vis-card.selected .vis-name { color: var(--orange); }
+  .vis-desc { font-size: 11px; color: var(--gray-400); }
+
+  /* Social preview */
+  .social-card {
+    border: 1px solid var(--gray-200); border-radius: 10px; overflow: hidden;
+    background: var(--white); box-shadow: var(--shadow-sm);
+  }
+
+  .social-img {
+    height: 140px;
+    background: linear-gradient(135deg, var(--teal) 0%, var(--orange) 100%);
+    display: flex; align-items: center; justify-content: center; color: white; font-size: 28px;
+  }
+
+  .social-body { padding: 12px 14px; }
+  .social-domain { font-size: 11px; color: var(--gray-400); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 3px; }
+  .social-title { font-size: 15px; font-weight: 700; color: var(--gray-800); line-height: 1.3; margin-bottom: 3px; }
+  .social-desc { font-size: 12px; color: var(--gray-500); line-height: 1.4; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+
+  /* Checklist */
+  .checklist { display: flex; flex-direction: column; gap: 8px; }
+
+  .check-item {
+    display: flex; align-items: center; gap: 10px;
+    padding: 10px 14px; border-radius: 8px;
+    border: 1px solid var(--gray-200); background: var(--gray-50); transition: all 0.2s;
+  }
+
+  .check-item.done { border-color: var(--green); background: var(--green-light); }
+  .check-item.warn { border-color: #e0a800; background: #fffbeb; }
+  .check-status { font-size: 16px; flex-shrink: 0; }
+  .check-label { font-size: 13px; font-weight: 500; color: var(--gray-700); }
+  .check-label span { color: var(--gray-400); font-size: 11px; font-weight: 400; margin-left: 6px; }
+
+  /* ── Buttons ── */
+  .btn {
+    display: inline-flex; align-items: center; gap: 7px;
+    padding: 10px 22px; border-radius: 8px;
+    font-family: 'DM Sans', sans-serif; font-size: 14px; font-weight: 600;
+    cursor: pointer; border: none; transition: all 0.15s;
+    text-decoration: none; white-space: nowrap;
+  }
+
+  .btn-primary { background: var(--orange); color: white; }
+  .btn-primary:hover { background: var(--orange-hover); transform: translateY(-1px); box-shadow: 0 4px 12px rgba(217, 95, 43, 0.25); }
+
+  .btn-secondary { background: var(--white); color: var(--gray-600); border: 1.5px solid var(--gray-300); }
+  .btn-secondary:hover { background: var(--gray-100); border-color: var(--gray-400); }
+
+  .btn-ghost { background: transparent; color: var(--gray-500); padding: 10px 14px; }
+  .btn-ghost:hover { background: var(--gray-100); color: var(--gray-700); }
+
+  .btn-green { background: var(--green); color: white; }
+  .btn-green:hover { background: #0a7f5c; transform: translateY(-1px); box-shadow: 0 4px 12px rgba(13,155,114,0.25); }
+
+  .btn-lg { padding: 13px 28px; font-size: 15px; border-radius: 10px; }
+
+  /* ── Action Bar ── */
+  .action-bar {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 16px 24px; background: var(--white);
+    border-radius: var(--card-radius); box-shadow: var(--shadow-sm); margin-top: 8px;
+  }
+
+  .action-left, .action-right { display: flex; align-items: center; gap: 10px; }
+
+  /* ── Divider ── */
+  .divider { border: none; border-top: 1px solid var(--gray-200); margin: 20px 0; }
+
+  /* ── Toast ── */
+  .toast-container {
+    position: fixed; top: 68px; right: 24px; z-index: 1000;
+    display: flex; flex-direction: column; gap: 8px; pointer-events: none;
+  }
+
+  .toast {
+    padding: 12px 20px; border-radius: 10px; font-size: 14px; font-weight: 500;
+    box-shadow: var(--shadow-lg); pointer-events: all;
+    animation: slideIn 0.25s ease; max-width: 320px;
+  }
+
+  @keyframes slideIn { from { transform: translateX(100%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+  .toast.fadeout { animation: fadeOut 0.25s ease forwards; }
+  @keyframes fadeOut { from { opacity: 1; } to { opacity: 0; transform: translateX(20px); } }
+
+  .toast-success { background: var(--green); color: white; }
+  .toast-error { background: #e53e3e; color: white; }
+  .toast-info { background: var(--teal); color: white; }
+
+  /* Scrollbar */
+  ::-webkit-scrollbar { width: 6px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: var(--gray-300); border-radius: 3px; }
+</style>
+</head>
+<body>
+
+<!-- ── SPLASH SCREEN ── -->
+<div id="gc-splash" style="
+  position:fixed;inset:0;z-index:99999;
+  background:#f3f2ef;
+  display:flex;flex-direction:column;
+  align-items:center;justify-content:center;
+  gap:32px;
+  transition:opacity .35s ease;
+">
+  <img src="assets/gc-logo.png" alt="Game Connection" style="height:52px;width:auto;display:block">
+  <div style="width:220px;height:3px;background:rgba(0,0,0,0.12);border-radius:2px;overflow:hidden">
+    <div id="gc-splash-bar" style="
+      height:100%;width:0%;background:#16a34a;
+      border-radius:2px;
+      transition:width .08s linear;
+    "></div>
+  </div>
+</div>
+<script>
+(function(){
+  var splash = document.getElementById('gc-splash');
+  var bar = document.getElementById('gc-splash-bar');
+  var pct = 0;
+  var fast = setInterval(function(){
+    pct += (pct < 70 ? 3 : 0.8);
+    if(pct >= 92){ clearInterval(fast); }
+    bar.style.width = Math.min(pct,92) + '%';
+  }, 40);
+  function finish(){
+    clearInterval(fast);
+    bar.style.transition = 'width .25s ease';
+    bar.style.width = '100%';
+    setTimeout(function(){
+      splash.style.opacity = '0';
+      setTimeout(function(){ splash.style.display='none'; }, 360);
+    }, 260);
+  }
+  if(document.readyState === 'complete'){
+    finish();
+  } else {
+    window.addEventListener('load', finish);
+    setTimeout(finish, 4000);
+  }
+})();
+</script>
+
+
+<!-- ═══ TOP BAR ═══ -->
+<header class="topbar">
+  <div class="topbar-left">
+    <a href="EventHQ_Dashboard_v1_PC.html" style="color:rgba(255,255,255,0.6);text-decoration:none;font-size:13px;font-weight:500;display:flex;align-items:center;gap:4px;margin-right:8px">← Event HQ</a>
+    <div class="topbar-sep"></div>
+    <div class="logo-mark">
+      <div class="logo-icon">GC</div>
+      <div class="logo-text">Game Connection</div>
+    </div>
+    <div class="topbar-sep"></div>
+    <div class="topbar-title">Event Setup</div>
+  </div>
+  <div class="topbar-right">
+    <button class="btn btn-ghost" onclick="saveDraft()" style="font-size:13px;">💾 Save Draft</button>
+    <div class="topbar-user">
+      <div class="user-avatar">QQ</div>
+      <div class="user-name">Qiang</div>
+    </div>
+  </div>
+</header>
+
+<!-- ═══ WIZARD ═══ -->
+<div class="wizard-container">
+
+  <div class="page-header">
+    <div class="page-title">Create New Event</div>
+    <div class="page-subtitle">Configure your event in 4 steps — choose your scale, pick features, set registration, and publish.</div>
+  </div>
+
+  <!-- Step Progress -->
+  <div class="step-progress" id="stepProgress">
+    <div class="step-pill active" onclick="goToStep(1)">
+      <div class="step-num">1</div>
+      <div class="step-text">Event Info</div>
+    </div>
+    <div class="step-pill" onclick="goToStep(2)">
+      <div class="step-num">2</div>
+      <div class="step-text">Modules</div>
+    </div>
+    <div class="step-pill" onclick="goToStep(3)">
+      <div class="step-num">3</div>
+      <div class="step-text">Registration</div>
+    </div>
+    <div class="step-pill" onclick="goToStep(4)">
+      <div class="step-num">4</div>
+      <div class="step-text">Publish</div>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════════════
+       STEP 1: Event Info
+       ══════════════════════════════════════════ -->
+  <div class="step-panel active" id="panel1">
+
+    <!-- Event Scale — the key new addition -->
+    <div class="card">
+      <div class="card-header">
+        <div class="card-icon" style="background:#e8f5fe;">📐</div>
+        <div>
+          <div class="card-title">Event Scale</div>
+          <div class="card-desc">This determines recommended modules and default settings</div>
+        </div>
+      </div>
+      <div class="scale-grid" id="scaleGrid">
+        <div class="scale-card" onclick="selectScale('intimate', this)">
+          <div class="scale-icon">🤝</div>
+          <div class="scale-name">Intimate</div>
+          <div class="scale-range">Up to 150 attendees</div>
+          <div class="scale-desc">Focused meetups, roundtables, or networking sessions</div>
+          <div class="scale-modules">2 modules recommended</div>
+        </div>
+        <div class="scale-card selected" onclick="selectScale('regional', this)">
+          <div class="scale-icon">🏛️</div>
+          <div class="scale-name">Regional</div>
+          <div class="scale-range">150–800 attendees</div>
+          <div class="scale-desc">Multi-day conferences with talks, matchmaking, and showcases</div>
+          <div class="scale-modules">4 modules recommended</div>
+        </div>
+        <div class="scale-card" onclick="selectScale('major', this)">
+          <div class="scale-icon">🌍</div>
+          <div class="scale-name">Major</div>
+          <div class="scale-range">800+ attendees</div>
+          <div class="scale-desc">Flagship expos with full buyer programs, awards, and sponsorships</div>
+          <div class="scale-modules">All 6 modules</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Event Details -->
+    <div class="card">
+      <div class="card-header">
+        <div class="card-icon" style="background:#fff3ec;">📋</div>
+        <div>
+          <div class="card-title">Event Details</div>
+        </div>
+      </div>
+
+      <div class="form-grid">
+        <div class="form-field full">
+          <label class="form-label">Event Name <span class="required">*</span></label>
+          <input type="text" class="form-input" id="eventName" placeholder="e.g. Game Connection Europe 2026" oninput="syncSeo()">
+          <div class="form-error" id="eventNameErr">Event name is required.</div>
+        </div>
+
+        <div class="form-field full">
+          <label class="form-label">Event Type <span class="required">*</span></label>
+          <div class="type-group" id="typeGroup">
+            <label class="type-option selected" onclick="selectType(this)">
+              <input type="radio" name="eventType" value="Conference" checked> 🎤 Conference
+            </label>
+            <label class="type-option" onclick="selectType(this)">
+              <input type="radio" name="eventType" value="Expo"> 🏛️ Expo
+            </label>
+            <label class="type-option" onclick="selectType(this)">
+              <input type="radio" name="eventType" value="Meetup"> 🤝 Meetup
+            </label>
+            <label class="type-option" onclick="selectType(this)">
+              <input type="radio" name="eventType" value="Online"> 💻 Online
+            </label>
+          </div>
+        </div>
+
+        <div class="form-field">
+          <label class="form-label">Start Date <span class="required">*</span></label>
+          <input type="date" id="startDate">
+          <div class="form-error" id="startDateErr">Please select a start date.</div>
+        </div>
+
+        <div class="form-field">
+          <label class="form-label">End Date <span class="required">*</span></label>
+          <input type="date" id="endDate">
+          <div class="form-error" id="endDateErr">End date must be after start date.</div>
+        </div>
+      </div>
+
+      <hr class="divider">
+
+      <div class="form-field" style="margin-bottom:14px;">
+        <label class="form-label">Location <span class="required">*</span></label>
+        <div class="loc-toggle">
+          <button class="loc-btn active" id="locPhysical" onclick="setLoc('physical')">📍 Physical</button>
+          <button class="loc-btn" id="locOnline" onclick="setLoc('online')">🌐 Online</button>
+          <button class="loc-btn" id="locHybrid" onclick="setLoc('hybrid')">🔀 Hybrid</button>
+        </div>
+      </div>
+
+      <div class="loc-sub show" id="subPhysical">
+        <div class="form-grid col-3">
+          <div class="form-field">
+            <label class="form-label">Venue</label>
+            <input type="text" class="form-input" id="venuePhysical" placeholder="Convention Center">
+          </div>
+          <div class="form-field">
+            <label class="form-label">City</label>
+            <input type="text" class="form-input" id="cityPhysical" placeholder="Lyon">
+          </div>
+          <div class="form-field">
+            <label class="form-label">Country</label>
+            <input type="text" class="form-input" id="countryPhysical" placeholder="France">
+          </div>
+        </div>
+      </div>
+
+      <div class="loc-sub" id="subOnline">
+        <div class="form-field">
+          <label class="form-label">Platform URL</label>
+          <input type="text" class="form-input" placeholder="https://zoom.us/j/...">
+        </div>
+      </div>
+
+      <div class="loc-sub" id="subHybrid">
+        <div class="form-grid col-3" style="margin-bottom:12px;">
+          <div class="form-field">
+            <label class="form-label">Venue</label>
+            <input type="text" class="form-input" placeholder="Convention Center">
+          </div>
+          <div class="form-field">
+            <label class="form-label">City</label>
+            <input type="text" class="form-input" placeholder="Lyon">
+          </div>
+          <div class="form-field">
+            <label class="form-label">Country</label>
+            <input type="text" class="form-input" placeholder="France">
+          </div>
+        </div>
+        <div class="form-field">
+          <label class="form-label">Platform URL</label>
+          <input type="text" class="form-input" placeholder="https://zoom.us/j/...">
+        </div>
+      </div>
+    </div>
+
+    <!-- Media & Description -->
+    <div class="card">
+      <div class="card-header">
+        <div class="card-icon" style="background:#fff3ec;">🖼️</div>
+        <div>
+          <div class="card-title">Media & Description</div>
+        </div>
+      </div>
+
+      <div class="form-grid" style="grid-template-columns:1fr 1fr; gap:20px;">
+        <div>
+          <div class="form-field" style="margin-bottom:16px;">
+            <label class="form-label">Cover Image</label>
+            <div class="upload-zone" id="uploadZone"
+              onclick="document.getElementById('coverInput').click()"
+              ondragover="handleDragOver(event)"
+              ondragleave="handleDragLeave(event)"
+              ondrop="handleDrop(event)">
+              <div id="uploadDefault">
+                <div class="upload-icon">🖼️</div>
+                <div class="upload-text">Drag & drop or <span class="upload-browse">browse</span></div>
+                <div class="upload-sub">1920×1080px, JPG/PNG, max 5MB</div>
+              </div>
+              <div class="upload-preview" id="uploadPreview">
+                <img class="preview-thumb" id="previewImg" src="" alt="">
+                <div class="preview-info">
+                  <div class="preview-name" id="previewName"></div>
+                  <div class="preview-size" id="previewSize"></div>
+                </div>
+                <button class="preview-remove" onclick="removeImage(event)">✕</button>
+              </div>
+              <input type="file" id="coverInput" accept="image/*" style="display:none" onchange="handleFileSelect(event)">
+            </div>
+          </div>
+          <div class="form-field">
+            <label class="form-label">Expected Attendees</label>
+            <input type="number" id="expectedAttendees" placeholder="e.g. 500" min="1">
+          </div>
+        </div>
+        <div class="form-field">
+          <label class="form-label">Event Description <span class="required">*</span></label>
+          <textarea class="form-textarea" id="eventDesc" style="min-height:200px;" placeholder="Describe your event — agenda highlights, who should attend, what they'll gain..."></textarea>
+          <div class="form-error" id="eventDescErr">Please add a description.</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="action-bar">
+      <div class="action-left"></div>
+      <div class="action-right">
+        <button class="btn btn-primary" onclick="nextStep(1)">Next: Modules →</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════════════
+       STEP 2: Feature Modules
+       ══════════════════════════════════════════ -->
+  <div class="step-panel" id="panel2">
+
+    <div class="card">
+      <div class="card-header">
+        <div class="card-icon" style="background:#e8f5fe;">🧩</div>
+        <div>
+          <div class="card-title">Feature Modules</div>
+          <div class="card-desc">Toggle the features your event needs. Recommendations based on your event scale.</div>
+        </div>
+      </div>
+
+      <!-- Summary bar -->
+      <div class="module-summary-bar">
+        <div class="module-summary-left">
+          <div class="module-count"><span id="modCountNum">1</span> / 6 modules active</div>
+          <div class="module-preset-label" id="presetLabel">Regional preset</div>
+        </div>
+        <button class="module-reset-btn" onclick="resetModules()">Reset to preset</button>
+      </div>
+
+      <!-- Core Modules -->
+      <div class="module-section-label">Core Modules</div>
+      <div class="modules-grid">
+
+        <div class="mod-card on locked" id="mod-schedule">
+          <div class="mod-card-icon" style="background:#e0f3fa;">📅</div>
+          <div class="mod-card-body">
+            <div class="mod-card-top">
+              <div class="mod-card-name">Live Schedule</div>
+              <label class="toggle">
+                <input type="checkbox" checked disabled>
+                <span class="toggle-track"></span>
+              </label>
+            </div>
+            <div class="mod-card-desc">Agenda management, sessions, speakers, real-time updates</div>
+            <div class="mod-card-tags">
+              <span class="mod-tag mod-tag-required">🔒 Always On</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="mod-card" id="mod-matchmaking" onclick="toggleMod(this)">
+          <div class="mod-card-icon" style="background:#f0e8ff;">🤝</div>
+          <div class="mod-card-body">
+            <div class="mod-card-top">
+              <div class="mod-card-name">Let's Meet Matchmaking</div>
+              <label class="toggle" onclick="event.stopPropagation()">
+                <input type="checkbox" onchange="syncToggle(this)">
+                <span class="toggle-track"></span>
+              </label>
+            </div>
+            <div class="mod-card-desc">AI-powered meeting scheduling between developers, publishers, and investors</div>
+            <div class="mod-card-tags">
+              <span class="mod-tag mod-tag-exclusive">✨ GC Exclusive</span>
+              <span class="mod-tag mod-tag-rec" style="display:none;">👍 Recommended</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="mod-card" id="mod-showcase" onclick="toggleMod(this)">
+          <div class="mod-card-icon" style="background:#e8f5e9;">🎮</div>
+          <div class="mod-card-body">
+            <div class="mod-card-top">
+              <div class="mod-card-name">Game Showcase</div>
+              <label class="toggle" onclick="event.stopPropagation()">
+                <input type="checkbox" onchange="syncToggle(this)">
+                <span class="toggle-track"></span>
+              </label>
+            </div>
+            <div class="mod-card-desc">Dedicated space for devs to present titles with demos, trailers, and press kits</div>
+            <div class="mod-card-tags">
+              <span class="mod-tag mod-tag-rec" style="display:none;">👍 Recommended</span>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Premium Modules -->
+      <div class="module-section-label">Premium Add-ons</div>
+      <div class="modules-grid">
+
+        <div class="mod-card" id="mod-market" onclick="toggleMod(this)">
+          <div class="mod-card-icon" style="background:#fff3e0;">💼</div>
+          <div class="mod-card-body">
+            <div class="mod-card-top">
+              <div class="mod-card-name">Market & Sponsorship</div>
+              <label class="toggle" onclick="event.stopPropagation()">
+                <input type="checkbox" onchange="syncToggle(this)">
+                <span class="toggle-track"></span>
+              </label>
+            </div>
+            <div class="mod-card-desc">Sponsor packages, marketplace listings, and exhibitor promotions</div>
+            <div class="mod-card-tags">
+              <span class="mod-tag mod-tag-rec" style="display:none;">👍 Recommended</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="mod-card" id="mod-awards" onclick="toggleMod(this)">
+          <div class="mod-card-icon" style="background:#fffde0;">🏆</div>
+          <div class="mod-card-body">
+            <div class="mod-card-top">
+              <div class="mod-card-name">Awards & Competition</div>
+              <label class="toggle" onclick="event.stopPropagation()">
+                <input type="checkbox" onchange="syncToggle(this)">
+                <span class="toggle-track"></span>
+              </label>
+            </div>
+            <div class="mod-card-desc">Game awards, indie competitions, community voting with custom categories</div>
+            <div class="mod-card-tags">
+              <span class="mod-tag mod-tag-rec" style="display:none;">👍 Recommended</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="mod-card" id="mod-buyer" onclick="toggleMod(this)">
+          <div class="mod-card-icon" style="background:#fce4ec;">🎫</div>
+          <div class="mod-card-body">
+            <div class="mod-card-top">
+              <div class="mod-card-name">Buyer Invitation Program</div>
+              <label class="toggle" onclick="event.stopPropagation()">
+                <input type="checkbox" onchange="syncToggle(this)">
+                <span class="toggle-track"></span>
+              </label>
+            </div>
+            <div class="mod-card-desc">Curated buyer access with private lounges and priority meeting slots</div>
+            <div class="mod-card-tags">
+              <span class="mod-tag mod-tag-rec" style="display:none;">👍 Recommended</span>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <div class="action-bar">
+      <div class="action-left">
+        <button class="btn btn-secondary" onclick="prevStep(2)">← Back</button>
+      </div>
+      <div class="action-right">
+        <button class="btn btn-primary" onclick="nextStep(2)">Next: Registration →</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════════════
+       STEP 3: Registration
+       ══════════════════════════════════════════ -->
+  <div class="step-panel" id="panel3">
+
+    <div class="card">
+      <div class="card-header">
+        <div class="card-icon" style="background:#e8f5e9;">👥</div>
+        <div>
+          <div class="card-title">Participant Types</div>
+          <div class="card-desc">Select all categories that may register for this event</div>
+        </div>
+      </div>
+      <div class="participant-chips">
+        <label class="p-chip on" onclick="this.classList.toggle('on')"><span class="check"></span> 🧑‍💻 Developer</label>
+        <label class="p-chip on" onclick="this.classList.toggle('on')"><span class="check"></span> 🏢 Publisher</label>
+        <label class="p-chip" onclick="this.classList.toggle('on')"><span class="check"></span> 💰 Investor</label>
+        <label class="p-chip" onclick="this.classList.toggle('on')"><span class="check"></span> 📰 Press</label>
+        <label class="p-chip" onclick="this.classList.toggle('on')"><span class="check"></span> 🎟️ General Attendee</label>
+        <label class="p-chip" onclick="this.classList.toggle('on')"><span class="check"></span> 🎓 Student</label>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-header">
+        <div class="card-icon" style="background:#e8f5fe;">📝</div>
+        <div>
+          <div class="card-title">Registration Configuration</div>
+        </div>
+      </div>
+
+      <div class="form-field" style="margin-bottom:18px;">
+        <label class="form-label">Registration Mode <span class="required">*</span></label>
+        <div class="reg-grid">
+          <div class="reg-card selected" onclick="selectReg(this)">
+            <div class="reg-card-icon">🔓</div>
+            <div class="reg-card-name">Open</div>
+            <div class="reg-card-desc">Anyone can register without approval</div>
+          </div>
+          <div class="reg-card" onclick="selectReg(this)">
+            <div class="reg-card-icon">✉️</div>
+            <div class="reg-card-name">Invite Only</div>
+            <div class="reg-card-desc">Only invited participants can register</div>
+          </div>
+          <div class="reg-card" onclick="selectReg(this)">
+            <div class="reg-card-icon">📋</div>
+            <div class="reg-card-name">Application</div>
+            <div class="reg-card-desc">Attendees apply and await approval</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="form-grid" style="margin-bottom:18px;">
+        <div class="form-field">
+          <label class="form-label">Registration Deadline <span class="optional">(optional)</span></label>
+          <input type="date" id="regDeadline">
+        </div>
+        <div class="form-field">
+          <label class="form-label">Max Attendees <span class="optional">(optional)</span></label>
+          <input type="number" placeholder="Blank = unlimited" min="1">
+        </div>
+      </div>
+
+      <div class="form-field">
+        <label class="form-label">Require Complete Profile Before Registering?</label>
+        <div class="yn-row">
+          <div class="yn-btn selected" onclick="selectYN(this)">✅ Yes</div>
+          <div class="yn-btn" onclick="selectYN(this)">❌ No</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-header">
+        <div class="card-icon" style="background:#fff3e0;">🪪</div>
+        <div>
+          <div class="card-title">Badge Types</div>
+          <div class="card-desc">For on-site check-in and identification</div>
+        </div>
+      </div>
+
+      <div class="badge-list" id="badgeList">
+        <div class="badge-item">
+          <div class="badge-dot" style="background:#0a7fa8;"></div>
+          <div class="badge-name"><input value="Developer" spellcheck="false"></div>
+          <button class="badge-action" onclick="removeBadge(this)">✕</button>
+        </div>
+        <div class="badge-item">
+          <div class="badge-dot" style="background:#d95f2b;"></div>
+          <div class="badge-name"><input value="Publisher" spellcheck="false"></div>
+          <button class="badge-action" onclick="removeBadge(this)">✕</button>
+        </div>
+        <div class="badge-item">
+          <div class="badge-dot" style="background:#0d9b72;"></div>
+          <div class="badge-name"><input value="Speaker" spellcheck="false"></div>
+          <button class="badge-action" onclick="removeBadge(this)">✕</button>
+        </div>
+        <div class="badge-item">
+          <div class="badge-dot" style="background:#9b3d0d;"></div>
+          <div class="badge-name"><input value="VIP / Buyer" spellcheck="false"></div>
+          <button class="badge-action" onclick="removeBadge(this)">✕</button>
+        </div>
+        <div class="badge-item">
+          <div class="badge-dot" style="background:#6a35d9;"></div>
+          <div class="badge-name"><input value="Press / Media" spellcheck="false"></div>
+          <button class="badge-action" onclick="removeBadge(this)">✕</button>
+        </div>
+      </div>
+      <button class="btn btn-secondary" style="margin-top:12px;" onclick="addBadge()">+ Add Badge Type</button>
+    </div>
+
+    <div class="action-bar">
+      <div class="action-left">
+        <button class="btn btn-secondary" onclick="prevStep(3)">← Back</button>
+      </div>
+      <div class="action-right">
+        <button class="btn btn-primary" onclick="nextStep(3)">Next: Publish →</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════════════
+       STEP 4: Publish
+       ══════════════════════════════════════════ -->
+  <div class="step-panel" id="panel4">
+
+    <div class="two-col">
+      <div>
+
+        <div class="card">
+          <div class="card-header">
+            <div class="card-icon" style="background:#e8f5fe;">🌍</div>
+            <div><div class="card-title">Visibility</div></div>
+          </div>
+          <div class="vis-grid">
+            <div class="vis-card selected" onclick="selectVis(this)">
+              <div class="vis-icon">🌐</div>
+              <div class="vis-name">Public</div>
+              <div class="vis-desc">Listed and discoverable</div>
+            </div>
+            <div class="vis-card" onclick="selectVis(this)">
+              <div class="vis-icon">🔒</div>
+              <div class="vis-name">Private</div>
+              <div class="vis-desc">Invite or direct link only</div>
+            </div>
+            <div class="vis-card" onclick="selectVis(this)">
+              <div class="vis-icon">👁️</div>
+              <div class="vis-name">Unlisted</div>
+              <div class="vis-desc">URL access, not in directory</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-header">
+            <div class="card-icon" style="background:#fff3ec;">🔗</div>
+            <div><div class="card-title">Custom URL</div></div>
+          </div>
+          <div class="form-field">
+            <div class="url-wrap">
+              <span class="url-prefix">gameconnection.com/e/</span>
+              <input class="url-input" type="text" id="urlSlug" placeholder="your-event-slug">
+            </div>
+            <div class="form-hint" style="margin-top:5px;" id="urlHint">Letters, numbers, hyphens only</div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-header">
+            <div class="card-icon" style="background:#e8f5e9;">🔍</div>
+            <div><div class="card-title">SEO</div></div>
+          </div>
+          <div class="form-field" style="margin-bottom:14px;">
+            <label class="form-label">Title</label>
+            <input type="text" class="form-input" id="seoTitle" placeholder="Game Connection Europe 2026 | B2B Gaming Event" maxlength="70" oninput="updateSocial()">
+            <div class="form-hint"><span id="seoTitleCount">0</span>/70</div>
+          </div>
+          <div class="form-field">
+            <label class="form-label">Description</label>
+            <textarea class="form-textarea" style="min-height:70px;" id="seoDesc" maxlength="160" oninput="updateSocial()" placeholder="Where developers, publishers, and investors converge..."></textarea>
+            <div class="form-hint"><span id="seoDescCount">0</span>/160</div>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Right Column -->
+      <div>
+        <div class="card">
+          <div class="card-header">
+            <div class="card-icon" style="background:#e8f5fe;">📲</div>
+            <div><div class="card-title">Social Preview</div></div>
+          </div>
+          <div class="social-card">
+            <div class="social-img">🎮</div>
+            <div class="social-body">
+              <div class="social-domain">GAMECONNECTION.COM</div>
+              <div class="social-title" id="socialTitle">Your Event Name</div>
+              <div class="social-desc" id="socialDesc">Add an SEO description to preview here.</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-header">
+            <div class="card-icon" style="background:#fffde0;">✅</div>
+            <div><div class="card-title">Launch Checklist</div></div>
+          </div>
+          <div class="checklist" id="checklist">
+            <div class="check-item done" id="chkBasic">
+              <span class="check-status">✅</span>
+              <div class="check-label">Basic info complete</div>
+            </div>
+            <div class="check-item done" id="chkMod">
+              <span class="check-status">✅</span>
+              <div class="check-label">Modules configured</div>
+            </div>
+            <div class="check-item done" id="chkReg">
+              <span class="check-status">✅</span>
+              <div class="check-label">Registration set</div>
+            </div>
+            <div class="check-item warn" id="chkCover">
+              <span class="check-status">⚠️</span>
+              <div class="check-label">Cover image <span>not uploaded</span></div>
+            </div>
+          </div>
+
+          <div style="display:flex; gap:10px; margin-top:18px;">
+            <button class="btn btn-green btn-lg" style="flex:1;" onclick="publishEvent()">🚀 Publish</button>
+            <button class="btn btn-secondary" onclick="saveDraft()">💾 Draft</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="action-bar">
+      <div class="action-left">
+        <button class="btn btn-secondary" onclick="prevStep(4)">← Back</button>
+      </div>
+      <div class="action-right">
+        <button class="btn btn-green btn-lg" onclick="publishEvent()">🚀 Publish Event</button>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<!-- Toast Container -->
+<div class="toast-container" id="toastContainer"></div>
+
+<script>
+  // ══════════════════════════════════════
+  // State
+  // ══════════════════════════════════════
+  let currentStep = 1;
+  const completedSteps = new Set();
+  let hasImage = false;
+  let currentScale = 'regional';
+
+  // Module presets per scale
+  const scalePresets = {
+    intimate:  ['mod-matchmaking'],
+    regional:  ['mod-matchmaking', 'mod-showcase', 'mod-market'],
+    major:     ['mod-matchmaking', 'mod-showcase', 'mod-market', 'mod-awards', 'mod-buyer']
+  };
+
+  const scaleLabels = {
+    intimate: 'Intimate preset',
+    regional: 'Regional preset',
+    major: 'Major preset'
+  };
+
+  // ══════════════════════════════════════
+  // Step Navigation
+  // ══════════════════════════════════════
+  function goToStep(step) {
+    if (step > currentStep && !validateStep(currentStep)) return;
+
+    document.querySelectorAll('.step-panel').forEach(p => p.classList.remove('active'));
+    document.getElementById('panel' + step).classList.add('active');
+
+    const pills = document.querySelectorAll('.step-pill');
+    pills.forEach((pill, i) => {
+      pill.classList.remove('active', 'completed');
+      const num = pill.querySelector('.step-num');
+      if (i + 1 < step || completedSteps.has(i + 1)) {
+        pill.classList.add('completed');
+        num.textContent = '✓';
+      } else if (i + 1 === step) {
+        pill.classList.add('active');
+        num.textContent = i + 1;
+      } else {
+        num.textContent = i + 1;
+      }
+    });
+
+    currentStep = step;
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+    if (step === 4) updateChecklist();
+  }
+
+  function nextStep(from) {
+    if (!validateStep(from)) return;
+    completedSteps.add(from);
+    goToStep(from + 1);
+  }
+
+  function prevStep(from) { goToStep(from - 1); }
+
+  // ══════════════════════════════════════
+  // Validation
+  // ══════════════════════════════════════
+  function validateStep(step) {
+    if (step === 1) {
+      let valid = true;
+      const name = document.getElementById('eventName').value.trim();
+      const desc = document.getElementById('eventDesc').value.trim();
+      const start = document.getElementById('startDate').value;
+      const end = document.getElementById('endDate').value;
+
+      showErr('eventNameErr', !name);
+      showErr('eventDescErr', !desc);
+      showErr('startDateErr', !start);
+
+      if (!name || !desc || !start) valid = false;
+
+      if (end && start && end < start) {
+        showErr('endDateErr', true);
+        valid = false;
+      } else {
+        showErr('endDateErr', false);
+      }
+
+      if (!valid) showToast('Please fill in all required fields.', 'error');
+      return valid;
+    }
+    return true;
+  }
+
+  function showErr(id, show) {
+    const el = document.getElementById(id);
+    if (!el) return;
+    el.classList.toggle('show', show);
+    const input = el.previousElementSibling;
+    if (input && (input.tagName === 'INPUT' || input.tagName === 'TEXTAREA')) {
+      input.classList.toggle('error', show);
+    }
+  }
+
+  // ══════════════════════════════════════
+  // Event Scale
+  // ══════════════════════════════════════
+  function selectScale(scale, el) {
+    document.querySelectorAll('.scale-card').forEach(c => c.classList.remove('selected'));
+    el.classList.add('selected');
+    currentScale = scale;
+    applyPreset(scale);
+    showToast('Scale set to ' + scale.charAt(0).toUpperCase() + scale.slice(1), 'info');
+  }
+
+  function applyPreset(scale) {
+    const preset = scalePresets[scale];
+    const allMods = document.querySelectorAll('.mod-card:not(.locked)');
+
+    allMods.forEach(card => {
+      const toggle = card.querySelector('input[type="checkbox"]');
+      const shouldBeOn = preset.includes(card.id);
+      toggle.checked = shouldBeOn;
+      card.classList.toggle('on', shouldBeOn);
+
+      // Show/hide recommended tags
+      const recTag = card.querySelector('.mod-tag-rec');
+      if (recTag) recTag.style.display = shouldBeOn ? 'inline-flex' : 'none';
+    });
+
+    document.getElementById('presetLabel').textContent = scaleLabels[scale];
+    updateModCount();
+  }
+
+  function resetModules() {
+    applyPreset(currentScale);
+    showToast('Modules reset to ' + currentScale + ' preset', 'info');
+  }
+
+  // ══════════════════════════════════════
+  // Module Toggle
+  // ══════════════════════════════════════
+  function toggleMod(card) {
+    if (card.classList.contains('locked')) return;
+    const toggle = card.querySelector('input[type="checkbox"]');
+    toggle.checked = !toggle.checked;
+    card.classList.toggle('on', toggle.checked);
+    updateModCount();
+  }
+
+  function syncToggle(input) {
+    const card = input.closest('.mod-card');
+    card.classList.toggle('on', input.checked);
+    updateModCount();
+  }
+
+  function updateModCount() {
+    const count = document.querySelectorAll('.mod-card.on').length;
+    document.getElementById('modCountNum').textContent = count;
+  }
+
+  // ══════════════════════════════════════
+  // Event Type
+  // ══════════════════════════════════════
+  function selectType(el) {
+    document.querySelectorAll('.type-option').forEach(o => o.classList.remove('selected'));
+    el.classList.add('selected');
+  }
+
+  // ══════════════════════════════════════
+  // Location
+  // ══════════════════════════════════════
+  function setLoc(type) {
+    ['physical', 'online', 'hybrid'].forEach(t => {
+      document.getElementById('loc' + t.charAt(0).toUpperCase() + t.slice(1)).classList.remove('active');
+      document.getElementById('sub' + t.charAt(0).toUpperCase() + t.slice(1)).classList.remove('show');
+    });
+    document.getElementById('loc' + type.charAt(0).toUpperCase() + type.slice(1)).classList.add('active');
+    document.getElementById('sub' + type.charAt(0).toUpperCase() + type.slice(1)).classList.add('show');
+  }
+
+  // ══════════════════════════════════════
+  // Image Upload
+  // ══════════════════════════════════════
+  function handleFileSelect(e) {
+    const file = e.target.files[0];
+    if (file) showImagePreview(file);
+  }
+
+  function handleDragOver(e) { e.preventDefault(); document.getElementById('uploadZone').classList.add('dragover'); }
+  function handleDragLeave() { document.getElementById('uploadZone').classList.remove('dragover'); }
+
+  function handleDrop(e) {
+    e.preventDefault();
+    document.getElementById('uploadZone').classList.remove('dragover');
+    const file = e.dataTransfer.files[0];
+    if (file && file.type.startsWith('image/')) showImagePreview(file);
+    else showToast('Please drop an image file.', 'error');
+  }
+
+  function showImagePreview(file) {
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      document.getElementById('previewImg').src = e.target.result;
+      document.getElementById('previewName').textContent = file.name;
+      document.getElementById('previewSize').textContent = (file.size / 1024 / 1024).toFixed(2) + ' MB';
+      document.getElementById('uploadDefault').style.display = 'none';
+      document.getElementById('uploadPreview').classList.add('show');
+      document.getElementById('uploadZone').classList.add('has-image');
+      hasImage = true;
+      showToast('Cover image uploaded ✓', 'success');
+    };
+    reader.readAsDataURL(file);
+  }
+
+  function removeImage(e) {
+    e.stopPropagation();
+    document.getElementById('uploadDefault').style.display = '';
+    document.getElementById('uploadPreview').classList.remove('show');
+    document.getElementById('uploadZone').classList.remove('has-image');
+    document.getElementById('coverInput').value = '';
+    hasImage = false;
+  }
+
+  // ══════════════════════════════════════
+  // Registration
+  // ══════════════════════════════════════
+  function selectReg(el) {
+    document.querySelectorAll('.reg-card').forEach(c => c.classList.remove('selected'));
+    el.classList.add('selected');
+  }
+
+  function selectYN(el) {
+    const parent = el.parentElement;
+    parent.querySelectorAll('.yn-btn').forEach(b => b.classList.remove('selected'));
+    el.classList.add('selected');
+  }
+
+  function selectVis(el) {
+    document.querySelectorAll('.vis-card').forEach(c => c.classList.remove('selected'));
+    el.classList.add('selected');
+  }
+
+  // ══════════════════════════════════════
+  // Badges (inline edit, no prompt())
+  // ══════════════════════════════════════
+  function removeBadge(btn) {
+    const item = btn.closest('.badge-item');
+    item.style.transition = 'opacity 0.2s, transform 0.2s';
+    item.style.opacity = '0';
+    item.style.transform = 'translateX(10px)';
+    setTimeout(() => item.remove(), 200);
+  }
+
+  function addBadge() {
+    const colors = ['#e53e3e', '#805ad5', '#0bc5ea', '#68d391', '#f6ad55', '#d95f2b'];
+    const color = colors[Math.floor(Math.random() * colors.length)];
+    const list = document.getElementById('badgeList');
+    const item = document.createElement('div');
+    item.className = 'badge-item';
+    item.innerHTML = `
+      <div class="badge-dot" style="background:${color};"></div>
+      <div class="badge-name"><input value="New Badge" spellcheck="false"></div>
+      <button class="badge-action" onclick="removeBadge(this)">✕</button>
+    `;
+    list.appendChild(item);
+    // Auto-focus new input
+    const input = item.querySelector('input');
+    input.focus();
+    input.select();
+  }
+
+  // ══════════════════════════════════════
+  // SEO & Social
+  // ══════════════════════════════════════
+  function syncSeo() {
+    const name = document.getElementById('eventName').value;
+    const seoTitle = document.getElementById('seoTitle');
+    if (!seoTitle.dataset.custom) seoTitle.value = name;
+    updateSocial();
+  }
+
+  function updateSocial() {
+    const title = document.getElementById('seoTitle').value || document.getElementById('eventName').value || 'Your Event Name';
+    const desc = document.getElementById('seoDesc').value || 'Add an SEO description to preview here.';
+    document.getElementById('socialTitle').textContent = title;
+    document.getElementById('socialDesc').textContent = desc;
+    document.getElementById('seoTitleCount').textContent = document.getElementById('seoTitle').value.length;
+    document.getElementById('seoDescCount').textContent = document.getElementById('seoDesc').value.length;
+  }
+
+  document.getElementById('seoTitle').addEventListener('input', function() {
+    this.dataset.custom = '1';
+    updateSocial();
+  });
+
+  document.getElementById('urlSlug').addEventListener('input', function() {
+    let val = this.value.toLowerCase().replace(/[^a-z0-9-]/g, '-').replace(/-+/g, '-');
+    this.value = val;
+    document.getElementById('urlHint').textContent = val
+      ? 'gameconnection.com/e/' + val
+      : 'Letters, numbers, hyphens only';
+  });
+
+  // ══════════════════════════════════════
+  // Checklist
+  // ══════════════════════════════════════
+  function updateChecklist() {
+    const name = document.getElementById('eventName').value.trim();
+    const desc = document.getElementById('eventDesc').value.trim();
+    const start = document.getElementById('startDate').value;
+    setCheck('chkBasic', !!(name && desc && start));
+    setCheck('chkMod', true);
+    setCheck('chkReg', true);
+    setCheck('chkCover', hasImage);
+  }
+
+  function setCheck(id, done) {
+    const el = document.getElementById(id);
+    if (!el) return;
+    el.classList.toggle('done', done);
+    el.classList.toggle('warn', !done);
+    el.querySelector('.check-status').textContent = done ? '✅' : '⚠️';
+  }
+
+  // ══════════════════════════════════════
+  // Publish / Draft
+  // ══════════════════════════════════════
+  function publishEvent() {
+    updateChecklist();
+    setTimeout(() => {
+      // Only block if critical fields are missing (not cover image)
+      const criticalWarn = document.querySelectorAll('.check-item.warn:not(#chkCover)').length > 0;
+      if (criticalWarn) {
+        showToast('Please complete required fields before publishing.', 'error');
+      } else {
+        showToast('🎉 Event published successfully!', 'success');
+        // Save comprehensive event data to localStorage
+        const eventData = {
+          id: 'evt_' + Date.now(),
+          name: document.getElementById('eventName')?.value || 'My Event',
+          status: 'live',
+          publishedAt: new Date().toISOString(),
+          startDate: document.getElementById('startDate')?.value || '',
+          endDate: document.getElementById('endDate')?.value || '',
+          venue: document.getElementById('venuePhysical')?.value || '',
+          city: document.getElementById('cityPhysical')?.value || '',
+          country: document.getElementById('countryPhysical')?.value || '',
+          location: [document.getElementById('venuePhysical')?.value, document.getElementById('cityPhysical')?.value, document.getElementById('countryPhysical')?.value].filter(Boolean).join(', ') || '',
+          attendees: document.getElementById('expectedAttendees')?.value || '',
+          description: document.getElementById('eventDesc')?.value || ''
+        };
+        localStorage.setItem('gc_hq_event', JSON.stringify(eventData));
+        setTimeout(() => {
+          showToast('Redirecting to your Event HQ...', 'info');
+          setTimeout(() => { window.location.href = 'EventHQ_Dashboard_v1_PC.html'; }, 1200);
+        }, 1000);
+      }
+    }, 100);
+  }
+
+  function saveDraft() {
+    const draftData = {
+      id: 'draft_' + Date.now(),
+      name: document.getElementById('eventName')?.value || 'Draft Event',
+      status: 'draft',
+      savedAt: new Date().toISOString()
+    };
+    localStorage.setItem('gc_event_draft', JSON.stringify(draftData));
+    showToast('Draft saved ✓', 'success');
+  }
+
+  // ══════════════════════════════════════
+  // Toast
+  // ══════════════════════════════════════
+  function showToast(msg, type = 'info') {
+    const container = document.getElementById('toastContainer');
+    const toast = document.createElement('div');
+    toast.className = `toast toast-${type}`;
+    toast.textContent = msg;
+    container.appendChild(toast);
+    setTimeout(() => {
+      toast.classList.add('fadeout');
+      setTimeout(() => toast.remove(), 250);
+    }, 2800);
+  }
+
+  // ══════════════════════════════════════
+  // Init
+  // ══════════════════════════════════════
+  document.addEventListener('DOMContentLoaded', () => {
+    // Set default dates
+    const today = new Date();
+    const future = new Date(today);
+    future.setMonth(future.getMonth() + 2);
+    document.getElementById('startDate').valueAsDate = future;
+    const endD = new Date(future);
+    endD.setDate(endD.getDate() + 3);
+    document.getElementById('endDate').valueAsDate = endD;
+
+    // Apply default scale preset
+    applyPreset('regional');
+  });
+</script>
+
+</body>
+</html>

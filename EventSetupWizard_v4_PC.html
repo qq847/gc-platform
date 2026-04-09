@@ -1,0 +1,407 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>New Event — Game Connection</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#f5f4f0;
+  --white:#fff;
+  --orange:#d95f2b;
+  --orange-hover:#c2521f;
+  --orange-light:#fff3ee;
+  --green:#0d9b72;
+  --green-light:#e6f7f1;
+  --border:#e2dfd8;
+  --text1:#1e1c18;
+  --text2:#5c5850;
+  --text3:#9e9890;
+  --radius:12px;
+  --shadow:0 2px 12px rgba(0,0,0,0.08);
+}
+html,body{min-height:100vh;background:var(--bg);font-family:'DM Sans',sans-serif;color:var(--text1);font-size:15px;line-height:1.6}
+
+/* ── Top Bar ── */
+.topbar{background:var(--white);border-bottom:1px solid var(--border);height:56px;padding:0 32px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100}
+.topbar-left{display:flex;align-items:center;gap:14px}
+.logo-icon{width:30px;height:30px;background:var(--orange);border-radius:7px;display:flex;align-items:center;justify-content:center;color:#fff;font-weight:700;font-size:12px}
+.logo-text{font-size:14px;font-weight:700;color:var(--text1)}
+.topbar-sep{width:1px;height:22px;background:var(--border)}
+.topbar-label{font-size:13px;color:var(--text2);font-weight:500}
+.topbar-right{display:flex;align-items:center;gap:10px}
+.btn-ghost{background:none;border:1px solid var(--border);border-radius:8px;padding:6px 14px;font-size:13px;color:var(--text2);cursor:pointer;font-family:inherit;transition:background .15s}
+.btn-ghost:hover{background:var(--bg)}
+
+/* ── Step Progress ── */
+.wizard-wrap{max-width:760px;margin:0 auto;padding:40px 24px 80px}
+.step-progress{display:flex;align-items:center;gap:0;margin-bottom:40px}
+.step-item{display:flex;align-items:center;gap:10px;flex:1}
+.step-item:last-child{flex:none}
+.step-circle{width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;border:2px solid var(--border);background:var(--white);color:var(--text3);flex-shrink:0;transition:all .2s}
+.step-circle.active{border-color:var(--orange);background:var(--orange);color:#fff}
+.step-circle.done{border-color:var(--green);background:var(--green);color:#fff}
+.step-label{font-size:13px;font-weight:600;color:var(--text3);transition:color .2s}
+.step-label.active{color:var(--text1)}
+.step-label.done{color:var(--green)}
+.step-connector{flex:1;height:2px;background:var(--border);margin:0 8px;transition:background .2s}
+.step-connector.done{background:var(--green)}
+
+/* ── Panel ── */
+.step-panel{display:none}
+.step-panel.active{display:block}
+
+/* ── Card ── */
+.card{background:var(--white);border-radius:var(--radius);border:1px solid var(--border);padding:28px 28px 24px;margin-bottom:20px}
+.card-title{font-size:17px;font-weight:700;color:var(--text1);margin-bottom:4px}
+.card-desc{font-size:13px;color:var(--text2);margin-bottom:22px}
+
+/* ── Module List ── */
+.module-list{display:flex;flex-direction:column;gap:0}
+.module-row{display:flex;align-items:center;gap:16px;padding:14px 0;border-bottom:1px solid var(--border)}
+.module-row:last-child{border-bottom:none}
+.module-left{flex:1;min-width:0}
+.module-name{font-size:14px;font-weight:600;color:var(--text1)}
+.module-hint{font-size:12px;color:var(--text3);margin-top:1px}
+.module-tag{display:inline-block;padding:2px 7px;border-radius:4px;font-size:11px;font-weight:600;margin-left:6px;vertical-align:middle}
+.tag-free{background:#e6f7f1;color:#0d9b72}
+.tag-paid{background:#fff3ee;color:#d95f2b}
+.tag-pro{background:#f0f0ff;color:#5555cc}
+
+/* Toggle Switch */
+.toggle{position:relative;display:inline-block;width:40px;height:22px;flex-shrink:0}
+.toggle input{opacity:0;width:0;height:0}
+.toggle-slider{position:absolute;inset:0;background:#ddd;border-radius:22px;cursor:pointer;transition:.2s}
+.toggle-slider:before{content:'';position:absolute;width:16px;height:16px;left:3px;top:3px;background:#fff;border-radius:50%;transition:.2s}
+.toggle input:checked + .toggle-slider{background:var(--orange)}
+.toggle input:checked + .toggle-slider:before{transform:translateX(18px)}
+
+/* ── Form ── */
+.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.form-group{display:flex;flex-direction:column;gap:6px}
+.form-group.full{grid-column:1/-1}
+.form-label{font-size:13px;font-weight:600;color:var(--text1)}
+.form-label .opt{font-weight:400;color:var(--text3);font-size:12px;margin-left:4px}
+.form-input{padding:10px 13px;border:1px solid var(--border);border-radius:8px;font-size:14px;font-family:inherit;color:var(--text1);background:var(--white);transition:border .15s;outline:none}
+.form-input:focus{border-color:var(--orange)}
+.form-input::placeholder{color:var(--text3)}
+.format-group{display:flex;gap:10px}
+.format-btn{flex:1;padding:10px;border:1px solid var(--border);border-radius:8px;font-size:13px;font-weight:600;color:var(--text2);background:var(--white);cursor:pointer;text-align:center;transition:all .15s;font-family:inherit}
+.format-btn.selected{border-color:var(--orange);background:var(--orange-light);color:var(--orange)}
+
+/* ── Publish Panel ── */
+.publish-summary{background:var(--bg);border-radius:10px;padding:18px 20px;margin-bottom:20px}
+.summary-row{display:flex;justify-content:space-between;align-items:center;padding:6px 0;border-bottom:1px solid var(--border);font-size:13px}
+.summary-row:last-child{border-bottom:none}
+.summary-key{color:var(--text2);font-weight:500}
+.summary-val{color:var(--text1);font-weight:600;text-align:right}
+.module-chips{display:flex;flex-wrap:wrap;gap:6px;margin-top:4px}
+.module-chip{padding:3px 10px;border-radius:20px;font-size:12px;font-weight:600;background:var(--orange-light);color:var(--orange)}
+
+.publish-cta{text-align:center;padding:20px 0 0}
+.btn-publish{background:var(--orange);color:#fff;border:none;border-radius:10px;padding:14px 48px;font-size:15px;font-weight:700;cursor:pointer;font-family:inherit;transition:background .15s}
+.btn-publish:hover{background:var(--orange-hover)}
+.publish-note{font-size:12px;color:var(--text3);margin-top:10px}
+
+/* ── Footer Buttons ── */
+.step-footer{display:flex;justify-content:space-between;align-items:center;margin-top:28px}
+.btn-back{background:none;border:1px solid var(--border);border-radius:8px;padding:10px 22px;font-size:14px;font-weight:600;color:var(--text2);cursor:pointer;font-family:inherit;transition:background .15s}
+.btn-back:hover{background:var(--bg)}
+.btn-next{background:var(--orange);color:#fff;border:none;border-radius:8px;padding:10px 28px;font-size:14px;font-weight:700;cursor:pointer;font-family:inherit;transition:background .15s}
+.btn-next:hover{background:var(--orange-hover)}
+
+/* ── Success ── */
+.success-screen{display:none;text-align:center;padding:60px 20px}
+.success-icon{font-size:56px;margin-bottom:16px}
+.success-title{font-size:24px;font-weight:700;color:var(--text1);margin-bottom:8px}
+.success-sub{font-size:15px;color:var(--text2);margin-bottom:32px}
+.btn-dashboard{background:var(--orange);color:#fff;border:none;border-radius:10px;padding:13px 36px;font-size:15px;font-weight:700;cursor:pointer;font-family:inherit;transition:background .15s;text-decoration:none;display:inline-block}
+.btn-dashboard:hover{background:var(--orange-hover)}
+
+/* ── Responsive ── */
+@media(max-width:600px){
+  .wizard-wrap{padding:24px 16px 60px}
+  .form-grid{grid-template-columns:1fr}
+  .step-label{display:none}
+  .topbar{padding:0 16px}
+}
+</style>
+</head>
+<body>
+
+<!-- Top Bar -->
+<div class="topbar">
+  <div class="topbar-left">
+    <div class="logo-icon">GC</div>
+    <div class="logo-text">Game Connection</div>
+    <div class="topbar-sep"></div>
+    <div class="topbar-label">New Event</div>
+  </div>
+  <div class="topbar-right">
+    <button class="btn-ghost" onclick="window.location.href='EventHQ_Dashboard_v2_PC.html'">Cancel</button>
+  </div>
+</div>
+
+<!-- Wizard Wrap -->
+<div class="wizard-wrap">
+
+  <!-- Step Progress -->
+  <div class="step-progress">
+    <div class="step-item">
+      <div class="step-circle active" id="sc1">1</div>
+      <div class="step-label active" id="sl1">Modules</div>
+    </div>
+    <div class="step-connector" id="conn1"></div>
+    <div class="step-item">
+      <div class="step-circle" id="sc2">2</div>
+      <div class="step-label" id="sl2">Event Info</div>
+    </div>
+    <div class="step-connector" id="conn2"></div>
+    <div class="step-item">
+      <div class="step-circle" id="sc3">3</div>
+      <div class="step-label" id="sl3">Publish</div>
+    </div>
+  </div>
+
+  <!-- ══ STEP 1: Module Selection ══ -->
+  <div class="step-panel active" id="panel1">
+    <div class="card">
+      <div class="card-title">Choose Your Modules</div>
+      <div class="card-desc">Turn on the features you need. You can always activate more later.</div>
+      <div class="module-list" id="moduleList">
+        <!-- rows injected by JS -->
+      </div>
+    </div>
+    <div class="step-footer">
+      <div></div>
+      <button class="btn-next" onclick="goStep(2)">Next: Event Info →</button>
+    </div>
+  </div>
+
+  <!-- ══ STEP 2: Basic Info ══ -->
+  <div class="step-panel" id="panel2">
+    <div class="card">
+      <div class="card-title">Event Information</div>
+      <div class="card-desc">Fill in the essentials. That's all we need to get started.</div>
+      <div class="form-grid">
+        <div class="form-group full">
+          <label class="form-label">Event Name</label>
+          <input class="form-input" id="f-name" type="text" placeholder="e.g. Indie Game Fest 2026">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Start Date</label>
+          <input class="form-input" id="f-start" type="date">
+        </div>
+        <div class="form-group">
+          <label class="form-label">End Date</label>
+          <input class="form-input" id="f-end" type="date">
+        </div>
+        <div class="form-group">
+          <label class="form-label">City</label>
+          <input class="form-input" id="f-city" type="text" placeholder="e.g. San Francisco">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Venue / Address <span class="opt">(optional)</span></label>
+          <input class="form-input" id="f-venue" type="text" placeholder="e.g. Moscone Center">
+        </div>
+        <div class="form-group full">
+          <label class="form-label">Format</label>
+          <div class="format-group">
+            <button class="format-btn selected" onclick="selectFormat(this,'in-person')">In-Person</button>
+            <button class="format-btn" onclick="selectFormat(this,'online')">Online</button>
+            <button class="format-btn" onclick="selectFormat(this,'hybrid')">Hybrid</button>
+          </div>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Contact Name</label>
+          <input class="form-input" id="f-contact-name" type="text" placeholder="Your name">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Contact Email</label>
+          <input class="form-input" id="f-contact-email" type="email" placeholder="you@example.com">
+        </div>
+        <div class="form-group full">
+          <label class="form-label">Official Website <span class="opt">(optional)</span></label>
+          <input class="form-input" id="f-website" type="url" placeholder="https://yourevent.com">
+        </div>
+      </div>
+    </div>
+    <div class="step-footer">
+      <button class="btn-back" onclick="goStep(1)">← Back</button>
+      <button class="btn-next" onclick="goStep(3)">Next: Publish →</button>
+    </div>
+  </div>
+
+  <!-- ══ STEP 3: Publish ══ -->
+  <div class="step-panel" id="panel3">
+    <div class="card">
+      <div class="card-title">Review &amp; Publish</div>
+      <div class="card-desc">Everything looks good? Hit publish to go live.</div>
+      <div class="publish-summary" id="publishSummary">
+        <!-- injected by JS -->
+      </div>
+      <div class="publish-cta">
+        <button class="btn-publish" onclick="doPublish()">🚀 Publish Event</button>
+        <div class="publish-note">You can edit all details after publishing.</div>
+      </div>
+    </div>
+    <div class="step-footer">
+      <button class="btn-back" onclick="goStep(2)">← Back</button>
+      <div></div>
+    </div>
+  </div>
+
+  <!-- ══ SUCCESS ══ -->
+  <div class="success-screen" id="successScreen">
+    <div class="success-icon">🎉</div>
+    <div class="success-title">Your event is live!</div>
+    <div class="success-sub">Head to your dashboard to manage attendees, modules, and more.</div>
+    <a class="btn-dashboard" href="EventHQ_Dashboard_v2_PC.html">Go to Dashboard →</a>
+  </div>
+
+</div><!-- /wizard-wrap -->
+
+<script>
+// ── Module definitions ──
+const MODULES = [
+  { id:'free-reg',    name:'Free Registration',           hint:'Let attendees register at no cost',                       tag:'free' },
+  { id:'paid-reg',    name:'Paid Registration / Ticketing',hint:'Sell tickets with Stripe integration',                   tag:'paid' },
+  { id:'free-pod',    name:'Free Pod',                     hint:'Assign free demo pods to exhibitors',                    tag:'free' },
+  { id:'paid-pod',    name:'Paid Pod',                     hint:'Charge for premium pod placements',                      tag:'paid' },
+  { id:'free-booth',  name:'Free Booth',                   hint:'Provide free booth space for exhibitors',                tag:'free' },
+  { id:'paid-booth',  name:'Paid Booth',                   hint:'Sell booth packages to sponsors/exhibitors',             tag:'paid' },
+  { id:'sponsorship', name:'Sponsorship',                  hint:'Create and sell sponsorship packages',                   tag:'paid' },
+  { id:'panel',       name:'Panel / Session',              hint:'Schedule panels, talks, and workshops',                  tag:'pro'  },
+  { id:'award',       name:'Award',                        hint:'Run award nominations and voting',                       tag:'pro'  },
+  { id:'buyer-inv',   name:'Buyer Invitation',             hint:'Invite publishers and investors to meet developers',     tag:'pro'  },
+  { id:'lets-meet',   name:"Let's Meet",                   hint:'Enable 1-on-1 meeting scheduling between attendees',     tag:'pro'  },
+  { id:'showcase',    name:'Game Showcase / Pitch',        hint:'Investor and publisher pitch sessions for developers',   tag:'pro'  },
+  { id:'map',         name:'Map',                          hint:'Interactive venue map for attendees',                    tag:'pro'  },
+  { id:'live',        name:'Live',                         hint:'Live streaming and virtual attendance',                  tag:'pro'  },
+];
+
+const tagLabel = { free:'Free', paid:'Paid', pro:'Pro' };
+const tagClass = { free:'tag-free', paid:'tag-paid', pro:'tag-pro' };
+
+// Render module list
+const listEl = document.getElementById('moduleList');
+MODULES.forEach(m => {
+  const row = document.createElement('div');
+  row.className = 'module-row';
+  row.innerHTML = `
+    <div class="module-left">
+      <div class="module-name">${m.name}<span class="module-tag ${tagClass[m.tag]}">${tagLabel[m.tag]}</span></div>
+      <div class="module-hint">${m.hint}</div>
+    </div>
+    <label class="toggle">
+      <input type="checkbox" id="mod-${m.id}" onchange="saveModules()">
+      <span class="toggle-slider"></span>
+    </label>`;
+  listEl.appendChild(row);
+});
+
+// ── State ──
+let currentStep = 1;
+let selectedFormat = 'in-person';
+const savedModules = () => MODULES.filter(m => document.getElementById('mod-'+m.id)?.checked);
+
+function saveModules(){ /* live state, no-op needed */ }
+
+function selectFormat(btn, val){
+  document.querySelectorAll('.format-btn').forEach(b => b.classList.remove('selected'));
+  btn.classList.add('selected');
+  selectedFormat = val;
+}
+
+// ── Step navigation ──
+function goStep(n){
+  if(n === 3) buildSummary();
+  document.getElementById('panel'+currentStep).classList.remove('active');
+  currentStep = n;
+  document.getElementById('panel'+n).classList.add('active');
+  updateProgress(n);
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+
+function updateProgress(n){
+  [1,2,3].forEach(i => {
+    const circle = document.getElementById('sc'+i);
+    const label  = document.getElementById('sl'+i);
+    circle.classList.remove('active','done');
+    label.classList.remove('active','done');
+    if(i < n){ circle.classList.add('done'); circle.textContent='✓'; label.classList.add('done'); }
+    else if(i === n){ circle.classList.add('active'); circle.textContent=i; label.classList.add('active'); }
+    else{ circle.textContent=i; }
+  });
+  [1,2].forEach(i => {
+    const conn = document.getElementById('conn'+i);
+    conn.classList.toggle('done', i < n);
+  });
+}
+
+function buildSummary(){
+  const name  = document.getElementById('f-name').value || '(untitled)';
+  const start = document.getElementById('f-start').value || '—';
+  const end   = document.getElementById('f-end').value || '—';
+  const city  = document.getElementById('f-city').value || '—';
+  const venue = document.getElementById('f-venue').value;
+  const cname = document.getElementById('f-contact-name').value || '—';
+  const cemail= document.getElementById('f-contact-email').value || '—';
+  const web   = document.getElementById('f-website').value;
+  const mods  = savedModules();
+
+  const location = venue ? `${city}, ${venue}` : city;
+  const formatLabel = {
+    'in-person':'In-Person','online':'Online','hybrid':'Hybrid'
+  }[selectedFormat];
+
+  const chipsHtml = mods.length
+    ? mods.map(m=>`<span class="module-chip">${m.name}</span>`).join('')
+    : '<span style="color:var(--text3);font-size:13px">No modules selected</span>';
+
+  document.getElementById('publishSummary').innerHTML = `
+    <div class="summary-row"><span class="summary-key">Event Name</span><span class="summary-val">${name}</span></div>
+    <div class="summary-row"><span class="summary-key">Dates</span><span class="summary-val">${start} → ${end}</span></div>
+    <div class="summary-row"><span class="summary-key">Location</span><span class="summary-val">${location}</span></div>
+    <div class="summary-row"><span class="summary-key">Format</span><span class="summary-val">${formatLabel}</span></div>
+    <div class="summary-row"><span class="summary-key">Contact</span><span class="summary-val">${cname} · ${cemail}</span></div>
+    ${web ? `<div class="summary-row"><span class="summary-key">Website</span><span class="summary-val">${web}</span></div>` : ''}
+    <div class="summary-row" style="flex-direction:column;align-items:flex-start;gap:8px">
+      <span class="summary-key">Active Modules (${mods.length})</span>
+      <div class="module-chips">${chipsHtml}</div>
+    </div>`;
+}
+
+function doPublish(){
+  // Save to localStorage for demo
+  const eventData = {
+    name: document.getElementById('f-name').value || 'My Event',
+    start: document.getElementById('f-start').value,
+    end: document.getElementById('f-end').value,
+    city: document.getElementById('f-city').value,
+    venue: document.getElementById('f-venue').value,
+    format: selectedFormat,
+    contactName: document.getElementById('f-contact-name').value,
+    contactEmail: document.getElementById('f-contact-email').value,
+    website: document.getElementById('f-website').value,
+    modules: savedModules().map(m=>m.id),
+    publishedAt: new Date().toISOString(),
+    id: 'evt_' + Date.now(),
+  };
+  try {
+    const existing = JSON.parse(localStorage.getItem('gc_events') || '[]');
+    existing.push(eventData);
+    localStorage.setItem('gc_events', JSON.stringify(existing));
+  } catch(e){}
+
+  // Show success
+  [1,2,3].forEach(i => document.getElementById('panel'+i).classList.remove('active'));
+  document.getElementById('successScreen').style.display = 'block';
+  updateProgress(4);
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+</script>
+</body>
+</html>
