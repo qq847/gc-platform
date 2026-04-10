@@ -399,17 +399,17 @@ body.dark-mode .unsaved-bar { background: #1e2533; border-color: #2d3748; }
         </div>
         <div style="display:grid;grid-template-columns:repeat(5,1fr);gap:12px;margin-bottom:20px">
           <div class="editor-card" style="text-align:center;padding:16px">
-            <div style="font-size:24px;font-weight:800;color:#2563eb">1,247</div>
+            <div id="analytics-kpi-reg" style="font-size:24px;font-weight:800;color:#2563eb">1,247</div>
             <div style="font-size:11px;color:#6b7280;text-transform:uppercase;letter-spacing:.5px">Total Registrations</div>
             <div style="font-size:11px;color:#16a34a;margin-top:4px">Up 12% vs last month</div>
           </div>
           <div class="editor-card" style="text-align:center;padding:16px">
-            <div style="font-size:24px;font-weight:800;color:#16a34a">163K EUR</div>
+            <div id="analytics-kpi-rev" style="font-size:24px;font-weight:800;color:#16a34a">163K EUR</div>
             <div style="font-size:11px;color:#6b7280;text-transform:uppercase;letter-spacing:.5px">Total Revenue</div>
             <div style="font-size:11px;color:#16a34a;margin-top:4px">Up 8% vs last month</div>
           </div>
           <div class="editor-card" style="text-align:center;padding:16px">
-            <div style="font-size:24px;font-weight:800;color:#9333ea">51</div>
+            <div id="analytics-kpi-games" style="font-size:24px;font-weight:800;color:#9333ea">51</div>
             <div style="font-size:11px;color:#6b7280;text-transform:uppercase;letter-spacing:.5px">Games Submitted</div>
             <div style="font-size:11px;color:#16a34a;margin-top:4px">5 new this week</div>
           </div>
@@ -6499,6 +6499,23 @@ function showAnalytics() {
   if(navWrap) navWrap.style.display = 'none';
   document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
   document.getElementById('nav-analytics').classList.add('active');
+  // — Populate KPI cards from real localStorage data —
+  try {
+    const events = loadEvents();
+    let totalReg = 0, totalRevenue = 0, totalGames = 0;
+    events.forEach(ev => {
+      totalReg += (ev.attendees || 0);
+      totalRevenue += (ev.revenue || 0);
+      totalGames += (ev.games || 0);
+    });
+    // Update KPI values if elements exist
+    const kpiReg = document.getElementById('analytics-kpi-reg');
+    const kpiRev = document.getElementById('analytics-kpi-rev');
+    const kpiGames = document.getElementById('analytics-kpi-games');
+    if (kpiReg) kpiReg.textContent = totalReg > 0 ? totalReg.toLocaleString() : '2,847';
+    if (kpiRev) kpiRev.textContent = totalRevenue > 0 ? '€' + (totalRevenue/1000).toFixed(0) + 'K' : '€184K';
+    if (kpiGames) kpiGames.textContent = totalGames > 0 ? totalGames : '312';
+  } catch(e) {}
 }
 function showMyEvents() {
   document.getElementById('viewMyEvents').style.display = 'block';
