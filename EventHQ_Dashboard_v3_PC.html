@@ -672,6 +672,25 @@ function saveEvent() {
   showToast('✅ Saved');
 }
 
+// ── Build public page URL from current event ─────────────────────────────────
+function buildPublicPageUrl(ev) {
+  const params = new URLSearchParams({
+    title: ev.name || '',
+    start: ev.startDate || '',
+    end: ev.endDate || '',
+    city: ev.city || '',
+    country: ev.country || '',
+    venue: ev.venue || '',
+    format: ev.format || 'In-Person',
+    desc: ev.description || '',
+    modules: (ev.modules || []).join(','),
+    status: ev.status || 'draft',
+    attendees: '0',
+    eventId: ev.id || ''
+  });
+  return 'EventPublicPage_v4_PC.html?' + params.toString();
+}
+
 // ── Publish ───────────────────────────────────────────────────────────────────
 function publishEvent() {
   if (!validate()) { showToast('⚠️ Please fill in required fields'); return; }
@@ -684,10 +703,21 @@ function publishEvent() {
   save(evs);
   updatePubBar(currentEvent);
   updateCtxStatus(currentEvent);
-  showToast(wasLive ? 'Event unpublished' : '🚀 Event is now live!');
+  if (!wasLive) {
+    showToast('🚀 Event is now live! Opening public page...');
+    setTimeout(() => {
+      window.open(buildPublicPageUrl(currentEvent), '_blank');
+    }, 800);
+  } else {
+    showToast('Event unpublished');
+  }
 }
 
-function previewEvent() { showToast('Public preview coming soon'); }
+function previewEvent() {
+  saveEvent();
+  const url = buildPublicPageUrl({...currentEvent, status: 'preview'});
+  window.open(url, '_blank');
+}
 
 // ── Module list ───────────────────────────────────────────────────────────────
 function renderModList(ev) {
