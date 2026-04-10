@@ -195,6 +195,23 @@ html,body{min-height:100vh;background:var(--bg);font-family:'DM Sans',sans-serif
 .mei-name{font-size:11px;font-weight:700;color:var(--text1)}
 .mei-desc{font-size:10px;color:var(--text3)}
 
+/* Sidebar module items (compact) */
+#nav-modules-wrap .mod-item{padding:6px 8px;border-radius:6px;border:none;background:transparent;gap:7px}
+#nav-modules-wrap .mod-item:hover{background:var(--bg)}
+#nav-modules-wrap .mod-item.on{background:var(--blue-light);border:none}
+#nav-modules-wrap .mod-icon{font-size:12px;width:16px}
+#nav-modules-wrap .mod-name{font-size:12px;font-weight:500;color:var(--text2)}
+#nav-modules-wrap .mod-item.on .mod-name{color:var(--blue);font-weight:600}
+#nav-modules-wrap .mod-desc{display:none}
+#nav-modules-wrap .toggle{width:28px;height:16px}
+#nav-modules-wrap .toggle-track::before{width:10px;height:10px;left:3px;top:3px}
+#nav-modules-wrap .toggle input:checked + .toggle-track::before{transform:translateX(12px)}
+#nav-modules-wrap .mod-list{gap:2px}
+#nav-modules-wrap .mod-expand{margin-top:4px}
+#nav-modules-wrap .mod-expand-grid{grid-template-columns:1fr}
+.add-mod-btn-sm{font-size:10px;font-weight:700;color:var(--blue);background:none;border:none;cursor:pointer;font-family:inherit;padding:0;line-height:1}
+.add-mod-btn-sm:hover{text-decoration:underline}
+
 /* Toast */
 .toast{position:fixed;bottom:22px;left:50%;transform:translateX(-50%);background:#0f172a;color:#fff;padding:9px 18px;border-radius:8px;font-size:13px;font-weight:500;z-index:9999;opacity:1;transition:opacity .3s;pointer-events:none;white-space:nowrap;box-shadow:0 4px 16px rgba(0,0,0,.2)}
 
@@ -248,6 +265,18 @@ html,body{min-height:100vh;background:var(--bg);font-family:'DM Sans',sans-serif
         </div>
         <div class="nav-label">Event Menu</div>
         <div id="event-nav-items"></div>
+
+        <div id="nav-modules-wrap" style="display:none">
+          <div class="nav-sep"></div>
+          <div class="nav-label" style="display:flex;align-items:center;justify-content:space-between">
+            <span>Modules</span>
+            <button class="add-mod-btn-sm" onclick="toggleModExpand()">+ Add</button>
+          </div>
+          <div id="modList"></div>
+          <div class="mod-expand" id="modExpand">
+            <div class="mod-expand-grid" id="modExpandGrid"></div>
+          </div>
+        </div>
       </div>
     </div>
 
@@ -315,8 +344,8 @@ html,body{min-height:100vh;background:var(--bg);font-family:'DM Sans',sans-serif
           <div class="pub-hint" id="pubHint">Fill in name, start date and city to publish</div>
         </div>
 
-        <!-- Two columns -->
-        <div class="editor-cols">
+        <!-- Form -->
+        <div class="editor-cols" style="grid-template-columns:1fr">
 
           <!-- Left: form -->
           <div class="form-card">
@@ -395,19 +424,6 @@ html,body{min-height:100vh;background:var(--bg);font-family:'DM Sans',sans-serif
             <div class="form-actions">
               <button class="btn-secondary" onclick="showMyEvents()">Cancel</button>
               <button class="btn-primary" onclick="saveEvent()">Save Changes</button>
-            </div>
-          </div>
-
-          <!-- Right: modules -->
-          <div>
-            <div class="mod-card">
-              <div class="mod-card-title">Modules</div>
-              <div class="mod-card-sub">Enable the features you need for this event</div>
-              <div class="mod-list" id="modList"></div>
-              <button class="add-mod-btn" onclick="toggleModExpand()">+ Add Module</button>
-              <div class="mod-expand" id="modExpand">
-                <div class="mod-expand-grid" id="modExpandGrid"></div>
-              </div>
             </div>
           </div>
 
@@ -552,6 +568,8 @@ function openEvent(i) {
   document.getElementById('ctx-event-name').textContent = currentEvent.name || 'Untitled Event';
   updateCtxStatus(currentEvent);
   renderEventNav(currentEvent);
+  renderModList(currentEvent);
+  document.getElementById('nav-modules-wrap').style.display = 'block';
   // New event banner
   document.getElementById('newEventBanner').style.display = currentEvent.isNew ? 'flex' : 'none';
   // Nav active
@@ -584,7 +602,6 @@ function fillForm(ev) {
     document.getElementById('coverZone').style.display = 'block';
   }
   updatePubBar(ev);
-  renderModList(ev);
 }
 
 // ── Pub bar ───────────────────────────────────────────────────────────────────
@@ -789,6 +806,7 @@ function showMyEvents() {
   document.getElementById('viewMyEvents').style.display = 'block';
   document.getElementById('viewEventEditor').style.display = 'none';
   document.getElementById('event-ctx-wrap').style.display = 'none';
+  document.getElementById('nav-modules-wrap').style.display = 'none';
   document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
   document.getElementById('nav-my-events').classList.add('active');
   currentEvent = null;
