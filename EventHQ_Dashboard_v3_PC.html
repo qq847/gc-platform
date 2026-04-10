@@ -4331,15 +4331,29 @@ function renderModuleList(ev) {
   const active = new Set(ev.modules || []);
   const list = document.getElementById('moduleList');
   const SHOWN = ['free-reg','paid-ticket','free-pod','paid-pod','free-booth','paid-booth','sponsorship','panel','award','buyer-inv','lets-meet','showcase'];
+  // Module completion scores (static demo data)
+  const COMPLETION = {
+    'free-reg': 85, 'paid-ticket': 72, 'free-pod': 40, 'paid-pod': 55,
+    'free-booth': 90, 'paid-booth': 68, 'sponsorship': 60, 'panel': 78,
+    'award': 50, 'buyer-inv': 65, 'lets-meet': 80, 'showcase': 45
+  };
   list.innerHTML = SHOWN.map(id => {
     const m = ALL_MODULES.find(x => x.id === id);
     if (!m) return '';
     const on = active.has(id);
+    const pct = COMPLETION[id] || 0;
+    const pctColor = pct >= 80 ? '#16a34a' : pct >= 50 ? '#d97706' : '#dc2626';
     return `<div class="module-item ${on?'enabled':''}" id="mod-item-${id}">
       <div class="module-item-icon">${m.icon}</div>
-      <div class="module-item-info">
+      <div class="module-item-info" style="flex:1">
         <div class="module-item-name">${m.name}</div>
         <div class="module-item-desc">${m.desc}</div>
+        ${on ? `<div style="margin-top:5px;display:flex;align-items:center;gap:6px">
+          <div style="flex:1;height:3px;background:#e5e7eb;border-radius:2px;overflow:hidden">
+            <div style="width:${pct}%;height:100%;background:${pctColor};border-radius:2px"></div>
+          </div>
+          <span style="font-size:10px;color:${pctColor};font-weight:600;white-space:nowrap">${pct}%</span>
+        </div>` : ''}
       </div>
       <label class="toggle">
         <input type="checkbox" ${on?'checked':''} onchange="toggleModule('${id}',this.checked)">
@@ -4452,7 +4466,10 @@ function renderEventSidebarNav(ev) {
     }
     const on = active.has(item.modId);
     const uid = 'ntog-' + item.modId;
-    const clickFn = on ? `openModulePage('${item.modId}')` : `showToast('Enable ${item.label} first')`;
+    // Completion dot color
+    const COMP = {'free-reg':85,'paid-ticket':72,'free-pod':40,'paid-pod':55,'free-booth':90,'paid-booth':68,'sponsorship':60,'panel':78,'award':50,'buyer-inv':65,'lets-meet':80,'showcase':45};
+    const pct = COMP[item.modId] || 0;
+    const dotColor = !on ? '#d1d5db' : pct >= 80 ? '#16a34a' : pct >= 50 ? '#d97706' : '#dc2626';
     return `<div class="nav-item">
       <label class="nav-toggle" title="${on ? 'Disable' : 'Enable'} ${item.label}" onclick="event.stopPropagation()">
         <input type="checkbox" id="${uid}" ${on ? 'checked' : ''} onchange="navToggleModule('${item.modId}',this)">
@@ -4460,6 +4477,7 @@ function renderEventSidebarNav(ev) {
       </label>
       <span class="ni-icon">${item.icon}</span>
       <span class="ni-label ${on ? 'on' : 'off'}" onclick="${on ? `openModulePage('${item.modId}')` : ''}">${item.label}</span>
+      <span style="width:6px;height:6px;border-radius:50%;background:${dotColor};flex-shrink:0;margin-left:auto" title="${on ? pct+'% complete' : 'Disabled'}"></span>
     </div>`;
   }).join('');
 }
