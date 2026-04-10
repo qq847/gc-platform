@@ -5126,6 +5126,29 @@ The Game Connection Team</textarea>
     </div>
   </div>
 </div>
+<!-- Onboarding Wizard -->
+<div id="onboarding-overlay" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:10000;display:flex;align-items:center;justify-content:center">
+  <div style="background:#fff;border-radius:16px;padding:36px;max-width:520px;width:90%;box-shadow:0 20px 60px rgba(0,0,0,.3);position:relative">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:24px">
+      <div style="font-size:13px;font-weight:600;color:#9ca3af">GETTING STARTED</div>
+      <button onclick="skipOnboarding()" style="border:none;background:none;cursor:pointer;color:#9ca3af;font-size:18px">&times;</button>
+    </div>
+    <!-- Step indicators -->
+    <div style="display:flex;gap:6px;margin-bottom:28px">
+      <div id="ob-step-1" style="flex:1;height:4px;border-radius:2px;background:#2563eb"></div>
+      <div id="ob-step-2" style="flex:1;height:4px;border-radius:2px;background:#e5e7eb"></div>
+      <div id="ob-step-3" style="flex:1;height:4px;border-radius:2px;background:#e5e7eb"></div>
+      <div id="ob-step-4" style="flex:1;height:4px;border-radius:2px;background:#e5e7eb"></div>
+      <div id="ob-step-5" style="flex:1;height:4px;border-radius:2px;background:#e5e7eb"></div>
+    </div>
+    <div id="ob-content"></div>
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-top:28px">
+      <button id="ob-back" onclick="obStep(-1)" style="border:1px solid #e5e7eb;background:#fff;border-radius:8px;padding:9px 20px;font-size:13px;font-weight:600;cursor:pointer;color:#374151">&#8592; Back</button>
+      <span id="ob-counter" style="font-size:12px;color:#9ca3af">Step 1 of 5</span>
+      <button id="ob-next" onclick="obStep(1)" class="btn-primary" style="font-size:13px;padding:9px 24px">Next &#8594;</button>
+    </div>
+  </div>
+</div>
 <div class="toast" id="toast" style="display:none"></div>
 <div id="unsaved-bar" style="display:none;position:fixed;bottom:72px;left:50%;transform:translateX(-50%);background:#1e293b;color:#fff;border-radius:10px;padding:10px 20px;font-size:13px;font-weight:600;align-items:center;gap:12px;z-index:9999;box-shadow:0 4px 20px rgba(0,0,0,.3)">
   <span>&#9679; Unsaved changes</span>
@@ -6038,6 +6061,11 @@ document.addEventListener('DOMContentLoaded', () => {
       showToast('New event (Alt+N)');
     }
   });
+
+  // Show onboarding wizard for new users
+  setTimeout(() => {
+    if (typeof showOnboarding === 'function') showOnboarding();
+  }, 800);
 });
 
 // ── Init ────────────────────────────────────────────────────────────────────────────────────
@@ -6984,6 +7012,83 @@ function toggleDarkMode() {
     if (btn) btn.textContent = '🌙';
   }
 })();
+// ── Onboarding Wizard ────────────────────────────────────────────────────────────
+let _obStep = 1;
+const _obSteps = [
+  {
+    icon: '🎉',
+    title: 'Welcome to EventHQ!',
+    desc: 'EventHQ is your all-in-one event management platform. Let\'s get you set up in 5 quick steps.',
+    action: null
+  },
+  {
+    icon: '📝',
+    title: 'Create Your First Event',
+    desc: 'Start by giving your event a name, date, and location. You can always edit these later.',
+    action: { label: 'Create Event Now', fn: 'createNewEvent(); skipOnboarding();' }
+  },
+  {
+    icon: '🧩',
+    title: 'Choose Your Modules',
+    desc: 'EventHQ supports 15+ modules: Tickets, Booths, Sponsorship, Awards, Game Showcase, and more. Enable only what you need.',
+    action: null
+  },
+  {
+    icon: '🎫',
+    title: 'Set Up Ticket Types',
+    desc: 'Create free or paid ticket types, set capacity limits, and add discount codes to drive early registrations.',
+    action: null
+  },
+  {
+    icon: '🚀',
+    title: 'You\'re Ready to Launch!',
+    desc: 'Run the Pre-publish Checklist, then click Publish to make your event live. Your attendees can register immediately.',
+    action: { label: 'Get Started!', fn: 'skipOnboarding(); createNewEvent();' }
+  }
+];
+
+function showOnboarding() {
+  if (localStorage.getItem('gc_onboarded') === '1') return;
+  _obStep = 1;
+  renderObStep();
+  document.getElementById('onboarding-overlay').style.display = 'flex';
+}
+
+function skipOnboarding() {
+  document.getElementById('onboarding-overlay').style.display = 'none';
+  localStorage.setItem('gc_onboarded', '1');
+}
+
+function obStep(dir) {
+  _obStep = Math.max(1, Math.min(5, _obStep + dir));
+  renderObStep();
+  if (_obStep === 5) {
+    document.getElementById('ob-next').textContent = 'Finish ✓';
+    document.getElementById('ob-next').onclick = function() { skipOnboarding(); };
+  } else {
+    document.getElementById('ob-next').textContent = 'Next →';
+    document.getElementById('ob-next').onclick = function() { obStep(1); };
+  }
+  document.getElementById('ob-back').style.visibility = _obStep === 1 ? 'hidden' : 'visible';
+}
+
+function renderObStep() {
+  const s = _obSteps[_obStep - 1];
+  document.getElementById('ob-content').innerHTML = `
+    <div style="text-align:center;padding:8px 0">
+      <div style="font-size:52px;margin-bottom:16px">${s.icon}</div>
+      <div style="font-size:20px;font-weight:800;color:#111827;margin-bottom:10px">${s.title}</div>
+      <div style="font-size:14px;color:#6b7280;line-height:1.7;margin-bottom:${s.action ? '20px' : '0'}">${s.desc}</div>
+      ${s.action ? `<button class="btn-primary" style="font-size:13px;padding:10px 24px" onclick="${s.action.fn}">${s.action.label}</button>` : ''}
+    </div>
+  `;
+  document.getElementById('ob-counter').textContent = `Step ${_obStep} of 5`;
+  for (let i = 1; i <= 5; i++) {
+    const el = document.getElementById('ob-step-' + i);
+    if (el) el.style.background = i <= _obStep ? '#2563eb' : '#e5e7eb';
+  }
+  document.getElementById('ob-back').style.visibility = _obStep === 1 ? 'hidden' : 'visible';
+}
 // ── Pre-publish Checklist ────────────────────────────────────────────────────────────
 function runPublishChecklist() {
   const checks = [
