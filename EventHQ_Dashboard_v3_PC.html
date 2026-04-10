@@ -3579,7 +3579,16 @@ html,body{min-height:100vh;background:var(--bg);font-family:'DM Sans',sans-serif
                     <div><div style="font-size:11px;color:#9ca3af;margin-bottom:2px">DEMO SLOT</div><div style="font-size:13px;font-weight:500">TBD (Pending Review)</div></div>
                     <div><div style="font-size:11px;color:#9ca3af;margin-bottom:2px">TRAILER</div><a href="#" style="font-size:13px;color:#2563eb;font-weight:500" onclick="showToast('Video link coming soon');return false">🎥 Watch Trailer</a></div>
                   </div>
-                  <div style="font-size:12px;color:#6b7280">A narrative puzzle game set inside a decommissioned AI research facility. Players uncover the truth behind Project ECHO by solving environmental puzzles and piecing together fragmented audio logs.</div>
+                  <div style="font-size:12px;color:#6b7280;margin-bottom:12px">A narrative puzzle game set inside a decommissioned AI research facility. Players uncover the truth behind Project ECHO by solving environmental puzzles and piecing together fragmented audio logs.</div>
+                  <!-- Reviewer Panel -->
+                  <div style="background:#fff;border:1px solid #e5e7eb;border-radius:8px;padding:12px">
+                    <div style="font-size:12px;font-weight:600;color:#374151;margin-bottom:8px">📝 Reviewer Notes</div>
+                    <textarea id="gd2-notes" placeholder="Add review notes, feedback, or conditions for approval…" style="width:100%;border:1px solid #e5e7eb;border-radius:6px;padding:8px;font-size:12px;color:var(--text1);resize:vertical;min-height:60px;box-sizing:border-box" oninput="markDirty()"></textarea>
+                    <div style="display:flex;gap:8px;margin-top:8px;justify-content:flex-end">
+                      <button style="font-size:12px;background:#fee2e2;color:#dc2626;border:none;border-radius:6px;padding:6px 16px;cursor:pointer;font-weight:600" onclick="reviewGame('gd2','rejected')">Reject</button>
+                      <button style="font-size:12px;background:#dcfce7;color:#16a34a;border:none;border-radius:6px;padding:6px 16px;cursor:pointer;font-weight:600" onclick="reviewGame('gd2','approved')">Approve</button>
+                    </div>
+                  </div>
                 </td>
               </tr>
               <tr data-gstatus="approved" style="cursor:pointer" onclick="toggleGameDetail('gd3')">
@@ -6213,6 +6222,33 @@ function toggleGameDetail(id) {
   const isOpen = row.style.display !== 'none';
   row.style.display = isOpen ? 'none' : 'table-row';
   if (arrow) arrow.textContent = isOpen ? '▼' : '▲';
+}
+function reviewGame(id, decision) {
+  // Find the parent row (the clickable tr before the detail row)
+  const detailRow = document.getElementById(id);
+  if (!detailRow) return;
+  const mainRow = detailRow.previousElementSibling;
+  if (mainRow) {
+    const statusCell = mainRow.querySelector('td:nth-child(5)');
+    if (statusCell) {
+      if (decision === 'approved') {
+        statusCell.innerHTML = '<span style="font-size:11px;background:#dcfce7;color:#16a34a;padding:2px 8px;border-radius:4px;font-weight:600">Approved</span>';
+        mainRow.setAttribute('data-gstatus', 'approved');
+      } else {
+        statusCell.innerHTML = '<span style="font-size:11px;background:#fee2e2;color:#dc2626;padding:2px 8px;border-radius:4px;font-weight:600">Rejected</span>';
+        mainRow.setAttribute('data-gstatus', 'rejected');
+      }
+    }
+  }
+  // Collapse the detail row
+  detailRow.style.display = 'none';
+  const arrow = document.getElementById(id + '-arrow');
+  if (arrow) arrow.textContent = '▼';
+  const notes = document.getElementById(id + '-notes')?.value || '';
+  const msg = decision === 'approved'
+    ? '✓ Game approved' + (notes ? ' — notes saved' : '')
+    : '✕ Game rejected' + (notes ? ' — notes saved' : '');
+  showToast(msg);
 }
 function toggleFaq(id) {
   const el = document.getElementById(id);
