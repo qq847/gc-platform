@@ -639,8 +639,15 @@ html,body{min-height:100vh;background:var(--bg);font-family:'DM Sans',sans-serif
         </div>
 
         <!-- Events list -->
-        <div class="section-header">
+        <div class="section-header" style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px">
           <div class="section-title">All Events</div>
+          <div style="display:flex;gap:6px;align-items:center">
+            <button id="ef-all" class="btn-primary" style="font-size:12px;padding:5px 14px" onclick="filterEventsByStatus('all')">All</button>
+            <button id="ef-draft" class="btn-secondary" style="font-size:12px;padding:5px 14px" onclick="filterEventsByStatus('draft')">Draft</button>
+            <button id="ef-published" class="btn-secondary" style="font-size:12px;padding:5px 14px" onclick="filterEventsByStatus('published')">Published</button>
+            <button id="ef-ended" class="btn-secondary" style="font-size:12px;padding:5px 14px" onclick="filterEventsByStatus('ended')">Ended</button>
+            <input id="ef-search" type="text" placeholder="Search events…" style="border:1px solid #e5e7eb;border-radius:6px;padding:5px 10px;font-size:12px;color:var(--text1);outline:none" oninput="filterEventsByStatus(document.querySelector('.btn-primary[id^=ef-]')?.id?.replace('ef-','') || 'all')">
+          </div>
         </div>
         <div class="events-list" id="eventsList"></div>
       </div>
@@ -4927,9 +4934,76 @@ function renderEventsList() {
       </div>
     </div>`;
   }).join('');
+}// ── Filter Events by Status ───────────────────────────────────────────────────────
+function filterEventsByStatus(status) {
+  // Update active tab button
+  ['all','draft','published','ended'].forEach(s => {
+    const btn = document.getElementById('ef-' + s);
+    if (btn) {
+      btn.className = s === status ? 'btn-primary' : 'btn-secondary';
+      btn.style.cssText = 'font-size:12px;padding:5px 14px';
+    }
+  });
+  const q = (document.getElementById('ef-search')?.value || '').toLowerCase().trim();
+  const events = loadEvents();
+  const list = document.getElementById('eventsList');
+  if (!list) return;
+  const filtered = events.filter((ev, idx) => {
+    // Status match
+    const evStatus = ev.status || 'draft';
+    const statusMatch = status === 'all' ||
+      (status === 'draft' && evStatus === 'draft') ||
+      (status === 'published' && (evStatus === 'live' || evStatus === 'published')) ||
+      (status === 'ended' && evStatus === 'ended');
+    // Search match
+    const searchMatch = !q || (ev.name || '').toLowerCase().includes(q) || (ev.city || '').toLowerCase().includes(q);
+    return statusMatch && searchMatch;
+  });
+  if (!filtered.length) {
+    list.innerHTML = '<div style="text-align:center;padding:40px;color:#9ca3af;font-size:13px">No events match this filter.</div>';
+    return;
+  }
+  list.innerHTML = filtered.map((ev) => {
+    const origIdx = events.indexOf(ev);
+    const evStatus = ev.status || 'draft';
+    let statusBadge;
+    if (evStatus === 'live' || evStatus === 'published') {
+      statusBadge = '<span class="badge badge-live">● Published</span>';
+    } else if (evStatus === 'ended') {
+      statusBadge = '<span style="font-size:11px;background:#f3f4f6;color:#6b7280;padding:2px 8px;border-radius:10px;font-weight:600">■ Ended</span>';
+    } else {
+      statusBadge = '<span class="badge badge-draft">Draft</span>';
+    }
+    const meta = [ev.startDate, ev.city].filter(Boolean).join(' · ');
+    const thumb = ev.cover
+      ? `<img src="${ev.cover}" style="width:44px;height:44px;border-radius:8px;object-fit:cover;flex-shrink:0">`
+      : `<div class="event-thumb">${ev.name ? ev.name.charAt(0).toUpperCase() : '🎤'}</div>`;
+    const attCount = ev.attendees || 0;
+    const projCount = ev.projects || 0;
+    const pts = [20,15,18,10,8,5,3].map((v,i) => `${i*20},${v}`).join(' ');
+    const miniChart = `<svg viewBox="0 0 120 25" style="width:80px;height:18px" xmlns="http://www.w3.org/2000/svg"><polyline points="${pts}" fill="none" stroke="#2563eb" stroke-width="1.5" stroke-linejoin="round"/></svg>`;
+    return `<div class="event-row" onclick="openEvent(${origIdx})">
+      ${thumb}
+      <div class="event-info">
+        <div class="event-name">${ev.name || 'Untitled Event'}</div>
+        <div class="event-meta">${meta || 'No date set'}</div>
+        <div style="display:flex;gap:10px;margin-top:4px">
+          <span style="font-size:11px;color:#6b7280">👥 ${attCount} attendees</span>
+          <span style="font-size:11px;color:#6b7280">🎮 ${projCount} projects</span>
+        </div>
+      </div>
+      <div style="display:flex;align-items:center;gap:8px;margin-right:8px">${miniChart}<span style="font-size:11px;color:#6b7280">Revenue</span></div>
+      <div class="event-badges">${statusBadge}</div>
+      <div class="event-actions" onclick="event.stopPropagation()">
+        <button class="action-btn primary" onclick="openEvent(${origIdx})">Edit</button>
+        <button class="action-btn" onclick="previewEventFromList(${origIdx})">👁</button>
+        <button class="action-btn" onclick="duplicateEvent(${origIdx})">📋</button>
+        <button class="action-btn" onclick="deleteEvent(${origIdx})">🗑</button>
+      </div>
+    </div>`;
+  }).join('');
 }
-
-// ── Create New Event ──────────────────────────────────────────────────────────
+// ── Create New Event ────────────────────────────────────────────────────────────
 function createNewEvent() {
   const events = loadEvents();
   const newEv = {
