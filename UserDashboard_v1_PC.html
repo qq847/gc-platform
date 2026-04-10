@@ -1,0 +1,900 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>My Dashboard — Game Connection</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+:root {
+  --green: #16a34a;
+  --green-dim: rgba(22,163,74,.1);
+  --green-border: rgba(22,163,74,.25);
+  --green-dark: #15803d;
+  --teal: #0a7fa8;
+  --bg: #f3f2ef;
+  --white: #fff;
+  --text: #111111;
+  --muted: #444444;
+  --faint: #888888;
+  --border: #e0dfdc;
+  --radius: 10px;
+  --nav-h: 52px;
+  --sidebar-w: 220px;
+  --shadow: 0 1px 3px rgba(0,0,0,0.07);
+}
+body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--text); line-height: 1.5; }
+
+/* ── TOPNAV ── */
+.topnav {
+  position: sticky; top: 0; z-index: 200;
+  height: var(--nav-h); background: var(--white);
+  border-bottom: 1px solid var(--border);
+  display: flex; align-items: center; justify-content: center;
+}
+.topnav-inner {
+  width: 100%; max-width: 1280px;
+  display: flex; align-items: center; gap: 12px;
+  padding: 0 24px; height: 100%;
+}
+.nav-logo { flex-shrink: 0; cursor: pointer; }
+.nav-logo img { height: 30px; width: auto; display: block; }
+.nav-gap { flex: 1; }
+.nav-tabs { display: flex; align-items: stretch; height: var(--nav-h); gap: 0; }
+.nav-tab {
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  gap: 2px; padding: 0 14px;
+  cursor: pointer; font-size: 11px; font-weight: 600; color: var(--faint);
+  border-bottom: 2px solid transparent; white-space: nowrap; transition: all .15s;
+  text-decoration: none;
+}
+.nav-tab:hover { color: var(--muted); border-bottom-color: rgba(0,0,0,0.1); }
+.nav-tab.active { color: var(--green); border-bottom-color: var(--green); }
+.nav-sep { width: 1px; height: 24px; background: var(--border); margin: 0 6px; }
+
+.user-dropdown-wrap { position: relative; display: flex; align-items: center; }
+.user-btn {
+  display: flex; align-items: center; gap: 6px;
+  padding: 6px 12px; border-radius: 6px;
+  background: none; border: 1px solid var(--border);
+  font-family: inherit; font-size: 13px; font-weight: 600;
+  color: var(--text); cursor: pointer; transition: all .15s;
+}
+.user-btn:hover { background: var(--bg); border-color: #ccc; }
+.user-menu {
+  position: absolute; top: calc(100% + 8px); right: 0;
+  width: 200px; background: var(--white);
+  border: 1px solid var(--border); border-radius: 10px;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.12);
+  z-index: 9999; overflow: hidden; display: none;
+}
+.user-menu.open { display: block; }
+.user-menu-item {
+  display: flex; align-items: center; gap: 10px;
+  padding: 11px 16px; font-size: 13px; font-weight: 500;
+  color: var(--text); cursor: pointer; transition: background .12s;
+  text-decoration: none;
+}
+.user-menu-item:hover { background: var(--green-dim); color: var(--green-dark); }
+.user-menu-item.active { color: var(--green); font-weight: 700; }
+.user-menu-divider { height: 1px; background: var(--border); margin: 4px 0; }
+.user-menu-item.danger { color: #dc2626; }
+.user-menu-item.danger:hover { background: #fef2f2; }
+
+/* ── LAYOUT ── */
+.layout { display: flex; min-height: calc(100vh - var(--nav-h)); }
+
+/* ── SIDEBAR ── */
+.sidebar {
+  width: var(--sidebar-w); flex-shrink: 0;
+  background: var(--white); border-right: 1px solid var(--border);
+  padding: 16px 10px; display: flex; flex-direction: column; gap: 2px;
+  position: sticky; top: var(--nav-h); height: calc(100vh - var(--nav-h)); overflow-y: auto;
+}
+.sidebar-section-label {
+  font-size: 10px; font-weight: 800; text-transform: uppercase;
+  letter-spacing: .08em; color: var(--faint); padding: 10px 10px 4px;
+}
+.sidebar-link {
+  display: flex; align-items: center; gap: 10px;
+  padding: 8px 10px; border-radius: 7px;
+  font-size: 13px; font-weight: 500; color: var(--muted);
+  cursor: pointer; text-decoration: none; transition: all .12s;
+  border: none; background: none; font-family: inherit; width: 100%; text-align: left;
+}
+.sidebar-link:hover { background: var(--bg); color: var(--text); }
+.sidebar-link.active { background: var(--green-dim); color: var(--green-dark); font-weight: 700; }
+.sidebar-link .icon { font-size: 16px; flex-shrink: 0; }
+.sidebar-badge {
+  margin-left: auto; min-width: 18px; height: 18px;
+  border-radius: 9px; background: var(--green);
+  color: #fff; font-size: 10px; font-weight: 700;
+  display: flex; align-items: center; justify-content: center; padding: 0 5px;
+}
+.sidebar-divider { height: 1px; background: var(--border); margin: 8px 10px; }
+.sidebar-user {
+  margin-top: auto; padding: 12px 10px 4px;
+  display: flex; align-items: center; gap: 10px;
+  border-top: 1px solid var(--border);
+}
+.sidebar-user-avatar {
+  width: 34px; height: 34px; border-radius: 50%;
+  background: linear-gradient(135deg, #16a34a, #052e16);
+  color: #fff; font-size: 13px; font-weight: 700;
+  display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+}
+.sidebar-user-name { font-size: 13px; font-weight: 700; }
+.sidebar-user-role { font-size: 11px; color: var(--faint); }
+
+/* ── MAIN ── */
+.main { flex: 1; min-width: 0; padding: 24px 28px; max-width: 960px; }
+
+/* ── WELCOME BANNER ── */
+.welcome-banner {
+  background: linear-gradient(135deg, #052e16 0%, #16a34a 100%);
+  border-radius: var(--radius); padding: 24px 28px;
+  display: flex; align-items: center; justify-content: space-between;
+  margin-bottom: 20px; gap: 16px;
+}
+.welcome-text { color: #fff; }
+.welcome-greeting { font-size: 13px; opacity: .75; margin-bottom: 4px; }
+.welcome-name { font-size: 22px; font-weight: 800; }
+.welcome-sub { font-size: 13px; opacity: .7; margin-top: 4px; }
+.welcome-actions { display: flex; gap: 10px; flex-shrink: 0; }
+.btn-white {
+  padding: 9px 18px; border-radius: 6px;
+  background: rgba(255,255,255,0.15); color: #fff;
+  border: 1px solid rgba(255,255,255,0.3);
+  font-size: 13px; font-weight: 600; cursor: pointer;
+  font-family: inherit; transition: all .15s;
+}
+.btn-white:hover { background: rgba(255,255,255,0.25); }
+.btn-green {
+  padding: 9px 18px; border-radius: 6px;
+  background: #fff; color: var(--green-dark);
+  border: none; font-size: 13px; font-weight: 700;
+  cursor: pointer; font-family: inherit; transition: all .15s;
+}
+.btn-green:hover { background: #f0fdf4; }
+
+/* ── STATS ROW ── */
+.stats-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-bottom: 24px; }
+.stat-card {
+  background: var(--white); border-radius: var(--radius);
+  border: 1px solid var(--border); padding: 16px 18px;
+  cursor: pointer; transition: all .15s;
+}
+.stat-card:hover { border-color: var(--green-border); box-shadow: 0 2px 8px rgba(22,163,74,0.1); }
+.stat-card.highlight { border-color: var(--green-border); background: var(--green-dim); }
+.stat-icon { font-size: 20px; margin-bottom: 8px; }
+.stat-value { font-size: 26px; font-weight: 800; color: var(--text); }
+.stat-label { font-size: 12px; color: var(--muted); margin-top: 2px; font-weight: 600; }
+.stat-sub { font-size: 11px; color: var(--faint); margin-top: 4px; }
+
+/* ── SECTION CARD ── */
+.section-card {
+  background: var(--white); border-radius: var(--radius);
+  border: 1px solid var(--border); box-shadow: var(--shadow);
+  margin-bottom: 20px; overflow: hidden;
+}
+.section-card-header {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 16px 20px; border-bottom: 1px solid var(--border);
+}
+.section-card-title { font-size: 14px; font-weight: 800; display: flex; align-items: center; gap: 8px; }
+.section-card-body { padding: 0; }
+
+/* Tabs */
+.tab-bar {
+  display: flex; gap: 0; border-bottom: 1px solid var(--border);
+  padding: 0 20px;
+}
+.tab-btn {
+  padding: 10px 14px; font-size: 13px; font-weight: 600;
+  color: var(--faint); cursor: pointer; border: none; background: none;
+  font-family: inherit; border-bottom: 2px solid transparent;
+  transition: all .15s; margin-bottom: -1px;
+}
+.tab-btn:hover { color: var(--muted); }
+.tab-btn.active { color: var(--green); border-bottom-color: var(--green); }
+
+/* Event rows */
+.event-row {
+  display: flex; align-items: center; gap: 14px;
+  padding: 14px 20px; border-bottom: 1px solid #f5f5f5;
+  transition: background .12s;
+}
+.event-row:last-child { border-bottom: none; }
+.event-row:hover { background: #fafafa; }
+.event-logo {
+  width: 44px; height: 44px; border-radius: 8px;
+  background: #052e16; color: #fff;
+  font-size: 9px; font-weight: 800;
+  display: flex; align-items: center; justify-content: center;
+  text-align: center; flex-shrink: 0; line-height: 1.3;
+}
+.event-info { flex: 1; min-width: 0; }
+.event-name { font-size: 14px; font-weight: 700; }
+.event-meta { font-size: 12px; color: var(--faint); margin-top: 2px; }
+.event-countdown { font-size: 12px; color: var(--green); font-weight: 600; margin-top: 2px; }
+.status-badge {
+  padding: 3px 10px; border-radius: 20px;
+  font-size: 11px; font-weight: 700; flex-shrink: 0;
+}
+.status-registered { background: #f0fdf4; color: #16a34a; border: 1px solid #bbf7d0; }
+.status-confirmed { background: #f0fdf4; color: #16a34a; border: 1px solid #bbf7d0; }
+.status-pending { background: #fefce8; color: #a16207; border: 1px solid #fde68a; }
+.status-rejected { background: #fef2f2; color: #dc2626; border: 1px solid #fecaca; }
+.status-saved { background: #f0f9ff; color: #0369a1; border: 1px solid #bae6fd; }
+.status-past { background: #f9fafb; color: #6b7280; border: 1px solid #e5e7eb; }
+.view-btn {
+  padding: 5px 14px; border-radius: 6px;
+  background: var(--white); color: var(--text);
+  border: 1px solid var(--border); font-size: 12px; font-weight: 600;
+  cursor: pointer; font-family: inherit; flex-shrink: 0; transition: all .15s;
+}
+.view-btn:hover { border-color: var(--green-border); color: var(--green); }
+
+/* Booth / Sponsorship / Project rows */
+.item-row {
+  display: flex; align-items: center; gap: 12px;
+  padding: 14px 20px; border-bottom: 1px solid #f5f5f5;
+}
+.item-row:last-child { border-bottom: none; }
+.item-row:hover { background: #fafafa; }
+.item-icon {
+  width: 36px; height: 36px; border-radius: 8px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 16px; flex-shrink: 0; background: var(--bg);
+}
+.item-info { flex: 1; min-width: 0; }
+.item-name { font-size: 13px; font-weight: 700; }
+.item-meta { font-size: 12px; color: var(--faint); margin-top: 2px; }
+.item-actions { display: flex; gap: 8px; flex-shrink: 0; }
+.action-btn-sm {
+  padding: 5px 12px; border-radius: 6px;
+  font-size: 12px; font-weight: 600; cursor: pointer;
+  font-family: inherit; transition: all .15s; border: none;
+}
+.action-btn-green { background: var(--green); color: #fff; }
+.action-btn-green:hover { background: var(--green-dark); }
+.action-btn-outline { background: var(--white); color: var(--text); border: 1px solid var(--border); }
+.action-btn-outline:hover { border-color: var(--green-border); color: var(--green); }
+.action-btn-danger { background: #fef2f2; color: #dc2626; border: 1px solid #fecaca; }
+.action-btn-danger:hover { background: #fee2e2; }
+
+/* Meet schedule */
+.meet-row {
+  display: flex; align-items: center; gap: 14px;
+  padding: 14px 20px; border-bottom: 1px solid #f5f5f5;
+}
+.meet-row:last-child { border-bottom: none; }
+.meet-row:hover { background: #fafafa; }
+.meet-time-block {
+  text-align: center; background: var(--bg);
+  border-radius: 8px; padding: 6px 10px; flex-shrink: 0; min-width: 60px;
+}
+.meet-time-date { font-size: 10px; font-weight: 700; text-transform: uppercase; color: var(--green); }
+.meet-time-hour { font-size: 14px; font-weight: 800; color: var(--text); line-height: 1.2; }
+.meet-info { flex: 1; min-width: 0; }
+.meet-person { font-size: 13px; font-weight: 700; }
+.meet-role { font-size: 12px; color: var(--faint); margin-top: 1px; }
+.meet-actions { display: flex; gap: 8px; flex-shrink: 0; }
+
+/* Empty state */
+.empty-state {
+  padding: 32px 20px; text-align: center;
+  color: var(--faint); font-size: 13px;
+}
+.empty-state-icon { font-size: 32px; margin-bottom: 10px; }
+.empty-state-text { margin-bottom: 12px; }
+.empty-state-btn {
+  padding: 8px 20px; border-radius: 6px;
+  background: var(--green); color: #fff;
+  border: none; font-size: 13px; font-weight: 600;
+  cursor: pointer; font-family: inherit;
+}
+
+/* Section footer */
+.section-footer {
+  padding: 12px 20px; border-top: 1px solid var(--border);
+  display: flex; justify-content: center;
+}
+.section-footer a {
+  font-size: 13px; font-weight: 600; color: var(--green);
+  text-decoration: none; cursor: pointer;
+}
+.section-footer a:hover { text-decoration: underline; }
+
+/* ── RESPONSIVE ── */
+@media (max-width: 900px) {
+  .stats-row { grid-template-columns: repeat(2, 1fr); }
+  .sidebar { display: none; }
+  .main { padding: 16px; }
+}
+@media (max-width: 600px) {
+  .stats-row { grid-template-columns: 1fr 1fr; }
+  .welcome-actions { display: none; }
+}
+</style>
+</head>
+<body>
+
+<!-- SPLASH -->
+<div id="gc-splash" style="position:fixed;inset:0;z-index:99999;background:#f3f2ef;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:28px;transition:opacity .35s ease;">
+  <img src="assets/gc-logo.png" alt="Game Connection" style="height:48px;width:auto;display:block">
+  <div style="width:200px;height:3px;background:rgba(0,0,0,0.1);border-radius:2px;overflow:hidden">
+    <div id="gc-splash-bar" style="height:100%;width:0%;background:#16a34a;border-radius:2px;transition:width .08s linear;"></div>
+  </div>
+</div>
+<script>
+(function(){
+  var splash=document.getElementById('gc-splash'),bar=document.getElementById('gc-splash-bar'),pct=0;
+  var t=setInterval(function(){pct+=(pct<70?3:.8);if(pct>=92)clearInterval(t);bar.style.width=Math.min(pct,92)+'%';},40);
+  function done(){clearInterval(t);bar.style.transition='width .25s ease';bar.style.width='100%';setTimeout(function(){splash.style.opacity='0';setTimeout(function(){splash.style.display='none';},360);},260);}
+  if(document.readyState==='complete')done();else{window.addEventListener('load',done);setTimeout(done,4000);}
+})();
+</script>
+
+<!-- TOPNAV -->
+<nav class="topnav">
+  <div class="topnav-inner">
+    <a class="nav-logo" href="EventHub_v2_PC.html">
+      <img src="assets/gc-logo.png" alt="Game Connection">
+    </a>
+    <div class="nav-gap"></div>
+    <div class="nav-tabs">
+      <a class="nav-tab" href="EventHub_v2_PC.html">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+        Calendar
+      </a>
+      <a class="nav-tab" href="EventHub_v2_PC.html">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 22h16a2 2 0 0 0 2-2V4a2 2 0 0 0-2-2H8a2 2 0 0 0-2 2v16a2 2 0 0 1-2 2Zm0 0a2 2 0 0 1-2-2v-9c0-1.1.9-2 2-2h2"/><path d="M18 14h-8M15 18h-5M10 6h8v4h-8V6Z"/></svg>
+        News
+      </a>
+      <a class="nav-tab" href="EventHub_v2_PC.html">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+        Projects
+      </a>
+    </div>
+    <div class="nav-sep"></div>
+    <div class="user-dropdown-wrap" id="user-dropdown-wrap">
+      <button class="user-btn" id="user-btn" onclick="toggleUserMenu()">
+        <span id="user-btn-name">Ray ▾</span>
+      </button>
+      <div class="user-menu" id="user-menu">
+        <a class="user-menu-item" href="UserProfile_v1_PC.html">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg>
+          My Game Connection
+        </a>
+        <a class="user-menu-item active" href="UserDashboard_v1_PC.html">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+          Dashboard
+        </a>
+        <a class="user-menu-item" href="UserSettings_v1_PC.html">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+          Settings
+        </a>
+        <div class="user-menu-divider"></div>
+        <div class="user-menu-item danger" onclick="signOut()">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+          Sign Out
+        </div>
+      </div>
+    </div>
+  </div>
+</nav>
+
+<!-- LAYOUT -->
+<div class="layout">
+
+  <!-- SIDEBAR -->
+  <aside class="sidebar">
+    <div class="sidebar-section-label">My Activity</div>
+    <button class="sidebar-link active" onclick="showSection('overview')">
+      <span class="icon">📊</span> Dashboard
+    </button>
+    <button class="sidebar-link" onclick="showSection('events')">
+      <span class="icon">🎟️</span> My Events
+      <span class="sidebar-badge" id="badge-events">3</span>
+    </button>
+    <button class="sidebar-link" onclick="showSection('booth')">
+      <span class="icon">🏢</span> Booth / Pod
+    </button>
+    <button class="sidebar-link" onclick="showSection('sponsorships')">
+      <span class="icon">💼</span> Sponsorships
+    </button>
+    <button class="sidebar-link" onclick="showSection('projects')">
+      <span class="icon">🎮</span> My Projects
+    </button>
+    <button class="sidebar-link" onclick="showSection('schedule')">
+      <span class="icon">🤝</span> Let's Meet
+      <span class="sidebar-badge" id="badge-meet" style="background:#f59e0b;">2</span>
+    </button>
+    <div class="sidebar-divider"></div>
+    <div class="sidebar-section-label">Discover</div>
+    <a class="sidebar-link" href="EventHub_v2_PC.html">
+      <span class="icon">🌐</span> Browse Events
+    </a>
+    <a class="sidebar-link" href="UserProfile_v1_PC.html">
+      <span class="icon">👤</span> My Game Connection
+    </a>
+    <a class="sidebar-link" href="UserSettings_v1_PC.html">
+      <span class="icon">⚙️</span> Settings
+    </a>
+    <div class="sidebar-user">
+      <div class="sidebar-user-avatar" id="sidebar-avatar">R</div>
+      <div>
+        <div class="sidebar-user-name" id="sidebar-name">Ray Zhang</div>
+        <div class="sidebar-user-role">Developer · Indie Studio</div>
+      </div>
+    </div>
+  </aside>
+
+  <!-- MAIN -->
+  <main class="main">
+
+    <!-- ── OVERVIEW ── -->
+    <div id="section-overview">
+      <!-- Welcome Banner -->
+      <div class="welcome-banner">
+        <div class="welcome-text">
+          <div class="welcome-greeting">Welcome back 👋</div>
+          <div class="welcome-name" id="welcome-name">Ray Zhang</div>
+          <div class="welcome-sub">Developer · Indie Studio · Member since Jan 2025</div>
+        </div>
+        <div class="welcome-actions">
+          <button class="btn-white" onclick="window.location.href='EventHub_v2_PC.html'">🌐 Browse Events</button>
+          <button class="btn-green" onclick="window.location.href='UserProfile_v1_PC.html'">👤 My Profile</button>
+        </div>
+      </div>
+
+      <!-- Stats Row -->
+      <div class="stats-row">
+        <div class="stat-card highlight" onclick="showSection('events')">
+          <div class="stat-icon">🎟️</div>
+          <div class="stat-value" id="stat-events">3</div>
+          <div class="stat-label">Registered Events</div>
+          <div class="stat-sub">1 upcoming · 2 past</div>
+        </div>
+        <div class="stat-card" onclick="showSection('schedule')">
+          <div class="stat-icon">🤝</div>
+          <div class="stat-value">4</div>
+          <div class="stat-label">Meetings</div>
+          <div class="stat-sub">2 confirmed · 2 pending</div>
+        </div>
+        <div class="stat-card" onclick="showSection('projects')">
+          <div class="stat-icon">🎮</div>
+          <div class="stat-value">2</div>
+          <div class="stat-label">Projects Submitted</div>
+          <div class="stat-sub">1 under review · 1 confirmed</div>
+        </div>
+        <div class="stat-card" onclick="showSection('booth')">
+          <div class="stat-icon">🏢</div>
+          <div class="stat-value">1</div>
+          <div class="stat-label">Booth Applications</div>
+          <div class="stat-sub">Under review</div>
+        </div>
+      </div>
+
+      <!-- Quick overview of each section -->
+      <!-- My Events preview -->
+      <div class="section-card">
+        <div class="section-card-header">
+          <div class="section-card-title">🎟️ My Events</div>
+          <button class="view-btn" onclick="showSection('events')">View All</button>
+        </div>
+        <div class="section-card-body" id="overview-events">
+          <!-- populated by JS -->
+        </div>
+      </div>
+
+      <!-- My Projects preview -->
+      <div class="section-card">
+        <div class="section-card-header">
+          <div class="section-card-title">🎮 My Projects</div>
+          <button class="view-btn" onclick="window.location.href='ProjectSubmitWizard_v1_PC.html'">+ Submit Project</button>
+        </div>
+        <div class="section-card-body">
+          <div class="item-row">
+            <div class="item-icon">🎮</div>
+            <div class="item-info">
+              <div class="item-name">Stellar Drift</div>
+              <div class="item-meta">GDC 2026 · Game Showcase · Submitted Apr 5</div>
+            </div>
+            <span class="status-badge status-pending">Under Review</span>
+          </div>
+          <div class="item-row">
+            <div class="item-icon">🎮</div>
+            <div class="item-info">
+              <div class="item-name">Neon Valley</div>
+              <div class="item-meta">GC Asia 2025 · Booth · Submitted Mar 1</div>
+            </div>
+            <span class="status-badge status-confirmed">Confirmed</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Let's Meet preview -->
+      <div class="section-card">
+        <div class="section-card-header">
+          <div class="section-card-title">🤝 Let's Meet — My Schedule</div>
+          <button class="view-btn" onclick="showSection('schedule')">View All</button>
+        </div>
+        <div class="section-card-body">
+          <div class="meet-row">
+            <div class="meet-time-block">
+              <div class="meet-time-date">Apr 17</div>
+              <div class="meet-time-hour">10:00</div>
+            </div>
+            <div class="meet-info">
+              <div class="meet-person">Emma Park</div>
+              <div class="meet-role">Publisher · Devolver Digital</div>
+            </div>
+            <div class="meet-actions">
+              <button class="action-btn-sm action-btn-green" onclick="alert('Meeting confirmed!')">Confirm</button>
+              <button class="action-btn-sm action-btn-outline" onclick="alert('Meeting declined.')">Decline</button>
+            </div>
+          </div>
+          <div class="meet-row">
+            <div class="meet-time-block">
+              <div class="meet-time-date">Apr 18</div>
+              <div class="meet-time-hour">14:00</div>
+            </div>
+            <div class="meet-info">
+              <div class="meet-person">Tom Reeves</div>
+              <div class="meet-role">Investor · Bitkraft Ventures</div>
+            </div>
+            <div class="meet-actions">
+              <span class="status-badge status-confirmed">Confirmed</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── MY EVENTS ── -->
+    <div id="section-events" style="display:none;">
+      <div class="section-card">
+        <div class="section-card-header">
+          <div class="section-card-title">🎟️ My Events</div>
+        </div>
+        <div class="tab-bar">
+          <button class="tab-btn active" onclick="switchEventTab('registered', this)">Registered</button>
+          <button class="tab-btn" onclick="switchEventTab('saved', this)">Saved</button>
+          <button class="tab-btn" onclick="switchEventTab('past', this)">Past</button>
+        </div>
+        <div id="events-registered">
+          <div class="event-row">
+            <div class="event-logo">GDC<br>2026</div>
+            <div class="event-info">
+              <div class="event-name">Game Developers Conference 2026</div>
+              <div class="event-meta">📍 San Francisco · Apr 17–19, 2026</div>
+              <div class="event-countdown">7 days away</div>
+            </div>
+            <span class="status-badge status-registered">Registered</span>
+            <button class="view-btn" onclick="window.location.href='EventPublicPage_v4_PC.html'">View</button>
+          </div>
+          <div class="event-row">
+            <div class="event-logo">GC<br>EURO</div>
+            <div class="event-info">
+              <div class="event-name">Game Connection Europe 2026</div>
+              <div class="event-meta">📍 Lyon · Jun 10–11, 2026</div>
+              <div class="event-countdown">61 days away</div>
+            </div>
+            <span class="status-badge status-registered">Registered</span>
+            <button class="view-btn">View</button>
+          </div>
+        </div>
+        <div id="events-saved" style="display:none;">
+          <div class="event-row">
+            <div class="event-logo">TGS<br>2026</div>
+            <div class="event-info">
+              <div class="event-name">Tokyo Game Show 2026</div>
+              <div class="event-meta">📍 Tokyo · Sep 24–27, 2026</div>
+            </div>
+            <span class="status-badge status-saved">Saved</span>
+            <button class="view-btn">View</button>
+          </div>
+        </div>
+        <div id="events-past" style="display:none;">
+          <div class="event-row">
+            <div class="event-logo">GC<br>WEST</div>
+            <div class="event-info">
+              <div class="event-name">Game Connection West 2025</div>
+              <div class="event-meta">📍 San Francisco · Mar 2025</div>
+            </div>
+            <span class="status-badge status-past">Attended</span>
+            <button class="view-btn">View</button>
+          </div>
+          <div class="event-row">
+            <div class="event-logo">TGS<br>2024</div>
+            <div class="event-info">
+              <div class="event-name">Tokyo Game Show 2024</div>
+              <div class="event-meta">📍 Tokyo · Sep 2024</div>
+            </div>
+            <span class="status-badge status-past">Attended</span>
+            <button class="view-btn">View</button>
+          </div>
+        </div>
+        <div class="section-footer">
+          <a href="EventHub_v2_PC.html">Browse more events →</a>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── BOOTH / POD ── -->
+    <div id="section-booth" style="display:none;">
+      <div class="section-card">
+        <div class="section-card-header">
+          <div class="section-card-title">🏢 My Booth / Pod Applications</div>
+          <button class="view-btn" onclick="alert('Apply for booth coming soon')">+ Apply</button>
+        </div>
+        <div class="section-card-body">
+          <div class="item-row">
+            <div class="item-icon">🏢</div>
+            <div class="item-info">
+              <div class="item-name">GDC 2026 — Booth A12</div>
+              <div class="item-meta">Indie Zone · 3×3m · Applied Apr 1</div>
+            </div>
+            <span class="status-badge status-pending">Under Review</span>
+            <div class="item-actions">
+              <button class="action-btn-sm action-btn-outline">Details</button>
+            </div>
+          </div>
+          <div class="item-row">
+            <div class="item-icon">🏠</div>
+            <div class="item-info">
+              <div class="item-name">GC Asia 2025 — Pod 3</div>
+              <div class="item-meta">Developer Pod · 2×2m · Applied Feb 10</div>
+            </div>
+            <span class="status-badge status-confirmed">Confirmed</span>
+            <div class="item-actions">
+              <button class="action-btn-sm action-btn-outline">Details</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── SPONSORSHIPS ── -->
+    <div id="section-sponsorships" style="display:none;">
+      <div class="section-card">
+        <div class="section-card-header">
+          <div class="section-card-title">💼 My Sponsorships</div>
+          <button class="view-btn" onclick="alert('Browse sponsorship packages coming soon')">Browse Packages</button>
+        </div>
+        <div class="section-card-body">
+          <div class="item-row">
+            <div class="item-icon">🥇</div>
+            <div class="item-info">
+              <div class="item-name">GDC 2026 — Gold Package</div>
+              <div class="item-meta">Logo on main stage · 2 VIP tickets · Booth priority</div>
+            </div>
+            <span class="status-badge status-confirmed">Active</span>
+            <div class="item-actions">
+              <button class="action-btn-sm action-btn-green" onclick="alert('Activating benefits...')">Activate Benefits</button>
+              <button class="action-btn-sm action-btn-outline">Details</button>
+            </div>
+          </div>
+          <div class="item-row">
+            <div class="item-icon">🥈</div>
+            <div class="item-info">
+              <div class="item-name">GC Asia 2025 — Silver Package</div>
+              <div class="item-meta">Logo on website · 1 VIP ticket</div>
+            </div>
+            <span class="status-badge status-past">Completed</span>
+            <div class="item-actions">
+              <button class="action-btn-sm action-btn-outline">View Report</button>
+            </div>
+          </div>
+        </div>
+        <div class="section-footer">
+          <a href="#">Browse sponsorship packages →</a>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── MY PROJECTS ── -->
+    <div id="section-projects" style="display:none;">
+      <div class="section-card">
+        <div class="section-card-header">
+          <div class="section-card-title">🎮 My Projects (Submission Status)</div>
+          <button class="view-btn" onclick="window.location.href='ProjectSubmitWizard_v1_PC.html'">+ Submit Project</button>
+        </div>
+        <div class="section-card-body">
+          <div class="item-row">
+            <div class="item-icon">🎮</div>
+            <div class="item-info">
+              <div class="item-name">Stellar Drift</div>
+              <div class="item-meta">GDC 2026 · Game Showcase · Submitted Apr 5, 2026</div>
+            </div>
+            <span class="status-badge status-pending">Under Review</span>
+            <div class="item-actions">
+              <button class="action-btn-sm action-btn-outline">Edit</button>
+            </div>
+          </div>
+          <div class="item-row">
+            <div class="item-icon">🎮</div>
+            <div class="item-info">
+              <div class="item-name">Neon Valley</div>
+              <div class="item-meta">GC Asia 2025 · Booth · Submitted Mar 1, 2025</div>
+            </div>
+            <span class="status-badge status-confirmed">Confirmed</span>
+            <div class="item-actions">
+              <button class="action-btn-sm action-btn-outline">View</button>
+            </div>
+          </div>
+          <div class="item-row">
+            <div class="item-icon">🎮</div>
+            <div class="item-info">
+              <div class="item-name">Shadow Keep</div>
+              <div class="item-meta">GDC 2024 · Indie Showcase · Submitted Jan 15, 2024</div>
+            </div>
+            <span class="status-badge status-past">Completed</span>
+            <div class="item-actions">
+              <button class="action-btn-sm action-btn-outline">View</button>
+            </div>
+          </div>
+        </div>
+        <div class="section-footer">
+          <a href="ProjectSubmitWizard_v1_PC.html">Submit a new project →</a>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── LET'S MEET ── -->
+    <div id="section-schedule" style="display:none;">
+      <div class="section-card">
+        <div class="section-card-header">
+          <div class="section-card-title">🤝 Let's Meet — My Schedule</div>
+          <button class="view-btn" onclick="window.location.href='UserProfile_v1_PC.html'">Set Availability</button>
+        </div>
+        <div class="section-card-body">
+          <div class="meet-row">
+            <div class="meet-time-block">
+              <div class="meet-time-date">Apr 17</div>
+              <div class="meet-time-hour">10:00</div>
+            </div>
+            <div class="meet-info">
+              <div class="meet-person">Emma Park</div>
+              <div class="meet-role">Publisher · Devolver Digital · GDC 2026</div>
+            </div>
+            <div class="meet-actions">
+              <button class="action-btn-sm action-btn-green" onclick="this.closest('.meet-row').querySelector('.meet-actions').innerHTML='<span class=\'status-badge status-confirmed\'>Confirmed</span>'">Confirm</button>
+              <button class="action-btn-sm action-btn-danger" onclick="this.closest('.meet-row').querySelector('.meet-actions').innerHTML='<span class=\'status-badge status-rejected\'>Declined</span>'">Decline</button>
+            </div>
+          </div>
+          <div class="meet-row">
+            <div class="meet-time-block">
+              <div class="meet-time-date">Apr 17</div>
+              <div class="meet-time-hour">14:30</div>
+            </div>
+            <div class="meet-info">
+              <div class="meet-person">Jake Liu</div>
+              <div class="meet-role">Producer · NetEase · GDC 2026</div>
+            </div>
+            <div class="meet-actions">
+              <button class="action-btn-sm action-btn-green" onclick="this.closest('.meet-row').querySelector('.meet-actions').innerHTML='<span class=\'status-badge status-confirmed\'>Confirmed</span>'">Confirm</button>
+              <button class="action-btn-sm action-btn-danger" onclick="this.closest('.meet-row').querySelector('.meet-actions').innerHTML='<span class=\'status-badge status-rejected\'>Declined</span>'">Decline</button>
+            </div>
+          </div>
+          <div class="meet-row">
+            <div class="meet-time-block">
+              <div class="meet-time-date">Apr 18</div>
+              <div class="meet-time-hour">14:00</div>
+            </div>
+            <div class="meet-info">
+              <div class="meet-person">Tom Reeves</div>
+              <div class="meet-role">Investor · Bitkraft Ventures · GDC 2026</div>
+            </div>
+            <div class="meet-actions">
+              <span class="status-badge status-confirmed">Confirmed</span>
+            </div>
+          </div>
+          <div class="meet-row">
+            <div class="meet-time-block">
+              <div class="meet-time-date">Jun 10</div>
+              <div class="meet-time-hour">11:00</div>
+            </div>
+            <div class="meet-info">
+              <div class="meet-person">Lisa Wang</div>
+              <div class="meet-role">Sponsor · Intel · GC Europe 2026</div>
+            </div>
+            <div class="meet-actions">
+              <span class="status-badge status-confirmed">Confirmed</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </main>
+</div><!-- /layout -->
+
+<script>
+function initDashboard() {
+  const user = JSON.parse(localStorage.getItem('gc_user') || '{}');
+  if (user && user.name) {
+    document.getElementById('user-btn-name').textContent = (user.name || 'Ray') + ' ▾';
+    document.getElementById('welcome-name').textContent = user.name;
+    document.getElementById('sidebar-name').textContent = user.name;
+    document.getElementById('sidebar-avatar').textContent = user.name.charAt(0).toUpperCase();
+  }
+
+  // Load registered events from localStorage
+  const registrations = JSON.parse(localStorage.getItem('gc_registrations') || '[]');
+  if (registrations.length > 0) {
+    document.getElementById('stat-events').textContent = registrations.length;
+    document.getElementById('badge-events').textContent = registrations.length;
+    // Populate overview events
+    const now = new Date();
+    const overviewEl = document.getElementById('overview-events');
+    const html = registrations.slice(0, 3).map(r => {
+      const end = r.eventEnd ? new Date(r.eventEnd+'T00:00:00') : null;
+      const start = r.eventStart ? new Date(r.eventStart+'T00:00:00') : null;
+      const isPast = end && end < now;
+      const s = start ? start.toLocaleDateString('en-US',{month:'short',day:'numeric'}) : '';
+      const e = end ? end.toLocaleDateString('en-US',{month:'short',day:'numeric'}) : '';
+      const dateStr = s && e && s!==e ? s+' – '+e : s;
+      const shortName = (r.eventTitle||'').split(' ').slice(0,2).map(w=>w.substring(0,3).toUpperCase()).join('<br>');
+      const statusClass = isPast ? 'status-past' : 'status-registered';
+      const statusText = isPast ? 'Attended' : 'Registered';
+      return `<div class="event-row">
+        <div class="event-logo">${shortName}</div>
+        <div class="event-info">
+          <div class="event-name">${r.eventTitle||'Event'}</div>
+          <div class="event-meta">${r.eventCity ? '📍 '+r.eventCity+' · ' : ''}${dateStr}</div>
+        </div>
+        <span class="status-badge ${statusClass}">${statusText}</span>
+        <button class="view-btn" onclick="window.location.href='EventPublicPage_v4_PC.html'">View</button>
+      </div>`;
+    }).join('');
+    overviewEl.innerHTML = html || '<div class="empty-state"><div class="empty-state-icon">🎟️</div><div class="empty-state-text">No registered events yet.</div><button class="empty-state-btn" onclick="window.location.href=\'EventHub_v2_PC.html\'">Browse Events</button></div>';
+  } else {
+    document.getElementById('overview-events').innerHTML = '<div class="empty-state"><div class="empty-state-icon">🎟️</div><div class="empty-state-text">No registered events yet.</div><button class="empty-state-btn" onclick="window.location.href=\'EventHub_v2_PC.html\'">Browse Events</button></div>';
+  }
+}
+
+function showSection(id) {
+  const sections = ['overview','events','booth','sponsorships','projects','schedule'];
+  sections.forEach(s => {
+    const el = document.getElementById('section-' + s);
+    if (el) el.style.display = (s === id) ? '' : 'none';
+  });
+  // Update sidebar active
+  document.querySelectorAll('.sidebar-link').forEach(l => l.classList.remove('active'));
+  const map = {overview:0,events:1,booth:2,sponsorships:3,projects:4,schedule:5};
+  const links = document.querySelectorAll('.sidebar-link');
+  if (map[id] !== undefined && links[map[id]]) links[map[id]].classList.add('active');
+}
+
+function switchEventTab(tab, btn) {
+  ['registered','saved','past'].forEach(t => {
+    const el = document.getElementById('events-' + t);
+    if (el) el.style.display = t === tab ? '' : 'none';
+  });
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+}
+
+function toggleUserMenu() {
+  document.getElementById('user-menu').classList.toggle('open');
+}
+document.addEventListener('click', function(e) {
+  if (!e.target.closest('#user-dropdown-wrap')) {
+    document.getElementById('user-menu').classList.remove('open');
+  }
+});
+
+function signOut() {
+  localStorage.removeItem('gc_user');
+  window.location.href = 'EventHub_v2_PC.html';
+}
+
+document.addEventListener('DOMContentLoaded', initDashboard);
+</script>
+
+</body>
+</html>

@@ -1,0 +1,667 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Settings — Game Connection</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+:root {
+  --green: #16a34a;
+  --green-dim: rgba(22,163,74,.1);
+  --green-border: rgba(22,163,74,.25);
+  --green-dark: #15803d;
+  --bg: #f3f2ef;
+  --white: #fff;
+  --text: #111111;
+  --muted: #444444;
+  --faint: #888888;
+  --border: #e0dfdc;
+  --radius: 10px;
+  --nav-h: 52px;
+  --sidebar-w: 200px;
+  --shadow: 0 1px 3px rgba(0,0,0,0.07);
+}
+body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--text); line-height: 1.5; }
+
+/* ── TOPNAV ── */
+.topnav {
+  position: sticky; top: 0; z-index: 200;
+  height: var(--nav-h); background: var(--white);
+  border-bottom: 1px solid var(--border);
+  display: flex; align-items: center; justify-content: center;
+}
+.topnav-inner {
+  width: 100%; max-width: 1280px;
+  display: flex; align-items: center; gap: 12px;
+  padding: 0 24px; height: 100%;
+}
+.nav-logo { flex-shrink: 0; }
+.nav-logo img { height: 30px; width: auto; display: block; }
+.nav-gap { flex: 1; }
+.nav-tabs { display: flex; align-items: stretch; height: var(--nav-h); gap: 0; }
+.nav-tab {
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  gap: 2px; padding: 0 14px;
+  cursor: pointer; font-size: 11px; font-weight: 600; color: var(--faint);
+  border-bottom: 2px solid transparent; white-space: nowrap; transition: all .15s;
+  text-decoration: none;
+}
+.nav-tab:hover { color: var(--muted); border-bottom-color: rgba(0,0,0,0.1); }
+.nav-sep { width: 1px; height: 24px; background: var(--border); margin: 0 6px; }
+
+.user-dropdown-wrap { position: relative; display: flex; align-items: center; }
+.user-btn {
+  display: flex; align-items: center; gap: 6px;
+  padding: 6px 12px; border-radius: 6px;
+  background: none; border: 1px solid var(--border);
+  font-family: inherit; font-size: 13px; font-weight: 600;
+  color: var(--text); cursor: pointer; transition: all .15s;
+}
+.user-btn:hover { background: var(--bg); border-color: #ccc; }
+.user-menu {
+  position: absolute; top: calc(100% + 8px); right: 0;
+  width: 200px; background: var(--white);
+  border: 1px solid var(--border); border-radius: 10px;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.12);
+  z-index: 9999; overflow: hidden; display: none;
+}
+.user-menu.open { display: block; }
+.user-menu-item {
+  display: flex; align-items: center; gap: 10px;
+  padding: 11px 16px; font-size: 13px; font-weight: 500;
+  color: var(--text); cursor: pointer; transition: background .12s;
+  text-decoration: none;
+}
+.user-menu-item:hover { background: var(--green-dim); color: var(--green-dark); }
+.user-menu-item.active { color: var(--green); font-weight: 700; }
+.user-menu-divider { height: 1px; background: var(--border); margin: 4px 0; }
+.user-menu-item.danger { color: #dc2626; }
+.user-menu-item.danger:hover { background: #fef2f2; }
+
+/* ── LAYOUT ── */
+.layout { display: flex; min-height: calc(100vh - var(--nav-h)); max-width: 1280px; margin: 0 auto; padding: 32px 24px; gap: 24px; }
+
+/* ── LEFT NAV ── */
+.settings-nav {
+  width: var(--sidebar-w); flex-shrink: 0;
+}
+.settings-nav-title {
+  font-size: 18px; font-weight: 800; margin-bottom: 20px; color: var(--text);
+}
+.settings-nav-item {
+  display: flex; align-items: center; gap: 10px;
+  padding: 9px 12px; border-radius: 7px;
+  font-size: 13px; font-weight: 500; color: var(--muted);
+  cursor: pointer; transition: all .12s; margin-bottom: 2px;
+  border: none; background: none; font-family: inherit; width: 100%; text-align: left;
+}
+.settings-nav-item:hover { background: var(--white); color: var(--text); }
+.settings-nav-item.active { background: var(--green-dim); color: var(--green-dark); font-weight: 700; }
+.settings-nav-item .icon { font-size: 16px; flex-shrink: 0; }
+
+/* ── CONTENT ── */
+.settings-content { flex: 1; min-width: 0; }
+
+/* Section */
+.settings-section {
+  background: var(--white); border-radius: var(--radius);
+  border: 1px solid var(--border); box-shadow: var(--shadow);
+  margin-bottom: 20px; overflow: hidden;
+}
+.settings-section-header {
+  padding: 18px 24px; border-bottom: 1px solid var(--border);
+}
+.settings-section-title { font-size: 15px; font-weight: 800; }
+.settings-section-desc { font-size: 13px; color: var(--faint); margin-top: 3px; }
+
+/* Row */
+.settings-row {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 16px 24px; border-bottom: 1px solid #f5f5f5; gap: 16px;
+}
+.settings-row:last-child { border-bottom: none; }
+.settings-row-label { font-size: 14px; font-weight: 600; }
+.settings-row-sub { font-size: 12px; color: var(--faint); margin-top: 2px; }
+.settings-row-value { font-size: 13px; color: var(--muted); }
+.settings-row-right { display: flex; align-items: center; gap: 12px; flex-shrink: 0; }
+
+/* Buttons */
+.btn-edit {
+  padding: 6px 14px; border-radius: 6px;
+  background: var(--white); color: var(--text);
+  border: 1px solid var(--border); font-size: 12px; font-weight: 600;
+  cursor: pointer; font-family: inherit; transition: all .15s;
+}
+.btn-edit:hover { border-color: var(--green-border); color: var(--green); }
+.btn-disconnect {
+  padding: 6px 14px; border-radius: 6px;
+  background: #fef2f2; color: #dc2626;
+  border: 1px solid #fecaca; font-size: 12px; font-weight: 600;
+  cursor: pointer; font-family: inherit; transition: all .15s;
+}
+.btn-disconnect:hover { background: #fee2e2; }
+.btn-connect {
+  padding: 6px 14px; border-radius: 6px;
+  background: var(--green); color: #fff;
+  border: none; font-size: 12px; font-weight: 600;
+  cursor: pointer; font-family: inherit; transition: all .15s;
+}
+.btn-connect:hover { background: var(--green-dark); }
+.btn-accept {
+  padding: 6px 14px; border-radius: 6px;
+  background: var(--green); color: #fff;
+  border: none; font-size: 12px; font-weight: 600;
+  cursor: pointer; font-family: inherit;
+}
+.btn-ignore {
+  padding: 6px 14px; border-radius: 6px;
+  background: var(--white); color: var(--muted);
+  border: 1px solid var(--border); font-size: 12px; font-weight: 600;
+  cursor: pointer; font-family: inherit;
+}
+
+/* Toggle switch */
+.toggle-wrap { display: flex; align-items: center; gap: 10px; }
+.toggle-label { font-size: 13px; color: var(--muted); min-width: 32px; }
+.toggle {
+  position: relative; width: 42px; height: 24px; display: inline-block;
+}
+.toggle input { opacity: 0; width: 0; height: 0; }
+.toggle-slider {
+  position: absolute; cursor: pointer;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: #ccc; border-radius: 24px; transition: .25s;
+}
+.toggle-slider::before {
+  content: ''; position: absolute;
+  width: 18px; height: 18px; left: 3px; top: 3px;
+  background: #fff; border-radius: 50%; transition: .25s;
+}
+.toggle input:checked + .toggle-slider { background: var(--green); }
+.toggle input:checked + .toggle-slider::before { transform: translateX(18px); }
+
+/* Select */
+.settings-select {
+  padding: 7px 12px; border-radius: 6px;
+  border: 1px solid var(--border); background: var(--white);
+  font-size: 13px; font-weight: 500; color: var(--text);
+  font-family: inherit; cursor: pointer; outline: none;
+  transition: border-color .15s;
+}
+.settings-select:focus { border-color: var(--green); }
+
+/* Invitation item */
+.invitation-item {
+  display: flex; align-items: center; gap: 14px;
+  padding: 14px 24px; border-bottom: 1px solid #f5f5f5;
+}
+.invitation-item:last-child { border-bottom: none; }
+.inv-avatar {
+  width: 40px; height: 40px; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 14px; font-weight: 700; color: #fff; flex-shrink: 0;
+}
+.inv-info { flex: 1; min-width: 0; }
+.inv-name { font-size: 13px; font-weight: 700; }
+.inv-desc { font-size: 12px; color: var(--faint); margin-top: 2px; }
+.inv-actions { display: flex; gap: 8px; flex-shrink: 0; }
+
+/* Danger zone */
+.danger-zone {
+  background: #fef2f2; border: 1px solid #fecaca;
+  border-radius: var(--radius); padding: 20px 24px;
+  display: flex; align-items: center; justify-content: space-between; gap: 16px;
+}
+.danger-zone-text .danger-title { font-size: 14px; font-weight: 700; color: #dc2626; }
+.danger-zone-text .danger-desc { font-size: 13px; color: #7f1d1d; margin-top: 3px; }
+.btn-danger {
+  padding: 8px 20px; border-radius: 6px;
+  background: #dc2626; color: #fff;
+  border: none; font-size: 13px; font-weight: 700;
+  cursor: pointer; font-family: inherit; flex-shrink: 0;
+  transition: background .15s;
+}
+.btn-danger:hover { background: #b91c1c; }
+
+/* Connected badge */
+.connected-badge {
+  display: inline-flex; align-items: center; gap: 5px;
+  padding: 4px 10px; border-radius: 20px;
+  background: #f0fdf4; color: var(--green-dark);
+  border: 1px solid var(--green-border);
+  font-size: 12px; font-weight: 600;
+}
+
+/* ── RESPONSIVE ── */
+@media (max-width: 768px) {
+  .layout { flex-direction: column; padding: 16px; gap: 16px; }
+  .settings-nav { width: 100%; }
+  .nav-tabs { display: none; }
+}
+</style>
+</head>
+<body>
+
+<!-- SPLASH -->
+<div id="gc-splash" style="position:fixed;inset:0;z-index:99999;background:#f3f2ef;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:28px;transition:opacity .35s ease;">
+  <img src="assets/gc-logo.png" alt="Game Connection" style="height:48px;width:auto;display:block">
+  <div style="width:200px;height:3px;background:rgba(0,0,0,0.1);border-radius:2px;overflow:hidden">
+    <div id="gc-splash-bar" style="height:100%;width:0%;background:#16a34a;border-radius:2px;transition:width .08s linear;"></div>
+  </div>
+</div>
+<script>
+(function(){
+  var splash=document.getElementById('gc-splash'),bar=document.getElementById('gc-splash-bar'),pct=0;
+  var t=setInterval(function(){pct+=(pct<70?3:.8);if(pct>=92)clearInterval(t);bar.style.width=Math.min(pct,92)+'%';},40);
+  function done(){clearInterval(t);bar.style.transition='width .25s ease';bar.style.width='100%';setTimeout(function(){splash.style.opacity='0';setTimeout(function(){splash.style.display='none';},360);},260);}
+  if(document.readyState==='complete')done();else{window.addEventListener('load',done);setTimeout(done,4000);}
+})();
+</script>
+
+<!-- TOPNAV -->
+<nav class="topnav">
+  <div class="topnav-inner">
+    <a class="nav-logo" href="EventHub_v2_PC.html">
+      <img src="assets/gc-logo.png" alt="Game Connection">
+    </a>
+    <div class="nav-gap"></div>
+    <div class="nav-tabs">
+      <a class="nav-tab" href="EventHub_v2_PC.html">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+        Calendar
+      </a>
+      <a class="nav-tab" href="EventHub_v2_PC.html">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 22h16a2 2 0 0 0 2-2V4a2 2 0 0 0-2-2H8a2 2 0 0 0-2 2v16a2 2 0 0 1-2 2Zm0 0a2 2 0 0 1-2-2v-9c0-1.1.9-2 2-2h2"/><path d="M18 14h-8M15 18h-5M10 6h8v4h-8V6Z"/></svg>
+        News
+      </a>
+      <a class="nav-tab" href="EventHub_v2_PC.html">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+        Projects
+      </a>
+    </div>
+    <div class="nav-sep"></div>
+    <div class="user-dropdown-wrap" id="user-dropdown-wrap">
+      <button class="user-btn" id="user-btn" onclick="toggleUserMenu()">
+        <span id="user-btn-name">Ray ▾</span>
+      </button>
+      <div class="user-menu" id="user-menu">
+        <a class="user-menu-item" href="UserProfile_v1_PC.html">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg>
+          My Game Connection
+        </a>
+        <a class="user-menu-item" href="UserDashboard_v1_PC.html">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+          Dashboard
+        </a>
+        <a class="user-menu-item active" href="UserSettings_v1_PC.html">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+          Settings
+        </a>
+        <div class="user-menu-divider"></div>
+        <div class="user-menu-item danger" onclick="signOut()">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+          Sign Out
+        </div>
+      </div>
+    </div>
+  </div>
+</nav>
+
+<!-- LAYOUT -->
+<div class="layout">
+
+  <!-- LEFT NAV -->
+  <nav class="settings-nav">
+    <div class="settings-nav-title">Settings</div>
+    <button class="settings-nav-item active" onclick="showSettingsSection('account', this)">
+      <span class="icon">👤</span> Account
+    </button>
+    <button class="settings-nav-item" onclick="showSettingsSection('notifications', this)">
+      <span class="icon">🔔</span> Notifications
+    </button>
+    <button class="settings-nav-item" onclick="showSettingsSection('invitations', this)">
+      <span class="icon">📩</span> Invitations
+      <span style="margin-left:auto;min-width:18px;height:18px;border-radius:9px;background:#f59e0b;color:#fff;font-size:10px;font-weight:700;display:inline-flex;align-items:center;justify-content:center;padding:0 5px;">2</span>
+    </button>
+    <button class="settings-nav-item" onclick="showSettingsSection('privacy', this)">
+      <span class="icon">🔒</span> Privacy
+    </button>
+    <button class="settings-nav-item" onclick="showSettingsSection('danger', this)">
+      <span class="icon">⚠️</span> Danger Zone
+    </button>
+  </nav>
+
+  <!-- CONTENT -->
+  <div class="settings-content">
+
+    <!-- ACCOUNT -->
+    <div id="settings-account">
+      <div class="settings-section">
+        <div class="settings-section-header">
+          <div class="settings-section-title">Account</div>
+          <div class="settings-section-desc">Manage your login credentials and connected accounts.</div>
+        </div>
+        <div class="settings-row">
+          <div>
+            <div class="settings-row-label">Email</div>
+            <div class="settings-row-sub" id="account-email">ray@example.com</div>
+          </div>
+          <div class="settings-row-right">
+            <button class="btn-edit" onclick="alert('Change email coming soon')">Change</button>
+          </div>
+        </div>
+        <div class="settings-row">
+          <div>
+            <div class="settings-row-label">Password</div>
+            <div class="settings-row-sub">Last changed 3 months ago</div>
+          </div>
+          <div class="settings-row-right">
+            <button class="btn-edit" onclick="alert('Change password coming soon')">Change</button>
+          </div>
+        </div>
+        <div class="settings-row">
+          <div>
+            <div class="settings-row-label">Google Account</div>
+            <div class="settings-row-sub">Sign in with Google</div>
+          </div>
+          <div class="settings-row-right">
+            <span class="connected-badge">✓ Connected</span>
+            <button class="btn-disconnect" onclick="if(confirm('Disconnect Google account?'))alert('Disconnected.')">Disconnect</button>
+          </div>
+        </div>
+        <div class="settings-row">
+          <div>
+            <div class="settings-row-label">Display Name</div>
+            <div class="settings-row-sub" id="account-name">Ray Zhang</div>
+          </div>
+          <div class="settings-row-right">
+            <button class="btn-edit" onclick="editDisplayName()">Edit</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- NOTIFICATIONS -->
+    <div id="settings-notifications" style="display:none;">
+      <div class="settings-section">
+        <div class="settings-section-header">
+          <div class="settings-section-title">Notifications</div>
+          <div class="settings-section-desc">Control which notifications you receive.</div>
+        </div>
+        <div class="settings-row">
+          <div>
+            <div class="settings-row-label">Meeting Invitations</div>
+            <div class="settings-row-sub">When someone requests a meeting with you</div>
+          </div>
+          <div class="toggle-wrap">
+            <label class="toggle">
+              <input type="checkbox" checked onchange="updateToggleLabel(this)">
+              <span class="toggle-slider"></span>
+            </label>
+            <span class="toggle-label">On</span>
+          </div>
+        </div>
+        <div class="settings-row">
+          <div>
+            <div class="settings-row-label">Event Registration Confirmation</div>
+            <div class="settings-row-sub">When your event registration is confirmed</div>
+          </div>
+          <div class="toggle-wrap">
+            <label class="toggle">
+              <input type="checkbox" checked onchange="updateToggleLabel(this)">
+              <span class="toggle-slider"></span>
+            </label>
+            <span class="toggle-label">On</span>
+          </div>
+        </div>
+        <div class="settings-row">
+          <div>
+            <div class="settings-row-label">Connection Requests</div>
+            <div class="settings-row-sub">When someone wants to connect with you</div>
+          </div>
+          <div class="toggle-wrap">
+            <label class="toggle">
+              <input type="checkbox" checked onchange="updateToggleLabel(this)">
+              <span class="toggle-slider"></span>
+            </label>
+            <span class="toggle-label">On</span>
+          </div>
+        </div>
+        <div class="settings-row">
+          <div>
+            <div class="settings-row-label">System Announcements</div>
+            <div class="settings-row-sub">Platform updates and important notices</div>
+          </div>
+          <div class="toggle-wrap">
+            <label class="toggle">
+              <input type="checkbox" checked onchange="updateToggleLabel(this)">
+              <span class="toggle-slider"></span>
+            </label>
+            <span class="toggle-label">On</span>
+          </div>
+        </div>
+        <div class="settings-row">
+          <div>
+            <div class="settings-row-label">Email Notifications</div>
+            <div class="settings-row-sub">Receive notifications via email</div>
+          </div>
+          <div class="toggle-wrap">
+            <label class="toggle">
+              <input type="checkbox" onchange="updateToggleLabel(this)">
+              <span class="toggle-slider"></span>
+            </label>
+            <span class="toggle-label">Off</span>
+          </div>
+        </div>
+        <div class="settings-row">
+          <div>
+            <div class="settings-row-label">In-App Notifications</div>
+            <div class="settings-row-sub">Show notifications within the platform</div>
+          </div>
+          <div class="toggle-wrap">
+            <label class="toggle">
+              <input type="checkbox" checked onchange="updateToggleLabel(this)">
+              <span class="toggle-slider"></span>
+            </label>
+            <span class="toggle-label">On</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- INVITATIONS -->
+    <div id="settings-invitations" style="display:none;">
+      <div class="settings-section">
+        <div class="settings-section-header">
+          <div class="settings-section-title">Invitations</div>
+          <div class="settings-section-desc">Pending connection requests and speaking invitations.</div>
+        </div>
+        <div class="invitation-item">
+          <div class="inv-avatar" style="background:#1d4ed8;">JL</div>
+          <div class="inv-info">
+            <div class="inv-name">Jake Liu wants to connect</div>
+            <div class="inv-desc">Producer · NetEase · 12 mutual connections</div>
+          </div>
+          <div class="inv-actions">
+            <button class="btn-accept" onclick="acceptInvitation(this)">Accept</button>
+            <button class="btn-ignore" onclick="ignoreInvitation(this)">Ignore</button>
+          </div>
+        </div>
+        <div class="invitation-item">
+          <div class="inv-avatar" style="background:#16a34a;">GC</div>
+          <div class="inv-info">
+            <div class="inv-name">GDC 2026 Organizer invited you to speak</div>
+            <div class="inv-desc">Panel: "Indie Publishing in 2026" · Apr 18, 2026 · 14:00</div>
+          </div>
+          <div class="inv-actions">
+            <button class="btn-accept" onclick="acceptInvitation(this)">Accept</button>
+            <button class="btn-ignore" onclick="ignoreInvitation(this)">Decline</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- PRIVACY -->
+    <div id="settings-privacy" style="display:none;">
+      <div class="settings-section">
+        <div class="settings-section-header">
+          <div class="settings-section-title">Privacy</div>
+          <div class="settings-section-desc">Control who can see your information and interact with you.</div>
+        </div>
+        <div class="settings-row">
+          <div>
+            <div class="settings-row-label">Who can see my Connections</div>
+            <div class="settings-row-sub">Your network of industry contacts</div>
+          </div>
+          <select class="settings-select">
+            <option selected>Everyone</option>
+            <option>Connections only</option>
+            <option>Only me</option>
+          </select>
+        </div>
+        <div class="settings-row">
+          <div>
+            <div class="settings-row-label">Who can request a meeting</div>
+            <div class="settings-row-sub">Let's Meet availability requests</div>
+          </div>
+          <select class="settings-select">
+            <option selected>Everyone</option>
+            <option>Connections only</option>
+          </select>
+        </div>
+        <div class="settings-row">
+          <div>
+            <div class="settings-row-label">Who can see my Projects</div>
+            <div class="settings-row-sub">Your game portfolio visibility</div>
+          </div>
+          <select class="settings-select">
+            <option selected>Everyone</option>
+            <option>Connections only</option>
+            <option>Only me</option>
+          </select>
+        </div>
+        <div class="settings-row">
+          <div>
+            <div class="settings-row-label">Who can see my Event History</div>
+            <div class="settings-row-sub">Events you've attended</div>
+          </div>
+          <select class="settings-select">
+            <option selected>Everyone</option>
+            <option>Connections only</option>
+            <option>Only me</option>
+          </select>
+        </div>
+        <div class="settings-row">
+          <div>
+            <div class="settings-row-label">Profile Visibility</div>
+            <div class="settings-row-sub">Whether your profile appears in search results</div>
+          </div>
+          <select class="settings-select">
+            <option selected>Public</option>
+            <option>Connections only</option>
+            <option>Hidden</option>
+          </select>
+        </div>
+      </div>
+    </div>
+
+    <!-- DANGER ZONE -->
+    <div id="settings-danger" style="display:none;">
+      <div class="settings-section">
+        <div class="settings-section-header">
+          <div class="settings-section-title">Danger Zone</div>
+          <div class="settings-section-desc">These actions are irreversible. Please proceed with caution.</div>
+        </div>
+        <div style="padding:20px 24px;display:flex;flex-direction:column;gap:16px;">
+          <div class="danger-zone">
+            <div class="danger-zone-text">
+              <div class="danger-title">Delete All Data</div>
+              <div class="danger-desc">Remove all your projects, connections, and event history. Your account will remain active.</div>
+            </div>
+            <button class="btn-danger" onclick="if(confirm('Delete all data? This cannot be undone.'))alert('Data deleted.')">Delete Data</button>
+          </div>
+          <div class="danger-zone">
+            <div class="danger-zone-text">
+              <div class="danger-title">Delete Account</div>
+              <div class="danger-desc">Permanently delete your account and all associated data. This action cannot be undone.</div>
+            </div>
+            <button class="btn-danger" onclick="if(confirm('Delete your account permanently? This cannot be undone.'))alert('Account deletion requested. You will receive a confirmation email.')">Delete Account</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- /settings-content -->
+</div><!-- /layout -->
+
+<script>
+function initSettings() {
+  const user = JSON.parse(localStorage.getItem('gc_user') || '{}');
+  if (user && user.name) {
+    document.getElementById('user-btn-name').textContent = (user.name || 'Ray') + ' ▾';
+    document.getElementById('account-name').textContent = user.name;
+    if (user.email) document.getElementById('account-email').textContent = user.email;
+  }
+}
+
+function showSettingsSection(id, btn) {
+  const sections = ['account','notifications','invitations','privacy','danger'];
+  sections.forEach(s => {
+    const el = document.getElementById('settings-' + s);
+    if (el) el.style.display = s === id ? '' : 'none';
+  });
+  document.querySelectorAll('.settings-nav-item').forEach(b => b.classList.remove('active'));
+  if (btn) btn.classList.add('active');
+}
+
+function updateToggleLabel(checkbox) {
+  const wrap = checkbox.closest('.toggle-wrap');
+  const label = wrap ? wrap.querySelector('.toggle-label') : null;
+  if (label) label.textContent = checkbox.checked ? 'On' : 'Off';
+}
+
+function acceptInvitation(btn) {
+  const item = btn.closest('.invitation-item');
+  item.querySelector('.inv-actions').innerHTML = '<span style="font-size:13px;font-weight:600;color:var(--green);">✓ Accepted</span>';
+}
+
+function ignoreInvitation(btn) {
+  const item = btn.closest('.invitation-item');
+  item.style.opacity = '0.4';
+  item.querySelector('.inv-actions').innerHTML = '<span style="font-size:13px;color:var(--faint);">Ignored</span>';
+}
+
+function editDisplayName() {
+  const current = document.getElementById('account-name').textContent;
+  const newName = prompt('Enter new display name:', current);
+  if (newName && newName.trim()) {
+    document.getElementById('account-name').textContent = newName.trim();
+    document.getElementById('user-btn-name').textContent = newName.trim() + ' ▾';
+    const user = JSON.parse(localStorage.getItem('gc_user') || '{}');
+    user.name = newName.trim();
+    localStorage.setItem('gc_user', JSON.stringify(user));
+    alert('Display name updated!');
+  }
+}
+
+function toggleUserMenu() {
+  document.getElementById('user-menu').classList.toggle('open');
+}
+document.addEventListener('click', function(e) {
+  if (!e.target.closest('#user-dropdown-wrap')) {
+    document.getElementById('user-menu').classList.remove('open');
+  }
+});
+
+function signOut() {
+  localStorage.removeItem('gc_user');
+  window.location.href = 'EventHub_v2_PC.html';
+}
+
+document.addEventListener('DOMContentLoaded', initSettings);
+</script>
+
+</body>
+</html>
