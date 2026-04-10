@@ -3978,17 +3978,29 @@ function renderEventsList() {
     const meta = [ev.startDate, ev.city].filter(Boolean).join(' · ');
     const thumb = ev.cover
       ? `<img src="${ev.cover}" style="width:44px;height:44px;border-radius:8px;object-fit:cover;flex-shrink:0">`
-      : `<div class="event-thumb">${ev.name ? ev.name.charAt(0).toUpperCase() : '🎪'}</div>`;
+      : `<div class="event-thumb">${ev.name ? ev.name.charAt(0).toUpperCase() : '🎤'}</div>`;
+    const attCount = ev.attendees || 0;
+    const projCount = ev.projects || 0;
+    // Mini sparkline SVG (random-ish based on idx)
+    const pts = [20,15,18,10,8,5,3].map((v,i) => `${i*20},${v}`).join(' ');
+    const miniChart = `<svg viewBox="0 0 120 25" style="width:80px;height:18px" xmlns="http://www.w3.org/2000/svg"><polyline points="${pts}" fill="none" stroke="#2563eb" stroke-width="1.5" stroke-linejoin="round"/></svg>`;
     return `<div class="event-row" onclick="openEvent(${idx})">
       ${thumb}
       <div class="event-info">
         <div class="event-name">${ev.name || 'Untitled Event'}</div>
         <div class="event-meta">${meta || 'No date set'}</div>
+        <div style="display:flex;gap:10px;margin-top:4px">
+          <span style="font-size:11px;color:#6b7280">👥 ${attCount} attendees</span>
+          <span style="font-size:11px;color:#6b7280">🎮 ${projCount} projects</span>
+        </div>
       </div>
+      <div style="display:flex;align-items:center;gap:8px;margin-right:8px">${miniChart}<span style="font-size:11px;color:#6b7280">Revenue</span></div>
       <div class="event-badges">${statusBadge}</div>
       <div class="event-actions" onclick="event.stopPropagation()">
         <button class="action-btn primary" onclick="openEvent(${idx})">Edit</button>
-        <button class="action-btn" onclick="deleteEvent(${idx})">Delete</button>
+        <button class="action-btn" onclick="previewEventFromList(${idx})">👁</button>
+        <button class="action-btn" onclick="duplicateEvent(${idx})">📋</button>
+        <button class="action-btn" onclick="deleteEvent(${idx})">🗑</button>
       </div>
     </div>`;
   }).join('');
@@ -4030,7 +4042,23 @@ function deleteEvent(idx) {
   showToast('Event deleted');
 }
 
-// ── Open Event Editor ─────────────────────────────────────────────────────────
+// ── // ── Duplicate Event ────────────────────────────────────────────────
+function duplicateEvent(idx) {
+  const events = loadEvents();
+  const copy = { ...events[idx], id: 'ev-' + Date.now(), name: (events[idx].name || 'Untitled') + ' (Copy)', status: 'draft' };
+  events.splice(idx + 1, 0, copy);
+  saveEvents(events);
+  renderEventsList();
+  showToast('Event duplicated');
+}
+function previewEventFromList(idx) {
+  const events = loadEvents();
+  currentEvent = { ...events[idx], _idx: idx };
+  populateEditor(currentEvent);
+  showPreview();
+  showToast('Preview mode');
+}
+// ── Open Event Editor ────────────────────────────────────────────────
 function openEvent(idx) {
   const events = loadEvents();
   currentEvent = { ...events[idx], _idx: idx };
@@ -4493,6 +4521,37 @@ document.addEventListener('DOMContentLoaded', () => {
   document.querySelectorAll('.editor-card input, .editor-card select, .editor-card textarea').forEach(el => {
     el.addEventListener('change', markDirty);
     el.addEventListener('input', markDirty);
+  });
+
+  // Global keyboard shortcuts
+  document.addEventListener('keydown', (e) => {
+    const tag = document.activeElement.tagName.toLowerCase();
+    const isInput = ['input','textarea','select'].includes(tag);
+    // Esc: go back to My Events
+    if (e.key === 'Escape' && !isInput) {
+      const myEvents = document.getElementById('viewMyEvents');
+      if (myEvents && myEvents.style.display === 'none') {
+        showMyEvents();
+        showToast('Returned to My Events (Esc)');
+      }
+    }
+    // / : focus search if available
+    if (e.key === '/' && !isInput) {
+      e.preventDefault();
+      const search = document.querySelector('#proj-search, #att-search, input[placeholder*="Search"]');
+      if (search && search.offsetParent) { search.focus(); showToast('Search focused'); }
+    }
+    // P: preview
+    if ((e.key === 'p' || e.key === 'P') && !isInput && e.altKey) {
+      e.preventDefault();
+      if (currentEvent) { showPreview(); showToast('Preview (Alt+P)'); }
+    }
+    // N: new event
+    if ((e.key === 'n' || e.key === 'N') && !isInput && e.altKey) {
+      e.preventDefault();
+      createNewEvent();
+      showToast('New event (Alt+N)');
+    }
   });
 });
 
