@@ -334,6 +334,49 @@ html,body{min-height:100vh;background:var(--bg);font-family:'DM Sans',sans-serif
         <div id="att-footer" style="margin-top:12px;font-size:13px;color:#6b7280"></div>
       </div>
 
+      <!-- ══ VIEW: Projects ══ -->
+      <div id="viewProjects" style="display:none">
+        <div class="editor-topbar">
+          <div class="editor-topbar-left">
+            <button class="back-link" onclick="showEventEditor()">← Event Info</button>
+            <span style="font-size:14px;font-weight:700;color:var(--text1)" id="projEventTitle">Projects</span>
+          </div>
+          <div class="editor-topbar-right">
+            <button class="btn-secondary" onclick="exportProjectsCSV()">Export CSV</button>
+          </div>
+        </div>
+
+        <div style="margin-bottom:16px;display:flex;align-items:center;gap:12px">
+          <h2 style="font-size:22px;font-weight:700;color:var(--text1)">Projects</h2>
+          <span id="proj-count-badge" style="font-size:14px;color:#6b7280;font-weight:500"></span>
+        </div>
+
+        <div style="margin-bottom:16px">
+          <input id="proj-search" class="form-input" type="text" placeholder="Search by project name or company…" style="max-width:320px" oninput="filterProjects()">
+        </div>
+
+        <div class="editor-card" style="padding:0;overflow:hidden">
+          <table style="width:100%;border-collapse:collapse">
+            <thead>
+              <tr style="background:#f8f9fa;border-bottom:1px solid #e5e7eb">
+                <th style="padding:12px 16px;text-align:left;font-size:12px;font-weight:600;color:#6b7280;text-transform:uppercase;letter-spacing:.5px">Project</th>
+                <th style="padding:12px 16px;text-align:left;font-size:12px;font-weight:600;color:#6b7280;text-transform:uppercase;letter-spacing:.5px">Company</th>
+                <th style="padding:12px 16px;text-align:left;font-size:12px;font-weight:600;color:#6b7280;text-transform:uppercase;letter-spacing:.5px">Genre</th>
+                <th style="padding:12px 16px;text-align:left;font-size:12px;font-weight:600;color:#6b7280;text-transform:uppercase;letter-spacing:.5px">Status</th>
+              </tr>
+            </thead>
+            <tbody id="proj-tbody"></tbody>
+          </table>
+          <div id="proj-empty" style="display:none;padding:48px;text-align:center;color:#9ca3af">
+            <div style="font-size:32px;margin-bottom:8px">🎮</div>
+            <div style="font-weight:500">No projects submitted yet</div>
+            <div style="font-size:13px;margin-top:4px">Projects will appear here once developers submit them.</div>
+          </div>
+        </div>
+
+        <div id="proj-footer" style="margin-top:12px;font-size:13px;color:#6b7280"></div>
+      </div>
+
       <!-- ══ VIEW: Registration ══ -->
       <div id="viewRegistration" style="display:none">
         <div class="editor-topbar">
@@ -641,20 +684,20 @@ const ALL_MODULES = [
 const SIDEBAR_NAV = [
   { label:'Overview',     icon:'📊', modId:null },
   { label:'Attendees',    icon:'👥', modId:null, fn:'showAttendees' },
-  { label:'Projects',     icon:'🎮', modId:'showcase' },
+  { label:'Projects',     icon:'🎮', modId:null, fn:'showProjects' },
   { sep: true },
   { label:'Registration', icon:'🎟️', modId:null, fn:'showRegistration' },
-  { label:'Ticketing',    icon:'💳', modId:'paid-ticket' },
-  { label:'Pod',          icon:'🪑', modId:'free-pod' },
-  { label:'Booth',        icon:'🏪', modId:'free-booth' },
-  { label:'Sponsorship',  icon:'🤝', modId:'sponsorship' },
-  { label:'Panel / Session', icon:'🎙️', modId:'panel' },
-  { label:'Award',        icon:'🏆', modId:'award' },
-  { label:'Buyer Invitation', icon:'🛒', modId:'buyer-inv' },
-  { label:"Let's Meet",   icon:'📅', modId:'lets-meet' },
-  { label:'Game Showcase',icon:'🎮', modId:'showcase' },
-  { label:'Map',          icon:'🗺️', modId:'map' },
-  { label:'Live',         icon:'📡', modId:'live' },
+  { label:'Ticketing',    icon:'💳', modId:null, fn:'showModule', modKey:'Ticketing' },
+  { label:'Pod',          icon:'🪑', modId:null, fn:'showModule', modKey:'Pod' },
+  { label:'Booth',        icon:'🏪', modId:null, fn:'showModule', modKey:'Booth' },
+  { label:'Sponsorship',  icon:'🤝', modId:null, fn:'showModule', modKey:'Sponsorship' },
+  { label:'Panel / Session', icon:'🎙️', modId:null, fn:'showModule', modKey:'Panel / Session' },
+  { label:'Award',        icon:'🏆', modId:null, fn:'showModule', modKey:'Award' },
+  { label:'Buyer Invitation', icon:'🛒', modId:null, fn:'showModule', modKey:'Buyer Invitation' },
+  { label:"Let's Meet",   icon:'📅', modId:null, fn:'showModule', modKey:"Let's Meet" },
+  { label:'Game Showcase',icon:'🎮', modId:null, fn:'showModule', modKey:'Game Showcase' },
+  { label:'Map',          icon:'🗺️', modId:null, fn:'showModule', modKey:'Map' },
+  { label:'Live',         icon:'📡', modId:null, fn:'showModule', modKey:'Live' },
   { sep: true },
   { label:'Settings',     icon:'⚙️', modId:null },
 ];
@@ -1086,6 +1129,7 @@ function showAttendees() {
 function showEventEditor() {
   document.getElementById('viewAttendees').style.display = 'none';
   document.getElementById('viewRegistration').style.display = 'none';
+  document.getElementById('viewProjects').style.display = 'none';
   document.getElementById('viewEventEditor').style.display = 'block';
 }
 
@@ -1142,10 +1186,84 @@ function exportAttendeesCSV() {
 let _regAll = [];
 
 function hideAllViews() {
-  ['viewMyEvents','viewEventEditor','viewAttendees','viewRegistration'].forEach(id => {
+  ['viewMyEvents','viewEventEditor','viewAttendees','viewRegistration','viewProjects'].forEach(id => {
     const el = document.getElementById(id);
     if (el) el.style.display = 'none';
   });
+}
+
+// ── Projects ────────────────────────────────────────────────────────────────────────────────
+let _projAll = [];
+
+function showProjects() {
+  document.getElementById('viewMyEvents').style.display = 'none';
+  document.getElementById('viewEventEditor').style.display = 'none';
+  document.getElementById('viewAttendees').style.display = 'none';
+  document.getElementById('viewRegistration').style.display = 'none';
+  document.getElementById('viewProjects').style.display = 'block';
+
+  const ev = currentEvent;
+  document.getElementById('projEventTitle').textContent = ev ? ev.name || 'Projects' : 'Projects';
+
+  // Load from localStorage gc_projects filtered by event
+  let projects = [];
+  try { projects = JSON.parse(localStorage.getItem('gc_projects') || '[]'); } catch(e) {}
+  if (ev) projects = projects.filter(p => p.eventId === ev.id);
+
+  // Fallback mock data
+  if (!projects.length) {
+    projects = [
+      { name:'Stellar Drift', company:'Indie Forge', genre:'Action RPG', status:'Approved' },
+      { name:'Neon Abyss 2', company:'Veewo Games', genre:'Roguelite', status:'Pending' },
+      { name:'Echo Protocol', company:'Tarsier Studios', genre:'Puzzle', status:'Approved' },
+      { name:'Void Hunters', company:'Funcom', genre:'Survival', status:'Rejected' },
+      { name:'Pixel Odyssey', company:'Devolver Digital', genre:'Platformer', status:'Pending' },
+    ];
+  }
+  _projAll = projects;
+  renderProjectsTable(_projAll);
+}
+
+function filterProjects() {
+  const q = document.getElementById('proj-search').value.toLowerCase();
+  renderProjectsTable(q ? _projAll.filter(p => (p.name||'').toLowerCase().includes(q) || (p.company||'').toLowerCase().includes(q)) : _projAll);
+}
+
+function renderProjectsTable(rows) {
+  const tbody = document.getElementById('proj-tbody');
+  const empty = document.getElementById('proj-empty');
+  const footer = document.getElementById('proj-footer');
+  const badge = document.getElementById('proj-count-badge');
+  badge.textContent = rows.length + ' submitted';
+  if (!rows.length) {
+    tbody.innerHTML = '';
+    empty.style.display = 'block';
+    footer.textContent = '';
+    return;
+  }
+  empty.style.display = 'none';
+  const statusColor = { Approved:'#16a34a', Pending:'#d97706', Rejected:'#dc2626' };
+  tbody.innerHTML = rows.map(p => `
+    <tr style="border-bottom:1px solid #f3f4f6">
+      <td style="padding:12px 16px;font-size:14px;font-weight:600;color:var(--text1)">${p.name||'-'}</td>
+      <td style="padding:12px 16px;font-size:14px;color:#374151">${p.company||'-'}</td>
+      <td style="padding:12px 16px;font-size:14px;color:#6b7280">${p.genre||'-'}</td>
+      <td style="padding:12px 16px;font-size:14px">
+        <span style="color:${statusColor[p.status]||'#6b7280'};font-weight:600">${p.status||'-'}</span>
+      </td>
+    </tr>`).join('');
+  const approved = rows.filter(r => r.status==='Approved').length;
+  const pending  = rows.filter(r => r.status==='Pending').length;
+  footer.textContent = `Showing ${rows.length} projects · ${approved} approved · ${pending} pending`;
+}
+
+function exportProjectsCSV() {
+  if (!_projAll.length) return;
+  const header = 'Project,Company,Genre,Status';
+  const rows = _projAll.map(p => [p.name,p.company,p.genre,p.status].map(v=>`"${(v||'').replace(/"/g,'""')}"`).join(','));
+  const blob = new Blob([header+'\n'+rows.join('\n')], {type:'text/csv'});
+  const a = document.createElement('a'); a.href = URL.createObjectURL(blob);
+  a.download = 'projects.csv'; a.click();
 }
 
 function showRegistration() {
@@ -1237,6 +1355,7 @@ function showMyEvents() {
   document.getElementById('viewEventEditor').style.display = 'none';
   document.getElementById('viewAttendees').style.display = 'none';
   document.getElementById('viewRegistration').style.display = 'none';
+  document.getElementById('viewProjects').style.display = 'none';
   document.getElementById('event-nav-wrap').style.display = 'none';
   document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
   document.getElementById('nav-my-events').classList.add('active');
