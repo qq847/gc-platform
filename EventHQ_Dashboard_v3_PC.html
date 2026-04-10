@@ -696,7 +696,7 @@ html,body{min-height:100vh;background:var(--bg);font-family:'DM Sans',sans-serif
         <div id="att-bulk-bar" style="display:none;background:#eff6ff;border:1px solid #bfdbfe;border-radius:8px;padding:10px 16px;margin-bottom:12px;display:flex;align-items:center;gap:12px">
           <span id="att-selected-count" style="font-size:13px;font-weight:600;color:#1e40af">0 selected</span>
           <div style="flex:1"></div>
-          <button class="btn-secondary" style="font-size:12px;padding:5px 12px" onclick="showToast('Email sent to selected attendees')">✉️ Send Email</button>
+          <button class="btn-secondary" style="font-size:12px;padding:5px 12px" onclick="openBulkEmailModal()">✉️ Send Email</button>
           <button class="btn-secondary" style="font-size:12px;padding:5px 12px" onclick="showToast('Exporting selected…')">⬇ Export Selected</button>
           <button class="btn-secondary" style="font-size:12px;padding:5px 12px;color:#dc2626" onclick="showToast('Check-in toggled')">✓ Toggle Check-in</button>
           <button style="border:none;background:none;cursor:pointer;font-size:18px;color:#9ca3af" onclick="clearAttSelection()">×</button>
@@ -1336,6 +1336,48 @@ html,body{min-height:100vh;background:var(--bg);font-family:'DM Sans',sans-serif
               </tr>
             </tbody>
           </table>
+        </div>
+        <!-- Sales Trend Chart -->
+        <div class="editor-card" style="margin-top:16px">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px">
+            <div style="font-weight:700;font-size:15px">Sales Trend</div>
+            <span style="font-size:12px;color:#6b7280">Last 14 days</span>
+          </div>
+          <svg width="100%" height="140" viewBox="0 0 500 140" preserveAspectRatio="none" style="display:block">
+            <defs>
+              <linearGradient id="salesGrad" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0%" stop-color="#2563eb" stop-opacity="0.25"/>
+                <stop offset="100%" stop-color="#2563eb" stop-opacity="0"/>
+              </linearGradient>
+            </defs>
+            <!-- Grid lines -->
+            <line x1="0" y1="30" x2="500" y2="30" stroke="#f3f4f6" stroke-width="1"/>
+            <line x1="0" y1="60" x2="500" y2="60" stroke="#f3f4f6" stroke-width="1"/>
+            <line x1="0" y1="90" x2="500" y2="90" stroke="#f3f4f6" stroke-width="1"/>
+            <line x1="0" y1="120" x2="500" y2="120" stroke="#f3f4f6" stroke-width="1"/>
+            <!-- Area fill -->
+            <path d="M0,120 L36,110 L72,105 L108,90 L144,95 L180,75 L216,80 L252,60 L288,65 L324,45 L360,50 L396,35 L432,30 L468,20 L500,15 L500,120 Z" fill="url(#salesGrad)"/>
+            <!-- Line -->
+            <polyline points="0,120 36,110 72,105 108,90 144,95 180,75 216,80 252,60 288,65 324,45 360,50 396,35 432,30 468,20 500,15" fill="none" stroke="#2563eb" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round"/>
+            <!-- Data points -->
+            <circle cx="0" cy="120" r="3" fill="#2563eb"/>
+            <circle cx="108" cy="90" r="3" fill="#2563eb"/>
+            <circle cx="252" cy="60" r="3" fill="#2563eb"/>
+            <circle cx="396" cy="35" r="3" fill="#2563eb"/>
+            <circle cx="500" cy="15" r="4" fill="#2563eb" stroke="#fff" stroke-width="2"/>
+            <!-- X-axis labels -->
+            <text x="0" y="138" font-size="9" fill="#9ca3af" text-anchor="middle">Mar 28</text>
+            <text x="108" y="138" font-size="9" fill="#9ca3af" text-anchor="middle">Apr 1</text>
+            <text x="252" y="138" font-size="9" fill="#9ca3af" text-anchor="middle">Apr 5</text>
+            <text x="396" y="138" font-size="9" fill="#9ca3af" text-anchor="middle">Apr 9</text>
+            <text x="500" y="138" font-size="9" fill="#9ca3af" text-anchor="end">Today</text>
+          </svg>
+          <div style="display:flex;gap:24px;margin-top:8px">
+            <div style="text-align:center"><div style="font-size:18px;font-weight:700;color:#2563eb">147</div><div style="font-size:11px;color:#6b7280">Total Sold</div></div>
+            <div style="text-align:center"><div style="font-size:18px;font-weight:700;color:#16a34a">+23%</div><div style="font-size:11px;color:#6b7280">vs Last Week</div></div>
+            <div style="text-align:center"><div style="font-size:18px;font-weight:700;color:#374151">€18,453</div><div style="font-size:11px;color:#6b7280">Revenue</div></div>
+            <div style="text-align:center"><div style="font-size:18px;font-weight:700;color:#d97706">53</div><div style="font-size:11px;color:#6b7280">Remaining</div></div>
+          </div>
         </div>
       </div>
 <!-- ══ VIEW: Free Pod ══ -->
@@ -4351,6 +4393,44 @@ The {Event Name} Team</textarea>
 </div>
 
 <!-- Toast -->
+<!-- Bulk Email Modal -->
+<div id="bulk-email-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:9000;display:none;align-items:center;justify-content:center">
+  <div style="background:#fff;border-radius:16px;padding:28px;width:560px;max-width:90vw;max-height:85vh;overflow-y:auto;box-shadow:0 20px 60px rgba(0,0,0,0.3)">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px">
+      <div style="font-size:18px;font-weight:700">Send Email to Selected Attendees</div>
+      <button style="border:none;background:none;cursor:pointer;font-size:22px;color:#9ca3af;line-height:1" onclick="closeBulkEmailModal()">×</button>
+    </div>
+    <div id="bulk-email-recipients" style="font-size:13px;color:#6b7280;background:#f8f9fa;border-radius:8px;padding:10px 14px;margin-bottom:16px">Recipients: loading...</div>
+    <div style="margin-bottom:12px">
+      <div style="font-size:13px;font-weight:500;margin-bottom:6px">Subject</div>
+      <input type="text" id="bulk-email-subject" class="form-input" placeholder="Enter email subject..." value="Important update about Game Connection 2026">
+    </div>
+    <div style="margin-bottom:12px">
+      <div style="font-size:13px;font-weight:500;margin-bottom:6px">Message</div>
+      <textarea id="bulk-email-body" class="form-input" rows="8" style="resize:vertical">Dear {Attendee Name},
+
+We have an important update regarding Game Connection 2026.
+
+[Your message here]
+
+Best regards,
+The Game Connection Team</textarea>
+    </div>
+    <div style="margin-bottom:16px">
+      <div style="font-size:12px;color:#6b7280;margin-bottom:6px">Insert Variable:</div>
+      <div style="display:flex;gap:6px;flex-wrap:wrap">
+        <button class="btn-secondary" style="font-size:11px;padding:3px 9px" onclick="insertBulkVar('{Attendee Name}')">Name</button>
+        <button class="btn-secondary" style="font-size:11px;padding:3px 9px" onclick="insertBulkVar('{Company}')">Company</button>
+        <button class="btn-secondary" style="font-size:11px;padding:3px 9px" onclick="insertBulkVar('{Event Name}')">Event Name</button>
+        <button class="btn-secondary" style="font-size:11px;padding:3px 9px" onclick="insertBulkVar('{Event Date}')">Event Date</button>
+      </div>
+    </div>
+    <div style="display:flex;gap:10px;justify-content:flex-end">
+      <button class="btn-secondary" onclick="closeBulkEmailModal()">Cancel</button>
+      <button class="btn-primary" onclick="sendBulkEmail()">Send Email</button>
+    </div>
+  </div>
+</div>
 <div class="toast" id="toast" style="display:none"></div>
 <div id="unsaved-bar" style="display:none;position:fixed;bottom:72px;left:50%;transform:translateX(-50%);background:#1e293b;color:#fff;border-radius:10px;padding:10px 20px;font-size:13px;font-weight:600;align-items:center;gap:12px;z-index:9999;box-shadow:0 4px 20px rgba(0,0,0,.3)">
   <span>&#9679; Unsaved changes</span>
@@ -5563,6 +5643,37 @@ function kanbanDrop(e, colId) {
   if (container) container.appendChild(card);
   _kanbanDragId = null;
   showToast('Card moved to ' + colId.charAt(0).toUpperCase() + colId.slice(1));
+}
+// ── Bulk Email Modal ────────────────────────────────────────────────────────────
+function openBulkEmailModal() {
+  const checkboxes = document.querySelectorAll('#att-tbody .att-cb:checked');
+  const names = Array.from(checkboxes).map(cb => {
+    const row = cb.closest('tr');
+    return row ? row.querySelector('td:nth-child(2)')?.textContent?.trim() : '';
+  }).filter(Boolean);
+  const recipEl = document.getElementById('bulk-email-recipients');
+  if (recipEl) recipEl.textContent = 'Recipients (' + names.length + '): ' + (names.slice(0,5).join(', ') + (names.length > 5 ? ' +' + (names.length-5) + ' more' : ''));
+  const modal = document.getElementById('bulk-email-modal');
+  if (modal) { modal.style.display = 'flex'; }
+}
+function closeBulkEmailModal() {
+  const modal = document.getElementById('bulk-email-modal');
+  if (modal) modal.style.display = 'none';
+}
+function insertBulkVar(variable) {
+  const ta = document.getElementById('bulk-email-body');
+  if (!ta) return;
+  const start = ta.selectionStart;
+  const end = ta.selectionEnd;
+  ta.value = ta.value.substring(0, start) + variable + ta.value.substring(end);
+  ta.selectionStart = ta.selectionEnd = start + variable.length;
+  ta.focus();
+}
+function sendBulkEmail() {
+  const checkboxes = document.querySelectorAll('#att-tbody .att-cb:checked');
+  const count = checkboxes.length;
+  closeBulkEmailModal();
+  showToast('✓ Email sent to ' + count + ' attendee' + (count !== 1 ? 's' : ''));
 }
 function insertEmailVar(variable) {
   const ta = document.getElementById('email-body');
