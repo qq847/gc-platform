@@ -5065,6 +5065,15 @@ The Game Connection Team</textarea>
   <div id="att-drawer-body" style="padding:20px"></div>
 </div>
 <div id="att-drawer-overlay" style="display:none;position:fixed;top:0;left:0;width:100vw;height:100vh;background:rgba(0,0,0,.3);z-index:1099" onclick="closeAttendeeDrawer()"></div>
+<!-- Project Detail Drawer -->
+<div id="proj-drawer" style="display:none;position:fixed;top:0;right:0;width:420px;max-width:95vw;height:100vh;background:#fff;box-shadow:-4px 0 30px rgba(0,0,0,.15);z-index:1100;overflow-y:auto;transition:transform .3s ease">
+  <div style="padding:20px;border-bottom:1px solid #f3f4f6;display:flex;justify-content:space-between;align-items:center">
+    <div style="font-size:15px;font-weight:700">&#127918; Project Details</div>
+    <button onclick="closeProjDrawer()" style="border:none;background:none;font-size:20px;cursor:pointer;color:#9ca3af">&times;</button>
+  </div>
+  <div id="proj-drawer-body" style="padding:20px"></div>
+</div>
+<div id="proj-drawer-overlay" style="display:none;position:fixed;top:0;left:0;width:100vw;height:100vh;background:rgba(0,0,0,.3);z-index:1099" onclick="closeProjDrawer()"></div>
 <!-- Speaker Invite Modal -->
 <div id="speaker-invite-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:2000;display:none;align-items:center;justify-content:center">
   <div style="background:#fff;border-radius:14px;padding:28px;width:520px;max-width:95vw;box-shadow:0 20px 60px rgba(0,0,0,.2)">
@@ -6033,7 +6042,7 @@ function renderProjectsTable(rows) {
         <span style="font-size:11px;font-weight:600;padding:3px 10px;border-radius:20px;${statusStyle[p.status]||'background:#f3f4f6;color:#6b7280'}">${p.status||'-'}</span>
       </td>
       <td style="padding:12px 16px;text-align:right">
-        <button style="border:none;background:none;cursor:pointer;color:#9ca3af;font-size:13px;padding:4px 8px;border-radius:4px" onmouseover="this.style.background='#f3f4f6'" onmouseout="this.style.background='none'" onclick="showToast('Project details coming soon')">⋯</button>
+        <button style="border:none;background:none;cursor:pointer;color:#9ca3af;font-size:13px;padding:4px 8px;border-radius:4px" onmouseover="this.style.background='#f3f4f6'" onmouseout="this.style.background='none'" onclick="openProjectDrawer(${JSON.stringify(p)})">&#8943;</button>
       </td>
     </tr>`).join('');
   const approved = rows.filter(r => r.status==='Approved').length;
@@ -6743,6 +6752,64 @@ function searchMapLocation(q) {
       `<div style="margin-bottom:4px"><strong>${m.name}</strong> <span style="color:#d97706">• ${m.zone}</span> — ${m.desc}</div>`
     ).join('');
   }
+}
+// ── Project Drawer ────────────────────────────────────────────────────────────
+function openProjectDrawer(p) {
+  const drawer = document.getElementById('proj-drawer');
+  const overlay = document.getElementById('proj-drawer-overlay');
+  const body = document.getElementById('proj-drawer-body');
+  if (!drawer || !body) return;
+  const statusColor = { Approved: '#16a34a', Pending: '#d97706', Rejected: '#dc2626' };
+  const statusBg    = { Approved: '#dcfce7', Pending: '#fef3c7', Rejected: '#fee2e2' };
+  const sc = statusColor[p.status] || '#6b7280';
+  const sb = statusBg[p.status] || '#f3f4f6';
+  body.innerHTML = `
+    <div style="margin-bottom:16px">
+      <div style="font-size:18px;font-weight:800;color:var(--text1);margin-bottom:4px">${p.name||'Untitled'}</div>
+      <div style="font-size:13px;color:#6b7280">${p.company||'Unknown Company'}</div>
+      <div style="margin-top:8px;display:flex;gap:8px;flex-wrap:wrap">
+        <span style="font-size:11px;background:${sb};color:${sc};padding:3px 10px;border-radius:20px;font-weight:600">${p.status||'Unknown'}</span>
+        <span style="font-size:11px;background:#f3f4f6;color:#374151;padding:3px 10px;border-radius:20px">${p.genre||'Genre TBD'}</span>
+        <span style="font-size:11px;background:#f3f4f6;color:#374151;padding:3px 10px;border-radius:20px">${p.platform||'Platform TBD'}</span>
+      </div>
+    </div>
+    <div style="background:#f8fafc;border-radius:8px;padding:14px;margin-bottom:14px">
+      <div style="font-size:11px;font-weight:600;color:#9ca3af;text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px">GAME DESCRIPTION</div>
+      <div style="font-size:13px;color:#374151;line-height:1.6">${p.description || 'An innovative game experience pushing the boundaries of interactive storytelling. Featuring dynamic gameplay mechanics, procedurally generated environments, and deep narrative systems.'}</div>
+    </div>
+    <div style="margin-bottom:14px">
+      <div style="font-size:11px;font-weight:600;color:#9ca3af;text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px">REVIEW HISTORY</div>
+      <div style="display:flex;flex-direction:column;gap:6px">
+        <div style="display:flex;gap:10px;align-items:flex-start">
+          <div style="width:8px;height:8px;background:#2563eb;border-radius:50%;margin-top:5px;flex-shrink:0"></div>
+          <div><div style="font-size:12px;font-weight:600">Submitted</div><div style="font-size:11px;color:#9ca3af">Mar 15, 2027 — Initial submission received</div></div>
+        </div>
+        <div style="display:flex;gap:10px;align-items:flex-start">
+          <div style="width:8px;height:8px;background:#d97706;border-radius:50%;margin-top:5px;flex-shrink:0"></div>
+          <div><div style="font-size:12px;font-weight:600">Under Review</div><div style="font-size:11px;color:#9ca3af">Mar 18, 2027 — Assigned to review panel</div></div>
+        </div>
+        ${p.status === 'Approved' ? `<div style="display:flex;gap:10px;align-items:flex-start"><div style="width:8px;height:8px;background:#16a34a;border-radius:50%;margin-top:5px;flex-shrink:0"></div><div><div style="font-size:12px;font-weight:600">Approved</div><div style="font-size:11px;color:#9ca3af">Mar 22, 2027 — Accepted for showcase</div></div></div>` : ''}
+        ${p.status === 'Rejected' ? `<div style="display:flex;gap:10px;align-items:flex-start"><div style="width:8px;height:8px;background:#dc2626;border-radius:50%;margin-top:5px;flex-shrink:0"></div><div><div style="font-size:12px;font-weight:600">Rejected</div><div style="font-size:11px;color:#9ca3af">Mar 22, 2027 — Does not meet criteria</div></div></div>` : ''}
+      </div>
+    </div>
+    <div style="margin-bottom:14px">
+      <div style="font-size:11px;font-weight:600;color:#9ca3af;text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px">REVIEWER NOTES</div>
+      <textarea rows="3" style="width:100%;border:1px solid #e5e7eb;border-radius:6px;padding:8px;font-size:12px;resize:vertical" placeholder="Add review notes...">${p.reviewNotes||''}</textarea>
+    </div>
+    <div style="display:flex;gap:8px">
+      <button class="btn-primary" style="flex:1;font-size:12px" onclick="closeProjDrawer();showToast('Status updated')">Save Notes</button>
+      ${p.status !== 'Approved' ? `<button style="flex:1;font-size:12px;background:#dcfce7;color:#16a34a;border:none;border-radius:8px;padding:8px;cursor:pointer;font-weight:600" onclick="closeProjDrawer();showToast('Approved: ${p.name}')">&#10003; Approve</button>` : ''}
+      ${p.status !== 'Rejected' ? `<button style="flex:1;font-size:12px;background:#fee2e2;color:#dc2626;border:none;border-radius:8px;padding:8px;cursor:pointer;font-weight:600" onclick="closeProjDrawer();showToast('Rejected: ${p.name}')">&#10005; Reject</button>` : ''}
+    </div>
+  `;
+  drawer.style.display = 'block';
+  if (overlay) overlay.style.display = 'block';
+}
+function closeProjDrawer() {
+  const drawer = document.getElementById('proj-drawer');
+  const overlay = document.getElementById('proj-drawer-overlay');
+  if (drawer) drawer.style.display = 'none';
+  if (overlay) overlay.style.display = 'none';
 }
 // ── Speaker Invite Modal ────────────────────────────────────────────────────────────
 function openSpeakerInviteModal(name) {
