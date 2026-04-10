@@ -448,24 +448,24 @@ const ALL_MODS = [
 const SHOWN_MODS = ['free-reg','paid-ticket','free-pod','paid-pod','free-booth','paid-booth','sponsorship','panel','award','buyer-inv','lets-meet','showcase'];
 
 const EVENT_NAV = [
-  {icon:'📊', label:'Overview',         modId:null},
-  {icon:'👥', label:'Attendees',        modId:'free-reg'},
-  {icon:'🎮', label:'Projects',         modId:'showcase'},
+  {icon:'📊', label:'Overview',         modId:null,         page:'Attendees_v2_PC.html'},
+  {icon:'👥', label:'Attendees',        modId:null,         page:'Attendees_v2_PC.html'},
+  {icon:'🎮', label:'Projects',         modId:null,         page:'GameShowcase_v2_PC.html'},
   {sep:true, label:'MODULES'},
-  {icon:'🎟️', label:'Registration',    modId:'free-reg'},
-  {icon:'💳', label:'Ticketing',        modId:'paid-ticket'},
-  {icon:'🪑', label:'Pod',             modId:'free-pod'},
-  {icon:'🏪', label:'Booth',           modId:'free-booth'},
-  {icon:'🤝', label:'Sponsorship',     modId:'sponsorship'},
-  {icon:'🎙️', label:'Panel / Session', modId:'panel'},
-  {icon:'🏆', label:'Award',           modId:'award'},
-  {icon:'🛒', label:'Buyer Invitation',modId:'buyer-inv'},
-  {icon:'📅', label:"Let's Meet",      modId:'lets-meet'},
-  {icon:'🎮', label:'Game Showcase',   modId:'showcase'},
-  {icon:'🗺️', label:'Map',             modId:'map'},
-  {icon:'📡', label:'Live',            modId:'live'},
+  {icon:'🎟️', label:'Registration',    modId:'free-reg',   page:'FreeRegistration_v2_PC.html'},
+  {icon:'💳', label:'Ticketing',        modId:'paid-ticket',page:'PaidTicketing_v2_PC.html'},
+  {icon:'🪑', label:'Pod',             modId:'free-pod',   page:'BoothManagement_v2_PC.html'},
+  {icon:'🏪', label:'Booth',           modId:'free-booth', page:'BoothManagement_v2_PC.html'},
+  {icon:'🤝', label:'Sponsorship',     modId:'sponsorship',page:'SponsorshipManagement_v2_PC.html'},
+  {icon:'🎙️', label:'Panel / Session', modId:'panel',      page:'SessionManagement_v2_PC.html'},
+  {icon:'🏆', label:'Award',           modId:'award',      page:'Awards_v3_PC.html'},
+  {icon:'🛒', label:'Buyer Invitation',modId:'buyer-inv',  page:'BuyerInvitation_v1_PC.html'},
+  {icon:'📅', label:"Let's Meet",      modId:'lets-meet',  page:'LetsMeet_Organizer_v2_PC.html'},
+  {icon:'🎮', label:'Game Showcase',   modId:'showcase',   page:'GameShowcase_v2_PC.html'},
+  {icon:'🗺️', label:'Map',             modId:'map',        page:'VenueMap_v1_PC.html'},
+  {icon:'📡', label:'Live',            modId:'live',       page:'Live_v44_PC.html'},
   {sep:true},
-  {icon:'⚙️', label:'Event Settings',  modId:null},
+  {icon:'⚙️', label:'Event Settings',  modId:null,         page:'Settings_v1_PC.html'},
 ];
 
 let currentEvent = null;
@@ -778,7 +778,7 @@ function addMod(id) {
   document.getElementById('modExpand').classList.remove('open');
 }
 
-// ── Event sidebar nav (with inline module toggles) ───────────────────────────
+// ── Event sidebar nav (with inline module toggles + clickable page links) ───────
 function renderEventNav(ev) {
   const active = new Set(ev.modules||[]);
   document.getElementById('event-nav-items').innerHTML = EVENT_NAV.map(item=>{
@@ -788,17 +788,25 @@ function renderEventNav(ev) {
     const hasMod = !!item.modId;
     const enabled = !hasMod || active.has(item.modId);
     if (hasMod) {
-      // Module nav item: show toggle on right, dim when off
+      // Module nav item: toggle on right, label clickable if enabled
+      const labelHtml = (enabled && item.page)
+        ? `<span style="flex:1;font-size:12px;font-weight:600;color:var(--green);text-decoration:none;cursor:pointer" onclick="event.stopPropagation();window.location.href='${item.page}'">${item.label}</span>`
+        : `<span style="flex:1;opacity:.45;font-size:12px;font-weight:400">${item.label}</span>`;
       return `<div class="nav-item${enabled?' mod-on':' mod-off'}" style="cursor:default">
         <span class="ni-icon" style="opacity:${enabled?1:.4}">${item.icon}</span>
-        <span style="flex:1;opacity:${enabled?1:.45};font-size:12px;font-weight:${enabled?600:400}">${item.label}</span>
+        ${labelHtml}
         <label class="toggle" style="flex-shrink:0" onclick="event.stopPropagation()">
           <input type="checkbox" ${enabled?'checked':''} onchange="toggleMod('${item.modId}',this.checked)">
           <span class="toggle-track"></span>
         </label>
       </div>`;
     } else {
-      // Fixed nav item (Overview, Event Settings): no toggle
+      // Fixed nav item (Overview, Event Settings): direct link or coming soon
+      if (item.page) {
+        return `<a class="nav-item" href="${item.page}">
+          <span class="ni-icon">${item.icon}</span> ${item.label}
+        </a>`;
+      }
       return `<a class="nav-item" onclick="showToast('Coming soon')">
         <span class="ni-icon">${item.icon}</span> ${item.label}
       </a>`;
