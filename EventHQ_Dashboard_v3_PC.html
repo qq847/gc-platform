@@ -1224,9 +1224,22 @@ body.dark-mode .unsaved-bar { background: #1e2533; border-color: #2d3748; }
 
         <!-- Ticket types -->
         <div class="editor-card" style="margin-bottom:16px">
-          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
             <div style="font-weight:700;font-size:15px">Ticket Types</div>
             <button class="btn-secondary" style="font-size:12px;padding:6px 12px" onclick="showToast('Add type coming soon')">+ Add Type</button>
+          </div>
+          <!-- Bulk Price Adjust Tool -->
+          <div style="background:#f0fdf4;border:1px solid #bbf7d0;border-radius:8px;padding:10px 14px;margin-bottom:12px;display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+            <span style="font-size:12px;font-weight:600;color:#166534">Bulk Price Adjust:</span>
+            <select id="price-adj-type" style="font-size:12px;padding:4px 8px;border:1px solid #d1d5db;border-radius:6px;background:#fff">
+              <option value="pct-up">Increase by %</option>
+              <option value="pct-down">Decrease by %</option>
+              <option value="fixed-up">Increase by €</option>
+              <option value="fixed-down">Decrease by €</option>
+            </select>
+            <input type="number" id="price-adj-value" min="1" max="100" value="10" style="width:70px;font-size:12px;padding:4px 8px;border:1px solid #d1d5db;border-radius:6px" />
+            <button class="btn-primary" style="font-size:12px;padding:5px 14px" onclick="bulkAdjustPrices()">Apply to All</button>
+            <span style="font-size:11px;color:#6b7280">Current: <span id="price-eb">€99</span> / <span id="price-std">€149</span> / <span id="price-vip">€399</span></span>
           </div>
           <div style="display:flex;flex-direction:column;gap:10px">
             <!-- Early Bird -->
@@ -1245,7 +1258,7 @@ body.dark-mode .unsaved-bar { background: #1e2533; border-color: #2d3748; }
                   <button class="btn-secondary" style="font-size:11px;padding:4px 10px" onclick="showToast('Edit coming soon')">✏️ Edit</button>
                 </div>
               </div>
-              <div style="font-size:24px;font-weight:800;color:#16a34a;margin-bottom:12px">€99 <span style="font-size:13px;font-weight:400;color:#6b7280">/ ticket</span></div>
+              <div id="eb-price-display" style="font-size:24px;font-weight:800;color:#16a34a;margin-bottom:12px">€99 <span style="font-size:13px;font-weight:400;color:#6b7280">/ ticket</span></div>
               <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:10px">
                 <div><div style="font-size:10px;color:#9ca3af;text-transform:uppercase;letter-spacing:.5px">Inventory</div><div style="font-weight:700;font-size:18px">50</div></div>
                 <div><div style="font-size:10px;color:#9ca3af;text-transform:uppercase;letter-spacing:.5px">Sold</div><div style="font-weight:700;font-size:18px;color:#16a34a">23</div></div>
@@ -1267,7 +1280,7 @@ body.dark-mode .unsaved-bar { background: #1e2533; border-color: #2d3748; }
                   <button class="btn-secondary" style="font-size:11px;padding:4px 10px" onclick="showToast('Edit coming soon')">✏️ Edit</button>
                 </div>
               </div>
-              <div style="font-size:24px;font-weight:800;color:#2563eb;margin-bottom:12px">€149 <span style="font-size:13px;font-weight:400;color:#6b7280">/ ticket</span></div>
+              <div id="std-price-display" style="font-size:24px;font-weight:800;color:#2563eb;margin-bottom:12px">€149 <span style="font-size:13px;font-weight:400;color:#6b7280">/ ticket</span></div>
               <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:10px">
                 <div><div style="font-size:10px;color:#9ca3af;text-transform:uppercase;letter-spacing:.5px">Inventory</div><div style="font-weight:700;font-size:18px">200</div></div>
                 <div><div style="font-size:10px;color:#9ca3af;text-transform:uppercase;letter-spacing:.5px">Sold</div><div style="font-weight:700;font-size:18px;color:#16a34a">67</div></div>
@@ -1289,7 +1302,7 @@ body.dark-mode .unsaved-bar { background: #1e2533; border-color: #2d3748; }
                   <button class="btn-secondary" style="font-size:11px;padding:4px 10px" onclick="showToast('Edit coming soon')">✏️ Edit</button>
                 </div>
               </div>
-              <div style="font-size:24px;font-weight:800;color:#9333ea;margin-bottom:12px">€399 <span style="font-size:13px;font-weight:400;color:#6b7280">/ ticket</span></div>
+              <div id="vip-price-display" style="font-size:24px;font-weight:800;color:#9333ea;margin-bottom:12px">€399 <span style="font-size:13px;font-weight:400;color:#6b7280">/ ticket</span></div>
               <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:10px">
                 <div><div style="font-size:10px;color:#9ca3af;text-transform:uppercase;letter-spacing:.5px">Inventory</div><div style="font-weight:700;font-size:18px">20</div></div>
                 <div><div style="font-size:10px;color:#9ca3af;text-transform:uppercase;letter-spacing:.5px">Sold</div><div style="font-weight:700;font-size:18px;color:#16a34a">8</div></div>
@@ -6643,6 +6656,31 @@ function cloneTicketType(name) {
   `;
   container.appendChild(div);
   showToast('📋 Cloned: ' + name);
+}
+// ── Bulk Price Adjust ────────────────────────────────────────────────────────────
+let _ticketPrices = { eb: 99, std: 149, vip: 399 };
+function bulkAdjustPrices() {
+  const type = document.getElementById('price-adj-type').value;
+  const val = parseFloat(document.getElementById('price-adj-value').value) || 0;
+  if (val <= 0) { showToast('Enter a valid adjustment value'); return; }
+  const keys = ['eb', 'std', 'vip'];
+  const ids = ['eb-price-display', 'std-price-display', 'vip-price-display'];
+  const labelIds = ['price-eb', 'price-std', 'price-vip'];
+  const colors = ['#16a34a', '#2563eb', '#9333ea'];
+  keys.forEach((k, i) => {
+    let p = _ticketPrices[k];
+    if (type === 'pct-up')   p = Math.round(p * (1 + val / 100));
+    if (type === 'pct-down') p = Math.max(1, Math.round(p * (1 - val / 100)));
+    if (type === 'fixed-up') p = p + val;
+    if (type === 'fixed-down') p = Math.max(1, p - val);
+    _ticketPrices[k] = p;
+    const disp = document.getElementById(ids[i]);
+    if (disp) disp.innerHTML = `€${p} <span style="font-size:13px;font-weight:400;color:#6b7280">/ ticket</span>`;
+    const lbl = document.getElementById(labelIds[i]);
+    if (lbl) lbl.textContent = `€${p}`;
+  });
+  showToast(`✅ Prices updated: €${_ticketPrices.eb} / €${_ticketPrices.std} / €${_ticketPrices.vip}`);
+  markDirty();
 }
 // ── Registration Capacity Bar ────────────────────────────────────────────────────────────
 function updateCapacityBar() {
