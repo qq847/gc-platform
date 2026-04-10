@@ -303,6 +303,45 @@ html,body{min-height:100vh;background:var(--bg);font-family:'DM Sans',sans-serif
         <div class="events-list" id="eventsList"></div>
       </div>
 
+      <!-- ══ Attendees View ══ -->
+      <div id="viewAttendees" style="display:none">
+        <div class="page-header">
+          <div>
+            <div class="page-title">Attendees <span id="att-count-badge" style="font-size:15px;font-weight:500;color:#6b7280;margin-left:8px"></span></div>
+            <div class="page-sub" id="att-event-name"></div>
+          </div>
+          <div style="display:flex;gap:10px">
+            <button class="btn-secondary" onclick="exportAttendeesCSV()">Export CSV</button>
+            <button class="btn-primary" onclick="showToast('Invite feature coming soon')">+ Invite</button>
+          </div>
+        </div>
+
+        <div style="display:flex;gap:10px;margin-bottom:20px">
+          <input id="att-search" class="form-input" type="text" placeholder="Search by name or company…" style="max-width:320px;margin:0" oninput="filterAttendees()">
+        </div>
+
+        <div class="form-card" style="padding:0;overflow:hidden">
+          <table style="width:100%;border-collapse:collapse">
+            <thead>
+              <tr style="background:#f8f9fa;border-bottom:1px solid #e5e7eb">
+                <th style="padding:12px 16px;text-align:left;font-size:12px;font-weight:600;color:#6b7280;text-transform:uppercase;letter-spacing:.5px">Name</th>
+                <th style="padding:12px 16px;text-align:left;font-size:12px;font-weight:600;color:#6b7280;text-transform:uppercase;letter-spacing:.5px">Company</th>
+                <th style="padding:12px 16px;text-align:left;font-size:12px;font-weight:600;color:#6b7280;text-transform:uppercase;letter-spacing:.5px">Role</th>
+                <th style="padding:12px 16px;text-align:left;font-size:12px;font-weight:600;color:#6b7280;text-transform:uppercase;letter-spacing:.5px">Check-in</th>
+              </tr>
+            </thead>
+            <tbody id="att-tbody"></tbody>
+          </table>
+          <div id="att-empty" style="display:none;padding:48px;text-align:center;color:#9ca3af">
+            <div style="font-size:32px;margin-bottom:8px">👥</div>
+            <div style="font-weight:500">No attendees yet</div>
+            <div style="font-size:13px;margin-top:4px">Registrations will appear here once people sign up.</div>
+          </div>
+        </div>
+
+        <div id="att-footer" style="margin-top:12px;font-size:13px;color:#6b7280"></div>
+      </div>
+
       <!-- ══ Event Editor View ══ -->
       <div id="viewEventEditor">
 
@@ -448,9 +487,9 @@ const ALL_MODS = [
 const SHOWN_MODS = ['free-reg','paid-ticket','free-pod','paid-pod','free-booth','paid-booth','sponsorship','panel','award','buyer-inv','lets-meet','showcase'];
 
 const EVENT_NAV = [
-  {icon:'📊', label:'Overview',         modId:null,         page:'Attendees_v2_PC.html'},
-  {icon:'👥', label:'Attendees',        modId:null,         page:'Attendees_v2_PC.html'},
-  {icon:'🎮', label:'Projects',         modId:null,         page:'GameShowcase_v2_PC.html'},
+  {icon:'📊', label:'Overview',         modId:null,         page:null,   fn:'showOverview'},
+  {icon:'👥', label:'Attendees',        modId:null,         page:null,   fn:'showAttendees'},
+  {icon:'🎮', label:'Projects',         modId:null,         page:null,   fn:'showToastCS'},
   {sep:true, label:'MODULES'},
   {icon:'🎟️', label:'Registration',    modId:'free-reg',   page:'FreeRegistration_v2_PC.html'},
   {icon:'💳', label:'Ticketing',        modId:'paid-ticket',page:'PaidTicketing_v2_PC.html'},
@@ -555,6 +594,7 @@ function openEvent(i) {
   fillForm(currentEvent);
   document.getElementById('viewMyEvents').style.display = 'none';
   document.getElementById('viewEventEditor').style.display = 'block';
+  document.getElementById('viewAttendees').style.display = 'none';
   // Sidebar context
   document.getElementById('event-ctx-wrap').style.display = 'block';
   document.getElementById('ctx-event-name').textContent = currentEvent.name || 'Untitled Event';
@@ -801,7 +841,12 @@ function renderEventNav(ev) {
         </label>
       </div>`;
     } else {
-      // Fixed nav item (Overview, Event Settings): direct link or coming soon
+      // Fixed nav item: fn call, page link, or coming soon
+      if (item.fn) {
+        return `<a class="nav-item" onclick="${item.fn}()" style="cursor:pointer">
+          <span class="ni-icon">${item.icon}</span> ${item.label}
+        </a>`;
+      }
       if (item.page) {
         return `<a class="nav-item" href="${item.page}">
           <span class="ni-icon">${item.icon}</span> ${item.label}
@@ -815,9 +860,119 @@ function renderEventNav(ev) {
 }
 
 // ── Show views ────────────────────────────────────────────────────────────────
+// ── Attendees helpers ────────────────────────────────────────────────────────
+let _attAll = [];
+
+function showAttendees() {
+  // Hide other views
+  document.getElementById('viewMyEvents').style.display = 'none';
+  document.getElementById('viewEventEditor').style.display = 'none';
+  document.getElementById('viewAttendees').style.display = 'block';
+  document.getElementById('event-ctx-wrap').style.display = currentEvent ? 'block' : 'none';
+
+  // Active state
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+
+  // Event subtitle
+  document.getElementById('att-event-name').textContent = currentEvent ? currentEvent.name || '' : '';
+
+  // Load data: real registrations + mock fallback
+  const regs = (() => { try { return JSON.parse(localStorage.getItem('gc_registrations') || '[]'); } catch(e){ return []; } })();
+  const eventTitle = currentEvent ? (currentEvent.name || '') : '';
+  // Filter by current event if we have one, otherwise show all
+  let data = eventTitle ? regs.filter(r => r.eventTitle === eventTitle) : regs;
+
+  // If no real data, inject mock rows so the page isn't empty
+  if (!data.length) {
+    data = [
+      {name:'Ray Zhang',  company:'Game Connection', jobTitle:'CEO',           checkedIn:true},
+      {name:'Alex Chen',  company:'Ubisoft',          jobTitle:'Producer',      checkedIn:true},
+      {name:'Sarah Kim',  company:'EA Games',         jobTitle:'Designer',      checkedIn:false},
+      {name:'Tom Wu',     company:'Tencent',          jobTitle:'Director',      checkedIn:true},
+      {name:'Lisa Park',  company:'Sony Interactive', jobTitle:'Dev Manager',   checkedIn:false},
+    ];
+  } else {
+    // Randomly assign checkedIn for demo
+    data = data.map((r, i) => ({...r, checkedIn: i % 3 !== 2}));
+  }
+
+  _attAll = data;
+  document.getElementById('att-search').value = '';
+  renderAttendeesTable(_attAll);
+}
+
+function renderAttendeesTable(rows) {
+  const tbody = document.getElementById('att-tbody');
+  const empty = document.getElementById('att-empty');
+  const footer = document.getElementById('att-footer');
+  const badge = document.getElementById('att-count-badge');
+
+  const checkedIn = rows.filter(r => r.checkedIn).length;
+  badge.textContent = rows.length + ' registered';
+
+  if (!rows.length) {
+    tbody.innerHTML = '';
+    empty.style.display = 'block';
+    footer.textContent = '';
+    return;
+  }
+  empty.style.display = 'none';
+
+  tbody.innerHTML = rows.map((r, i) => {
+    const checkinBadge = r.checkedIn
+      ? '<span style="color:#16a34a;font-weight:600">&#10003; Checked in</span>'
+      : '<span style="color:#9ca3af">&#9675; Not yet</span>';
+    const rowBg = i % 2 === 0 ? '#fff' : '#fafafa';
+    return `<tr style="border-bottom:1px solid #f3f4f6;background:${rowBg}">
+      <td style="padding:12px 16px;font-weight:500;font-size:14px">${r.name || '—'}</td>
+      <td style="padding:12px 16px;font-size:14px;color:#374151">${r.company || '—'}</td>
+      <td style="padding:12px 16px;font-size:14px;color:#6b7280">${r.jobTitle || r.role || '—'}</td>
+      <td style="padding:12px 16px;font-size:14px">${checkinBadge}</td>
+    </tr>`;
+  }).join('');
+
+  footer.textContent = `Showing ${rows.length} attendee${rows.length!==1?'s':''} · ${checkedIn} checked in · ${rows.length - checkedIn} pending`;
+}
+
+function filterAttendees() {
+  const q = document.getElementById('att-search').value.toLowerCase().trim();
+  if (!q) { renderAttendeesTable(_attAll); return; }
+  const filtered = _attAll.filter(r =>
+    (r.name || '').toLowerCase().includes(q) ||
+    (r.company || '').toLowerCase().includes(q)
+  );
+  renderAttendeesTable(filtered);
+}
+
+function exportAttendeesCSV() {
+  if (!_attAll.length) { showToast('No attendees to export'); return; }
+  const header = 'Name,Company,Role,Checked In';
+  const rows = _attAll.map(r =>
+    [r.name||'', r.company||'', r.jobTitle||r.role||'', r.checkedIn?'Yes':'No']
+    .map(v => '"' + String(v).replace(/"/g,'""') + '"').join(',')
+  );
+  const csv = [header, ...rows].join('\n');
+  const blob = new Blob([csv], {type:'text/csv'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url; a.download = 'attendees.csv'; a.click();
+  URL.revokeObjectURL(url);
+  showToast('CSV exported');
+}
+
+function showOverview() {
+  showToast('Overview coming soon');
+}
+
+function showToastCS() {
+  showToast('Projects coming soon');
+}
+
+// ── Show views ────────────────────────────────────────────────────────────────
 function showMyEvents() {
   document.getElementById('viewMyEvents').style.display = 'block';
   document.getElementById('viewEventEditor').style.display = 'none';
+  document.getElementById('viewAttendees').style.display = 'none';
   document.getElementById('event-ctx-wrap').style.display = 'none';
 
   document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
