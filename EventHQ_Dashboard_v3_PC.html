@@ -266,17 +266,7 @@ html,body{min-height:100vh;background:var(--bg);font-family:'DM Sans',sans-serif
         <div class="nav-label">Event Menu</div>
         <div id="event-nav-items"></div>
 
-        <div id="nav-modules-wrap" style="display:none">
-          <div class="nav-sep"></div>
-          <div class="nav-label" style="display:flex;align-items:center;justify-content:space-between">
-            <span>Modules</span>
-            <button class="add-mod-btn-sm" onclick="toggleModExpand()">+ Add</button>
-          </div>
-          <div id="modList"></div>
-          <div class="mod-expand" id="modExpand">
-            <div class="mod-expand-grid" id="modExpandGrid"></div>
-          </div>
-        </div>
+
       </div>
     </div>
 
@@ -461,7 +451,7 @@ const EVENT_NAV = [
   {icon:'📊', label:'Overview',         modId:null},
   {icon:'👥', label:'Attendees',        modId:'free-reg'},
   {icon:'🎮', label:'Projects',         modId:'showcase'},
-  {sep:true},
+  {sep:true, label:'MODULES'},
   {icon:'🎟️', label:'Registration',    modId:'free-reg'},
   {icon:'💳', label:'Ticketing',        modId:'paid-ticket'},
   {icon:'🪑', label:'Pod',             modId:'free-pod'},
@@ -568,8 +558,6 @@ function openEvent(i) {
   document.getElementById('ctx-event-name').textContent = currentEvent.name || 'Untitled Event';
   updateCtxStatus(currentEvent);
   renderEventNav(currentEvent);
-  renderModList(currentEvent);
-  document.getElementById('nav-modules-wrap').style.display = 'block';
   // New event banner
   document.getElementById('newEventBanner').style.display = currentEvent.isNew ? 'flex' : 'none';
   // Nav active
@@ -788,16 +776,31 @@ function addMod(id) {
   document.getElementById('modExpand').classList.remove('open');
 }
 
-// ── Event sidebar nav ─────────────────────────────────────────────────────────
+// ── Event sidebar nav (with inline module toggles) ───────────────────────────
 function renderEventNav(ev) {
   const active = new Set(ev.modules||[]);
   document.getElementById('event-nav-items').innerHTML = EVENT_NAV.map(item=>{
-    if (item.sep) return '<div class="nav-sep"></div>';
-    const enabled = !item.modId || active.has(item.modId);
-    return `<a class="nav-item${enabled?'':' dim'}" onclick="showToast('${enabled?'Coming soon':'Enable this module first'}')">
-      <span class="ni-icon">${item.icon}</span> ${item.label}
-      ${!enabled?'<span class="off-tag">OFF</span>':''}
-    </a>`;
+    if (item.sep) return item.label
+      ? `<div class="nav-sep"></div><div class="nav-label" style="margin-top:4px;font-size:10px;letter-spacing:.08em;color:var(--text3);padding:0 12px 4px">${item.label}</div>`
+      : '<div class="nav-sep"></div>';
+    const hasMod = !!item.modId;
+    const enabled = !hasMod || active.has(item.modId);
+    if (hasMod) {
+      // Module nav item: show toggle on right, dim when off
+      return `<div class="nav-item${enabled?' mod-on':' mod-off'}" style="cursor:default">
+        <span class="ni-icon" style="opacity:${enabled?1:.4}">${item.icon}</span>
+        <span style="flex:1;opacity:${enabled?1:.45};font-size:12px;font-weight:${enabled?600:400}">${item.label}</span>
+        <label class="toggle" style="flex-shrink:0" onclick="event.stopPropagation()">
+          <input type="checkbox" ${enabled?'checked':''} onchange="toggleMod('${item.modId}',this.checked)">
+          <span class="toggle-track"></span>
+        </label>
+      </div>`;
+    } else {
+      // Fixed nav item (Overview, Event Settings): no toggle
+      return `<a class="nav-item" onclick="showToast('Coming soon')">
+        <span class="ni-icon">${item.icon}</span> ${item.label}
+      </a>`;
+    }
   }).join('');
 }
 
@@ -806,7 +809,7 @@ function showMyEvents() {
   document.getElementById('viewMyEvents').style.display = 'block';
   document.getElementById('viewEventEditor').style.display = 'none';
   document.getElementById('event-ctx-wrap').style.display = 'none';
-  document.getElementById('nav-modules-wrap').style.display = 'none';
+
   document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
   document.getElementById('nav-my-events').classList.add('active');
   currentEvent = null;
