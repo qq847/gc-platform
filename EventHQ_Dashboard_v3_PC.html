@@ -241,10 +241,75 @@ html,body{min-height:100vh;background:var(--bg);font-family:'DM Sans',sans-serif
     <div class="topbar-sep"></div>
     <span class="topbar-product">Event HQ</span>
   </div>
+  <!-- Global Search -->
+  <div style="flex:1;max-width:360px;position:relative">
+    <input id="global-search-input" type="text" placeholder="🔍 Search events, attendees, modules…" style="width:100%;padding:7px 12px 7px 34px;border:1px solid #e5e7eb;border-radius:8px;font-size:13px;background:#f9fafb;outline:none;box-sizing:border-box" oninput="globalSearch(this.value)" onfocus="showGlobalSearchDropdown()" onblur="setTimeout(hideGlobalSearchDropdown,200)">
+    <span style="position:absolute;left:10px;top:50%;transform:translateY(-50%);font-size:14px;color:#9ca3af;pointer-events:none">🔍</span>
+    <!-- Search Dropdown -->
+    <div id="global-search-dropdown" style="display:none;position:absolute;top:calc(100% + 6px);left:0;right:0;background:#fff;border:1px solid #e5e7eb;border-radius:10px;box-shadow:0 8px 24px rgba(0,0,0,.12);z-index:999;max-height:320px;overflow-y:auto">
+      <div id="global-search-results"></div>
+    </div>
+  </div>
   <div class="topbar-right">
+    <!-- Notifications -->
+    <button id="notif-btn" onclick="toggleNotifications()" style="position:relative;border:none;background:none;cursor:pointer;padding:6px;border-radius:8px;font-size:18px" title="Notifications">
+      🔔
+      <span id="notif-badge" style="position:absolute;top:2px;right:2px;width:8px;height:8px;background:#dc2626;border-radius:50%;border:1.5px solid #fff"></span>
+    </button>
     <span class="topbar-org-name" id="orgName">My Organization</span>
     <div class="avatar" id="orgAvatar">O</div>
     <a href="index.html" class="btn-back-home">← Back to Platform</a>
+  </div>
+  <!-- Notification Panel -->
+  <div id="notif-panel" style="display:none;position:fixed;top:56px;right:16px;width:340px;background:#fff;border:1px solid #e5e7eb;border-radius:12px;box-shadow:0 8px 32px rgba(0,0,0,.15);z-index:998">
+    <div style="padding:14px 16px;border-bottom:1px solid #e5e7eb;display:flex;justify-content:space-between;align-items:center">
+      <div style="font-size:14px;font-weight:700">Notifications</div>
+      <button onclick="markAllNotifRead()" style="border:none;background:none;cursor:pointer;font-size:12px;color:#2563eb">Mark all read</button>
+    </div>
+    <div id="notif-list" style="max-height:320px;overflow-y:auto">
+      <div style="display:flex;gap:10px;padding:12px 16px;border-bottom:1px solid #f3f4f6;background:#eff6ff">
+        <span style="font-size:18px;flex-shrink:0">🎟️</span>
+        <div>
+          <div style="font-size:13px;font-weight:600">New ticket purchase</div>
+          <div style="font-size:12px;color:#6b7280">Yuki Tanaka bought 1x Early Bird ticket</div>
+          <div style="font-size:11px;color:#9ca3af;margin-top:2px">2 min ago</div>
+        </div>
+        <span style="width:8px;height:8px;background:#2563eb;border-radius:50%;flex-shrink:0;margin-top:4px"></span>
+      </div>
+      <div style="display:flex;gap:10px;padding:12px 16px;border-bottom:1px solid #f3f4f6;background:#eff6ff">
+        <span style="font-size:18px;flex-shrink:0">🎮</span>
+        <div>
+          <div style="font-size:13px;font-weight:600">New game submission</div>
+          <div style="font-size:12px;color:#6b7280">"Neon Drift" submitted by Indie Studio X</div>
+          <div style="font-size:11px;color:#9ca3af;margin-top:2px">15 min ago</div>
+        </div>
+        <span style="width:8px;height:8px;background:#2563eb;border-radius:50%;flex-shrink:0;margin-top:4px"></span>
+      </div>
+      <div style="display:flex;gap:10px;padding:12px 16px;border-bottom:1px solid #f3f4f6">
+        <span style="font-size:18px;flex-shrink:0">🤝</span>
+        <div>
+          <div style="font-size:13px;font-weight:600">Meeting confirmed</div>
+          <div style="font-size:12px;color:#6b7280">Ubisoft × Indie Forge confirmed for Day 1 10:30</div>
+          <div style="font-size:11px;color:#9ca3af;margin-top:2px">1 hr ago</div>
+        </div>
+      </div>
+      <div style="display:flex;gap:10px;padding:12px 16px;border-bottom:1px solid #f3f4f6">
+        <span style="font-size:18px;flex-shrink:0">🏢</span>
+        <div>
+          <div style="font-size:13px;font-weight:600">Booth payment received</div>
+          <div style="font-size:12px;color:#6b7280">EA Games paid €4,500 for Booth A-12</div>
+          <div style="font-size:11px;color:#9ca3af;margin-top:2px">3 hr ago</div>
+        </div>
+      </div>
+      <div style="display:flex;gap:10px;padding:12px 16px">
+        <span style="font-size:18px;flex-shrink:0">📊</span>
+        <div>
+          <div style="font-size:13px;font-weight:600">Registration milestone</div>
+          <div style="font-size:12px;color:#6b7280">You’ve reached 100 registrations! 🎉</div>
+          <div style="font-size:11px;color:#9ca3af;margin-top:2px">Yesterday</div>
+        </div>
+      </div>
+    </div>
   </div>
 </header>
 
@@ -4664,6 +4729,81 @@ function hideAllViews() {
 
 // ── Unsaved Changes ───────────────────────────────────────────────────────────────────────────────────
 let _dirtyTimer = null;
+// ── Global Search ────────────────────────────────────────────────────────────
+const SEARCH_INDEX = [
+  { label: 'My Events', icon: '📋', action: 'showMyEvents()' },
+  { label: 'Attendees', icon: '👥', action: "openModulePage('attendees')" },
+  { label: 'Registration Setup', icon: '📝', action: "openModulePage('free-reg')" },
+  { label: 'Paid Tickets', icon: '🎟️', action: "openModulePage('paid-ticket')" },
+  { label: 'Free Booths', icon: '🏪', action: "openModulePage('free-booth')" },
+  { label: 'Paid Booths', icon: '🏢', action: "openModulePage('paid-booth')" },
+  { label: 'Sponsorship', icon: '🤝', action: "openModulePage('sponsorship')" },
+  { label: 'Panel & Sessions', icon: '🎤', action: "openModulePage('panel')" },
+  { label: 'Awards', icon: '🏆', action: "openModulePage('award')" },
+  { label: 'Buyer Invitation', icon: '💼', action: "openModulePage('buyer-inv')" },
+  { label: "Let's Meet", icon: '🤝', action: "openModulePage('lets-meet')" },
+  { label: 'Game Showcase', icon: '🎮', action: "openModulePage('showcase')" },
+  { label: 'Map', icon: '🗺️', action: "openModulePage('map')" },
+  { label: 'Free Pods', icon: '🛖', action: "openModulePage('free-pod')" },
+  { label: 'Paid Pods', icon: '🏠', action: "openModulePage('paid-pod')" },
+  { label: 'Preview Event', icon: '👁', action: 'showPreview()' },
+];
+function globalSearch(q) {
+  const results = document.getElementById('global-search-results');
+  if (!q.trim()) {
+    results.innerHTML = '<div style="padding:12px 16px;font-size:12px;color:#9ca3af">Type to search modules, events, attendees…</div>';
+    return;
+  }
+  const ql = q.toLowerCase();
+  // Search modules
+  const moduleHits = SEARCH_INDEX.filter(s => s.label.toLowerCase().includes(ql));
+  // Search events
+  let events = [];
+  try { events = JSON.parse(localStorage.getItem('gc_events') || '[]'); } catch(e) {}
+  const eventHits = events.filter(e => (e.name||'').toLowerCase().includes(ql)).slice(0, 3);
+  if (!moduleHits.length && !eventHits.length) {
+    results.innerHTML = `<div style="padding:16px;text-align:center;color:#9ca3af;font-size:13px">🔍 No results for "${q}"</div>`;
+    return;
+  }
+  let html = '';
+  if (eventHits.length) {
+    html += '<div style="padding:6px 12px;font-size:10px;font-weight:700;color:#9ca3af;text-transform:uppercase;letter-spacing:.5px">Events</div>';
+    html += eventHits.map(e => `<div onclick="openEventByName('${(e.name||'').replace(/'/g,'\\'')}')" style="display:flex;align-items:center;gap:10px;padding:10px 16px;cursor:pointer;border-bottom:1px solid #f3f4f6" onmouseover="this.style.background='#f9fafb'" onmouseout="this.style.background=''"><span style="font-size:16px">📅</span><div><div style="font-size:13px;font-weight:500">${e.name}</div><div style="font-size:11px;color:#9ca3af">${e.city||''} ${e.startDate||''}</div></div></div>`).join('');
+  }
+  if (moduleHits.length) {
+    html += '<div style="padding:6px 12px;font-size:10px;font-weight:700;color:#9ca3af;text-transform:uppercase;letter-spacing:.5px">Modules</div>';
+    html += moduleHits.map(s => `<div onclick="${s.action};hideGlobalSearchDropdown()" style="display:flex;align-items:center;gap:10px;padding:10px 16px;cursor:pointer;border-bottom:1px solid #f3f4f6" onmouseover="this.style.background='#f9fafb'" onmouseout="this.style.background=''"><span style="font-size:16px">${s.icon}</span><span style="font-size:13px;font-weight:500">${s.label}</span></div>`).join('');
+  }
+  results.innerHTML = html;
+}
+function showGlobalSearchDropdown() {
+  const dd = document.getElementById('global-search-dropdown');
+  const results = document.getElementById('global-search-results');
+  if (dd) dd.style.display = 'block';
+  if (results && !results.innerHTML) results.innerHTML = '<div style="padding:12px 16px;font-size:12px;color:#9ca3af">Type to search modules, events, attendees…</div>';
+}
+function hideGlobalSearchDropdown() {
+  const dd = document.getElementById('global-search-dropdown');
+  if (dd) dd.style.display = 'none';
+}
+function openEventByName(name) {
+  const events = loadEvents();
+  const idx = events.findIndex(e => e.name === name);
+  if (idx >= 0) { openEvent(idx); hideGlobalSearchDropdown(); }
+}
+// ── Notifications ─────────────────────────────────────────────────────────────
+function toggleNotifications() {
+  const panel = document.getElementById('notif-panel');
+  if (panel) panel.style.display = panel.style.display === 'none' ? 'block' : 'none';
+}
+function markAllNotifRead() {
+  document.querySelectorAll('#notif-list > div').forEach(d => d.style.background = '');
+  document.querySelectorAll('#notif-list span[style*="background:#2563eb"]').forEach(d => d.style.display = 'none');
+  const badge = document.getElementById('notif-badge');
+  if (badge) badge.style.display = 'none';
+  showToast('All notifications marked as read');
+}
+// ── Dirty tracking ────────────────────────────────────────────────────────────
 function markDirty() {
   const bar = document.getElementById('unsaved-bar');
   if(bar) { bar.style.display = 'flex'; }
