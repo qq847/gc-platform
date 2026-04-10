@@ -539,8 +539,9 @@ html,body{min-height:100vh;background:var(--bg);font-family:'DM Sans',sans-serif
             <div style="background:#f8f9fa;border:1px solid #e5e7eb;border-radius:8px;padding:14px;margin-bottom:12px">
               <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px"><div style="font-size:13px;font-weight:600">Live API Key</div><span style="font-size:11px;background:#dcfce7;color:#166534;padding:2px 8px;border-radius:10px;font-weight:600">Active</span></div>
               <div style="display:flex;gap:8px;align-items:center">
-                <input type="password" class="form-input" value="ehq_live_sk_a1b2c3d4e5f6g7h8i9j0" style="font-family:monospace;font-size:12px;flex:1" readonly>
-                <button class="btn-secondary" style="font-size:12px;padding:6px 12px;flex-shrink:0" onclick="showToast('API key copied!')">Copy</button>
+                <input id="api-key-input" type="password" class="form-input" value="ehq_live_sk_a1b2c3d4e5f6g7h8i9j0" style="font-family:monospace;font-size:12px;flex:1" readonly>
+                <button id="api-copy-btn" class="btn-secondary" style="font-size:12px;padding:6px 12px;flex-shrink:0" onclick="copyApiKey()">Copy</button>
+                <button class="btn-secondary" style="font-size:12px;padding:6px 12px;flex-shrink:0" onclick="toggleApiKeyVisibility()">👁</button>
                 <button style="font-size:12px;padding:6px 12px;background:#dc2626;color:#fff;border:none;border-radius:6px;cursor:pointer;font-weight:600;flex-shrink:0" onclick="showToast('New API key generated')">Regenerate</button>
               </div>
             </div>
@@ -2810,7 +2811,7 @@ html,body{min-height:100vh;background:var(--bg);font-family:'DM Sans',sans-serif
         <div class="editor-card" style="margin-top:16px">
           <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px">
             <div style="font-weight:700;font-size:15px">🏆 Voting Results by Category</div>
-            <button class="btn-primary" style="font-size:12px;padding:6px 14px" onclick="showToast('Winners announced! Emails sent to all nominees.')">📢 Announce Winners</button>
+            <button id="announce-btn" class="btn-primary" style="font-size:12px;padding:6px 14px" onclick="announceWinners()">📢 Announce Winners</button>
           </div>
           <div style="display:flex;flex-direction:column;gap:14px">
             <div>
@@ -6249,6 +6250,63 @@ function reviewGame(id, decision) {
     ? '✓ Game approved' + (notes ? ' — notes saved' : '')
     : '✕ Game rejected' + (notes ? ' — notes saved' : '');
   showToast(msg);
+}
+// ── Award: Announce Winners ────────────────────────────────────────────────────────────
+function announceWinners() {
+  const btn = document.getElementById('announce-btn');
+  if (!btn) return;
+  // Disable button and show countdown
+  btn.disabled = true;
+  btn.textContent = '📢 Announcing…';
+  btn.style.opacity = '0.7';
+  let count = 3;
+  const interval = setInterval(() => {
+    btn.textContent = '🎉 Announcing in ' + count + '…';
+    count--;
+    if (count < 0) {
+      clearInterval(interval);
+      btn.textContent = '✓ Winners Announced!';
+      btn.style.background = '#16a34a';
+      btn.style.opacity = '1';
+      // Highlight winner rows in the nominees table
+      document.querySelectorAll('#viewAward tbody tr').forEach(tr => {
+        const statusCell = tr.querySelector('td:nth-child(5)');
+        if (statusCell && statusCell.textContent.includes('Winner')) {
+          tr.style.background = '#fefce8';
+          tr.style.fontWeight = '700';
+        }
+      });
+      showToast('🎉 Winners announced! Confirmation emails sent to all nominees.');
+    }
+  }, 800);
+}
+// ── Settings: API Key Actions ────────────────────────────────────────────────────────────
+function copyApiKey() {
+  const input = document.getElementById('api-key-input');
+  const btn = document.getElementById('api-copy-btn');
+  if (!input) return;
+  // Temporarily show the value to copy
+  const origType = input.type;
+  input.type = 'text';
+  input.select();
+  input.setSelectionRange(0, 99999);
+  try {
+    navigator.clipboard.writeText(input.value).then(() => {
+      if (btn) { btn.textContent = '✓ Copied!'; btn.style.color = '#16a34a'; }
+      setTimeout(() => { if (btn) { btn.textContent = 'Copy'; btn.style.color = ''; } }, 2000);
+    });
+  } catch(e) {
+    document.execCommand('copy');
+    if (btn) { btn.textContent = '✓ Copied!'; btn.style.color = '#16a34a'; }
+    setTimeout(() => { if (btn) { btn.textContent = 'Copy'; btn.style.color = ''; } }, 2000);
+  }
+  input.type = origType;
+  showToast('📋 API key copied to clipboard');
+}
+function toggleApiKeyVisibility() {
+  const input = document.getElementById('api-key-input');
+  if (!input) return;
+  input.type = input.type === 'password' ? 'text' : 'password';
 }
 function toggleFaq(id) {
   const el = document.getElementById(id);
