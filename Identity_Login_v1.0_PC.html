@@ -387,6 +387,16 @@ function gcRedirectAfterLogin() {
         Continue with Google
       </button>
 
+      <!-- DEV MODE: Quick login selector -->
+      <div id="dev-login-panel" style="margin-top:12px;background:#fffbf0;border:1.5px dashed #f59e0b;border-radius:10px;padding:12px 14px;">
+        <div style="font-size:10px;font-weight:800;color:#92400e;letter-spacing:.8px;text-transform:uppercase;margin-bottom:8px;">⚡ Dev Mode — Quick Login</div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap;">
+          <button onclick="devLogin('organizer')" style="flex:1;padding:8px 12px;border-radius:7px;background:#1a1a1a;color:#fff;border:none;font-size:12px;font-weight:700;cursor:pointer;font-family:inherit;">🎪 Organizer</button>
+          <button onclick="devLogin('attendee')" style="flex:1;padding:8px 12px;border-radius:7px;background:#0d9b72;color:#fff;border:none;font-size:12px;font-weight:700;cursor:pointer;font-family:inherit;">🎮 Attendee (Dev)</button>
+          <button onclick="devLogin('publisher')" style="flex:1;padding:8px 12px;border-radius:7px;background:#7c3aed;color:#fff;border:none;font-size:12px;font-weight:700;cursor:pointer;font-family:inherit;">📦 Publisher</button>
+        </div>
+      </div>
+
       <div class="auth-error" id="auth-error"></div>
 
       <!-- What you get -->
@@ -416,6 +426,46 @@ function gcRedirectAfterLogin() {
 </div>
 
 <script>
+// ── DEV MODE: Quick login without Google OAuth ──
+const DEV_USERS = {
+  organizer: {
+    id: 'dev-organizer-001',
+    email: 'gc.test.organizer@gameconnection.dev',
+    name: 'Alex Chen (Organizer)',
+    avatar: null,
+    role: 'organizer'
+  },
+  attendee: {
+    id: 'dev-attendee-001',
+    email: 'gc.test.attendee@gameconnection.dev',
+    name: 'Ray Liu (Attendee)',
+    avatar: null,
+    role: 'attendee'
+  },
+  publisher: {
+    id: 'dev-publisher-001',
+    email: 'gc.test.publisher@gameconnection.dev',
+    name: 'Sam Park (Publisher)',
+    avatar: null,
+    role: 'publisher'
+  }
+};
+
+function devLogin(role) {
+  const user = DEV_USERS[role];
+  if (!user) return;
+  // Inject mock auth token and user into localStorage
+  localStorage.setItem('gc_auth_token', 'dev-mock-token-' + role + '-' + Date.now());
+  localStorage.setItem('gc_auth_user', JSON.stringify(user));
+  // Set wizard flag so we skip onboarding (already "set up")
+  if (!localStorage.getItem('gc_wizard')) {
+    localStorage.setItem('gc_wizard', JSON.stringify({ role, completed: true, dev: true }));
+  }
+  try { sessionStorage.setItem('gc_session', '1'); } catch(e) {}
+  // Redirect to main platform
+  gcRedirectAfterLogin();
+}
+
 async function handleGoogleLogin() {
   const btn = document.getElementById('btn-google');
   const errEl = document.getElementById('auth-error');
