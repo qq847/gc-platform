@@ -336,10 +336,21 @@ html,body{min-height:100vh;background:var(--bg);font-family:'DM Sans',sans-serif
           <input id="att-search" class="form-input" type="text" placeholder="Search name, company, role…" style="max-width:280px" oninput="filterAttendees()">
         </div>
 
+        <!-- Bulk actions toolbar -->
+        <div id="att-bulk-bar" style="display:none;background:#eff6ff;border:1px solid #bfdbfe;border-radius:8px;padding:10px 16px;margin-bottom:12px;display:flex;align-items:center;gap:12px">
+          <span id="att-selected-count" style="font-size:13px;font-weight:600;color:#1e40af">0 selected</span>
+          <div style="flex:1"></div>
+          <button class="btn-secondary" style="font-size:12px;padding:5px 12px" onclick="showToast('Email sent to selected attendees')">✉️ Send Email</button>
+          <button class="btn-secondary" style="font-size:12px;padding:5px 12px" onclick="showToast('Exporting selected…')">⬇ Export Selected</button>
+          <button class="btn-secondary" style="font-size:12px;padding:5px 12px;color:#dc2626" onclick="showToast('Check-in toggled')">✓ Toggle Check-in</button>
+          <button style="border:none;background:none;cursor:pointer;font-size:18px;color:#9ca3af" onclick="clearAttSelection()">×</button>
+        </div>
+
         <div class="editor-card" style="padding:0;overflow:hidden">
           <table style="width:100%;border-collapse:collapse">
             <thead>
               <tr style="background:#f8f9fa;border-bottom:2px solid #e5e7eb">
+                <th style="padding:11px 16px;width:36px"><input type="checkbox" id="att-select-all" onchange="toggleSelectAllAttendees(this.checked)" style="width:14px;height:14px;accent-color:#2563eb"></th>
                 <th style="padding:11px 16px;text-align:left;font-size:11px;font-weight:700;color:#6b7280;text-transform:uppercase;letter-spacing:.5px">Name</th>
                 <th style="padding:11px 16px;text-align:left;font-size:11px;font-weight:700;color:#6b7280;text-transform:uppercase;letter-spacing:.5px">Company</th>
                 <th style="padding:11px 16px;text-align:left;font-size:11px;font-weight:700;color:#6b7280;text-transform:uppercase;letter-spacing:.5px">Role</th>
@@ -607,6 +618,10 @@ html,body{min-height:100vh;background:var(--bg);font-family:'DM Sans',sans-serif
                 <div>
                   <div style="font-size:15px;font-weight:700">Early Bird</div>
                   <div style="font-size:12px;color:#6b7280">Sale ends Mar 31 · Max 2 per order</div>
+                  <div style="display:inline-flex;align-items:center;gap:6px;background:#fef3c7;border:1px solid #fde68a;border-radius:6px;padding:3px 10px;margin-top:5px">
+                    <span style="font-size:11px;color:#92400e">&#9201;</span>
+                    <span id="early-bird-countdown" style="font-size:11px;font-weight:700;color:#92400e">Calculating…</span>
+                  </div>
                 </div>
                 <div style="display:flex;gap:6px;align-items:center">
                   <span style="font-size:11px;background:#dcfce7;color:#16a34a;padding:3px 9px;border-radius:20px;font-weight:600">Active</span>
@@ -1180,7 +1195,14 @@ html,body{min-height:100vh;background:var(--bg);font-family:'DM Sans',sans-serif
                 <span style="font-size:11px;background:#f3e8ff;color:#9333ea;padding:2px 8px;border-radius:4px;font-weight:600">2 / 2 sold</span>
               </div>
               <div style="font-size:22px;font-weight:700;margin-bottom:8px">€50,000 <span style="font-size:12px;font-weight:400;color:#6b7280">/ package</span></div>
-              <div style="font-size:12px;color:#6b7280;margin-bottom:10px">Logo on all materials · Keynote slot · VIP lounge · 4 booths</div>
+              <ul style="margin:0 0 10px 0;padding:0;list-style:none;display:flex;flex-direction:column;gap:3px">
+                <li style="font-size:12px;color:#374151"><span style="color:#9333ea;margin-right:5px">✓</span>Logo on all materials &amp; stage backdrop</li>
+                <li style="font-size:12px;color:#374151"><span style="color:#9333ea;margin-right:5px">✓</span>30-min keynote slot (Main Stage)</li>
+                <li style="font-size:12px;color:#374151"><span style="color:#9333ea;margin-right:5px">✓</span>VIP lounge access (4 passes)</li>
+                <li style="font-size:12px;color:#374151"><span style="color:#9333ea;margin-right:5px">✓</span>4 exhibition booths (Island size)</li>
+                <li style="font-size:12px;color:#374151"><span style="color:#9333ea;margin-right:5px">✓</span>20 complimentary tickets</li>
+                <li style="font-size:12px;color:#374151"><span style="color:#9333ea;margin-right:5px">✓</span>Dedicated email blast to all attendees</li>
+              </ul>
               <div style="height:4px;background:#e5e7eb;border-radius:3px"><div style="width:100%;height:100%;background:#9333ea;border-radius:3px"></div></div>
             </div>
             <!-- Gold -->
@@ -1190,7 +1212,13 @@ html,body{min-height:100vh;background:var(--bg);font-family:'DM Sans',sans-serif
                 <span style="font-size:11px;background:#fef3c7;color:#d97706;padding:2px 8px;border-radius:4px;font-weight:600">3 / 4 sold</span>
               </div>
               <div style="font-size:22px;font-weight:700;margin-bottom:8px">€25,000 <span style="font-size:12px;font-weight:400;color:#6b7280">/ package</span></div>
-              <div style="font-size:12px;color:#6b7280;margin-bottom:10px">Logo on stage · Panel slot · 2 booths · 10 tickets</div>
+              <ul style="margin:0 0 10px 0;padding:0;list-style:none;display:flex;flex-direction:column;gap:3px">
+                <li style="font-size:12px;color:#374151"><span style="color:#d97706;margin-right:5px">✓</span>Logo on stage &amp; website</li>
+                <li style="font-size:12px;color:#374151"><span style="color:#d97706;margin-right:5px">✓</span>30-min panel slot</li>
+                <li style="font-size:12px;color:#374151"><span style="color:#d97706;margin-right:5px">✓</span>2 exhibition booths (Standard)</li>
+                <li style="font-size:12px;color:#374151"><span style="color:#d97706;margin-right:5px">✓</span>10 complimentary tickets</li>
+                <li style="font-size:12px;color:#374151"><span style="color:#d97706;margin-right:5px">✓</span>Social media mention</li>
+              </ul>
               <div style="height:4px;background:#e5e7eb;border-radius:3px"><div style="width:75%;height:100%;background:#d97706;border-radius:3px"></div></div>
             </div>
             <!-- Silver -->
@@ -1200,7 +1228,11 @@ html,body{min-height:100vh;background:var(--bg);font-family:'DM Sans',sans-serif
                 <span style="font-size:11px;background:#f3f4f6;color:#6b7280;padding:2px 8px;border-radius:4px;font-weight:600">4 / 6 sold</span>
               </div>
               <div style="font-size:22px;font-weight:700;margin-bottom:8px">€12,000 <span style="font-size:12px;font-weight:400;color:#6b7280">/ package</span></div>
-              <div style="font-size:12px;color:#6b7280;margin-bottom:10px">Logo on website · 1 booth · 5 tickets</div>
+              <ul style="margin:0 0 10px 0;padding:0;list-style:none;display:flex;flex-direction:column;gap:3px">
+                <li style="font-size:12px;color:#374151"><span style="color:#6b7280;margin-right:5px">✓</span>Logo on website &amp; programme</li>
+                <li style="font-size:12px;color:#374151"><span style="color:#6b7280;margin-right:5px">✓</span>1 exhibition booth (Standard)</li>
+                <li style="font-size:12px;color:#374151"><span style="color:#6b7280;margin-right:5px">✓</span>5 complimentary tickets</li>
+              </ul>
               <div style="height:4px;background:#e5e7eb;border-radius:3px"><div style="width:67%;height:100%;background:#6b7280;border-radius:3px"></div></div>
             </div>
             <!-- Bronze -->
@@ -1210,7 +1242,10 @@ html,body{min-height:100vh;background:var(--bg);font-family:'DM Sans',sans-serif
                 <span style="font-size:11px;background:#fef3c7;color:#b45309;padding:2px 8px;border-radius:4px;font-weight:600">3 / 8 sold</span>
               </div>
               <div style="font-size:22px;font-weight:700;margin-bottom:8px">€5,000 <span style="font-size:12px;font-weight:400;color:#6b7280">/ package</span></div>
-              <div style="font-size:12px;color:#6b7280;margin-bottom:10px">Logo on website · 3 tickets</div>
+              <ul style="margin:0 0 10px 0;padding:0;list-style:none;display:flex;flex-direction:column;gap:3px">
+                <li style="font-size:12px;color:#374151"><span style="color:#b45309;margin-right:5px">✓</span>Logo on website</li>
+                <li style="font-size:12px;color:#374151"><span style="color:#b45309;margin-right:5px">✓</span>3 complimentary tickets</li>
+              </ul>
               <div style="height:4px;background:#e5e7eb;border-radius:3px"><div style="width:37%;height:100%;background:#b45309;border-radius:3px"></div></div>
             </div>
           </div>
@@ -2167,6 +2202,111 @@ html,body{min-height:100vh;background:var(--bg);font-family:'DM Sans',sans-serif
               </div>
             </div>
 
+            <!-- Featured Speakers -->
+            <div class="editor-card" style="margin-bottom:16px">
+              <div style="font-weight:700;font-size:16px;margin-bottom:14px">🎤 Featured Speakers</div>
+              <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px">
+                <div style="text-align:center">
+                  <div style="width:64px;height:64px;border-radius:50%;background:linear-gradient(135deg,#dbeafe,#bfdbfe);display:flex;align-items:center;justify-content:center;font-size:24px;margin:0 auto 8px">👩</div>
+                  <div style="font-size:13px;font-weight:700">Sarah Kim</div>
+                  <div style="font-size:11px;color:#6b7280">VP Publishing</div>
+                  <div style="font-size:11px;color:#2563eb;font-weight:600">EA Games</div>
+                </div>
+                <div style="text-align:center">
+                  <div style="width:64px;height:64px;border-radius:50%;background:linear-gradient(135deg,#dcfce7,#bbf7d0);display:flex;align-items:center;justify-content:center;font-size:24px;margin:0 auto 8px">👨</div>
+                  <div style="font-size:13px;font-weight:700">Tom Wu</div>
+                  <div style="font-size:11px;color:#6b7280">Studio Director</div>
+                  <div style="font-size:11px;color:#16a34a;font-weight:600">Tencent Games</div>
+                </div>
+                <div style="text-align:center">
+                  <div style="width:64px;height:64px;border-radius:50%;background:linear-gradient(135deg,#fef3c7,#fde68a);display:flex;align-items:center;justify-content:center;font-size:24px;margin:0 auto 8px">👩</div>
+                  <div style="font-size:13px;font-weight:700">Lisa Park</div>
+                  <div style="font-size:11px;color:#6b7280">Head of Partnerships</div>
+                  <div style="font-size:11px;color:#d97706;font-weight:600">Sony Interactive</div>
+                </div>
+                <div style="text-align:center">
+                  <div style="width:64px;height:64px;border-radius:50%;background:linear-gradient(135deg,#f3e8ff,#e9d5ff);display:flex;align-items:center;justify-content:center;font-size:24px;margin:0 auto 8px">👨</div>
+                  <div style="font-size:13px;font-weight:700">Alex Chen</div>
+                  <div style="font-size:11px;color:#6b7280">Senior Producer</div>
+                  <div style="font-size:11px;color:#9333ea;font-weight:600">Ubisoft</div>
+                </div>
+              </div>
+              <div style="text-align:center;margin-top:14px">
+                <button class="btn-secondary" style="font-size:13px;padding:8px 20px" onclick="showToast('Full speaker list coming soon')">View All 38 Speakers →</button>
+              </div>
+            </div>
+
+            <!-- Programme Highlights -->
+            <div class="editor-card" style="margin-bottom:16px">
+              <div style="font-weight:700;font-size:16px;margin-bottom:14px">📅 Programme Highlights</div>
+              <div style="display:flex;flex-direction:column;gap:0">
+                <div style="display:flex;gap:0;padding:12px 0;border-bottom:1px solid #f3f4f6">
+                  <div style="width:80px;flex-shrink:0">
+                    <div style="font-size:11px;font-weight:700;color:#2563eb">DAY 1</div>
+                    <div style="font-size:10px;color:#9ca3af">Jun 12</div>
+                  </div>
+                  <div style="flex:1;display:flex;flex-direction:column;gap:6px">
+                    <div style="display:flex;align-items:center;gap:8px">
+                      <span style="font-size:11px;background:#dbeafe;color:#1e40af;padding:2px 8px;border-radius:4px;font-weight:600;flex-shrink:0">09:00</span>
+                      <span style="font-size:13px;font-weight:600">Opening Keynote</span>
+                      <span style="font-size:11px;color:#6b7280">Main Stage</span>
+                    </div>
+                    <div style="display:flex;align-items:center;gap:8px">
+                      <span style="font-size:11px;background:#dcfce7;color:#166534;padding:2px 8px;border-radius:4px;font-weight:600;flex-shrink:0">11:00</span>
+                      <span style="font-size:13px;font-weight:600">B2B Meetings Open</span>
+                      <span style="font-size:11px;color:#6b7280">Pod Zone</span>
+                    </div>
+                    <div style="display:flex;align-items:center;gap:8px">
+                      <span style="font-size:11px;background:#f3e8ff;color:#7e22ce;padding:2px 8px;border-radius:4px;font-weight:600;flex-shrink:0">14:00</span>
+                      <span style="font-size:13px;font-weight:600">Game Showcase Opens</span>
+                      <span style="font-size:11px;color:#6b7280">Exhibition Hall</span>
+                    </div>
+                  </div>
+                </div>
+                <div style="display:flex;gap:0;padding:12px 0;border-bottom:1px solid #f3f4f6">
+                  <div style="width:80px;flex-shrink:0">
+                    <div style="font-size:11px;font-weight:700;color:#16a34a">DAY 2</div>
+                    <div style="font-size:10px;color:#9ca3af">Jun 13</div>
+                  </div>
+                  <div style="flex:1;display:flex;flex-direction:column;gap:6px">
+                    <div style="display:flex;align-items:center;gap:8px">
+                      <span style="font-size:11px;background:#fef3c7;color:#92400e;padding:2px 8px;border-radius:4px;font-weight:600;flex-shrink:0">10:00</span>
+                      <span style="font-size:13px;font-weight:600">Award Nominations Revealed</span>
+                      <span style="font-size:11px;color:#6b7280">Main Stage</span>
+                    </div>
+                    <div style="display:flex;align-items:center;gap:8px">
+                      <span style="font-size:11px;background:#dbeafe;color:#1e40af;padding:2px 8px;border-radius:4px;font-weight:600;flex-shrink:0">15:00</span>
+                      <span style="font-size:13px;font-weight:600">Buyer Roundtable</span>
+                      <span style="font-size:11px;color:#6b7280">VIP Lounge</span>
+                    </div>
+                    <div style="display:flex;align-items:center;gap:8px">
+                      <span style="font-size:11px;background:#fee2e2;color:#991b1b;padding:2px 8px;border-radius:4px;font-weight:600;flex-shrink:0">19:00</span>
+                      <span style="font-size:13px;font-weight:600">Awards Ceremony & Gala</span>
+                      <span style="font-size:11px;color:#6b7280">Grand Ballroom</span>
+                    </div>
+                  </div>
+                </div>
+                <div style="display:flex;gap:0;padding:12px 0">
+                  <div style="width:80px;flex-shrink:0">
+                    <div style="font-size:11px;font-weight:700;color:#d97706">DAY 3</div>
+                    <div style="font-size:10px;color:#9ca3af">Jun 14</div>
+                  </div>
+                  <div style="flex:1;display:flex;flex-direction:column;gap:6px">
+                    <div style="display:flex;align-items:center;gap:8px">
+                      <span style="font-size:11px;background:#dcfce7;color:#166534;padding:2px 8px;border-radius:4px;font-weight:600;flex-shrink:0">09:00</span>
+                      <span style="font-size:13px;font-weight:600">Indie Spotlight Sessions</span>
+                      <span style="font-size:11px;color:#6b7280">Track B</span>
+                    </div>
+                    <div style="display:flex;align-items:center;gap:8px">
+                      <span style="font-size:11px;background:#f3e8ff;color:#7e22ce;padding:2px 8px;border-radius:4px;font-weight:600;flex-shrink:0">16:00</span>
+                      <span style="font-size:13px;font-weight:600">Closing Keynote & Wrap</span>
+                      <span style="font-size:11px;color:#6b7280">Main Stage</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
             <!-- Buyer Invitation -->
             <div class="editor-card">
               <div style="font-weight:700;font-size:16px;margin-bottom:4px">💼 Hosted Buyer Programme</div>
@@ -3067,6 +3207,7 @@ function renderAttendeesTable(rows) {
       ? '<span style="display:inline-flex;align-items:center;gap:4px;font-size:12px;background:#dcfce7;color:#16a34a;padding:3px 10px;border-radius:20px;font-weight:600">✓ Checked in</span>'
       : '<span style="display:inline-flex;align-items:center;gap:4px;font-size:12px;background:#f3f4f6;color:#9ca3af;padding:3px 10px;border-radius:20px;font-weight:600">○ Pending</span>';
     return `<tr style="border-bottom:1px solid #f3f4f6" onmouseover="this.style.background='#f9fafb'" onmouseout="this.style.background=''">
+      <td style="padding:12px 16px;width:36px"><input type="checkbox" class="att-row-cb" style="width:14px;height:14px;accent-color:#2563eb" onchange="updateAttBulkBar()"></td>
       <td style="padding:12px 16px">
         <div style="display:flex;align-items:center;gap:10px">
           <div style="width:32px;height:32px;border-radius:50%;background:linear-gradient(135deg,#1e3a8a,#2563eb);display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;color:#fff;flex-shrink:0">${(r.name||'?').charAt(0)}</div>
@@ -3084,6 +3225,34 @@ function renderAttendeesTable(rows) {
   }).join('');
   const ci = rows.filter(r => r.checkedIn).length;
   footer.textContent = `Showing ${rows.length} attendee${rows.length!==1?'s':''} · ${ci} checked in · ${rows.length-ci} pending`;
+}
+
+function toggleSelectAllAttendees(checked) {
+  const checkboxes = document.querySelectorAll('.att-row-cb');
+  checkboxes.forEach(cb => cb.checked = checked);
+  updateAttBulkBar();
+}
+
+function updateAttBulkBar() {
+  const checkboxes = document.querySelectorAll('.att-row-cb');
+  const selected = Array.from(checkboxes).filter(cb => cb.checked).length;
+  const bar = document.getElementById('att-bulk-bar');
+  const count = document.getElementById('att-selected-count');
+  if (selected > 0) {
+    bar.style.display = 'flex';
+    count.textContent = selected + ' selected';
+  } else {
+    bar.style.display = 'none';
+  }
+  const selectAll = document.getElementById('att-select-all');
+  if (selectAll) selectAll.checked = selected === checkboxes.length && checkboxes.length > 0;
+}
+
+function clearAttSelection() {
+  document.querySelectorAll('.att-row-cb').forEach(cb => cb.checked = false);
+  const selectAll = document.getElementById('att-select-all');
+  if (selectAll) selectAll.checked = false;
+  document.getElementById('att-bulk-bar').style.display = 'none';
 }
 
 // ── Registration ────────────────────────────────────────────────────────────────
@@ -3260,6 +3429,22 @@ function showFreeTicket() {
 function showPaidTicket() {
   hideAllViews();
   document.getElementById('viewPaidTicket').style.display = 'block';
+  // Early Bird countdown
+  const deadline = new Date('2027-03-31T23:59:59');
+  function updateCountdown() {
+    const el = document.getElementById('early-bird-countdown');
+    if (!el) return;
+    const now = new Date();
+    const diff = deadline - now;
+    if (diff <= 0) { el.textContent = 'Sale ended'; return; }
+    const d = Math.floor(diff / 86400000);
+    const h = Math.floor((diff % 86400000) / 3600000);
+    const m = Math.floor((diff % 3600000) / 60000);
+    el.textContent = d + 'd ' + h + 'h ' + m + 'm left';
+  }
+  updateCountdown();
+  if (window._earlyBirdTimer) clearInterval(window._earlyBirdTimer);
+  window._earlyBirdTimer = setInterval(updateCountdown, 60000);
 }
 function showFreePod() {
   hideAllViews();
