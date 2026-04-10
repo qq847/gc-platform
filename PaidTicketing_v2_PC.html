@@ -1,0 +1,700 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Paid Ticketing – Event HQ</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#f4f6f9;--white:#ffffff;
+  --green:#16a34a;--green-dark:#15803d;--green-light:#f0fdf4;--green-mid:#bbf7d0;
+  --border:#e2e6ed;--border-light:#eef0f4;
+  --text1:#0f172a;--text2:#475569;--text3:#94a3b8;
+  --red:#dc2626;--red-light:#fef2f2;
+  --yellow:#d97706;--yellow-light:#fffbeb;
+  --orange:#ea580c;--orange-light:#fff7ed;
+  --blue:#2563eb;--blue-light:#eff6ff;
+  --sidebar-w:220px;--topbar-h:54px;--radius:10px;
+  --shadow:0 1px 3px rgba(0,0,0,0.07),0 6px 20px rgba(0,0,0,0.05);
+}
+html,body{min-height:100vh;background:var(--bg);font-family:'DM Sans',sans-serif;color:var(--text1);font-size:14px;line-height:1.55}
+
+/* ── Top Bar ── */
+.topbar{position:sticky;top:0;z-index:200;height:var(--topbar-h);background:var(--white);border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;padding:0 20px;gap:16px}
+.topbar-left{display:flex;align-items:center;gap:10px}
+.logo-wrap{display:flex;align-items:center;gap:7px;text-decoration:none}
+.logo-mark{width:26px;height:26px;background:var(--green);border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:13px;color:#fff;font-weight:800}
+.logo-name{font-size:12px;font-weight:800;color:var(--text1);letter-spacing:.02em}
+.logo-name span{color:var(--green)}
+.topbar-sep{width:1px;height:16px;background:var(--border);margin:0 6px}
+.topbar-product{font-size:13px;font-weight:700;color:var(--green)}
+.topbar-right{display:flex;align-items:center;gap:10px}
+.org-chip{display:flex;align-items:center;gap:7px;padding:4px 10px 4px 5px;border-radius:20px;border:1px solid var(--border);background:var(--white);cursor:pointer}
+.avatar{width:24px;height:24px;border-radius:50%;background:linear-gradient(135deg,#16a34a,#4ade80);color:#fff;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:800}
+.org-name{font-size:12px;font-weight:600;color:var(--text2)}
+.btn-back{display:flex;align-items:center;gap:5px;font-size:12px;color:var(--text2);text-decoration:none;padding:5px 10px;border-radius:6px;border:1px solid var(--border);transition:background .12s;font-weight:500}
+.btn-back:hover{background:var(--bg)}
+
+/* ── Layout ── */
+.app-body{display:flex;min-height:calc(100vh - var(--topbar-h))}
+
+/* ── Sidebar ── */
+.sidebar{width:var(--sidebar-w);background:var(--white);border-right:1px solid var(--border);display:flex;flex-direction:column;flex-shrink:0;position:sticky;top:var(--topbar-h);height:calc(100vh - var(--topbar-h));overflow-y:auto}
+.sidebar-top{padding:12px 8px 8px}
+.sidebar-bottom{padding:8px;margin-top:auto;border-top:1px solid var(--border-light)}
+.nav-sep{height:1px;background:var(--border-light);margin:8px 0}
+.nav-label{font-size:10px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--text3);padding:6px 8px 4px}
+.nav-item{display:flex;align-items:center;gap:8px;padding:7px 8px;border-radius:7px;font-size:13px;font-weight:500;color:var(--text2);cursor:pointer;text-decoration:none;transition:background .1s,color .1s}
+.nav-item:hover{background:var(--bg);color:var(--text1)}
+.nav-item.active{background:var(--green-light);color:var(--green);font-weight:600}
+.nav-item .ni-icon{font-size:13px;width:18px;text-align:center;flex-shrink:0}
+
+/* ── Main ── */
+.main{flex:1;display:flex;flex-direction:column;min-width:0}
+.main-topbar{height:48px;background:var(--white);border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;padding:0 24px;gap:12px}
+.breadcrumb{font-size:13px;color:var(--text2)}
+.breadcrumb strong{color:var(--text1);font-weight:600}
+.topbar-actions{display:flex;align-items:center;gap:8px}
+.btn-secondary{padding:6px 14px;border:1.5px solid var(--border);background:var(--white);border-radius:7px;font-family:'DM Sans',sans-serif;font-size:12.5px;font-weight:600;cursor:pointer;color:var(--text2);transition:all .12s}
+.btn-secondary:hover{border-color:var(--green);color:var(--green)}
+.btn-primary{padding:6px 16px;border:none;background:var(--green);color:#fff;border-radius:7px;font-family:'DM Sans',sans-serif;font-size:12.5px;font-weight:600;cursor:pointer;transition:background .12s}
+.btn-primary:hover{background:var(--green-dark)}
+.btn-danger{padding:6px 16px;border:none;background:var(--red);color:#fff;border-radius:7px;font-family:'DM Sans',sans-serif;font-size:12.5px;font-weight:600;cursor:pointer}
+.content{padding:24px;flex:1}
+
+/* ── Page header ── */
+.page-header{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:20px}
+.page-title{font-size:20px;font-weight:700;margin-bottom:3px}
+.page-subtitle{font-size:13px;color:var(--text2)}
+
+/* ── Tabs ── */
+.tab-bar{display:flex;background:var(--white);border:1px solid var(--border);border-radius:var(--radius);padding:4px;width:fit-content;margin-bottom:20px}
+.tab-btn{padding:7px 20px;border:none;background:transparent;font-family:'DM Sans',sans-serif;font-size:13px;font-weight:500;color:var(--text2);border-radius:7px;cursor:pointer;transition:all .15s;display:flex;align-items:center;gap:6px}
+.tab-btn.active{background:var(--green);color:#fff;font-weight:600;box-shadow:0 2px 8px rgba(22,163,74,.25)}
+.tab-btn:not(.active):hover{background:var(--bg);color:var(--text1)}
+.tab-pane{display:none}
+.tab-pane.active{display:block}
+
+/* ── Stats ── */
+.stats-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:20px}
+.stat-card{background:var(--white);border:1px solid var(--border);border-radius:var(--radius);padding:16px;box-shadow:var(--shadow)}
+.stat-icon{width:36px;height:36px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:16px;margin-bottom:10px}
+.stat-icon.green{background:var(--green-light)}
+.stat-icon.orange{background:var(--orange-light)}
+.stat-icon.blue{background:var(--blue-light)}
+.stat-icon.yellow{background:var(--yellow-light)}
+.stat-label{font-size:11.5px;color:var(--text2);font-weight:500;margin-bottom:4px}
+.stat-value{font-size:22px;font-weight:700;line-height:1}
+.stat-change{font-size:11px;color:var(--green);margin-top:3px}
+
+/* ── Ticket grid ── */
+.ticket-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:16px;margin-bottom:20px}
+.ticket-card{background:var(--white);border:1px solid var(--border);border-radius:var(--radius);padding:20px;box-shadow:var(--shadow);position:relative;overflow:hidden;transition:border-color .15s,box-shadow .15s}
+.ticket-card:hover{border-color:var(--green);box-shadow:0 4px 20px rgba(22,163,74,.12)}
+.ticket-card::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;background:var(--green)}
+.ticket-card.draft::before{background:var(--text3)}
+.ticket-card-header{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:12px}
+.ticket-name{font-size:15px;font-weight:700}
+.ticket-price{font-size:24px;font-weight:700;color:var(--green);line-height:1;margin-bottom:14px}
+.ticket-price span{font-size:13px;font-weight:400;color:var(--text2)}
+.ticket-card.draft .ticket-price{color:var(--text3)}
+.ticket-stats{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:12px}
+.ticket-stat-label{font-size:10px;color:var(--text2);font-weight:500;text-transform:uppercase;letter-spacing:.5px}
+.ticket-stat-value{font-size:17px;font-weight:700;margin-top:2px}
+.ticket-progress{height:5px;background:var(--border);border-radius:3px;margin-bottom:6px;overflow:hidden}
+.ticket-progress-fill{height:100%;background:var(--green);border-radius:3px;transition:width .3s}
+.ticket-card.draft .ticket-progress-fill{background:var(--text3)}
+.ticket-card-footer{display:flex;align-items:center;justify-content:space-between;margin-top:12px;padding-top:12px;border-top:1px solid var(--border-light)}
+.ticket-actions{display:flex;gap:5px}
+.btn-icon{width:28px;height:28px;border:1px solid var(--border);background:var(--white);border-radius:6px;cursor:pointer;font-size:13px;display:flex;align-items:center;justify-content:center;transition:all .12s;color:var(--text2)}
+.btn-icon:hover{border-color:var(--green);color:var(--green)}
+.btn-icon.danger:hover{border-color:var(--red);color:var(--red)}
+
+/* ── Badge ── */
+.badge{display:inline-flex;align-items:center;padding:3px 9px;border-radius:20px;font-size:11px;font-weight:600}
+.badge-active{background:var(--green-light);color:var(--green)}
+.badge-draft{background:var(--bg);color:var(--text3)}
+.badge-paused{background:var(--yellow-light);color:var(--yellow)}
+.badge-paid{background:var(--green-light);color:var(--green)}
+.badge-pending{background:var(--yellow-light);color:var(--yellow)}
+.badge-refunded{background:var(--blue-light);color:var(--blue)}
+.badge-cancelled{background:var(--red-light);color:var(--red)}
+
+/* ── Add form ── */
+.add-form-wrapper{background:var(--white);border:1px solid var(--border);border-radius:var(--radius);overflow:hidden;box-shadow:var(--shadow)}
+.add-form-toggle{width:100%;padding:14px 20px;background:transparent;border:none;font-family:'DM Sans',sans-serif;font-size:13.5px;font-weight:600;color:var(--text2);cursor:pointer;display:flex;align-items:center;gap:8px;transition:background .12s}
+.add-form-toggle:hover{background:var(--bg);color:var(--green)}
+.add-form-toggle.open{background:var(--green-light);color:var(--green)}
+.toggle-icon{font-size:18px;font-weight:300;transition:transform .2s}
+.add-form-toggle.open .toggle-icon{transform:rotate(45deg)}
+.add-form-body{display:none;padding:20px;border-top:1px solid var(--border)}
+.add-form-body.open{display:block}
+.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:16px}
+.form-group{display:flex;flex-direction:column;gap:5px}
+.form-group.full{grid-column:1/-1}
+.form-label{font-size:11.5px;font-weight:600;color:var(--text2);text-transform:uppercase;letter-spacing:.5px}
+.form-control{padding:8px 11px;border:1.5px solid var(--border);border-radius:7px;font-family:'DM Sans',sans-serif;font-size:13px;color:var(--text1);background:#fff;outline:none;transition:border-color .15s}
+.form-control:focus{border-color:var(--green)}
+.form-control-group{display:flex;gap:8px}
+.form-control-group .form-control:first-child{flex:1}
+.form-control-group .form-control:last-child{width:90px}
+.radio-group{display:flex;gap:14px}
+.radio-option{display:flex;align-items:center;gap:6px;font-size:13px;font-weight:500;cursor:pointer}
+.radio-option input{accent-color:var(--green)}
+.toggle-switch{display:flex;align-items:center;gap:10px;font-size:13px}
+.switch{position:relative;width:38px;height:21px;flex-shrink:0}
+.switch input{opacity:0;width:0;height:0}
+.slider{position:absolute;inset:0;background:#cbd5e1;border-radius:21px;cursor:pointer;transition:.2s}
+.slider::before{content:'';position:absolute;width:15px;height:15px;left:3px;top:3px;background:#fff;border-radius:50%;transition:.2s;box-shadow:0 1px 3px rgba(0,0,0,.2)}
+.switch input:checked + .slider{background:var(--green)}
+.switch input:checked + .slider::before{transform:translateX(17px)}
+.form-actions{display:flex;justify-content:flex-end;gap:8px;padding-top:12px;border-top:1px solid var(--border-light)}
+
+/* ── Charts ── */
+.charts-row{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:20px}
+.card{background:var(--white);border:1px solid var(--border);border-radius:var(--radius);padding:20px;box-shadow:var(--shadow)}
+.card-header{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:16px}
+.card-title{font-size:14px;font-weight:700}
+.card-subtitle{font-size:12px;color:var(--text2);margin-top:2px}
+.line-chart-container{display:flex;gap:8px;align-items:flex-end;height:160px}
+.chart-y-labels{display:flex;flex-direction:column;justify-content:space-between;font-size:10px;color:var(--text3);text-align:right;height:100%;padding-bottom:16px}
+.line-chart-svg{flex:1;height:100%}
+.bar-chart{display:flex;flex-direction:column;gap:10px}
+.bar-row{display:flex;align-items:center;gap:10px}
+.bar-label{font-size:12px;font-weight:500;width:90px;flex-shrink:0}
+.bar-track{flex:1;height:22px;background:var(--bg);border-radius:4px;overflow:hidden}
+.bar-fill{height:100%;background:var(--green);border-radius:4px;display:flex;align-items:center;padding-left:8px;font-size:11px;font-weight:700;color:#fff;transition:width .4s}
+.bar-count{font-size:12px;font-weight:600;width:24px;text-align:right}
+
+/* ── Table ── */
+.table-wrapper{overflow-x:auto}
+table{width:100%;border-collapse:collapse}
+thead th{padding:10px 14px;text-align:left;font-size:11px;font-weight:700;letter-spacing:.6px;text-transform:uppercase;color:var(--text3);background:var(--bg);border-bottom:1px solid var(--border);white-space:nowrap}
+tbody tr{border-bottom:1px solid var(--border);transition:background .1s}
+tbody tr:last-child{border-bottom:none}
+tbody tr:hover{background:#f8fafc}
+tbody td{padding:11px 14px;font-size:13px;vertical-align:middle}
+.td-name{font-weight:600}
+.td-meta{font-size:11.5px;color:var(--text2);margin-top:1px}
+.font-mono{font-family:monospace;font-size:12px;color:var(--text2)}
+
+/* ── Orders toolbar ── */
+.orders-toolbar{display:flex;align-items:center;gap:10px;margin-bottom:16px;flex-wrap:wrap}
+.filter-tabs{display:flex;gap:3px;background:var(--white);border:1px solid var(--border);border-radius:8px;padding:3px}
+.filter-tab{padding:5px 12px;border:none;background:transparent;font-family:'DM Sans',sans-serif;font-size:12px;font-weight:500;color:var(--text2);border-radius:6px;cursor:pointer;transition:all .15s}
+.filter-tab.active{background:var(--green);color:#fff;font-weight:600}
+.filter-tab:not(.active):hover{background:var(--bg)}
+.search-box{display:flex;align-items:center;gap:7px;background:var(--white);border:1.5px solid var(--border);border-radius:8px;padding:6px 11px;flex:1;min-width:180px;max-width:280px}
+.search-box input{border:none;outline:none;font-family:'DM Sans',sans-serif;font-size:13px;width:100%;background:transparent}
+.ml-auto{margin-left:auto}
+
+/* ── Modal ── */
+.modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.4);z-index:500;align-items:center;justify-content:center}
+.modal-overlay.open{display:flex}
+.modal{background:#fff;border-radius:12px;padding:24px;width:420px;max-width:95vw;box-shadow:0 20px 60px rgba(0,0,0,.18);animation:slideUp .2s ease}
+@keyframes slideUp{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:translateY(0)}}
+.modal-title{font-size:16px;font-weight:700;margin-bottom:14px}
+.modal-body{font-size:13.5px;color:var(--text2);line-height:1.6}
+.modal-actions{display:flex;justify-content:flex-end;gap:8px;margin-top:20px}
+.btn-cancel{padding:7px 16px;border:1.5px solid var(--border);background:transparent;border-radius:7px;font-family:'DM Sans',sans-serif;font-size:13px;font-weight:600;cursor:pointer;color:var(--text2)}
+
+/* ── Toast ── */
+.toast-container{position:fixed;bottom:22px;right:22px;display:flex;flex-direction:column;gap:8px;z-index:999}
+.toast{padding:10px 16px;border-radius:8px;font-size:13px;font-weight:500;display:flex;align-items:center;gap:8px;box-shadow:0 8px 24px rgba(0,0,0,.15);animation:toastIn .2s ease}
+@keyframes toastIn{from{opacity:0;transform:translateX(20px)}to{opacity:1;transform:translateX(0)}}
+.toast.success{background:var(--green);color:#fff}
+.toast.info{background:var(--text1);color:#fff}
+.toast.danger{background:var(--red);color:#fff}
+</style>
+</head>
+<body>
+
+<!-- Top Bar -->
+<header class="topbar">
+  <div class="topbar-left">
+    <a href="EventHub_v2_PC.html" class="logo-wrap">
+      <div class="logo-mark">GC</div>
+      <span class="logo-name">GAME<span>CONNECTION</span></span>
+    </a>
+    <div class="topbar-sep"></div>
+    <span class="topbar-product">Event HQ</span>
+  </div>
+  <div class="topbar-right">
+    <div class="org-chip">
+      <div class="avatar">QQ</div>
+      <span class="org-name">My Organization</span>
+    </div>
+    <a href="EventHQ_Dashboard_v4_PC.html" class="btn-back">← Dashboard</a>
+  </div>
+</header>
+
+<div class="app-body">
+  <!-- Sidebar -->
+  <nav class="sidebar">
+    <div class="sidebar-top">
+      <a class="nav-item" href="EventHQ_Dashboard_v4_PC.html"><span class="ni-icon">🗓️</span> My Events</a>
+      <a class="nav-item" onclick="showToast('Analytics coming soon','info')"><span class="ni-icon">📊</span> Analytics</a>
+      <div class="nav-sep"></div>
+      <div class="nav-label">Current Event</div>
+      <a class="nav-item" href="FreeRegistration_v2_PC.html"><span class="ni-icon">📋</span> Registration</a>
+      <a class="nav-item active" href="#"><span class="ni-icon">🎟️</span> Ticketing</a>
+      <a class="nav-item" href="BoothManagement_v2_PC.html"><span class="ni-icon">🏪</span> Booth</a>
+      <a class="nav-item" href="SponsorshipManagement_v2_PC.html"><span class="ni-icon">🤝</span> Sponsorship</a>
+      <a class="nav-item" href="SessionManagement_v2_PC.html"><span class="ni-icon">🎤</span> Sessions</a>
+      <a class="nav-item" href="Awards_v3_PC.html"><span class="ni-icon">🏆</span> Awards</a>
+      <a class="nav-item" href="Attendees_v2_PC.html"><span class="ni-icon">👥</span> Attendees</a>
+      <a class="nav-item" href="LetsMeet_Organizer_v2_PC.html"><span class="ni-icon">💬</span> Let's Meet</a>
+      <a class="nav-item" href="GameShowcase_v2_PC.html"><span class="ni-icon">🎮</span> Game Showcase</a>
+    </div>
+    <div class="sidebar-bottom">
+      <a class="nav-item" onclick="showToast('Settings coming soon','info')"><span class="ni-icon">⚙️</span> Settings</a>
+    </div>
+  </nav>
+
+  <!-- Main -->
+  <div class="main">
+    <div class="main-topbar">
+      <div class="breadcrumb">Ticketing &rsaquo; <strong>Paid Ticketing</strong></div>
+      <div class="topbar-actions">
+        <button class="btn-secondary" onclick="showToast('Stripe dashboard opening…','info')">💳 Stripe Dashboard</button>
+        <button class="btn-primary" onclick="showToast('Settings saved!','success')">💾 Save Changes</button>
+      </div>
+    </div>
+
+    <div class="content">
+      <div class="page-header">
+        <div>
+          <div class="page-title">Paid Ticketing</div>
+          <div class="page-subtitle">Manage ticket types, track sales, and handle orders</div>
+        </div>
+        <div style="display:flex;align-items:center;gap:8px;">
+          <span style="background:var(--green-light);color:var(--green);font-size:12px;font-weight:600;padding:4px 10px;border-radius:20px;">🎮 Game Connection 2026</span>
+          <span style="font-size:12px;color:var(--text2);">Paris · Jun 15–17</span>
+        </div>
+      </div>
+
+      <!-- Tabs -->
+      <div class="tab-bar">
+        <button class="tab-btn active" onclick="switchTab('ticket-types', this)">🎟 Ticket Types</button>
+        <button class="tab-btn" onclick="switchTab('sales-overview', this)">📊 Sales Overview</button>
+        <button class="tab-btn" onclick="switchTab('orders', this)">📋 Orders</button>
+      </div>
+
+      <!-- ══ TAB 1: TICKET TYPES ══ -->
+      <div id="ticket-types" class="tab-pane active">
+        <div class="ticket-grid" id="ticketGrid">
+
+          <!-- Early Bird -->
+          <div class="ticket-card" id="tc-earlybird">
+            <div class="ticket-card-header">
+              <div><div class="ticket-name">Early Bird</div><div style="font-size:12px;color:var(--text2);margin-top:2px;">🗓 Sale ends Mar 31</div></div>
+              <span class="badge badge-active">Active</span>
+            </div>
+            <div class="ticket-price">€99 <span>/ ticket</span></div>
+            <div class="ticket-stats">
+              <div><div class="ticket-stat-label">Inventory</div><div class="ticket-stat-value">50</div></div>
+              <div><div class="ticket-stat-label">Sold</div><div class="ticket-stat-value" style="color:var(--green)">23</div></div>
+              <div><div class="ticket-stat-label">Left</div><div class="ticket-stat-value">27</div></div>
+              <div><div class="ticket-stat-label">Revenue</div><div class="ticket-stat-value" style="font-size:14px">€2,277</div></div>
+            </div>
+            <div class="ticket-progress"><div class="ticket-progress-fill" style="width:46%"></div></div>
+            <div style="font-size:11px;color:var(--text2);margin-bottom:12px;">46% sold · 27 remaining</div>
+            <div class="ticket-card-footer">
+              <div class="ticket-actions">
+                <button class="btn-icon" title="Edit" onclick="showToast('Opening edit panel…','info')">✏️</button>
+                <button class="btn-icon" title="Pause" onclick="pauseTicket(this)">⏸</button>
+                <button class="btn-icon danger" title="Delete" onclick="deleteTicket('earlybird','Early Bird')">🗑</button>
+              </div>
+              <span style="font-size:11px;color:var(--text2);">No approval needed</span>
+            </div>
+          </div>
+
+          <!-- Standard -->
+          <div class="ticket-card" id="tc-standard">
+            <div class="ticket-card-header">
+              <div><div class="ticket-name">Standard</div><div style="font-size:12px;color:var(--text2);margin-top:2px;">🗓 Sale ends Jun 10</div></div>
+              <span class="badge badge-active">Active</span>
+            </div>
+            <div class="ticket-price">€149 <span>/ ticket</span></div>
+            <div class="ticket-stats">
+              <div><div class="ticket-stat-label">Inventory</div><div class="ticket-stat-value">200</div></div>
+              <div><div class="ticket-stat-label">Sold</div><div class="ticket-stat-value" style="color:var(--green)">67</div></div>
+              <div><div class="ticket-stat-label">Left</div><div class="ticket-stat-value">133</div></div>
+              <div><div class="ticket-stat-label">Revenue</div><div class="ticket-stat-value" style="font-size:14px">€9,983</div></div>
+            </div>
+            <div class="ticket-progress"><div class="ticket-progress-fill" style="width:33.5%"></div></div>
+            <div style="font-size:11px;color:var(--text2);margin-bottom:12px;">33.5% sold · 133 remaining</div>
+            <div class="ticket-card-footer">
+              <div class="ticket-actions">
+                <button class="btn-icon" onclick="showToast('Opening edit panel…','info')">✏️</button>
+                <button class="btn-icon" onclick="pauseTicket(this)">⏸</button>
+                <button class="btn-icon danger" onclick="deleteTicket('standard','Standard')">🗑</button>
+              </div>
+              <span style="font-size:11px;color:var(--text2);">No approval needed</span>
+            </div>
+          </div>
+
+          <!-- VIP -->
+          <div class="ticket-card" id="tc-vip">
+            <div class="ticket-card-header">
+              <div><div class="ticket-name">VIP</div><div style="font-size:12px;color:var(--text2);margin-top:2px;">🗓 Sale ends May 31</div></div>
+              <span class="badge badge-active">Active</span>
+            </div>
+            <div class="ticket-price">€299 <span>/ ticket</span></div>
+            <div class="ticket-stats">
+              <div><div class="ticket-stat-label">Inventory</div><div class="ticket-stat-value">20</div></div>
+              <div><div class="ticket-stat-label">Sold</div><div class="ticket-stat-value" style="color:var(--green)">8</div></div>
+              <div><div class="ticket-stat-label">Left</div><div class="ticket-stat-value">12</div></div>
+              <div><div class="ticket-stat-label">Revenue</div><div class="ticket-stat-value" style="font-size:14px">€2,392</div></div>
+            </div>
+            <div class="ticket-progress"><div class="ticket-progress-fill" style="width:40%"></div></div>
+            <div style="font-size:11px;color:var(--text2);margin-bottom:12px;">40% sold · 12 remaining</div>
+            <div class="ticket-card-footer">
+              <div class="ticket-actions">
+                <button class="btn-icon" onclick="showToast('Opening edit panel…','info')">✏️</button>
+                <button class="btn-icon" onclick="pauseTicket(this)">⏸</button>
+                <button class="btn-icon danger" onclick="deleteTicket('vip','VIP')">🗑</button>
+              </div>
+              <span style="font-size:11px;color:var(--orange);font-weight:600;">⚡ Approval required</span>
+            </div>
+          </div>
+
+          <!-- Industry Pro (Draft) -->
+          <div class="ticket-card draft" id="tc-industrypro">
+            <div class="ticket-card-header">
+              <div><div class="ticket-name">Industry Pro</div><div style="font-size:12px;color:var(--text2);margin-top:2px;">🗓 Not published yet</div></div>
+              <span class="badge badge-draft">Draft</span>
+            </div>
+            <div class="ticket-price">€199 <span>/ ticket</span></div>
+            <div class="ticket-stats">
+              <div><div class="ticket-stat-label">Inventory</div><div class="ticket-stat-value">100</div></div>
+              <div><div class="ticket-stat-label">Sold</div><div class="ticket-stat-value">0</div></div>
+              <div><div class="ticket-stat-label">Left</div><div class="ticket-stat-value">100</div></div>
+              <div><div class="ticket-stat-label">Revenue</div><div class="ticket-stat-value" style="font-size:14px">€0</div></div>
+            </div>
+            <div class="ticket-progress"><div class="ticket-progress-fill" style="width:0%"></div></div>
+            <div style="font-size:11px;color:var(--text2);margin-bottom:12px;">Draft — not yet live</div>
+            <div class="ticket-card-footer">
+              <div class="ticket-actions">
+                <button class="btn-icon" onclick="showToast('Opening edit panel…','info')">✏️</button>
+                <button class="btn-primary" style="font-size:11px;padding:4px 10px;" onclick="publishTicket(this)">Publish</button>
+                <button class="btn-icon danger" onclick="deleteTicket('industrypro','Industry Pro')">🗑</button>
+              </div>
+              <span style="font-size:11px;color:var(--orange);font-weight:600;">⚡ Approval required</span>
+            </div>
+          </div>
+
+        </div><!-- /ticketGrid -->
+
+        <!-- Add Ticket Form -->
+        <div class="add-form-wrapper">
+          <button class="add-form-toggle" id="addFormToggle" onclick="toggleAddForm()">
+            <span class="toggle-icon">+</span> Add New Ticket Type
+          </button>
+          <div class="add-form-body" id="addFormBody">
+            <div class="form-grid">
+              <div class="form-group"><label class="form-label">Ticket Name *</label><input type="text" class="form-control" id="newName" placeholder="e.g. Premium Pass"></div>
+              <div class="form-group"><label class="form-label">Price *</label><div class="form-control-group"><input type="number" class="form-control" id="newPrice" placeholder="0.00"><select class="form-control" id="newCurrency"><option>EUR</option><option>USD</option><option>GBP</option></select></div></div>
+              <div class="form-group"><label class="form-label">Inventory</label><div class="radio-group"><label class="radio-option"><input type="radio" name="inventory" value="unlimited" onchange="toggleInventory(this)"> Unlimited</label><label class="radio-option"><input type="radio" name="inventory" value="limited" onchange="toggleInventory(this)" checked> Limited</label></div></div>
+              <div class="form-group" id="inventoryField"><label class="form-label">Quantity *</label><input type="number" class="form-control" id="newQty" placeholder="e.g. 100"></div>
+              <div class="form-group"><label class="form-label">Sale Start Date</label><input type="date" class="form-control" id="newStart"></div>
+              <div class="form-group"><label class="form-label">Sale End Date</label><input type="date" class="form-control" id="newEnd"></div>
+              <div class="form-group full"><label class="form-label">Description / Benefits</label><textarea class="form-control" id="newDesc" rows="3" placeholder="Describe what's included…"></textarea></div>
+              <div class="form-group full"><label class="form-label">Approval Required</label><div class="toggle-switch"><label class="switch"><input type="checkbox" id="newApproval"><span class="slider"></span></label><span id="approvalLabel">Purchasers do not need manual approval</span></div></div>
+            </div>
+            <div class="form-actions">
+              <button class="btn-secondary" onclick="toggleAddForm()">Cancel</button>
+              <button class="btn-secondary" onclick="saveTicket(true)">Save as Draft</button>
+              <button class="btn-primary" onclick="saveTicket(false)">✓ Publish Ticket</button>
+            </div>
+          </div>
+        </div>
+      </div><!-- /ticket-types -->
+
+      <!-- ══ TAB 2: SALES OVERVIEW ══ -->
+      <div id="sales-overview" class="tab-pane">
+        <div class="stats-grid">
+          <div class="stat-card"><div class="stat-icon orange">💰</div><div class="stat-label">Total Revenue</div><div class="stat-value">€18,450</div><div class="stat-change">↑ +€3,200 this week</div></div>
+          <div class="stat-card"><div class="stat-icon green">🎟</div><div class="stat-label">Tickets Sold</div><div class="stat-value">98</div><div class="stat-change">↑ +12 this week</div></div>
+          <div class="stat-card"><div class="stat-icon blue">📦</div><div class="stat-label">Remaining Inventory</div><div class="stat-value">272</div><div style="font-size:11px;color:var(--text2);margin-top:3px;">Out of 370 total</div></div>
+          <div class="stat-card"><div class="stat-icon yellow">📈</div><div class="stat-label">Conversion Rate</div><div class="stat-value">34%</div><div class="stat-change">↑ +2.4% vs last week</div></div>
+        </div>
+
+        <div class="charts-row">
+          <!-- Line chart -->
+          <div class="card">
+            <div class="card-header">
+              <div><div class="card-title">Revenue Over Time</div><div class="card-subtitle">Daily revenue — last 14 days</div></div>
+              <select class="form-control" style="width:auto;font-size:12px;padding:5px 10px;"><option>Last 14 days</option><option>Last 30 days</option></select>
+            </div>
+            <div class="line-chart-container">
+              <div class="chart-y-labels"><span>€2k</span><span>€1.5k</span><span>€1k</span><span>€0.5k</span><span>€0</span></div>
+              <svg class="line-chart-svg" viewBox="0 0 600 160" preserveAspectRatio="none">
+                <defs><linearGradient id="grad" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#16a34a" stop-opacity=".18"/><stop offset="100%" stop-color="#16a34a" stop-opacity="0"/></linearGradient></defs>
+                <path d="M0,140 L43,120 L86,100 L129,110 L172,80 L215,60 L258,90 L301,50 L344,30 L387,45 L430,20 L473,35 L516,15 L559,10 L600,5" fill="none" stroke="#16a34a" stroke-width="2.5" stroke-linejoin="round"/>
+                <path d="M0,140 L43,120 L86,100 L129,110 L172,80 L215,60 L258,90 L301,50 L344,30 L387,45 L430,20 L473,35 L516,15 L559,10 L600,5 L600,160 L0,160 Z" fill="url(#grad)"/>
+                <line x1="0" y1="160" x2="600" y2="160" stroke="#e2e6ed" stroke-width="1"/>
+              </svg>
+            </div>
+          </div>
+          <!-- Bar chart -->
+          <div class="card">
+            <div class="card-header"><div><div class="card-title">Sales by Ticket Type</div><div class="card-subtitle">Units sold per type</div></div></div>
+            <div class="bar-chart">
+              <div class="bar-row"><div class="bar-label">Standard</div><div class="bar-track"><div class="bar-fill" style="width:67%">67</div></div><div class="bar-count">67</div></div>
+              <div class="bar-row"><div class="bar-label">Early Bird</div><div class="bar-track"><div class="bar-fill" style="width:23%;background:#4ade80">23</div></div><div class="bar-count">23</div></div>
+              <div class="bar-row"><div class="bar-label">VIP</div><div class="bar-track"><div class="bar-fill" style="width:8%;background:#86efac">8</div></div><div class="bar-count">8</div></div>
+              <div class="bar-row"><div class="bar-label">Industry Pro</div><div class="bar-track"><div class="bar-fill" style="width:0%;min-width:0;background:#e2e6ed"></div></div><div class="bar-count" style="color:var(--text3)">0</div></div>
+            </div>
+            <hr style="border:none;border-top:1px solid var(--border);margin:16px 0">
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
+              <div style="text-align:center;padding:10px;background:var(--bg);border-radius:8px;"><div style="font-size:10px;color:var(--text2);font-weight:600;text-transform:uppercase;letter-spacing:.5px;">Avg. Ticket Price</div><div style="font-size:20px;font-weight:700;color:var(--green);margin-top:4px;">€188</div></div>
+              <div style="text-align:center;padding:10px;background:var(--bg);border-radius:8px;"><div style="font-size:10px;color:var(--text2);font-weight:600;text-transform:uppercase;letter-spacing:.5px;">Top Seller</div><div style="font-size:15px;font-weight:700;margin-top:4px;">Standard</div></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Recent Purchases -->
+        <div class="card">
+          <div class="card-header">
+            <div><div class="card-title">Recent Purchases</div><div class="card-subtitle">Latest 10 ticket purchases</div></div>
+            <button class="btn-secondary" style="font-size:12px;padding:5px 12px;" onclick="exportCSV()">⬇ Export</button>
+          </div>
+          <div class="table-wrapper">
+            <table>
+              <thead><tr><th>Name</th><th>Ticket Type</th><th>Amount</th><th>Purchase Time</th><th>Status</th></tr></thead>
+              <tbody>
+                <tr><td><div class="td-name">Alexandre Dupont</div><div class="td-meta">a.dupont@ubisoft.com</div></td><td>Standard</td><td><strong>€149</strong></td><td>Mar 23, 14:32</td><td><span class="badge badge-paid">Paid</span></td></tr>
+                <tr><td><div class="td-name">Sarah Mitchell</div><div class="td-meta">s.mitchell@ea.com</div></td><td>VIP</td><td><strong>€299</strong></td><td>Mar 23, 12:17</td><td><span class="badge badge-paid">Paid</span></td></tr>
+                <tr><td><div class="td-name">Lucas Fernandez</div><div class="td-meta">l.fernandez@konami.eu</div></td><td>Early Bird</td><td><strong>€99</strong></td><td>Mar 23, 11:05</td><td><span class="badge badge-paid">Paid</span></td></tr>
+                <tr><td><div class="td-name">Yuki Tanaka</div><div class="td-meta">y.tanaka@square-enix.com</div></td><td>Standard</td><td><strong>€149</strong></td><td>Mar 22, 18:44</td><td><span class="badge badge-paid">Paid</span></td></tr>
+                <tr><td><div class="td-name">Maria Kowalski</div><div class="td-meta">m.kowalski@cdprojekt.com</div></td><td>VIP</td><td><strong>€299</strong></td><td>Mar 22, 15:20</td><td><span class="badge badge-pending">Pending</span></td></tr>
+                <tr><td><div class="td-name">Thibault Moreau</div><div class="td-meta">t.moreau@focus-home.com</div></td><td>Standard</td><td><strong>€149</strong></td><td>Mar 22, 10:38</td><td><span class="badge badge-paid">Paid</span></td></tr>
+                <tr><td><div class="td-name">James O'Brien</div><div class="td-meta">j.obrien@deep-silver.com</div></td><td>Early Bird</td><td><strong>€99</strong></td><td>Mar 21, 16:55</td><td><span class="badge badge-paid">Paid</span></td></tr>
+                <tr><td><div class="td-name">Nina Petrov</div><div class="td-meta">n.petrov@4a-games.com</div></td><td>Standard</td><td><strong>€149</strong></td><td>Mar 21, 14:12</td><td><span class="badge badge-refunded">Refunded</span></td></tr>
+                <tr><td><div class="td-name">Chen Wei</div><div class="td-meta">c.wei@netease-games.com</div></td><td>VIP</td><td><strong>€299</strong></td><td>Mar 21, 09:30</td><td><span class="badge badge-paid">Paid</span></td></tr>
+                <tr><td><div class="td-name">Emma Larsson</div><div class="td-meta">e.larsson@paradox.com</div></td><td>Standard</td><td><strong>€149</strong></td><td>Mar 20, 17:48</td><td><span class="badge badge-paid">Paid</span></td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div><!-- /sales-overview -->
+
+      <!-- ══ TAB 3: ORDERS ══ -->
+      <div id="orders" class="tab-pane">
+        <div class="orders-toolbar">
+          <div class="filter-tabs">
+            <button class="filter-tab active" onclick="filterOrders('all',this)">All <span style="background:rgba(0,0,0,.1);padding:1px 7px;border-radius:10px;font-size:11px;margin-left:4px;">24</span></button>
+            <button class="filter-tab" onclick="filterOrders('paid',this)">Paid <span style="background:rgba(0,0,0,.1);padding:1px 7px;border-radius:10px;font-size:11px;margin-left:4px;">18</span></button>
+            <button class="filter-tab" onclick="filterOrders('pending',this)">Pending <span style="background:rgba(0,0,0,.1);padding:1px 7px;border-radius:10px;font-size:11px;margin-left:4px;">3</span></button>
+            <button class="filter-tab" onclick="filterOrders('refunded',this)">Refunded <span style="background:rgba(0,0,0,.1);padding:1px 7px;border-radius:10px;font-size:11px;margin-left:4px;">2</span></button>
+            <button class="filter-tab" onclick="filterOrders('cancelled',this)">Cancelled <span style="background:rgba(0,0,0,.1);padding:1px 7px;border-radius:10px;font-size:11px;margin-left:4px;">1</span></button>
+          </div>
+          <div class="search-box">
+            <span style="color:var(--text3);">🔍</span>
+            <input type="text" id="orderSearch" placeholder="Search orders…" oninput="searchOrders(this.value)">
+          </div>
+          <button class="btn-secondary ml-auto" style="font-size:12px;padding:5px 12px;" onclick="exportCSV()">⬇ Export CSV</button>
+        </div>
+        <div class="card" style="padding:0;overflow:hidden;">
+          <div class="table-wrapper">
+            <table id="ordersTable">
+              <thead><tr><th>Order #</th><th>Buyer</th><th>Ticket Type</th><th>Qty</th><th>Amount</th><th>Purchase Time</th><th>Status</th><th>Actions</th></tr></thead>
+              <tbody id="ordersBody"></tbody>
+            </table>
+          </div>
+          <div style="padding:14px 20px;border-top:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;">
+            <span style="font-size:12.5px;color:var(--text2);" id="orderCount">Showing 24 orders</span>
+            <div style="display:flex;gap:5px;">
+              <button class="btn-secondary" style="font-size:12px;padding:4px 10px;" onclick="showToast('← Previous page','info')">← Prev</button>
+              <button class="btn-primary" style="font-size:12px;padding:4px 10px;">1</button>
+              <button class="btn-secondary" style="font-size:12px;padding:4px 10px;" onclick="showToast('Page 2 coming soon','info')">2</button>
+              <button class="btn-secondary" style="font-size:12px;padding:4px 10px;" onclick="showToast('Next page →','info')">Next →</button>
+            </div>
+          </div>
+        </div>
+      </div><!-- /orders -->
+
+    </div><!-- /content -->
+  </div><!-- /main -->
+</div><!-- /app-body -->
+
+<!-- Delete Modal -->
+<div class="modal-overlay" id="deleteModal">
+  <div class="modal">
+    <div class="modal-title">🗑 Delete Ticket Type</div>
+    <div class="modal-body" id="deleteModalBody"></div>
+    <div class="modal-actions">
+      <button class="btn-cancel" onclick="closeModal('deleteModal')">Cancel</button>
+      <button class="btn-danger" id="confirmDeleteBtn">Delete</button>
+    </div>
+  </div>
+</div>
+
+<!-- Refund Modal -->
+<div class="modal-overlay" id="refundModal">
+  <div class="modal">
+    <div class="modal-title">↩ Process Refund</div>
+    <div class="modal-body" id="refundModalBody"></div>
+    <div class="modal-actions">
+      <button class="btn-cancel" onclick="closeModal('refundModal')">Cancel</button>
+      <button class="btn-primary" id="confirmRefundBtn">Process Refund</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast-container" id="toastContainer"></div>
+
+<script>
+function switchTab(id, btn) {
+  document.querySelectorAll('.tab-pane').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  btn.classList.add('active');
+}
+function toggleAddForm() {
+  const body = document.getElementById('addFormBody');
+  const toggle = document.getElementById('addFormToggle');
+  body.classList.toggle('open');
+  toggle.classList.toggle('open');
+}
+function toggleInventory(radio) {
+  document.getElementById('inventoryField').style.display = radio.value === 'unlimited' ? 'none' : 'flex';
+}
+document.getElementById('newApproval').addEventListener('change', function() {
+  document.getElementById('approvalLabel').textContent = this.checked
+    ? 'Each purchase requires manual approval by organizer'
+    : 'Purchasers do not need manual approval';
+});
+function saveTicket(draft = false) {
+  const name = document.getElementById('newName').value.trim();
+  const price = document.getElementById('newPrice').value.trim();
+  if (!name || !price) { showToast('Please fill in ticket name and price', 'danger'); return; }
+  showToast(draft ? `"${name}" saved as draft` : `"${name}" published! 🎟`, 'success');
+  toggleAddForm();
+  document.getElementById('newName').value = '';
+  document.getElementById('newPrice').value = '';
+}
+function pauseTicket(btn) {
+  const card = btn.closest('.ticket-card');
+  const badge = card.querySelector('.badge');
+  if (badge.classList.contains('badge-active')) {
+    badge.className = 'badge badge-paused'; badge.textContent = 'Paused';
+    showToast('Ticket paused — sales halted', 'info');
+  } else {
+    badge.className = 'badge badge-active'; badge.textContent = 'Active';
+    showToast('Ticket resumed', 'success');
+  }
+}
+let pendingDeleteId = null;
+function deleteTicket(id, name) {
+  pendingDeleteId = id;
+  document.getElementById('deleteModalBody').textContent = `Delete "${name}"? This cannot be undone.`;
+  document.getElementById('deleteModal').classList.add('open');
+  document.getElementById('confirmDeleteBtn').onclick = function() {
+    const card = document.getElementById('tc-' + id);
+    if (card) { card.style.opacity = '0'; card.style.transition = 'opacity .2s'; setTimeout(() => card.remove(), 200); }
+    closeModal('deleteModal');
+    showToast('Ticket type deleted', 'danger');
+  };
+}
+function publishTicket(btn) {
+  const card = btn.closest('.ticket-card');
+  const badge = card.querySelector('.badge');
+  badge.className = 'badge badge-active'; badge.textContent = 'Active';
+  card.classList.remove('draft');
+  btn.remove();
+  showToast('Industry Pro is now live! 🚀', 'success');
+}
+const ordersData = [
+  { id:'GC-2026-001', buyer:'Alexandre Dupont', email:'a.dupont@ubisoft.com', type:'Standard', qty:1, amount:149, time:'Mar 23, 14:32', status:'paid' },
+  { id:'GC-2026-002', buyer:'Sarah Mitchell', email:'s.mitchell@ea.com', type:'VIP', qty:1, amount:299, time:'Mar 23, 12:17', status:'paid' },
+  { id:'GC-2026-003', buyer:'Lucas Fernandez', email:'l.fernandez@konami.eu', type:'Early Bird', qty:2, amount:198, time:'Mar 23, 11:05', status:'paid' },
+  { id:'GC-2026-004', buyer:'Yuki Tanaka', email:'y.tanaka@square-enix.com', type:'Standard', qty:1, amount:149, time:'Mar 22, 18:44', status:'paid' },
+  { id:'GC-2026-005', buyer:'Maria Kowalski', email:'m.kowalski@cdprojekt.com', type:'VIP', qty:1, amount:299, time:'Mar 22, 15:20', status:'pending' },
+  { id:'GC-2026-006', buyer:'Thibault Moreau', email:'t.moreau@focus-home.com', type:'Standard', qty:1, amount:149, time:'Mar 22, 10:38', status:'paid' },
+  { id:'GC-2026-007', buyer:"James O'Brien", email:'j.obrien@deep-silver.com', type:'Early Bird', qty:1, amount:99, time:'Mar 21, 16:55', status:'paid' },
+  { id:'GC-2026-008', buyer:'Nina Petrov', email:'n.petrov@4a-games.com', type:'Standard', qty:2, amount:298, time:'Mar 21, 14:12', status:'refunded' },
+  { id:'GC-2026-009', buyer:'Chen Wei', email:'c.wei@netease-games.com', type:'VIP', qty:1, amount:299, time:'Mar 21, 09:30', status:'paid' },
+  { id:'GC-2026-010', buyer:'Emma Larsson', email:'e.larsson@paradox.com', type:'Standard', qty:1, amount:149, time:'Mar 20, 17:48', status:'paid' },
+  { id:'GC-2026-011', buyer:'Pablo Ramos', email:'p.ramos@gameloft.com', type:'Early Bird', qty:1, amount:99, time:'Mar 20, 15:22', status:'paid' },
+  { id:'GC-2026-012', buyer:'Ingrid Svensson', email:'i.svensson@mojang.com', type:'Standard', qty:3, amount:447, time:'Mar 20, 12:04', status:'paid' },
+  { id:'GC-2026-013', buyer:'Dmitri Volkov', email:'d.volkov@wargaming.net', type:'VIP', qty:1, amount:299, time:'Mar 19, 18:30', status:'pending' },
+  { id:'GC-2026-014', buyer:'Anya Sharma', email:'a.sharma@supercell.com', type:'Standard', qty:1, amount:149, time:'Mar 19, 14:15', status:'paid' },
+  { id:'GC-2026-015', buyer:'Marco Bianchi', email:'m.bianchi@milestone.it', type:'Early Bird', qty:2, amount:198, time:'Mar 19, 11:50', status:'paid' },
+  { id:'GC-2026-016', buyer:'Céline Dubois', email:'c.dubois@nacon.com', type:'Standard', qty:1, amount:149, time:'Mar 18, 16:40', status:'paid' },
+  { id:'GC-2026-017', buyer:'Tom Hendricks', email:'t.hendricks@2k.com', type:'VIP', qty:1, amount:299, time:'Mar 18, 13:25', status:'refunded' },
+  { id:'GC-2026-018', buyer:'Hana Novák', email:'h.novak@2kczech.com', type:'Early Bird', qty:1, amount:99, time:'Mar 18, 10:08', status:'paid' },
+  { id:'GC-2026-019', buyer:'Jean-Paul Girard', email:'jp.girard@bigbengames.com', type:'Standard', qty:2, amount:298, time:'Mar 17, 17:55', status:'paid' },
+  { id:'GC-2026-020', buyer:'Olga Nikitin', email:'o.nikitin@mail.ru', type:'Standard', qty:1, amount:149, time:'Mar 17, 14:30', status:'pending' },
+  { id:'GC-2026-021', buyer:'Felix Wagner', email:'f.wagner@crytek.com', type:'VIP', qty:1, amount:299, time:'Mar 17, 11:10', status:'paid' },
+  { id:'GC-2026-022', buyer:'Rosa Almeida', email:'r.almeida@bandainamco.eu', type:'Early Bird', qty:1, amount:99, time:'Mar 16, 18:00', status:'paid' },
+  { id:'GC-2026-023', buyer:'Kevin Park', email:'k.park@nexon.com', type:'Standard', qty:1, amount:149, time:'Mar 16, 14:45', status:'cancelled' },
+  { id:'GC-2026-024', buyer:'Isabelle Laurent', email:'i.laurent@ankama.com', type:'Standard', qty:2, amount:298, time:'Mar 15, 16:20', status:'paid' },
+];
+function statusBadge(s) {
+  const m={paid:'badge-paid',pending:'badge-pending',refunded:'badge-refunded',cancelled:'badge-cancelled'};
+  const l={paid:'Paid',pending:'Pending',refunded:'Refunded',cancelled:'Cancelled'};
+  return `<span class="badge ${m[s]}">${l[s]}</span>`;
+}
+function renderOrders(data) {
+  document.getElementById('ordersBody').innerHTML = data.map(o => `
+    <tr data-status="${o.status}">
+      <td><span class="font-mono">${o.id}</span></td>
+      <td><div class="td-name">${o.buyer}</div><div class="td-meta">${o.email}</div></td>
+      <td>${o.type}</td>
+      <td style="text-align:center">${o.qty}</td>
+      <td><strong>€${o.amount}</strong></td>
+      <td style="color:var(--text2)">${o.time}</td>
+      <td>${statusBadge(o.status)}</td>
+      <td><div style="display:flex;gap:5px;">
+        ${o.status!=='refunded'&&o.status!=='cancelled'?`<button class="btn-secondary" style="font-size:11px;padding:3px 9px;" onclick="openRefundModal('${o.id}','${o.buyer}',${o.amount})">↩ Refund</button>`:''}
+        <button class="btn-secondary" style="font-size:11px;padding:3px 9px;" onclick="showToast('Order ${o.id}: ${o.type} · €${o.amount}','info')">👁 View</button>
+      </div></td>
+    </tr>`).join('');
+  document.getElementById('orderCount').textContent = `Showing ${data.length} orders`;
+}
+renderOrders(ordersData);
+let currentFilter='all', currentSearch='';
+function applyFilters() {
+  let d=ordersData;
+  if(currentFilter!=='all') d=d.filter(o=>o.status===currentFilter);
+  if(currentSearch) d=d.filter(o=>(o.buyer+o.email+o.id+o.type).toLowerCase().includes(currentSearch));
+  renderOrders(d);
+}
+function filterOrders(s,btn) { currentFilter=s; document.querySelectorAll('.filter-tab').forEach(b=>b.classList.remove('active')); btn.classList.add('active'); applyFilters(); }
+function searchOrders(v) { currentSearch=v.toLowerCase(); applyFilters(); }
+function openRefundModal(id,buyer,amount) {
+  document.getElementById('refundModalBody').innerHTML=`Refund order <strong>${id}</strong> for <strong>${buyer}</strong>?<br><br>Amount: <strong>€${amount}</strong> will be returned within 3–5 business days.`;
+  document.getElementById('refundModal').classList.add('open');
+  document.getElementById('confirmRefundBtn').onclick=function(){
+    const idx=ordersData.findIndex(o=>o.id===id);
+    if(idx!==-1) ordersData[idx].status='refunded';
+    applyFilters(); closeModal('refundModal');
+    showToast(`Refund processed for ${buyer}`, 'info');
+  };
+}
+function closeModal(id) { document.getElementById(id).classList.remove('open'); }
+document.querySelectorAll('.modal-overlay').forEach(o=>o.addEventListener('click',e=>{if(e.target===o)o.classList.remove('open')}));
+function exportCSV() {
+  const h=['Order ID','Buyer','Email','Ticket Type','Qty','Amount (EUR)','Purchase Time','Status'];
+  const rows=ordersData.map(o=>[o.id,o.buyer,o.email,o.type,o.qty,o.amount,o.time,o.status]);
+  const csv=[h,...rows].map(r=>r.map(v=>`"${v}"`).join(',')).join('\n');
+  const blob=new Blob([csv],{type:'text/csv'});
+  const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download='gc-orders.csv'; a.click();
+  showToast('CSV exported!', 'success');
+}
+document.addEventListener('keydown',e=>{if(e.key==='Escape')document.querySelectorAll('.modal-overlay.open').forEach(m=>m.classList.remove('open'))});
+function showToast(msg, type='info') {
+  const c=document.getElementById('toastContainer');
+  const t=document.createElement('div'); t.className=`toast ${type}`;
+  const icons={success:'✅',info:'ℹ️',danger:'🗑'};
+  t.innerHTML=`<span>${icons[type]||'ℹ️'}</span><span>${msg}</span>`;
+  c.appendChild(t);
+  setTimeout(()=>{t.style.opacity='0';t.style.transform='translateX(20px)';t.style.transition='all .3s';setTimeout(()=>t.remove(),300)},3000);
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,422 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Booth Management – Event HQ</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#f4f6f9;--white:#ffffff;
+  --green:#16a34a;--green-dark:#15803d;--green-light:#f0fdf4;--green-mid:#bbf7d0;
+  --border:#e2e6ed;--border-light:#eef0f4;
+  --text1:#0f172a;--text2:#475569;--text3:#94a3b8;
+  --red:#dc2626;--red-light:#fef2f2;
+  --yellow:#d97706;--yellow-light:#fffbeb;
+  --orange:#ea580c;--orange-light:#fff7ed;
+  --blue:#2563eb;--blue-light:#eff6ff;
+  --sidebar-w:220px;--topbar-h:54px;--radius:10px;
+  --shadow:0 1px 3px rgba(0,0,0,0.07),0 6px 20px rgba(0,0,0,0.05);
+}
+html,body{min-height:100vh;background:var(--bg);font-family:'DM Sans',sans-serif;color:var(--text1);font-size:14px;line-height:1.55}
+.topbar{position:sticky;top:0;z-index:200;height:var(--topbar-h);background:var(--white);border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;padding:0 20px;gap:16px}
+.topbar-left{display:flex;align-items:center;gap:10px}
+.logo-wrap{display:flex;align-items:center;gap:7px;text-decoration:none}
+.logo-mark{width:26px;height:26px;background:var(--green);border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:13px;color:#fff;font-weight:800}
+.logo-name{font-size:12px;font-weight:800;color:var(--text1)}.logo-name span{color:var(--green)}
+.topbar-sep{width:1px;height:16px;background:var(--border);margin:0 6px}
+.topbar-product{font-size:13px;font-weight:700;color:var(--green)}
+.topbar-right{display:flex;align-items:center;gap:10px}
+.org-chip{display:flex;align-items:center;gap:7px;padding:4px 10px 4px 5px;border-radius:20px;border:1px solid var(--border);cursor:pointer}
+.avatar{width:24px;height:24px;border-radius:50%;background:linear-gradient(135deg,#16a34a,#4ade80);color:#fff;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:800}
+.org-name{font-size:12px;font-weight:600;color:var(--text2)}
+.btn-back{display:flex;align-items:center;gap:5px;font-size:12px;color:var(--text2);text-decoration:none;padding:5px 10px;border-radius:6px;border:1px solid var(--border);transition:background .12s;font-weight:500}
+.btn-back:hover{background:var(--bg)}
+.app-body{display:flex;min-height:calc(100vh - var(--topbar-h))}
+.sidebar{width:var(--sidebar-w);background:var(--white);border-right:1px solid var(--border);display:flex;flex-direction:column;flex-shrink:0;position:sticky;top:var(--topbar-h);height:calc(100vh - var(--topbar-h));overflow-y:auto}
+.sidebar-top{padding:12px 8px 8px}.sidebar-bottom{padding:8px;margin-top:auto;border-top:1px solid var(--border-light)}
+.nav-sep{height:1px;background:var(--border-light);margin:8px 0}
+.nav-label{font-size:10px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--text3);padding:6px 8px 4px}
+.nav-item{display:flex;align-items:center;gap:8px;padding:7px 8px;border-radius:7px;font-size:13px;font-weight:500;color:var(--text2);cursor:pointer;text-decoration:none;transition:background .1s,color .1s}
+.nav-item:hover{background:var(--bg);color:var(--text1)}.nav-item.active{background:var(--green-light);color:var(--green);font-weight:600}
+.nav-item .ni-icon{font-size:13px;width:18px;text-align:center;flex-shrink:0}
+.main{flex:1;display:flex;flex-direction:column;min-width:0}
+.main-topbar{height:48px;background:var(--white);border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;padding:0 24px;gap:12px}
+.breadcrumb{font-size:13px;color:var(--text2)}.breadcrumb strong{color:var(--text1);font-weight:600}
+.topbar-actions{display:flex;align-items:center;gap:8px}
+.btn-secondary{padding:6px 14px;border:1.5px solid var(--border);background:var(--white);border-radius:7px;font-family:'DM Sans',sans-serif;font-size:12.5px;font-weight:600;cursor:pointer;color:var(--text2);transition:all .12s}
+.btn-secondary:hover{border-color:var(--green);color:var(--green)}
+.btn-primary{padding:6px 16px;border:none;background:var(--green);color:#fff;border-radius:7px;font-family:'DM Sans',sans-serif;font-size:12.5px;font-weight:600;cursor:pointer;transition:background .12s}
+.btn-primary:hover{background:var(--green-dark)}
+.content{padding:24px;flex:1}
+.page-header{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:20px}
+.page-title{font-size:20px;font-weight:700;margin-bottom:3px}
+.page-subtitle{font-size:13px;color:var(--text2)}
+.tab-bar{display:flex;background:var(--white);border:1px solid var(--border);border-radius:var(--radius);padding:4px;width:fit-content;margin-bottom:20px}
+.tab-btn{padding:7px 20px;border:none;background:transparent;font-family:'DM Sans',sans-serif;font-size:13px;font-weight:500;color:var(--text2);border-radius:7px;cursor:pointer;transition:all .15s;display:flex;align-items:center;gap:6px}
+.tab-btn.active{background:var(--green);color:#fff;font-weight:600;box-shadow:0 2px 8px rgba(22,163,74,.25)}
+.tab-btn:not(.active):hover{background:var(--bg);color:var(--text1)}
+.tab-pane{display:none}.tab-pane.active{display:block}
+.stats-row{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:20px}
+.stat-card{background:var(--white);border:1px solid var(--border);border-radius:var(--radius);padding:16px;display:flex;align-items:center;gap:12px;box-shadow:var(--shadow)}
+.stat-icon{width:40px;height:40px;border-radius:9px;display:flex;align-items:center;justify-content:center;font-size:18px}
+.stat-icon.green{background:var(--green-light)}.stat-icon.blue{background:var(--blue-light)}.stat-icon.yellow{background:var(--yellow-light)}.stat-icon.orange{background:var(--orange-light)}
+.stat-num{font-size:22px;font-weight:700;line-height:1}
+.stat-label{font-size:11.5px;color:var(--text2);margin-top:2px}
+.booth-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:16px;margin-bottom:20px}
+.booth-card{background:var(--white);border:1px solid var(--border);border-radius:var(--radius);padding:20px;box-shadow:var(--shadow);position:relative;overflow:hidden;transition:border-color .15s,box-shadow .15s}
+.booth-card:hover{border-color:var(--green);box-shadow:0 4px 20px rgba(22,163,74,.12)}
+.booth-card::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;background:var(--green)}
+.booth-card.sold-out::before{background:var(--red)}
+.booth-header{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:12px}
+.booth-name{font-size:15px;font-weight:700}
+.booth-size{font-size:12px;color:var(--text2);margin-top:2px}
+.booth-price{font-size:22px;font-weight:700;color:var(--green);margin-bottom:12px}
+.booth-price span{font-size:13px;font-weight:400;color:var(--text2)}
+.booth-includes{margin-bottom:14px}
+.booth-includes-title{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--text3);margin-bottom:8px}
+.booth-include-item{display:flex;align-items:center;gap:6px;font-size:12.5px;color:var(--text2);margin-bottom:4px}
+.booth-include-item::before{content:'✓';color:var(--green);font-weight:700;font-size:12px}
+.booth-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:12px}
+.booth-stat-label{font-size:10px;color:var(--text2);font-weight:500;text-transform:uppercase;letter-spacing:.5px}
+.booth-stat-value{font-size:16px;font-weight:700;margin-top:2px}
+.progress-bar{height:5px;background:var(--border);border-radius:3px;margin-bottom:6px;overflow:hidden}
+.progress-fill{height:100%;background:var(--green);border-radius:3px}
+.booth-card.sold-out .progress-fill{background:var(--red)}
+.booth-footer{display:flex;align-items:center;justify-content:space-between;padding-top:12px;border-top:1px solid var(--border-light)}
+.badge{display:inline-flex;align-items:center;padding:3px 9px;border-radius:20px;font-size:11px;font-weight:600}
+.badge-active{background:var(--green-light);color:var(--green)}
+.badge-soldout{background:var(--red-light);color:var(--red)}
+.badge-draft{background:var(--bg);color:var(--text3)}
+.badge-confirmed{background:var(--green-light);color:var(--green)}
+.badge-pending{background:var(--yellow-light);color:var(--yellow)}
+.badge-rejected{background:var(--red-light);color:var(--red)}
+.btn-icon{width:28px;height:28px;border:1px solid var(--border);background:var(--white);border-radius:6px;cursor:pointer;font-size:13px;display:flex;align-items:center;justify-content:center;transition:all .12s;color:var(--text2)}
+.btn-icon:hover{border-color:var(--green);color:var(--green)}
+.btn-icon.danger:hover{border-color:var(--red);color:var(--red)}
+.card{background:var(--white);border:1px solid var(--border);border-radius:var(--radius);padding:20px;margin-bottom:16px;box-shadow:var(--shadow)}
+.card-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px}
+.card-title{font-size:14px;font-weight:700;display:flex;align-items:center;gap:8px}
+.table-wrap{background:var(--white);border:1px solid var(--border);border-radius:var(--radius);overflow:hidden;box-shadow:var(--shadow)}
+table{width:100%;border-collapse:collapse}
+thead th{padding:10px 14px;text-align:left;font-size:11px;font-weight:700;letter-spacing:.6px;text-transform:uppercase;color:var(--text3);background:var(--bg);border-bottom:1px solid var(--border);white-space:nowrap}
+tbody tr{border-bottom:1px solid var(--border);transition:background .1s}
+tbody tr:last-child{border-bottom:none}
+tbody tr:hover{background:#f8fafc}
+tbody td{padding:11px 14px;font-size:13px;vertical-align:middle}
+.td-name{font-weight:600}.td-meta{font-size:11.5px;color:var(--text2);margin-top:1px}
+.toolbar{display:flex;align-items:center;gap:8px;margin-bottom:14px;flex-wrap:wrap}
+.search-box{display:flex;align-items:center;gap:7px;background:var(--white);border:1.5px solid var(--border);border-radius:8px;padding:6px 11px;flex:1;min-width:180px;max-width:300px}
+.search-box input{border:none;outline:none;font-family:'DM Sans',sans-serif;font-size:13px;width:100%;background:transparent}
+.filter-tabs{display:flex;gap:3px;background:var(--white);border:1px solid var(--border);border-radius:8px;padding:3px}
+.filter-tab{padding:5px 12px;border:none;background:transparent;font-family:'DM Sans',sans-serif;font-size:12px;font-weight:500;color:var(--text2);border-radius:6px;cursor:pointer;transition:all .15s}
+.filter-tab.active{background:var(--green);color:#fff;font-weight:600}
+.filter-tab:not(.active):hover{background:var(--bg)}
+.row-actions{display:flex;gap:4px}
+.row-btn{padding:3px 9px;border-radius:5px;font-family:'DM Sans',sans-serif;font-size:11px;font-weight:600;cursor:pointer;border:1.5px solid transparent;transition:all .12s}
+.row-btn.confirm{border-color:var(--green);color:var(--green);background:transparent}
+.row-btn.confirm:hover{background:var(--green);color:#fff}
+.row-btn.reject{border-color:var(--red);color:var(--red);background:transparent}
+.row-btn.reject:hover{background:var(--red);color:#fff}
+.add-form-wrapper{background:var(--white);border:1px solid var(--border);border-radius:var(--radius);overflow:hidden;box-shadow:var(--shadow)}
+.add-form-toggle{width:100%;padding:14px 20px;background:transparent;border:none;font-family:'DM Sans',sans-serif;font-size:13.5px;font-weight:600;color:var(--text2);cursor:pointer;display:flex;align-items:center;gap:8px;transition:background .12s}
+.add-form-toggle:hover{background:var(--bg);color:var(--green)}
+.add-form-toggle.open{background:var(--green-light);color:var(--green)}
+.toggle-icon{font-size:18px;font-weight:300;transition:transform .2s}
+.add-form-toggle.open .toggle-icon{transform:rotate(45deg)}
+.add-form-body{display:none;padding:20px;border-top:1px solid var(--border)}
+.add-form-body.open{display:block}
+.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:16px}
+.form-group{display:flex;flex-direction:column;gap:5px}
+.form-group.full{grid-column:1/-1}
+.form-label{font-size:11.5px;font-weight:600;color:var(--text2);text-transform:uppercase;letter-spacing:.5px}
+.form-control{padding:8px 11px;border:1.5px solid var(--border);border-radius:7px;font-family:'DM Sans',sans-serif;font-size:13px;color:var(--text1);background:#fff;outline:none;transition:border-color .15s}
+.form-control:focus{border-color:var(--green)}
+.form-actions{display:flex;justify-content:flex-end;gap:8px;padding-top:12px;border-top:1px solid var(--border-light)}
+.modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.4);z-index:500;align-items:center;justify-content:center}
+.modal-overlay.open{display:flex}
+.modal{background:#fff;border-radius:12px;padding:24px;width:420px;max-width:95vw;box-shadow:0 20px 60px rgba(0,0,0,.18);animation:slideUp .2s ease}
+@keyframes slideUp{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:translateY(0)}}
+.modal-title{font-size:16px;font-weight:700;margin-bottom:14px}
+.modal-body{font-size:13.5px;color:var(--text2);line-height:1.6}
+.modal-actions{display:flex;justify-content:flex-end;gap:8px;margin-top:20px}
+.btn-cancel{padding:7px 16px;border:1.5px solid var(--border);background:transparent;border-radius:7px;font-family:'DM Sans',sans-serif;font-size:13px;font-weight:600;cursor:pointer;color:var(--text2)}
+.btn-danger{padding:7px 16px;border:none;background:var(--red);color:#fff;border-radius:7px;font-family:'DM Sans',sans-serif;font-size:13px;font-weight:600;cursor:pointer}
+.toast{position:fixed;bottom:22px;right:22px;background:var(--text1);color:#fff;padding:10px 18px;border-radius:8px;font-size:13px;font-weight:500;z-index:999;display:flex;align-items:center;gap:7px;box-shadow:0 8px 24px rgba(0,0,0,.18);opacity:0;transform:translateY(8px);transition:all .2s;pointer-events:none}
+.toast.show{opacity:1;transform:translateY(0)}.toast.success{background:var(--green)}.toast.error{background:var(--red)}
+</style>
+</head>
+<body>
+<header class="topbar">
+  <div class="topbar-left">
+    <a href="EventHub_v2_PC.html" class="logo-wrap"><div class="logo-mark">GC</div><span class="logo-name">GAME<span>CONNECTION</span></span></a>
+    <div class="topbar-sep"></div><span class="topbar-product">Event HQ</span>
+  </div>
+  <div class="topbar-right">
+    <div class="org-chip"><div class="avatar">QQ</div><span class="org-name">My Organization</span></div>
+    <a href="EventHQ_Dashboard_v4_PC.html" class="btn-back">← Dashboard</a>
+  </div>
+</header>
+<div class="app-body">
+  <nav class="sidebar">
+    <div class="sidebar-top">
+      <a class="nav-item" href="EventHQ_Dashboard_v4_PC.html"><span class="ni-icon">🗓️</span> My Events</a>
+      <a class="nav-item" onclick="showToast('Analytics coming soon')"><span class="ni-icon">📊</span> Analytics</a>
+      <div class="nav-sep"></div><div class="nav-label">Current Event</div>
+      <a class="nav-item" href="FreeRegistration_v2_PC.html"><span class="ni-icon">📋</span> Registration</a>
+      <a class="nav-item" href="PaidTicketing_v2_PC.html"><span class="ni-icon">🎟️</span> Ticketing</a>
+      <a class="nav-item active" href="#"><span class="ni-icon">🏪</span> Booth</a>
+      <a class="nav-item" href="SponsorshipManagement_v2_PC.html"><span class="ni-icon">🤝</span> Sponsorship</a>
+      <a class="nav-item" href="SessionManagement_v2_PC.html"><span class="ni-icon">🎤</span> Sessions</a>
+      <a class="nav-item" href="Awards_v3_PC.html"><span class="ni-icon">🏆</span> Awards</a>
+      <a class="nav-item" href="Attendees_v2_PC.html"><span class="ni-icon">👥</span> Attendees</a>
+      <a class="nav-item" href="LetsMeet_Organizer_v2_PC.html"><span class="ni-icon">💬</span> Let's Meet</a>
+      <a class="nav-item" href="GameShowcase_v2_PC.html"><span class="ni-icon">🎮</span> Game Showcase</a>
+    </div>
+    <div class="sidebar-bottom"><a class="nav-item" onclick="showToast('Settings coming soon')"><span class="ni-icon">⚙️</span> Settings</a></div>
+  </nav>
+  <div class="main">
+    <div class="main-topbar">
+      <div class="breadcrumb">Booth &rsaquo; <strong>Booth Management</strong></div>
+      <div class="topbar-actions">
+        <button class="btn-secondary" onclick="showToast('Floor plan opening…')">🗺 Floor Plan</button>
+        <button class="btn-primary" onclick="showToast('Changes saved!','success')">💾 Save Changes</button>
+      </div>
+    </div>
+    <div class="content">
+      <div class="page-header">
+        <div><div class="page-title">Booth Management</div><div class="page-subtitle">Manage booth types, applications, and floor assignments</div></div>
+        <span style="background:var(--green-light);color:var(--green);font-size:12px;font-weight:600;padding:4px 10px;border-radius:20px;">🎮 Game Connection 2026 · Paris</span>
+      </div>
+
+      <div class="tab-bar">
+        <button class="tab-btn active" onclick="switchTab('booth-types',this)">🏪 Booth Types</button>
+        <button class="tab-btn" onclick="switchTab('applications',this)">📋 Applications <span style="background:var(--yellow);color:#fff;border-radius:10px;padding:1px 7px;font-size:11px;margin-left:2px;" id="pendingBadge">5</span></button>
+        <button class="tab-btn" onclick="switchTab('floor-plan',this)">🗺 Floor Plan</button>
+      </div>
+
+      <!-- TAB 1: BOOTH TYPES -->
+      <div id="booth-types" class="tab-pane active">
+        <div class="stats-row">
+          <div class="stat-card"><div class="stat-icon green">🏪</div><div><div class="stat-num">24</div><div class="stat-label">Total Booths</div></div></div>
+          <div class="stat-card"><div class="stat-icon blue">✅</div><div><div class="stat-num">18</div><div class="stat-label">Confirmed</div></div></div>
+          <div class="stat-card"><div class="stat-icon yellow">⏳</div><div><div class="stat-num">5</div><div class="stat-label">Pending</div></div></div>
+          <div class="stat-card"><div class="stat-icon orange">💰</div><div><div class="stat-num">€94,500</div><div class="stat-label">Total Revenue</div></div></div>
+        </div>
+
+        <div class="booth-grid">
+          <!-- Standard Booth -->
+          <div class="booth-card">
+            <div class="booth-header"><div><div class="booth-name">Standard Booth</div><div class="booth-size">3m × 3m (9 m²)</div></div><span class="badge badge-active">Active</span></div>
+            <div class="booth-price">€2,500 <span>/ booth</span></div>
+            <div class="booth-includes">
+              <div class="booth-includes-title">Includes</div>
+              <div class="booth-include-item">Back wall panel & carpet</div>
+              <div class="booth-include-item">1 table + 2 chairs</div>
+              <div class="booth-include-item">2 exhibitor badges</div>
+              <div class="booth-include-item">Company listing in catalog</div>
+            </div>
+            <div class="booth-stats">
+              <div><div class="booth-stat-label">Total</div><div class="booth-stat-value">12</div></div>
+              <div><div class="booth-stat-label">Sold</div><div class="booth-stat-value" style="color:var(--green)">10</div></div>
+              <div><div class="booth-stat-label">Left</div><div class="booth-stat-value">2</div></div>
+            </div>
+            <div class="progress-bar"><div class="progress-fill" style="width:83%"></div></div>
+            <div style="font-size:11px;color:var(--text2);margin-bottom:12px;">83% sold · 2 remaining</div>
+            <div class="booth-footer">
+              <div style="display:flex;gap:5px;"><button class="btn-icon" onclick="showToast('Opening edit panel…')">✏️</button><button class="btn-icon danger" onclick="showToast('Delete booth type?','error')">🗑</button></div>
+              <span style="font-size:11px;color:var(--text2);">No approval needed</span>
+            </div>
+          </div>
+
+          <!-- Premium Booth -->
+          <div class="booth-card">
+            <div class="booth-header"><div><div class="booth-name">Premium Booth</div><div class="booth-size">6m × 3m (18 m²)</div></div><span class="badge badge-active">Active</span></div>
+            <div class="booth-price">€5,500 <span>/ booth</span></div>
+            <div class="booth-includes">
+              <div class="booth-includes-title">Includes</div>
+              <div class="booth-include-item">Custom back wall + carpet</div>
+              <div class="booth-include-item">2 tables + 4 chairs + display</div>
+              <div class="booth-include-item">4 exhibitor badges</div>
+              <div class="booth-include-item">Featured listing + logo</div>
+              <div class="booth-include-item">1 session speaking slot</div>
+            </div>
+            <div class="booth-stats">
+              <div><div class="booth-stat-label">Total</div><div class="booth-stat-value">8</div></div>
+              <div><div class="booth-stat-label">Sold</div><div class="booth-stat-value" style="color:var(--green)">6</div></div>
+              <div><div class="booth-stat-label">Left</div><div class="booth-stat-value">2</div></div>
+            </div>
+            <div class="progress-bar"><div class="progress-fill" style="width:75%"></div></div>
+            <div style="font-size:11px;color:var(--text2);margin-bottom:12px;">75% sold · 2 remaining</div>
+            <div class="booth-footer">
+              <div style="display:flex;gap:5px;"><button class="btn-icon" onclick="showToast('Opening edit panel…')">✏️</button><button class="btn-icon danger" onclick="showToast('Delete booth type?','error')">🗑</button></div>
+              <span style="font-size:11px;color:var(--orange);font-weight:600;">⚡ Approval required</span>
+            </div>
+          </div>
+
+          <!-- Island Booth (Sold Out) -->
+          <div class="booth-card sold-out">
+            <div class="booth-header"><div><div class="booth-name">Island Booth</div><div class="booth-size">6m × 6m (36 m²)</div></div><span class="badge badge-soldout">Sold Out</span></div>
+            <div class="booth-price" style="color:var(--red)">€12,000 <span>/ booth</span></div>
+            <div class="booth-includes">
+              <div class="booth-includes-title">Includes</div>
+              <div class="booth-include-item">Full custom build</div>
+              <div class="booth-include-item">Unlimited furniture</div>
+              <div class="booth-include-item">8 exhibitor badges</div>
+              <div class="booth-include-item">Premium catalog + homepage</div>
+              <div class="booth-include-item">2 speaking slots + meeting room</div>
+            </div>
+            <div class="booth-stats">
+              <div><div class="booth-stat-label">Total</div><div class="booth-stat-value">4</div></div>
+              <div><div class="booth-stat-label">Sold</div><div class="booth-stat-value" style="color:var(--red)">4</div></div>
+              <div><div class="booth-stat-label">Left</div><div class="booth-stat-value">0</div></div>
+            </div>
+            <div class="progress-bar"><div class="progress-fill" style="width:100%"></div></div>
+            <div style="font-size:11px;color:var(--red);margin-bottom:12px;font-weight:600;">Sold out</div>
+            <div class="booth-footer">
+              <div style="display:flex;gap:5px;"><button class="btn-icon" onclick="showToast('Opening edit panel…')">✏️</button></div>
+              <span style="font-size:11px;color:var(--orange);font-weight:600;">⚡ Approval required</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Add Booth Type -->
+        <div class="add-form-wrapper">
+          <button class="add-form-toggle" id="addFormToggle" onclick="toggleAddForm()"><span class="toggle-icon">+</span> Add New Booth Type</button>
+          <div class="add-form-body" id="addFormBody">
+            <div class="form-grid">
+              <div class="form-group"><label class="form-label">Booth Name *</label><input type="text" class="form-control" id="newName" placeholder="e.g. Corner Booth"></div>
+              <div class="form-group"><label class="form-label">Price (EUR) *</label><input type="number" class="form-control" id="newPrice" placeholder="0"></div>
+              <div class="form-group"><label class="form-label">Size</label><input type="text" class="form-control" id="newSize" placeholder="e.g. 3m × 3m"></div>
+              <div class="form-group"><label class="form-label">Quantity</label><input type="number" class="form-control" id="newQty" placeholder="e.g. 10"></div>
+              <div class="form-group full"><label class="form-label">Includes (one per line)</label><textarea class="form-control" id="newIncludes" rows="3" placeholder="Back wall panel&#10;1 table + 2 chairs&#10;2 exhibitor badges"></textarea></div>
+            </div>
+            <div class="form-actions">
+              <button class="btn-secondary" onclick="toggleAddForm()">Cancel</button>
+              <button class="btn-primary" onclick="addBoothType()">✓ Add Booth Type</button>
+            </div>
+          </div>
+        </div>
+      </div><!-- /booth-types -->
+
+      <!-- TAB 2: APPLICATIONS -->
+      <div id="applications" class="tab-pane">
+        <div class="toolbar">
+          <div class="search-box"><span style="color:var(--text3)">🔍</span><input type="text" placeholder="Search by company, contact…" oninput="filterApps(this.value)"></div>
+          <div class="filter-tabs">
+            <button class="filter-tab active" onclick="setAppFilter('all',this)">All (24)</button>
+            <button class="filter-tab" onclick="setAppFilter('confirmed',this)">Confirmed (18)</button>
+            <button class="filter-tab" onclick="setAppFilter('pending',this)">Pending (5)</button>
+            <button class="filter-tab" onclick="setAppFilter('rejected',this)">Rejected (1)</button>
+          </div>
+          <button class="btn-secondary" style="margin-left:auto;font-size:12px;padding:5px 12px;" onclick="exportCSV()">⬇ Export CSV</button>
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Company</th><th>Booth Type</th><th>Size</th><th>Amount</th><th>Applied</th><th>Status</th><th>Actions</th></tr></thead>
+            <tbody id="appsTable"></tbody>
+          </table>
+        </div>
+      </div><!-- /applications -->
+
+      <!-- TAB 3: FLOOR PLAN -->
+      <div id="floor-plan" class="tab-pane">
+        <div class="card">
+          <div class="card-header"><div class="card-title">🗺 Floor Plan</div><button class="btn-secondary" style="font-size:12px;padding:5px 12px;" onclick="showToast('Uploading floor plan…')">⬆ Upload Floor Plan</button></div>
+          <div style="background:var(--bg);border:2px dashed var(--border);border-radius:10px;padding:60px;text-align:center;">
+            <div style="font-size:40px;margin-bottom:12px;">🗺</div>
+            <div style="font-size:15px;font-weight:600;margin-bottom:6px;">Floor Plan Coming Soon</div>
+            <div style="font-size:13px;color:var(--text2);margin-bottom:16px;">Upload your venue floor plan and assign booths to specific locations</div>
+            <button class="btn-primary" onclick="showToast('Floor plan editor opening…')">Upload Floor Plan</button>
+          </div>
+        </div>
+      </div><!-- /floor-plan -->
+
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+const appsData = [
+  { company:'Ubisoft Paris', contact:'Alexandre Dupont', type:'Premium Booth', size:'18 m²', amount:5500, date:'2026-02-10', status:'confirmed' },
+  { company:'Electronic Arts', contact:'Sarah Mitchell', type:'Island Booth', size:'36 m²', amount:12000, date:'2026-02-12', status:'confirmed' },
+  { company:'Konami Europe', contact:'Lucas Fernandez', type:'Standard Booth', size:'9 m²', amount:2500, date:'2026-02-14', status:'confirmed' },
+  { company:'Square Enix', contact:'Yuki Tanaka', type:'Standard Booth', size:'9 m²', amount:2500, date:'2026-02-15', status:'confirmed' },
+  { company:'CD Projekt Red', contact:'Maria Kowalski', type:'Premium Booth', size:'18 m²', amount:5500, date:'2026-02-16', status:'pending' },
+  { company:'Focus Entertainment', contact:'Thibault Moreau', type:'Standard Booth', size:'9 m²', amount:2500, date:'2026-02-17', status:'confirmed' },
+  { company:'Deep Silver', contact:"James O'Brien", type:'Standard Booth', size:'9 m²', amount:2500, date:'2026-02-18', status:'confirmed' },
+  { company:'MY.GAMES', contact:'Nina Petrov', type:'Premium Booth', size:'18 m²', amount:5500, date:'2026-02-19', status:'pending' },
+  { company:'Riot Games', contact:'Jake Thompson', type:'Island Booth', size:'36 m²', amount:12000, date:'2026-02-20', status:'confirmed' },
+  { company:'Ketchapp', contact:'Amara Diallo', type:'Standard Booth', size:'9 m²', amount:2500, date:'2026-02-21', status:'confirmed' },
+  { company:'Bigpoint GmbH', contact:'Felix Brandt', type:'Standard Booth', size:'9 m²', amount:2500, date:'2026-02-22', status:'pending' },
+  { company:'King', contact:'Sofia Alvarez', type:'Premium Booth', size:'18 m²', amount:5500, date:'2026-02-23', status:'confirmed' },
+  { company:'miHoYo', contact:'Ren Zhang', type:'Island Booth', size:'36 m²', amount:12000, date:'2026-02-24', status:'confirmed' },
+  { company:'CD Projekt Blue', contact:'Nadia Kowalski', type:'Standard Booth', size:'9 m²', amount:2500, date:'2026-02-25', status:'pending' },
+  { company:'Ankama', contact:'Thomas Leroy', type:'Standard Booth', size:'9 m²', amount:2500, date:'2026-02-26', status:'rejected' },
+  { company:'Gameloft', contact:'Omar Benali', type:'Premium Booth', size:'18 m²', amount:5500, date:'2026-02-27', status:'confirmed' },
+  { company:'Supercell', contact:'Priya Sharma', type:'Standard Booth', size:'9 m²', amount:2500, date:'2026-02-28', status:'confirmed' },
+  { company:'Paradox Interactive', contact:'Emma Larsson', type:'Standard Booth', size:'9 m²', amount:2500, date:'2026-03-01', status:'confirmed' },
+  { company:'Voodoo Mobile', contact:'Marcus Webb', type:'Standard Booth', size:'9 m²', amount:2500, date:'2026-03-02', status:'confirmed' },
+  { company:'Nexon Studio', contact:'Yuki Tanaka', type:'Premium Booth', size:'18 m²', amount:5500, date:'2026-03-03', status:'confirmed' },
+  { company:'Wargaming', contact:'Dmitri Volkov', type:'Standard Booth', size:'9 m²', amount:2500, date:'2026-03-04', status:'confirmed' },
+  { company:'Bandai Namco EU', contact:'Rosa Almeida', type:'Standard Booth', size:'9 m²', amount:2500, date:'2026-03-05', status:'confirmed' },
+  { company:'Crytek', contact:'Felix Wagner', type:'Premium Booth', size:'18 m²', amount:5500, date:'2026-03-06', status:'confirmed' },
+  { company:'Milestone S.r.l.', contact:'Marco Bianchi', type:'Standard Booth', size:'9 m²', amount:2500, date:'2026-03-07', status:'pending' },
+];
+let appFilter = 'all', appSearch = '';
+function buildAppsTable() {
+  let d = appsData;
+  if (appFilter !== 'all') d = d.filter(a => a.status === appFilter);
+  if (appSearch) d = d.filter(a => (a.company + a.contact).toLowerCase().includes(appSearch));
+  const m = {confirmed:'badge-confirmed',pending:'badge-pending',rejected:'badge-rejected'};
+  const l = {confirmed:'Confirmed',pending:'Pending',rejected:'Rejected'};
+  document.getElementById('appsTable').innerHTML = d.map(a => `
+    <tr><td><div class="td-name">${a.company}</div><div class="td-meta">${a.contact}</div></td>
+    <td>${a.type}</td><td>${a.size}</td><td><strong>€${a.amount.toLocaleString()}</strong></td>
+    <td>${new Date(a.date).toLocaleDateString('en-GB',{day:'2-digit',month:'short'})}</td>
+    <td><span class="badge ${m[a.status]}">${l[a.status]}</span></td>
+    <td><div class="row-actions">
+      ${a.status==='pending'?`<button class="row-btn confirm" onclick="changeAppStatus('${a.company}','confirmed')">✓ Confirm</button><button class="row-btn reject" onclick="changeAppStatus('${a.company}','rejected')">✗ Reject</button>`:''}
+      <button class="row-btn" style="border-color:var(--border);color:var(--text2);" onclick="showToast('Emailing ${a.contact}…')">✉ Email</button>
+    </div></td></tr>`).join('');
+}
+function changeAppStatus(company, ns) {
+  const a = appsData.find(x => x.company === company);
+  if (a) { a.status = ns; buildAppsTable(); showToast(`${company} ${ns}`, 'success'); }
+}
+function filterApps(v) { appSearch = v.toLowerCase(); buildAppsTable(); }
+function setAppFilter(f, btn) { appFilter = f; document.querySelectorAll('.filter-tab').forEach(b => b.classList.remove('active')); btn.classList.add('active'); buildAppsTable(); }
+function exportCSV() { showToast('CSV exported!', 'success'); }
+function switchTab(id, btn) {
+  document.querySelectorAll('.tab-pane').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById(id).classList.add('active'); btn.classList.add('active');
+}
+function toggleAddForm() {
+  document.getElementById('addFormBody').classList.toggle('open');
+  document.getElementById('addFormToggle').classList.toggle('open');
+}
+function addBoothType() {
+  const name = document.getElementById('newName').value.trim();
+  const price = document.getElementById('newPrice').value.trim();
+  if (!name || !price) { showToast('Please fill in booth name and price', 'error'); return; }
+  showToast(`"${name}" booth type added!`, 'success');
+  toggleAddForm();
+  document.getElementById('newName').value = '';
+  document.getElementById('newPrice').value = '';
+}
+let toastTimer;
+function showToast(msg, type) {
+  const t = document.getElementById('toast');
+  t.textContent = (type==='success'?'✓ ':type==='error'?'⚠ ':'') + msg;
+  t.className = `toast ${type||''} show`;
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => t.classList.remove('show'), 2800);
+}
+buildAppsTable();
+</script>
+</body>
+</html>

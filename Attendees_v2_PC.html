@@ -1,0 +1,369 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Attendees – Event HQ</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#f4f6f9;--white:#fff;
+  --green:#16a34a;--green-dark:#15803d;--green-light:#f0fdf4;
+  --border:#e2e6ed;--border-light:#eef0f4;
+  --text1:#0f172a;--text2:#475569;--text3:#94a3b8;
+  --red:#dc2626;--red-light:#fef2f2;
+  --yellow:#d97706;--yellow-light:#fffbeb;
+  --orange:#ea580c;--orange-light:#fff7ed;
+  --blue:#2563eb;--blue-light:#eff6ff;
+  --sidebar-w:220px;--topbar-h:54px;--radius:10px;
+  --shadow:0 1px 3px rgba(0,0,0,.07),0 6px 20px rgba(0,0,0,.05);
+}
+html,body{min-height:100vh;background:var(--bg);font-family:'DM Sans',sans-serif;color:var(--text1);font-size:14px;line-height:1.55}
+.topbar{position:sticky;top:0;z-index:200;height:var(--topbar-h);background:var(--white);border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;padding:0 20px}
+.topbar-left{display:flex;align-items:center;gap:10px}
+.logo-wrap{display:flex;align-items:center;gap:7px;text-decoration:none}
+.logo-mark{width:26px;height:26px;background:var(--green);border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:13px;color:#fff;font-weight:800}
+.logo-name{font-size:12px;font-weight:800;color:var(--text1)}.logo-name span{color:var(--green)}
+.topbar-sep{width:1px;height:16px;background:var(--border);margin:0 6px}
+.topbar-product{font-size:13px;font-weight:700;color:var(--green)}
+.topbar-right{display:flex;align-items:center;gap:10px}
+.org-chip{display:flex;align-items:center;gap:7px;padding:4px 10px 4px 5px;border-radius:20px;border:1px solid var(--border);cursor:pointer}
+.avatar{width:24px;height:24px;border-radius:50%;background:linear-gradient(135deg,#16a34a,#4ade80);color:#fff;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:800}
+.org-name{font-size:12px;font-weight:600;color:var(--text2)}
+.btn-back{display:flex;align-items:center;gap:5px;font-size:12px;color:var(--text2);text-decoration:none;padding:5px 10px;border-radius:6px;border:1px solid var(--border);font-weight:500}
+.btn-back:hover{background:var(--bg)}
+.app-body{display:flex;min-height:calc(100vh - var(--topbar-h))}
+.sidebar{width:var(--sidebar-w);background:var(--white);border-right:1px solid var(--border);display:flex;flex-direction:column;flex-shrink:0;position:sticky;top:var(--topbar-h);height:calc(100vh - var(--topbar-h));overflow-y:auto}
+.sidebar-top{padding:12px 8px 8px}.sidebar-bottom{padding:8px;margin-top:auto;border-top:1px solid var(--border-light)}
+.nav-sep{height:1px;background:var(--border-light);margin:8px 0}
+.nav-label{font-size:10px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--text3);padding:6px 8px 4px}
+.nav-item{display:flex;align-items:center;gap:8px;padding:7px 8px;border-radius:7px;font-size:13px;font-weight:500;color:var(--text2);cursor:pointer;text-decoration:none;transition:background .1s,color .1s}
+.nav-item:hover{background:var(--bg);color:var(--text1)}.nav-item.active{background:var(--green-light);color:var(--green);font-weight:600}
+.nav-item .ni-icon{font-size:13px;width:18px;text-align:center;flex-shrink:0}
+.main{flex:1;display:flex;flex-direction:column;min-width:0}
+.main-topbar{height:48px;background:var(--white);border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;padding:0 24px}
+.breadcrumb{font-size:13px;color:var(--text2)}.breadcrumb strong{color:var(--text1);font-weight:600}
+.topbar-actions{display:flex;gap:8px}
+.btn-secondary{padding:6px 14px;border:1.5px solid var(--border);background:var(--white);border-radius:7px;font-family:'DM Sans',sans-serif;font-size:12.5px;font-weight:600;cursor:pointer;color:var(--text2);transition:all .12s}
+.btn-secondary:hover{border-color:var(--green);color:var(--green)}
+.btn-primary{padding:6px 16px;border:none;background:var(--green);color:#fff;border-radius:7px;font-family:'DM Sans',sans-serif;font-size:12.5px;font-weight:600;cursor:pointer}
+.btn-primary:hover{background:var(--green-dark)}
+.content{padding:24px;flex:1}
+.page-header{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:20px}
+.page-title{font-size:20px;font-weight:700;margin-bottom:3px}
+.page-subtitle{font-size:13px;color:var(--text2)}
+.stats-row{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:20px}
+.stat-card{background:var(--white);border:1px solid var(--border);border-radius:var(--radius);padding:16px;display:flex;align-items:center;gap:12px;box-shadow:var(--shadow)}
+.stat-icon{width:40px;height:40px;border-radius:9px;display:flex;align-items:center;justify-content:center;font-size:18px}
+.stat-icon.green{background:var(--green-light)}.stat-icon.blue{background:var(--blue-light)}.stat-icon.yellow{background:var(--yellow-light)}.stat-icon.orange{background:var(--orange-light)}
+.stat-num{font-size:22px;font-weight:700;line-height:1}.stat-label{font-size:11.5px;color:var(--text2);margin-top:2px}
+.toolbar{display:flex;align-items:center;gap:8px;margin-bottom:14px;flex-wrap:wrap}
+.search-box{display:flex;align-items:center;gap:7px;background:var(--white);border:1.5px solid var(--border);border-radius:8px;padding:6px 11px;flex:1;min-width:180px;max-width:300px}
+.search-box input{border:none;outline:none;font-family:'DM Sans',sans-serif;font-size:13px;width:100%;background:transparent}
+.filter-tabs{display:flex;gap:3px;background:var(--white);border:1px solid var(--border);border-radius:8px;padding:3px}
+.filter-tab{padding:5px 12px;border:none;background:transparent;font-family:'DM Sans',sans-serif;font-size:12px;font-weight:500;color:var(--text2);border-radius:6px;cursor:pointer;transition:all .15s}
+.filter-tab.active{background:var(--green);color:#fff;font-weight:600}
+.filter-tab:not(.active):hover{background:var(--bg)}
+.table-wrap{background:var(--white);border:1px solid var(--border);border-radius:var(--radius);overflow:hidden;box-shadow:var(--shadow)}
+table{width:100%;border-collapse:collapse}
+thead th{padding:10px 14px;text-align:left;font-size:11px;font-weight:700;letter-spacing:.6px;text-transform:uppercase;color:var(--text3);background:var(--bg);border-bottom:1px solid var(--border);white-space:nowrap}
+thead th input[type=checkbox]{cursor:pointer}
+tbody tr{border-bottom:1px solid var(--border);transition:background .1s}
+tbody tr:last-child{border-bottom:none}
+tbody tr:hover{background:#f8fafc}
+tbody td{padding:11px 14px;font-size:13px;vertical-align:middle}
+.td-name{font-weight:600}.td-meta{font-size:11.5px;color:var(--text2);margin-top:1px}
+.badge{display:inline-flex;align-items:center;padding:3px 9px;border-radius:20px;font-size:11px;font-weight:600}
+.badge-confirmed{background:var(--green-light);color:var(--green)}
+.badge-pending{background:var(--yellow-light);color:var(--yellow)}
+.badge-cancelled{background:var(--red-light);color:var(--red)}
+.badge-vip{background:var(--blue-light);color:var(--blue)}
+.row-btn{padding:3px 9px;border-radius:5px;font-family:'DM Sans',sans-serif;font-size:11px;font-weight:600;cursor:pointer;border:1.5px solid transparent;transition:all .12s}
+.row-btn.confirm{border-color:var(--green);color:var(--green);background:transparent}.row-btn.confirm:hover{background:var(--green);color:#fff}
+.row-btn.reject{border-color:var(--red);color:var(--red);background:transparent}.row-btn.reject:hover{background:var(--red);color:#fff}
+.row-btn.neutral{border-color:var(--border);color:var(--text2);background:transparent}.row-btn.neutral:hover{border-color:var(--green);color:var(--green)}
+.tab-bar{display:flex;background:var(--white);border:1px solid var(--border);border-radius:var(--radius);padding:4px;width:fit-content;margin-bottom:20px}
+.tab-btn{padding:7px 20px;border:none;background:transparent;font-family:'DM Sans',sans-serif;font-size:13px;font-weight:500;color:var(--text2);border-radius:7px;cursor:pointer;transition:all .15s}
+.tab-btn.active{background:var(--green);color:#fff;font-weight:600;box-shadow:0 2px 8px rgba(22,163,74,.25)}
+.tab-btn:not(.active):hover{background:var(--bg);color:var(--text1)}
+.tab-pane{display:none}.tab-pane.active{display:block}
+.form-control{padding:8px 11px;border:1.5px solid var(--border);border-radius:7px;font-family:'DM Sans',sans-serif;font-size:13px;color:var(--text1);background:#fff;outline:none;transition:border-color .15s}
+.form-control:focus{border-color:var(--green)}
+.invite-section{background:var(--white);border:1px solid var(--border);border-radius:var(--radius);padding:20px;margin-bottom:16px;box-shadow:var(--shadow)}
+.invite-title{font-size:14px;font-weight:700;margin-bottom:14px;display:flex;align-items:center;gap:8px}
+.invite-row{display:flex;gap:10px;align-items:flex-end;flex-wrap:wrap}
+.invite-input{flex:1;min-width:200px}
+.invite-label{font-size:11.5px;font-weight:600;color:var(--text2);text-transform:uppercase;letter-spacing:.5px;margin-bottom:5px}
+.bulk-area{width:100%;min-height:80px;resize:vertical}
+.toast{position:fixed;bottom:22px;right:22px;background:var(--text1);color:#fff;padding:10px 18px;border-radius:8px;font-size:13px;font-weight:500;z-index:999;display:flex;align-items:center;gap:7px;box-shadow:0 8px 24px rgba(0,0,0,.18);opacity:0;transform:translateY(8px);transition:all .2s;pointer-events:none}
+.toast.show{opacity:1;transform:translateY(0)}.toast.success{background:var(--green)}.toast.error{background:var(--red)}
+</style>
+</head>
+<body>
+<header class="topbar">
+  <div class="topbar-left">
+    <a href="EventHub_v2_PC.html" class="logo-wrap"><div class="logo-mark">GC</div><span class="logo-name">GAME<span>CONNECTION</span></span></a>
+    <div class="topbar-sep"></div><span class="topbar-product">Event HQ</span>
+  </div>
+  <div class="topbar-right">
+    <div class="org-chip"><div class="avatar">QQ</div><span class="org-name">My Organization</span></div>
+    <a href="EventHQ_Dashboard_v4_PC.html" class="btn-back">← Dashboard</a>
+  </div>
+</header>
+<div class="app-body">
+  <nav class="sidebar">
+    <div class="sidebar-top">
+      <a class="nav-item" href="EventHQ_Dashboard_v4_PC.html"><span class="ni-icon">🗓️</span> My Events</a>
+      <a class="nav-item" onclick="showToast('Analytics coming soon')"><span class="ni-icon">📊</span> Analytics</a>
+      <div class="nav-sep"></div><div class="nav-label">Current Event</div>
+      <a class="nav-item" href="FreeRegistration_v2_PC.html"><span class="ni-icon">📋</span> Registration</a>
+      <a class="nav-item" href="PaidTicketing_v2_PC.html"><span class="ni-icon">🎟️</span> Ticketing</a>
+      <a class="nav-item" href="BoothManagement_v2_PC.html"><span class="ni-icon">🏪</span> Booth</a>
+      <a class="nav-item" href="SponsorshipManagement_v2_PC.html"><span class="ni-icon">🤝</span> Sponsorship</a>
+      <a class="nav-item" href="SessionManagement_v2_PC.html"><span class="ni-icon">🎤</span> Sessions</a>
+      <a class="nav-item" href="Awards_v3_PC.html"><span class="ni-icon">🏆</span> Awards</a>
+      <a class="nav-item active" href="#"><span class="ni-icon">👥</span> Attendees</a>
+      <a class="nav-item" href="LetsMeet_Organizer_v2_PC.html"><span class="ni-icon">💬</span> Let's Meet</a>
+      <a class="nav-item" href="GameShowcase_v2_PC.html"><span class="ni-icon">🎮</span> Game Showcase</a>
+    </div>
+    <div class="sidebar-bottom"><a class="nav-item" onclick="showToast('Settings coming soon')"><span class="ni-icon">⚙️</span> Settings</a></div>
+  </nav>
+  <div class="main">
+    <div class="main-topbar">
+      <div class="breadcrumb">Attendees &rsaquo; <strong>Attendee Management</strong></div>
+      <div class="topbar-actions">
+        <button class="btn-secondary" onclick="exportCSV()">⬇ Export CSV</button>
+        <button class="btn-primary" onclick="switchTab('invite',document.querySelector('.tab-btn:nth-child(3)'))">+ Invite</button>
+      </div>
+    </div>
+    <div class="content">
+      <div class="page-header">
+        <div><div class="page-title">Attendee Management</div><div class="page-subtitle">View, filter, and manage all registered attendees for this event</div></div>
+        <span style="background:var(--green-light);color:var(--green);font-size:12px;font-weight:600;padding:4px 10px;border-radius:20px;">🎮 Game Connection 2026 · Paris</span>
+      </div>
+
+      <div class="stats-row">
+        <div class="stat-card"><div class="stat-icon green">👥</div><div><div class="stat-num" id="totalCount">0</div><div class="stat-label">Total Registered</div></div></div>
+        <div class="stat-card"><div class="stat-icon blue">✅</div><div><div class="stat-num" id="confirmedCount">0</div><div class="stat-label">Confirmed</div></div></div>
+        <div class="stat-card"><div class="stat-icon yellow">⏳</div><div><div class="stat-num" id="pendingCount">0</div><div class="stat-label">Pending</div></div></div>
+        <div class="stat-card"><div class="stat-icon orange">🌍</div><div><div class="stat-num" id="countryCount">0</div><div class="stat-label">Countries</div></div></div>
+      </div>
+
+      <div class="tab-bar">
+        <button class="tab-btn active" onclick="switchTab('list',this)">📋 All Attendees</button>
+        <button class="tab-btn" onclick="switchTab('checkin',this)">✅ Check-in</button>
+        <button class="tab-btn" onclick="switchTab('invite',this)">✉ Invite</button>
+        <button class="tab-btn" onclick="switchTab('analytics',this)">📊 Analytics</button>
+      </div>
+
+      <!-- TAB 1: LIST -->
+      <div id="list" class="tab-pane active">
+        <div class="toolbar">
+          <div class="search-box"><span style="color:var(--text3)">🔍</span><input type="text" placeholder="Search by name, company, email…" oninput="filterAttendees(this.value)"></div>
+          <div class="filter-tabs">
+            <button class="filter-tab active" onclick="setFilter('all',this)">All</button>
+            <button class="filter-tab" onclick="setFilter('confirmed',this)">Confirmed</button>
+            <button class="filter-tab" onclick="setFilter('pending',this)">Pending</button>
+            <button class="filter-tab" onclick="setFilter('vip',this)">VIP</button>
+          </div>
+          <select class="form-control" style="width:auto;font-size:12px;padding:5px 10px;" onchange="setTypeFilter(this.value)">
+            <option value="">All Types</option>
+            <option>Developer</option>
+            <option>Publisher</option>
+            <option>Investor</option>
+            <option>Press</option>
+            <option>Speaker</option>
+          </select>
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th><input type="checkbox" onchange="toggleAll(this)"></th><th>Attendee</th><th>Type</th><th>Company</th><th>Country</th><th>Registered</th><th>Status</th><th>Actions</th></tr></thead>
+            <tbody id="attendeeTable"></tbody>
+          </table>
+        </div>
+        <div id="bulkBar" style="display:none;position:sticky;bottom:0;background:var(--text1);color:#fff;padding:10px 20px;border-radius:10px 10px 0 0;display:flex;align-items:center;gap:12px;font-size:13px;">
+          <span id="bulkCount">0 selected</span>
+          <button onclick="showToast('Bulk email sent!','success')" style="padding:4px 12px;background:var(--green);color:#fff;border:none;border-radius:5px;font-family:'DM Sans',sans-serif;font-size:12px;font-weight:600;cursor:pointer;">✉ Email</button>
+          <button onclick="showToast('Badges printing…')" style="padding:4px 12px;background:#fff;color:var(--text1);border:none;border-radius:5px;font-family:'DM Sans',sans-serif;font-size:12px;font-weight:600;cursor:pointer;">🏷 Print Badges</button>
+          <button onclick="showToast('Status updated!','success')" style="padding:4px 12px;background:#fff;color:var(--text1);border:none;border-radius:5px;font-family:'DM Sans',sans-serif;font-size:12px;font-weight:600;cursor:pointer;">✓ Confirm All</button>
+        </div>
+      </div>
+
+      <!-- TAB 2: CHECK-IN -->
+      <div id="checkin" class="tab-pane">
+        <div class="toolbar">
+          <div class="search-box" style="max-width:400px;"><span style="color:var(--text3)">🔍</span><input type="text" placeholder="Scan badge or search name…" oninput="filterCheckin(this.value)"></div>
+          <div style="margin-left:auto;display:flex;gap:8px;align-items:center;">
+            <span style="font-size:13px;color:var(--text2);">Checked in: <strong id="checkinCount" style="color:var(--green);">0</strong> / <span id="checkinTotal">0</span></span>
+          </div>
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Attendee</th><th>Type</th><th>Company</th><th>Badge #</th><th>Check-in Time</th><th>Actions</th></tr></thead>
+            <tbody id="checkinTable"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- TAB 3: INVITE -->
+      <div id="invite" class="tab-pane">
+        <div class="invite-section">
+          <div class="invite-title">✉ Invite Individual Attendee</div>
+          <div class="invite-row">
+            <div class="invite-input"><div class="invite-label">Full Name</div><input type="text" class="form-control" id="invName" placeholder="e.g. John Smith"></div>
+            <div class="invite-input"><div class="invite-label">Email</div><input type="email" class="form-control" id="invEmail" placeholder="john@company.com"></div>
+            <div class="invite-input"><div class="invite-label">Company</div><input type="text" class="form-control" id="invCompany" placeholder="Company name"></div>
+            <div class="invite-input" style="min-width:140px;"><div class="invite-label">Type</div><select class="form-control" id="invType"><option>Developer</option><option>Publisher</option><option>Investor</option><option>Press</option><option>Speaker</option></select></div>
+            <button class="btn-primary" onclick="sendInvite()">Send Invite</button>
+          </div>
+        </div>
+        <div class="invite-section">
+          <div class="invite-title">📋 Bulk Invite (CSV / Email List)</div>
+          <div class="invite-label" style="margin-bottom:8px;">Paste emails (one per line) or upload CSV</div>
+          <textarea class="form-control bulk-area" id="bulkEmails" placeholder="john@company.com&#10;jane@studio.com&#10;..."></textarea>
+          <div style="display:flex;gap:8px;margin-top:10px;">
+            <button class="btn-secondary" onclick="showToast('CSV upload dialog opening…')">📁 Upload CSV</button>
+            <button class="btn-primary" onclick="sendBulkInvite()">Send Bulk Invites</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- TAB 4: ANALYTICS -->
+      <div id="analytics" class="tab-pane">
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;">
+          <div style="background:var(--white);border:1px solid var(--border);border-radius:var(--radius);padding:20px;box-shadow:var(--shadow);">
+            <div style="font-size:14px;font-weight:700;margin-bottom:14px;">By Attendee Type</div>
+            <div id="typeChart"></div>
+          </div>
+          <div style="background:var(--white);border:1px solid var(--border);border-radius:var(--radius);padding:20px;box-shadow:var(--shadow);">
+            <div style="font-size:14px;font-weight:700;margin-bottom:14px;">By Country (Top 10)</div>
+            <div id="countryChart"></div>
+          </div>
+          <div style="background:var(--white);border:1px solid var(--border);border-radius:var(--radius);padding:20px;box-shadow:var(--shadow);">
+            <div style="font-size:14px;font-weight:700;margin-bottom:14px;">Registration Timeline</div>
+            <div style="font-size:12px;color:var(--text2);">Daily registrations over the past 30 days</div>
+            <div style="height:80px;display:flex;align-items:flex-end;gap:3px;margin-top:12px;" id="timelineChart"></div>
+          </div>
+          <div style="background:var(--white);border:1px solid var(--border);border-radius:var(--radius);padding:20px;box-shadow:var(--shadow);">
+            <div style="font-size:14px;font-weight:700;margin-bottom:14px;">Status Breakdown</div>
+            <div id="statusChart"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+<script>
+const attendeesData = [
+  {name:'Alexandre Dupont',email:'a.dupont@ubisoft.com',company:'Ubisoft Paris',country:'France',type:'Publisher',date:'2026-02-10',status:'confirmed',vip:true,badge:'GC-001',checkedIn:true,checkinTime:'09:14'},
+  {name:'Sarah Mitchell',email:'s.mitchell@ea.com',company:'Electronic Arts',country:'USA',type:'Publisher',date:'2026-02-12',status:'confirmed',vip:true,badge:'GC-002',checkedIn:false,checkinTime:''},
+  {name:'Ren Zhang',email:'r.zhang@mihoyo.com',company:'miHoYo',country:'China',type:'Developer',date:'2026-02-14',status:'confirmed',vip:false,badge:'GC-003',checkedIn:true,checkinTime:'09:32'},
+  {name:'Emma Larsson',email:'e.larsson@paradox.com',company:'Paradox Interactive',country:'Sweden',type:'Developer',date:'2026-02-15',status:'confirmed',vip:false,badge:'GC-004',checkedIn:false,checkinTime:''},
+  {name:'Felix Wagner',email:'f.wagner@crytek.com',company:'Crytek',country:'Germany',type:'Developer',date:'2026-02-16',status:'pending',vip:false,badge:'GC-005',checkedIn:false,checkinTime:''},
+  {name:'Maria Kowalski',email:'m.kowalski@cdprojekt.com',company:'CD Projekt Red',country:'Poland',type:'Developer',date:'2026-02-18',status:'confirmed',vip:false,badge:'GC-006',checkedIn:false,checkinTime:''},
+  {name:'Rosa Almeida',email:'r.almeida@bandainamco.eu',company:'Bandai Namco EU',country:'Portugal',type:'Publisher',date:'2026-02-20',status:'confirmed',vip:false,badge:'GC-007',checkedIn:true,checkinTime:'10:05'},
+  {name:'Dmitri Volkov',email:'d.volkov@wargaming.net',company:'Wargaming',country:'Cyprus',type:'Developer',date:'2026-02-22',status:'confirmed',vip:false,badge:'GC-008',checkedIn:false,checkinTime:''},
+  {name:'Priya Sharma',email:'p.sharma@supercell.com',company:'Supercell',country:'Finland',type:'Developer',date:'2026-02-24',status:'pending',vip:false,badge:'GC-009',checkedIn:false,checkinTime:''},
+  {name:'Omar Benali',email:'o.benali@gameloft.com',company:'Gameloft',country:'France',type:'Publisher',date:'2026-02-26',status:'confirmed',vip:false,badge:'GC-010',checkedIn:false,checkinTime:''},
+  {name:'Jake Thompson',email:'j.thompson@riot.com',company:'Riot Games',country:'USA',type:'Publisher',date:'2026-02-28',status:'confirmed',vip:true,badge:'GC-011',checkedIn:false,checkinTime:''},
+  {name:'Nina Petrov',email:'n.petrov@mygames.com',company:'MY.GAMES',country:'Russia',type:'Developer',date:'2026-03-01',status:'confirmed',vip:false,badge:'GC-012',checkedIn:false,checkinTime:''},
+  {name:'Thibault Moreau',email:'t.moreau@focus-home.com',company:'Focus Entertainment',country:'France',type:'Publisher',date:'2026-03-02',status:'pending',vip:false,badge:'GC-013',checkedIn:false,checkinTime:''},
+  {name:'Marco Bianchi',email:'m.bianchi@milestone.it',company:'Milestone S.r.l.',country:'Italy',type:'Developer',date:'2026-03-03',status:'confirmed',vip:false,badge:'GC-014',checkedIn:false,checkinTime:''},
+  {name:'Kevin Park',email:'k.park@nexon.com',company:'Nexon',country:'South Korea',type:'Developer',date:'2026-03-04',status:'confirmed',vip:false,badge:'GC-015',checkedIn:false,checkinTime:''},
+  {name:'Isabelle Laurent',email:'i.laurent@ankama.com',company:'Ankama',country:'France',type:'Developer',date:'2026-03-05',status:'confirmed',vip:false,badge:'GC-016',checkedIn:false,checkinTime:''},
+  {name:'Tom Hendricks',email:'t.hendricks@2k.com',company:'2K Games',country:'USA',type:'Publisher',date:'2026-03-06',status:'confirmed',vip:false,badge:'GC-017',checkedIn:false,checkinTime:''},
+  {name:'Hana Novák',email:'h.novak@2kczech.com',company:'2K Czech',country:'Czech Republic',type:'Developer',date:'2026-03-07',status:'pending',vip:false,badge:'GC-018',checkedIn:false,checkinTime:''},
+  {name:'Jean-Paul Girard',email:'jp.girard@bigben.com',company:'Big Ben Games',country:'France',type:'Publisher',date:'2026-03-08',status:'confirmed',vip:false,badge:'GC-019',checkedIn:false,checkinTime:''},
+  {name:'Yuki Tanaka',email:'y.tanaka@square-enix.com',company:'Square Enix',country:'Japan',type:'Developer',date:'2026-03-09',status:'confirmed',vip:true,badge:'GC-020',checkedIn:false,checkinTime:''},
+];
+let currentFilter='all', typeFilter='', searchStr='';
+function getFiltered(){
+  return attendeesData.filter(a=>{
+    const matchFilter=currentFilter==='all'||(currentFilter==='vip'&&a.vip)||(currentFilter===a.status);
+    const matchType=!typeFilter||a.type===typeFilter;
+    const matchSearch=!searchStr||(a.name+a.company+a.email).toLowerCase().includes(searchStr);
+    return matchFilter&&matchType&&matchSearch;
+  });
+}
+function buildTable(){
+  const d=getFiltered();
+  document.getElementById('totalCount').textContent=attendeesData.length;
+  document.getElementById('confirmedCount').textContent=attendeesData.filter(a=>a.status==='confirmed').length;
+  document.getElementById('pendingCount').textContent=attendeesData.filter(a=>a.status==='pending').length;
+  document.getElementById('countryCount').textContent=[...new Set(attendeesData.map(a=>a.country))].length;
+  const sm={confirmed:'badge-confirmed',pending:'badge-pending',cancelled:'badge-cancelled'};
+  const sl={confirmed:'Confirmed',pending:'Pending',cancelled:'Cancelled'};
+  document.getElementById('attendeeTable').innerHTML=d.map(a=>`
+    <tr><td><input type="checkbox" class="row-check" onchange="updateBulk()"></td>
+    <td><div class="td-name">${a.name}${a.vip?'<span class="badge badge-vip" style="margin-left:6px;font-size:10px;">VIP</span>':''}</div><div class="td-meta">${a.email}</div></td>
+    <td>${a.type}</td><td>${a.company}</td><td>${a.country}</td>
+    <td>${new Date(a.date).toLocaleDateString('en-GB',{day:'2-digit',month:'short'})}</td>
+    <td><span class="badge ${sm[a.status]}">${sl[a.status]}</span></td>
+    <td><div style="display:flex;gap:4px;">
+      <button class="row-btn neutral" onclick="showToast('Opening profile…')">👁</button>
+      <button class="row-btn neutral" onclick="showToast('Emailing ${a.name}…')">✉</button>
+      ${a.status==='pending'?`<button class="row-btn confirm" onclick="confirmAttendee('${a.email}')">✓</button>`:''}
+    </div></td></tr>`).join('');
+}
+function buildCheckin(){
+  const d=attendeesData;
+  const ci=d.filter(a=>a.checkedIn).length;
+  document.getElementById('checkinCount').textContent=ci;
+  document.getElementById('checkinTotal').textContent=d.length;
+  document.getElementById('checkinTable').innerHTML=d.map(a=>`
+    <tr><td><div class="td-name">${a.name}</div><div class="td-meta">${a.email}</div></td>
+    <td>${a.type}</td><td>${a.company}</td><td style="font-family:monospace;font-size:12px;">${a.badge}</td>
+    <td>${a.checkedIn?`<span style="color:var(--green);font-weight:600;">✓ ${a.checkinTime}</span>`:'<span style="color:var(--text3);">—</span>'}</td>
+    <td>${a.checkedIn?`<button class="row-btn reject" onclick="undoCheckin('${a.email}')">Undo</button>`:`<button class="row-btn confirm" onclick="doCheckin('${a.email}')">✓ Check In</button>`}</td></tr>`).join('');
+}
+function buildAnalytics(){
+  const types={};const countries={};
+  attendeesData.forEach(a=>{types[a.type]=(types[a.type]||0)+1;countries[a.country]=(countries[a.country]||0)+1;});
+  const colors=['#16a34a','#2563eb','#d97706','#dc2626','#7c3aed'];
+  const typeEntries=Object.entries(types).sort((a,b)=>b[1]-a[1]);
+  const total=attendeesData.length;
+  document.getElementById('typeChart').innerHTML=typeEntries.map(([t,n],i)=>`
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px;">
+      <div style="width:90px;font-size:12px;font-weight:500;">${t}</div>
+      <div style="flex:1;height:8px;background:var(--border);border-radius:4px;overflow:hidden;"><div style="height:100%;background:${colors[i%colors.length]};width:${Math.round(n/total*100)}%;border-radius:4px;"></div></div>
+      <div style="font-size:12px;font-weight:700;width:30px;text-align:right;">${n}</div>
+    </div>`).join('');
+  const countryEntries=Object.entries(countries).sort((a,b)=>b[1]-a[1]).slice(0,10);
+  const maxC=countryEntries[0]?.[1]||1;
+  document.getElementById('countryChart').innerHTML=countryEntries.map(([c,n])=>`
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:7px;">
+      <div style="width:110px;font-size:12px;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${c}</div>
+      <div style="flex:1;height:8px;background:var(--border);border-radius:4px;overflow:hidden;"><div style="height:100%;background:var(--green);width:${Math.round(n/maxC*100)}%;border-radius:4px;"></div></div>
+      <div style="font-size:12px;font-weight:700;width:20px;text-align:right;">${n}</div>
+    </div>`).join('');
+  const conf=attendeesData.filter(a=>a.status==='confirmed').length;
+  const pend=attendeesData.filter(a=>a.status==='pending').length;
+  document.getElementById('statusChart').innerHTML=`
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px;"><div style="width:80px;font-size:12px;">Confirmed</div><div style="flex:1;height:10px;background:var(--border);border-radius:5px;overflow:hidden;"><div style="height:100%;background:var(--green);width:${Math.round(conf/total*100)}%;border-radius:5px;"></div></div><div style="font-size:12px;font-weight:700;width:30px;">${conf}</div></div>
+    <div style="display:flex;align-items:center;gap:10px;"><div style="width:80px;font-size:12px;">Pending</div><div style="flex:1;height:10px;background:var(--border);border-radius:5px;overflow:hidden;"><div style="height:100%;background:var(--yellow);width:${Math.round(pend/total*100)}%;border-radius:5px;"></div></div><div style="font-size:12px;font-weight:700;width:30px;">${pend}</div></div>`;
+  const bars=Array.from({length:30},(_,i)=>Math.floor(Math.random()*8)+1);
+  const maxB=Math.max(...bars);
+  document.getElementById('timelineChart').innerHTML=bars.map(v=>`<div style="flex:1;height:${Math.round(v/maxB*100)}%;background:var(--green);border-radius:2px 2px 0 0;opacity:0.8;"></div>`).join('');
+}
+function confirmAttendee(email){const a=attendeesData.find(x=>x.email===email);if(a){a.status='confirmed';buildTable();showToast(`${a.name} confirmed!`,'success');}}
+function doCheckin(email){const a=attendeesData.find(x=>x.email===email);if(a){a.checkedIn=true;a.checkinTime=new Date().toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit'});buildCheckin();showToast(`${a.name} checked in!`,'success');}}
+function undoCheckin(email){const a=attendeesData.find(x=>x.email===email);if(a){a.checkedIn=false;a.checkinTime='';buildCheckin();showToast('Check-in undone');}}
+function filterAttendees(v){searchStr=v.toLowerCase();buildTable();}
+function setFilter(f,btn){currentFilter=f;document.querySelectorAll('.filter-tab').forEach(b=>b.classList.remove('active'));btn.classList.add('active');buildTable();}
+function setTypeFilter(v){typeFilter=v;buildTable();}
+function filterCheckin(v){const rows=document.querySelectorAll('#checkinTable tr');rows.forEach(r=>{r.style.display=r.textContent.toLowerCase().includes(v.toLowerCase())?'':'none';});}
+function toggleAll(cb){document.querySelectorAll('.row-check').forEach(c=>c.checked=cb.checked);updateBulk();}
+function updateBulk(){const n=document.querySelectorAll('.row-check:checked').length;const bar=document.getElementById('bulkBar');if(n>0){bar.style.display='flex';document.getElementById('bulkCount').textContent=`${n} selected`;}else{bar.style.display='none';}}
+function sendInvite(){const n=document.getElementById('invName').value.trim();const e=document.getElementById('invEmail').value.trim();if(!n||!e){showToast('Name and email required','error');return;}showToast(`Invite sent to ${e}!`,'success');document.getElementById('invName').value='';document.getElementById('invEmail').value='';}
+function sendBulkInvite(){const t=document.getElementById('bulkEmails').value.trim();if(!t){showToast('Please enter at least one email','error');return;}const n=t.split('\n').filter(l=>l.trim()).length;showToast(`${n} invites sent!`,'success');document.getElementById('bulkEmails').value='';}
+function exportCSV(){const h=['Name','Email','Company','Country','Type','Status','Badge'];const rows=attendeesData.map(a=>[a.name,a.email,a.company,a.country,a.type,a.status,a.badge]);const csv=[h,...rows].map(r=>r.join(',')).join('\n');const b=new Blob([csv],{type:'text/csv'});const u=URL.createObjectURL(b);const a=document.createElement('a');a.href=u;a.download='attendees.csv';a.click();showToast('CSV exported!','success');}
+function switchTab(id,btn){document.querySelectorAll('.tab-pane').forEach(p=>p.classList.remove('active'));document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));document.getElementById(id).classList.add('active');if(btn)btn.classList.add('active');if(id==='analytics')buildAnalytics();if(id==='checkin')buildCheckin();}
+let toastTimer;
+function showToast(msg,type){const t=document.getElementById('toast');t.textContent=(type==='success'?'✓ ':type==='error'?'⚠ ':'')+msg;t.className=`toast ${type||''} show`;clearTimeout(toastTimer);toastTimer=setTimeout(()=>t.classList.remove('show'),2800);}
+buildTable();
+</script>
+</body>
+</html>

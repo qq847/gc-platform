@@ -1,0 +1,417 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Session Management – Event HQ</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#f4f6f9;--white:#fff;
+  --green:#16a34a;--green-dark:#15803d;--green-light:#f0fdf4;
+  --border:#e2e6ed;--border-light:#eef0f4;
+  --text1:#0f172a;--text2:#475569;--text3:#94a3b8;
+  --red:#dc2626;--red-light:#fef2f2;
+  --yellow:#d97706;--yellow-light:#fffbeb;
+  --orange:#ea580c;--orange-light:#fff7ed;
+  --blue:#2563eb;--blue-light:#eff6ff;
+  --purple:#7c3aed;--purple-light:#f5f3ff;
+  --sidebar-w:220px;--topbar-h:54px;--radius:10px;
+  --shadow:0 1px 3px rgba(0,0,0,.07),0 6px 20px rgba(0,0,0,.05);
+}
+html,body{min-height:100vh;background:var(--bg);font-family:'DM Sans',sans-serif;color:var(--text1);font-size:14px;line-height:1.55}
+.topbar{position:sticky;top:0;z-index:200;height:var(--topbar-h);background:var(--white);border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;padding:0 20px}
+.topbar-left{display:flex;align-items:center;gap:10px}
+.logo-wrap{display:flex;align-items:center;gap:7px;text-decoration:none}
+.logo-mark{width:26px;height:26px;background:var(--green);border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:13px;color:#fff;font-weight:800}
+.logo-name{font-size:12px;font-weight:800;color:var(--text1)}.logo-name span{color:var(--green)}
+.topbar-sep{width:1px;height:16px;background:var(--border);margin:0 6px}
+.topbar-product{font-size:13px;font-weight:700;color:var(--green)}
+.topbar-right{display:flex;align-items:center;gap:10px}
+.org-chip{display:flex;align-items:center;gap:7px;padding:4px 10px 4px 5px;border-radius:20px;border:1px solid var(--border);cursor:pointer}
+.avatar{width:24px;height:24px;border-radius:50%;background:linear-gradient(135deg,#16a34a,#4ade80);color:#fff;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:800}
+.org-name{font-size:12px;font-weight:600;color:var(--text2)}
+.btn-back{display:flex;align-items:center;gap:5px;font-size:12px;color:var(--text2);text-decoration:none;padding:5px 10px;border-radius:6px;border:1px solid var(--border);font-weight:500}
+.btn-back:hover{background:var(--bg)}
+.app-body{display:flex;min-height:calc(100vh - var(--topbar-h))}
+.sidebar{width:var(--sidebar-w);background:var(--white);border-right:1px solid var(--border);display:flex;flex-direction:column;flex-shrink:0;position:sticky;top:var(--topbar-h);height:calc(100vh - var(--topbar-h));overflow-y:auto}
+.sidebar-top{padding:12px 8px 8px}.sidebar-bottom{padding:8px;margin-top:auto;border-top:1px solid var(--border-light)}
+.nav-sep{height:1px;background:var(--border-light);margin:8px 0}
+.nav-label{font-size:10px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--text3);padding:6px 8px 4px}
+.nav-item{display:flex;align-items:center;gap:8px;padding:7px 8px;border-radius:7px;font-size:13px;font-weight:500;color:var(--text2);cursor:pointer;text-decoration:none;transition:background .1s,color .1s}
+.nav-item:hover{background:var(--bg);color:var(--text1)}.nav-item.active{background:var(--green-light);color:var(--green);font-weight:600}
+.nav-item .ni-icon{font-size:13px;width:18px;text-align:center;flex-shrink:0}
+.main{flex:1;display:flex;flex-direction:column;min-width:0}
+.main-topbar{height:48px;background:var(--white);border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;padding:0 24px}
+.breadcrumb{font-size:13px;color:var(--text2)}.breadcrumb strong{color:var(--text1);font-weight:600}
+.topbar-actions{display:flex;gap:8px}
+.btn-secondary{padding:6px 14px;border:1.5px solid var(--border);background:var(--white);border-radius:7px;font-family:'DM Sans',sans-serif;font-size:12.5px;font-weight:600;cursor:pointer;color:var(--text2);transition:all .12s}
+.btn-secondary:hover{border-color:var(--green);color:var(--green)}
+.btn-primary{padding:6px 16px;border:none;background:var(--green);color:#fff;border-radius:7px;font-family:'DM Sans',sans-serif;font-size:12.5px;font-weight:600;cursor:pointer}
+.btn-primary:hover{background:var(--green-dark)}
+.content{padding:24px;flex:1}
+.page-header{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:20px}
+.page-title{font-size:20px;font-weight:700;margin-bottom:3px}
+.page-subtitle{font-size:13px;color:var(--text2)}
+.tab-bar{display:flex;background:var(--white);border:1px solid var(--border);border-radius:var(--radius);padding:4px;width:fit-content;margin-bottom:20px}
+.tab-btn{padding:7px 20px;border:none;background:transparent;font-family:'DM Sans',sans-serif;font-size:13px;font-weight:500;color:var(--text2);border-radius:7px;cursor:pointer;transition:all .15s}
+.tab-btn.active{background:var(--green);color:#fff;font-weight:600;box-shadow:0 2px 8px rgba(22,163,74,.25)}
+.tab-btn:not(.active):hover{background:var(--bg);color:var(--text1)}
+.tab-pane{display:none}.tab-pane.active{display:block}
+.stats-row{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:20px}
+.stat-card{background:var(--white);border:1px solid var(--border);border-radius:var(--radius);padding:16px;display:flex;align-items:center;gap:12px;box-shadow:var(--shadow)}
+.stat-icon{width:40px;height:40px;border-radius:9px;display:flex;align-items:center;justify-content:center;font-size:18px}
+.stat-icon.green{background:var(--green-light)}.stat-icon.blue{background:var(--blue-light)}.stat-icon.yellow{background:var(--yellow-light)}.stat-icon.purple{background:var(--purple-light)}
+.stat-num{font-size:22px;font-weight:700;line-height:1}.stat-label{font-size:11.5px;color:var(--text2);margin-top:2px}
+.session-list{display:flex;flex-direction:column;gap:12px;margin-bottom:20px}
+.session-card{background:var(--white);border:1px solid var(--border);border-radius:var(--radius);padding:18px;box-shadow:var(--shadow);display:flex;gap:16px;align-items:flex-start;transition:border-color .15s}
+.session-card:hover{border-color:var(--green)}
+.session-time{flex-shrink:0;width:80px;text-align:center;padding:8px;background:var(--green-light);border-radius:8px}
+.session-time-main{font-size:14px;font-weight:700;color:var(--green)}
+.session-time-day{font-size:11px;color:var(--text2);margin-top:2px}
+.session-body{flex:1;min-width:0}
+.session-title{font-size:15px;font-weight:700;margin-bottom:4px}
+.session-meta{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:8px}
+.session-meta-item{font-size:12px;color:var(--text2);display:flex;align-items:center;gap:4px}
+.session-speakers{display:flex;gap:6px;flex-wrap:wrap}
+.speaker-chip{display:flex;align-items:center;gap:5px;padding:3px 9px;background:var(--bg);border:1px solid var(--border);border-radius:20px;font-size:12px;font-weight:500}
+.speaker-avatar{width:18px;height:18px;border-radius:50%;background:var(--green);color:#fff;display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:700;flex-shrink:0}
+.session-actions{display:flex;gap:5px;margin-top:10px}
+.badge{display:inline-flex;align-items:center;padding:3px 9px;border-radius:20px;font-size:11px;font-weight:600}
+.badge-keynote{background:var(--purple-light);color:var(--purple)}
+.badge-panel{background:var(--blue-light);color:var(--blue)}
+.badge-workshop{background:var(--orange-light);color:var(--orange)}
+.badge-fireside{background:var(--yellow-light);color:var(--yellow)}
+.badge-confirmed{background:var(--green-light);color:var(--green)}
+.badge-pending{background:var(--yellow-light);color:var(--yellow)}
+.badge-draft{background:var(--bg);color:var(--text3)}
+.btn-icon{width:28px;height:28px;border:1px solid var(--border);background:var(--white);border-radius:6px;cursor:pointer;font-size:13px;display:flex;align-items:center;justify-content:center;transition:all .12s;color:var(--text2)}
+.btn-icon:hover{border-color:var(--green);color:var(--green)}
+.toolbar{display:flex;align-items:center;gap:8px;margin-bottom:14px;flex-wrap:wrap}
+.search-box{display:flex;align-items:center;gap:7px;background:var(--white);border:1.5px solid var(--border);border-radius:8px;padding:6px 11px;flex:1;min-width:180px;max-width:300px}
+.search-box input{border:none;outline:none;font-family:'DM Sans',sans-serif;font-size:13px;width:100%;background:transparent}
+.filter-tabs{display:flex;gap:3px;background:var(--white);border:1px solid var(--border);border-radius:8px;padding:3px}
+.filter-tab{padding:5px 12px;border:none;background:transparent;font-family:'DM Sans',sans-serif;font-size:12px;font-weight:500;color:var(--text2);border-radius:6px;cursor:pointer;transition:all .15s}
+.filter-tab.active{background:var(--green);color:#fff;font-weight:600}
+.filter-tab:not(.active):hover{background:var(--bg)}
+.card{background:var(--white);border:1px solid var(--border);border-radius:var(--radius);padding:20px;margin-bottom:16px;box-shadow:var(--shadow)}
+.card-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px}
+.card-title{font-size:14px;font-weight:700}
+.table-wrap{background:var(--white);border:1px solid var(--border);border-radius:var(--radius);overflow:hidden;box-shadow:var(--shadow)}
+table{width:100%;border-collapse:collapse}
+thead th{padding:10px 14px;text-align:left;font-size:11px;font-weight:700;letter-spacing:.6px;text-transform:uppercase;color:var(--text3);background:var(--bg);border-bottom:1px solid var(--border);white-space:nowrap}
+tbody tr{border-bottom:1px solid var(--border);transition:background .1s}
+tbody tr:last-child{border-bottom:none}
+tbody tr:hover{background:#f8fafc}
+tbody td{padding:11px 14px;font-size:13px;vertical-align:middle}
+.td-name{font-weight:600}.td-meta{font-size:11.5px;color:var(--text2);margin-top:1px}
+.row-btn{padding:3px 9px;border-radius:5px;font-family:'DM Sans',sans-serif;font-size:11px;font-weight:600;cursor:pointer;border:1.5px solid transparent;transition:all .12s}
+.row-btn.confirm{border-color:var(--green);color:var(--green);background:transparent}.row-btn.confirm:hover{background:var(--green);color:#fff}
+.row-btn.reject{border-color:var(--red);color:var(--red);background:transparent}.row-btn.reject:hover{background:var(--red);color:#fff}
+.row-btn.neutral{border-color:var(--border);color:var(--text2);background:transparent}.row-btn.neutral:hover{border-color:var(--green);color:var(--green)}
+.cfp-section{background:var(--white);border:1px solid var(--border);border-radius:var(--radius);padding:20px;margin-bottom:16px;box-shadow:var(--shadow)}
+.cfp-title{font-size:14px;font-weight:700;margin-bottom:14px;display:flex;align-items:center;gap:8px}
+.toggle-row{display:flex;align-items:center;justify-content:space-between;padding:10px 0;border-bottom:1px solid var(--border-light)}
+.toggle-row:last-child{border-bottom:none}
+.toggle-label{font-size:13px;font-weight:500}
+.toggle-desc{font-size:12px;color:var(--text2);margin-top:2px}
+.switch{position:relative;width:38px;height:21px;flex-shrink:0}
+.switch input{opacity:0;width:0;height:0}
+.slider{position:absolute;inset:0;background:#cbd5e1;border-radius:21px;cursor:pointer;transition:.2s}
+.slider::before{content:'';position:absolute;width:15px;height:15px;left:3px;top:3px;background:#fff;border-radius:50%;transition:.2s;box-shadow:0 1px 3px rgba(0,0,0,.2)}
+.switch input:checked + .slider{background:var(--green)}
+.switch input:checked + .slider::before{transform:translateX(17px)}
+.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:16px}
+.form-group{display:flex;flex-direction:column;gap:5px}
+.form-group.full{grid-column:1/-1}
+.form-label{font-size:11.5px;font-weight:600;color:var(--text2);text-transform:uppercase;letter-spacing:.5px}
+.form-control{padding:8px 11px;border:1.5px solid var(--border);border-radius:7px;font-family:'DM Sans',sans-serif;font-size:13px;color:var(--text1);background:#fff;outline:none;transition:border-color .15s}
+.form-control:focus{border-color:var(--green)}
+.form-actions{display:flex;justify-content:flex-end;gap:8px;padding-top:12px;border-top:1px solid var(--border-light);margin-top:16px}
+.add-form-wrapper{background:var(--white);border:1px solid var(--border);border-radius:var(--radius);overflow:hidden;box-shadow:var(--shadow)}
+.add-form-toggle{width:100%;padding:14px 20px;background:transparent;border:none;font-family:'DM Sans',sans-serif;font-size:13.5px;font-weight:600;color:var(--text2);cursor:pointer;display:flex;align-items:center;gap:8px;transition:background .12s}
+.add-form-toggle:hover{background:var(--bg);color:var(--green)}
+.add-form-toggle.open{background:var(--green-light);color:var(--green)}
+.toggle-icon{font-size:18px;transition:transform .2s}
+.add-form-toggle.open .toggle-icon{transform:rotate(45deg)}
+.add-form-body{display:none;padding:20px;border-top:1px solid var(--border)}
+.add-form-body.open{display:block}
+.toast{position:fixed;bottom:22px;right:22px;background:var(--text1);color:#fff;padding:10px 18px;border-radius:8px;font-size:13px;font-weight:500;z-index:999;display:flex;align-items:center;gap:7px;box-shadow:0 8px 24px rgba(0,0,0,.18);opacity:0;transform:translateY(8px);transition:all .2s;pointer-events:none}
+.toast.show{opacity:1;transform:translateY(0)}.toast.success{background:var(--green)}.toast.error{background:var(--red)}
+</style>
+</head>
+<body>
+<header class="topbar">
+  <div class="topbar-left">
+    <a href="EventHub_v2_PC.html" class="logo-wrap"><div class="logo-mark">GC</div><span class="logo-name">GAME<span>CONNECTION</span></span></a>
+    <div class="topbar-sep"></div><span class="topbar-product">Event HQ</span>
+  </div>
+  <div class="topbar-right">
+    <div class="org-chip"><div class="avatar">QQ</div><span class="org-name">My Organization</span></div>
+    <a href="EventHQ_Dashboard_v4_PC.html" class="btn-back">← Dashboard</a>
+  </div>
+</header>
+<div class="app-body">
+  <nav class="sidebar">
+    <div class="sidebar-top">
+      <a class="nav-item" href="EventHQ_Dashboard_v4_PC.html"><span class="ni-icon">🗓️</span> My Events</a>
+      <a class="nav-item" onclick="showToast('Analytics coming soon')"><span class="ni-icon">📊</span> Analytics</a>
+      <div class="nav-sep"></div><div class="nav-label">Current Event</div>
+      <a class="nav-item" href="FreeRegistration_v2_PC.html"><span class="ni-icon">📋</span> Registration</a>
+      <a class="nav-item" href="PaidTicketing_v2_PC.html"><span class="ni-icon">🎟️</span> Ticketing</a>
+      <a class="nav-item" href="BoothManagement_v2_PC.html"><span class="ni-icon">🏪</span> Booth</a>
+      <a class="nav-item" href="SponsorshipManagement_v2_PC.html"><span class="ni-icon">🤝</span> Sponsorship</a>
+      <a class="nav-item active" href="#"><span class="ni-icon">🎤</span> Sessions</a>
+      <a class="nav-item" href="Awards_v3_PC.html"><span class="ni-icon">🏆</span> Awards</a>
+      <a class="nav-item" href="Attendees_v2_PC.html"><span class="ni-icon">👥</span> Attendees</a>
+      <a class="nav-item" href="LetsMeet_Organizer_v2_PC.html"><span class="ni-icon">💬</span> Let's Meet</a>
+      <a class="nav-item" href="GameShowcase_v2_PC.html"><span class="ni-icon">🎮</span> Game Showcase</a>
+    </div>
+    <div class="sidebar-bottom"><a class="nav-item" onclick="showToast('Settings coming soon')"><span class="ni-icon">⚙️</span> Settings</a></div>
+  </nav>
+  <div class="main">
+    <div class="main-topbar">
+      <div class="breadcrumb">Sessions &rsaquo; <strong>Session Management</strong></div>
+      <div class="topbar-actions">
+        <button class="btn-secondary" onclick="showToast('Schedule PDF downloading…')">📄 Export Schedule</button>
+        <button class="btn-primary" onclick="toggleAddSession()">+ Add Session</button>
+      </div>
+    </div>
+    <div class="content">
+      <div class="page-header">
+        <div><div class="page-title">Session Management</div><div class="page-subtitle">Program sessions, manage speakers, and handle CFP applications</div></div>
+        <span style="background:var(--green-light);color:var(--green);font-size:12px;font-weight:600;padding:4px 10px;border-radius:20px;">🎮 Game Connection 2026 · Paris · Jun 15–17</span>
+      </div>
+
+      <div class="tab-bar">
+        <button class="tab-btn active" onclick="switchTab('sessions',this)">🎤 Sessions</button>
+        <button class="tab-btn" onclick="switchTab('speakers',this)">👤 Speakers</button>
+        <button class="tab-btn" onclick="switchTab('cfp',this)">📨 CFP <span style="background:var(--yellow);color:#fff;border-radius:10px;padding:1px 7px;font-size:11px;margin-left:2px;">7</span></button>
+        <button class="tab-btn" onclick="switchTab('cfp-settings',this)">⚙️ CFP Settings</button>
+      </div>
+
+      <!-- TAB 1: SESSIONS -->
+      <div id="sessions" class="tab-pane active">
+        <div class="stats-row">
+          <div class="stat-card"><div class="stat-icon green">🎤</div><div><div class="stat-num">24</div><div class="stat-label">Total Sessions</div></div></div>
+          <div class="stat-card"><div class="stat-icon blue">👤</div><div><div class="stat-num">38</div><div class="stat-label">Speakers</div></div></div>
+          <div class="stat-card"><div class="stat-icon yellow">📨</div><div><div class="stat-num">7</div><div class="stat-label">CFP Pending</div></div></div>
+          <div class="stat-card"><div class="stat-icon purple">🏛</div><div><div class="stat-num">4</div><div class="stat-label">Stages / Rooms</div></div></div>
+        </div>
+
+        <div class="toolbar">
+          <div class="search-box"><span style="color:var(--text3)">🔍</span><input type="text" placeholder="Search sessions…" oninput="filterSessions(this.value)"></div>
+          <div class="filter-tabs">
+            <button class="filter-tab active" onclick="setSessionFilter('all',this)">All</button>
+            <button class="filter-tab" onclick="setSessionFilter('keynote',this)">Keynote</button>
+            <button class="filter-tab" onclick="setSessionFilter('panel',this)">Panel</button>
+            <button class="filter-tab" onclick="setSessionFilter('workshop',this)">Workshop</button>
+          </div>
+          <select class="form-control" style="width:auto;font-size:12px;padding:5px 10px;border:1.5px solid var(--border);border-radius:7px;background:var(--white);" onchange="filterByDay(this.value)">
+            <option value="">All Days</option>
+            <option value="Jun 15">Jun 15</option>
+            <option value="Jun 16">Jun 16</option>
+            <option value="Jun 17">Jun 17</option>
+          </select>
+        </div>
+
+        <div class="session-list" id="sessionList"></div>
+
+        <div class="add-form-wrapper">
+          <button class="add-form-toggle" id="addSessionToggle" onclick="toggleAddSession()"><span class="toggle-icon">+</span> Add New Session</button>
+          <div class="add-form-body" id="addSessionBody">
+            <div class="form-grid">
+              <div class="form-group full"><label class="form-label">Session Title *</label><input type="text" class="form-control" id="newTitle" placeholder="e.g. The Future of Indie Publishing"></div>
+              <div class="form-group"><label class="form-label">Type</label><select class="form-control" id="newType"><option>Keynote</option><option>Panel</option><option>Workshop</option><option>Fireside Chat</option></select></div>
+              <div class="form-group"><label class="form-label">Stage / Room</label><select class="form-control" id="newStage"><option>Main Stage</option><option>Business Stage</option><option>Workshop Room A</option><option>Workshop Room B</option></select></div>
+              <div class="form-group"><label class="form-label">Date</label><select class="form-control" id="newDay"><option>Jun 15</option><option>Jun 16</option><option>Jun 17</option></select></div>
+              <div class="form-group"><label class="form-label">Time</label><input type="time" class="form-control" id="newTime" value="10:00"></div>
+              <div class="form-group"><label class="form-label">Duration (min)</label><input type="number" class="form-control" id="newDuration" value="45"></div>
+              <div class="form-group"><label class="form-label">Speaker(s)</label><input type="text" class="form-control" id="newSpeakers" placeholder="e.g. John Smith, Jane Doe"></div>
+              <div class="form-group full"><label class="form-label">Description</label><textarea class="form-control" id="newDesc" rows="3" placeholder="Brief session description…"></textarea></div>
+            </div>
+            <div class="form-actions">
+              <button class="btn-secondary" onclick="toggleAddSession()">Cancel</button>
+              <button class="btn-secondary" onclick="saveSession(true)">Save as Draft</button>
+              <button class="btn-primary" onclick="saveSession(false)">✓ Publish Session</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- TAB 2: SPEAKERS -->
+      <div id="speakers" class="tab-pane">
+        <div class="toolbar">
+          <div class="search-box"><span style="color:var(--text3)">🔍</span><input type="text" placeholder="Search speakers…"></div>
+          <button class="btn-primary" style="margin-left:auto;" onclick="showToast('Invite speaker modal opening…')">+ Invite Speaker</button>
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Speaker</th><th>Company</th><th>Sessions</th><th>Travel</th><th>Status</th><th>Actions</th></tr></thead>
+            <tbody>
+              <tr><td><div class="td-name">Alexandre Dupont</div><div class="td-meta">a.dupont@ubisoft.com</div></td><td>Ubisoft Paris</td><td>2</td><td><span class="badge badge-confirmed">Confirmed</span></td><td><span class="badge badge-confirmed">Confirmed</span></td><td><div style="display:flex;gap:4px;"><button class="row-btn neutral" onclick="showToast('Opening profile…')">👁 View</button><button class="row-btn neutral" onclick="showToast('Emailing…')">✉ Email</button></div></td></tr>
+              <tr><td><div class="td-name">Sarah Mitchell</div><div class="td-meta">s.mitchell@ea.com</div></td><td>Electronic Arts</td><td>1</td><td><span class="badge badge-pending">Pending</span></td><td><span class="badge badge-confirmed">Confirmed</span></td><td><div style="display:flex;gap:4px;"><button class="row-btn neutral" onclick="showToast('Opening profile…')">👁 View</button><button class="row-btn neutral" onclick="showToast('Emailing…')">✉ Email</button></div></td></tr>
+              <tr><td><div class="td-name">Ren Zhang</div><div class="td-meta">r.zhang@mihoyo.com</div></td><td>miHoYo</td><td>1</td><td><span class="badge badge-confirmed">Confirmed</span></td><td><span class="badge badge-confirmed">Confirmed</span></td><td><div style="display:flex;gap:4px;"><button class="row-btn neutral" onclick="showToast('Opening profile…')">👁 View</button><button class="row-btn neutral" onclick="showToast('Emailing…')">✉ Email</button></div></td></tr>
+              <tr><td><div class="td-name">Emma Larsson</div><div class="td-meta">e.larsson@paradox.com</div></td><td>Paradox Interactive</td><td>2</td><td><span class="badge badge-confirmed">Confirmed</span></td><td><span class="badge badge-confirmed">Confirmed</span></td><td><div style="display:flex;gap:4px;"><button class="row-btn neutral" onclick="showToast('Opening profile…')">👁 View</button><button class="row-btn neutral" onclick="showToast('Emailing…')">✉ Email</button></div></td></tr>
+              <tr><td><div class="td-name">Felix Wagner</div><div class="td-meta">f.wagner@crytek.com</div></td><td>Crytek</td><td>1</td><td><span class="badge badge-pending">Pending</span></td><td><span class="badge badge-pending">Pending</span></td><td><div style="display:flex;gap:4px;"><button class="row-btn confirm" onclick="showToast('Confirmed!','success')">✓ Confirm</button><button class="row-btn neutral" onclick="showToast('Emailing…')">✉ Email</button></div></td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- TAB 3: CFP -->
+      <div id="cfp" class="tab-pane">
+        <div class="toolbar">
+          <div class="search-box"><span style="color:var(--text3)">🔍</span><input type="text" placeholder="Search applications…" oninput="filterCFP(this.value)"></div>
+          <div class="filter-tabs">
+            <button class="filter-tab active" onclick="setCFPFilter('all',this)">All (18)</button>
+            <button class="filter-tab" onclick="setCFPFilter('pending',this)">Pending (7)</button>
+            <button class="filter-tab" onclick="setCFPFilter('accepted',this)">Accepted (9)</button>
+            <button class="filter-tab" onclick="setCFPFilter('rejected',this)">Rejected (2)</button>
+          </div>
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Applicant</th><th>Session Title</th><th>Type</th><th>Duration</th><th>Submitted</th><th>Status</th><th>Actions</th></tr></thead>
+            <tbody id="cfpTable"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- TAB 4: CFP SETTINGS -->
+      <div id="cfp-settings" class="tab-pane">
+        <div class="cfp-section">
+          <div class="cfp-title">📨 CFP Configuration</div>
+          <div class="toggle-row">
+            <div><div class="toggle-label">Accept CFP Applications</div><div class="toggle-desc">Allow speakers to submit session proposals</div></div>
+            <label class="switch"><input type="checkbox" checked onchange="showToast(this.checked?'CFP enabled':'CFP disabled')"><span class="slider"></span></label>
+          </div>
+          <div class="toggle-row">
+            <div><div class="toggle-label">Require Bio</div><div class="toggle-desc">Applicants must provide a speaker bio</div></div>
+            <label class="switch"><input type="checkbox" checked><span class="slider"></span></label>
+          </div>
+          <div class="toggle-row">
+            <div><div class="toggle-label">Require Headshot</div><div class="toggle-desc">Applicants must upload a profile photo</div></div>
+            <label class="switch"><input type="checkbox"><span class="slider"></span></label>
+          </div>
+          <div class="toggle-row">
+            <div><div class="toggle-label">Allow Video Submissions</div><div class="toggle-desc">Applicants can submit a short video pitch</div></div>
+            <label class="switch"><input type="checkbox" checked><span class="slider"></span></label>
+          </div>
+          <div class="toggle-row">
+            <div><div class="toggle-label">Auto-acknowledge Applications</div><div class="toggle-desc">Send automatic confirmation email on submission</div></div>
+            <label class="switch"><input type="checkbox" checked><span class="slider"></span></label>
+          </div>
+        </div>
+        <div class="cfp-section">
+          <div class="cfp-title">📅 CFP Dates</div>
+          <div class="form-grid">
+            <div class="form-group"><label class="form-label">CFP Opens</label><input type="date" class="form-control" value="2026-01-15"></div>
+            <div class="form-group"><label class="form-label">CFP Closes</label><input type="date" class="form-control" value="2026-04-30"></div>
+            <div class="form-group"><label class="form-label">Notification Date</label><input type="date" class="form-control" value="2026-05-15"></div>
+            <div class="form-group"><label class="form-label">Schedule Published</label><input type="date" class="form-control" value="2026-05-30"></div>
+          </div>
+          <div class="form-actions">
+            <button class="btn-secondary" onclick="showToast('Changes discarded')">Discard</button>
+            <button class="btn-primary" onclick="showToast('CFP settings saved!','success')">💾 Save Settings</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+<script>
+const sessionsData = [
+  { id:1, title:'Opening Keynote: The Future of Game Publishing', type:'keynote', stage:'Main Stage', day:'Jun 15', time:'09:00', duration:60, speakers:['Alexandre Dupont','Sarah Mitchell'], status:'confirmed' },
+  { id:2, title:'Indie Games: From Garage to Global', type:'panel', stage:'Business Stage', day:'Jun 15', time:'11:00', duration:45, speakers:['Emma Larsson','Felix Wagner'], status:'confirmed' },
+  { id:3, title:'Mobile Gaming Monetization Masterclass', type:'workshop', stage:'Workshop Room A', day:'Jun 15', time:'14:00', duration:90, speakers:['Ren Zhang'], status:'confirmed' },
+  { id:4, title:'Fireside Chat: Lessons from AAA Development', type:'fireside', stage:'Main Stage', day:'Jun 15', time:'16:00', duration:45, speakers:['Alexandre Dupont'], status:'confirmed' },
+  { id:5, title:'Emerging Markets: Southeast Asia & LATAM', type:'panel', stage:'Business Stage', day:'Jun 16', time:'10:00', duration:60, speakers:['Rosa Almeida','Kevin Park'], status:'confirmed' },
+  { id:6, title:'AI in Game Development: Practical Applications', type:'keynote', stage:'Main Stage', day:'Jun 16', time:'09:00', duration:45, speakers:['Sarah Mitchell'], status:'confirmed' },
+  { id:7, title:'Pitching to Publishers: Do\'s and Don\'ts', type:'workshop', stage:'Workshop Room B', day:'Jun 16', time:'14:00', duration:60, speakers:['Emma Larsson'], status:'draft' },
+  { id:8, title:'Closing Keynote: What\'s Next for the Industry', type:'keynote', stage:'Main Stage', day:'Jun 17', time:'17:00', duration:45, speakers:['Ren Zhang','Alexandre Dupont'], status:'confirmed' },
+];
+const cfpData = [
+  { name:'Lucas Fernandez', company:'Konami EU', title:'Narrative Design in Open World Games', type:'panel', duration:45, date:'2026-03-10', status:'accepted' },
+  { name:'Yuki Tanaka', company:'Square Enix', title:'Localisation Strategies for Asian Markets', type:'keynote', duration:30, date:'2026-03-12', status:'accepted' },
+  { name:'Maria Kowalski', company:'CD Projekt Red', title:'Building a Modding Community', type:'workshop', duration:90, date:'2026-03-14', status:'pending' },
+  { name:'Thibault Moreau', company:'Focus Entertainment', title:'Co-publishing Models in 2026', type:'panel', duration:45, date:'2026-03-15', status:'pending' },
+  { name:"James O'Brien", company:'Deep Silver', title:'Post-launch Content Strategy', type:'panel', duration:45, date:'2026-03-16', status:'accepted' },
+  { name:'Nina Petrov', company:'MY.GAMES', title:'Free-to-Play Monetisation Ethics', type:'panel', duration:60, date:'2026-03-17', status:'pending' },
+  { name:'Dmitri Volkov', company:'Wargaming', title:'Esports Integration for Core Games', type:'keynote', duration:30, date:'2026-03-18', status:'pending' },
+  { name:'Anya Sharma', company:'Supercell', title:'Hyper-Casual to Mid-Core Transition', type:'workshop', duration:60, date:'2026-03-19', status:'accepted' },
+  { name:'Marco Bianchi', company:'Milestone', title:'Racing Games: Physics vs Fun', type:'fireside', duration:45, date:'2026-03-20', status:'pending' },
+  { name:'Céline Dubois', company:'Nacon', title:'Peripheral Integration in Game Design', type:'panel', duration:45, date:'2026-03-21', status:'accepted' },
+  { name:'Tom Hendricks', company:'2K', title:'Sports Games: Licensing & Authenticity', type:'keynote', duration:30, date:'2026-03-22', status:'accepted' },
+  { name:'Hana Novák', company:'2K Czech', title:'Level Design Principles', type:'workshop', duration:90, date:'2026-03-23', status:'accepted' },
+  { name:'Jean-Paul Girard', company:'Big Ben Games', title:'Accessibility in Modern Games', type:'panel', duration:45, date:'2026-03-24', status:'pending' },
+  { name:'Olga Nikitin', company:'Mail.ru Games', title:'CIS Market Deep Dive', type:'panel', duration:45, date:'2026-03-25', status:'pending' },
+  { name:'Felix Wagner', company:'Crytek', title:'Real-Time Rendering Advances', type:'keynote', duration:30, date:'2026-03-26', status:'accepted' },
+  { name:'Rosa Almeida', company:'Bandai Namco EU', title:'Anime IP Adaptation', type:'fireside', duration:45, date:'2026-03-27', status:'accepted' },
+  { name:'Kevin Park', company:'Nexon', title:'Gacha Mechanics & Player Retention', type:'workshop', duration:60, date:'2026-03-28', status:'rejected' },
+  { name:'Isabelle Laurent', company:'Ankama', title:'Transmedia Storytelling', type:'panel', duration:45, date:'2026-03-29', status:'rejected' },
+];
+const typeBadge = {keynote:'badge-keynote',panel:'badge-panel',workshop:'badge-workshop',fireside:'badge-fireside'};
+const typeLabel = {keynote:'Keynote',panel:'Panel',workshop:'Workshop',fireside:'Fireside'};
+let sessionFilter='all', sessionSearch='', dayFilter='';
+function buildSessionList() {
+  let d=sessionsData;
+  if(sessionFilter!=='all') d=d.filter(s=>s.type===sessionFilter);
+  if(dayFilter) d=d.filter(s=>s.day===dayFilter);
+  if(sessionSearch) d=d.filter(s=>s.title.toLowerCase().includes(sessionSearch));
+  document.getElementById('sessionList').innerHTML=d.map(s=>`
+    <div class="session-card">
+      <div class="session-time"><div class="session-time-main">${s.time}</div><div class="session-time-day">${s.day}</div><div style="font-size:10px;color:var(--text3);margin-top:2px;">${s.duration}min</div></div>
+      <div class="session-body">
+        <div class="session-title">${s.title}</div>
+        <div class="session-meta">
+          <span class="badge ${typeBadge[s.type]}">${typeLabel[s.type]}</span>
+          <span class="session-meta-item">🏛 ${s.stage}</span>
+          <span class="badge ${s.status==='confirmed'?'badge-confirmed':s.status==='draft'?'badge-draft':'badge-pending'}">${s.status.charAt(0).toUpperCase()+s.status.slice(1)}</span>
+        </div>
+        <div class="session-speakers">${s.speakers.map(sp=>`<div class="speaker-chip"><div class="speaker-avatar">${sp.split(' ').map(w=>w[0]).join('')}</div>${sp}</div>`).join('')}</div>
+        <div class="session-actions">
+          <button class="btn-icon" onclick="showToast('Opening edit panel…')">✏️</button>
+          <button class="btn-icon" onclick="showToast('Duplicating session…')">📋</button>
+          <button class="btn-icon" onclick="showToast('Deleting session…','error')">🗑</button>
+        </div>
+      </div>
+    </div>`).join('');
+}
+function filterSessions(v){sessionSearch=v.toLowerCase();buildSessionList();}
+function setSessionFilter(f,btn){sessionFilter=f;document.querySelectorAll('.filter-tab').forEach(b=>b.classList.remove('active'));btn.classList.add('active');buildSessionList();}
+function filterByDay(v){dayFilter=v;buildSessionList();}
+let cfpFilter='all', cfpSearch='';
+function buildCFPTable() {
+  let d=cfpData;
+  if(cfpFilter!=='all') d=d.filter(c=>c.status===cfpFilter);
+  if(cfpSearch) d=d.filter(c=>(c.name+c.title).toLowerCase().includes(cfpSearch));
+  const m={accepted:'badge-confirmed',pending:'badge-pending',rejected:'badge-rejected'};
+  const l={accepted:'Accepted',pending:'Pending',rejected:'Rejected'};
+  document.getElementById('cfpTable').innerHTML=d.map(c=>`
+    <tr><td><div class="td-name">${c.name}</div><div class="td-meta">${c.company}</div></td>
+    <td style="max-width:220px;"><div style="font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${c.title}</div></td>
+    <td><span class="badge ${typeBadge[c.type]}">${typeLabel[c.type]}</span></td>
+    <td>${c.duration} min</td>
+    <td>${new Date(c.date).toLocaleDateString('en-GB',{day:'2-digit',month:'short'})}</td>
+    <td><span class="badge ${m[c.status]}">${l[c.status]}</span></td>
+    <td><div style="display:flex;gap:4px;">
+      ${c.status==='pending'?`<button class="row-btn confirm" onclick="changeCFPStatus('${c.name}','accepted')">✓ Accept</button><button class="row-btn reject" onclick="changeCFPStatus('${c.name}','rejected')">✗ Reject</button>`:''}
+      <button class="row-btn neutral" onclick="showToast('Opening application…')">👁 View</button>
+    </div></td></tr>`).join('');
+}
+function changeCFPStatus(name,ns){const c=cfpData.find(x=>x.name===name);if(c){c.status=ns;buildCFPTable();showToast(`${name} ${ns}`,'success');}}
+function filterCFP(v){cfpSearch=v.toLowerCase();buildCFPTable();}
+function setCFPFilter(f,btn){cfpFilter=f;document.querySelectorAll('.filter-tab').forEach(b=>b.classList.remove('active'));btn.classList.add('active');buildCFPTable();}
+function switchTab(id,btn){document.querySelectorAll('.tab-pane').forEach(p=>p.classList.remove('active'));document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));document.getElementById(id).classList.add('active');btn.classList.add('active');}
+function toggleAddSession(){document.getElementById('addSessionBody').classList.toggle('open');document.getElementById('addSessionToggle').classList.toggle('open');}
+function saveSession(draft){const t=document.getElementById('newTitle').value.trim();if(!t){showToast('Please enter a session title','error');return;}showToast(draft?`"${t}" saved as draft`:`"${t}" published!`,'success');toggleAddSession();document.getElementById('newTitle').value='';}
+let toastTimer;
+function showToast(msg,type){const t=document.getElementById('toast');t.textContent=(type==='success'?'✓ ':type==='error'?'⚠ ':'')+msg;t.className=`toast ${type||''} show`;clearTimeout(toastTimer);toastTimer=setTimeout(()=>t.classList.remove('show'),2800);}
+buildSessionList();buildCFPTable();
+</script>
+</body>
+</html>

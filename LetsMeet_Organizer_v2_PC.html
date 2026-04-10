@@ -1,0 +1,356 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Let's Meet – Event HQ</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#f4f6f9;--white:#fff;
+  --green:#16a34a;--green-dark:#15803d;--green-light:#f0fdf4;
+  --border:#e2e6ed;--border-light:#eef0f4;
+  --text1:#0f172a;--text2:#475569;--text3:#94a3b8;
+  --red:#dc2626;--red-light:#fef2f2;
+  --yellow:#d97706;--yellow-light:#fffbeb;
+  --orange:#ea580c;--orange-light:#fff7ed;
+  --blue:#2563eb;--blue-light:#eff6ff;
+  --sidebar-w:220px;--topbar-h:54px;--radius:10px;
+  --shadow:0 1px 3px rgba(0,0,0,.07),0 6px 20px rgba(0,0,0,.05);
+}
+html,body{min-height:100vh;background:var(--bg);font-family:'DM Sans',sans-serif;color:var(--text1);font-size:14px;line-height:1.55}
+.topbar{position:sticky;top:0;z-index:200;height:var(--topbar-h);background:var(--white);border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;padding:0 20px}
+.topbar-left{display:flex;align-items:center;gap:10px}
+.logo-wrap{display:flex;align-items:center;gap:7px;text-decoration:none}
+.logo-mark{width:26px;height:26px;background:var(--green);border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:13px;color:#fff;font-weight:800}
+.logo-name{font-size:12px;font-weight:800;color:var(--text1)}.logo-name span{color:var(--green)}
+.topbar-sep{width:1px;height:16px;background:var(--border);margin:0 6px}
+.topbar-product{font-size:13px;font-weight:700;color:var(--green)}
+.topbar-right{display:flex;align-items:center;gap:10px}
+.org-chip{display:flex;align-items:center;gap:7px;padding:4px 10px 4px 5px;border-radius:20px;border:1px solid var(--border);cursor:pointer}
+.avatar{width:24px;height:24px;border-radius:50%;background:linear-gradient(135deg,#16a34a,#4ade80);color:#fff;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:800}
+.org-name{font-size:12px;font-weight:600;color:var(--text2)}
+.btn-back{display:flex;align-items:center;gap:5px;font-size:12px;color:var(--text2);text-decoration:none;padding:5px 10px;border-radius:6px;border:1px solid var(--border);font-weight:500}
+.btn-back:hover{background:var(--bg)}
+.app-body{display:flex;min-height:calc(100vh - var(--topbar-h))}
+.sidebar{width:var(--sidebar-w);background:var(--white);border-right:1px solid var(--border);display:flex;flex-direction:column;flex-shrink:0;position:sticky;top:var(--topbar-h);height:calc(100vh - var(--topbar-h));overflow-y:auto}
+.sidebar-top{padding:12px 8px 8px}.sidebar-bottom{padding:8px;margin-top:auto;border-top:1px solid var(--border-light)}
+.nav-sep{height:1px;background:var(--border-light);margin:8px 0}
+.nav-label{font-size:10px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--text3);padding:6px 8px 4px}
+.nav-item{display:flex;align-items:center;gap:8px;padding:7px 8px;border-radius:7px;font-size:13px;font-weight:500;color:var(--text2);cursor:pointer;text-decoration:none;transition:background .1s,color .1s}
+.nav-item:hover{background:var(--bg);color:var(--text1)}.nav-item.active{background:var(--green-light);color:var(--green);font-weight:600}
+.nav-item .ni-icon{font-size:13px;width:18px;text-align:center;flex-shrink:0}
+.main{flex:1;display:flex;flex-direction:column;min-width:0}
+.main-topbar{height:48px;background:var(--white);border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;padding:0 24px}
+.breadcrumb{font-size:13px;color:var(--text2)}.breadcrumb strong{color:var(--text1);font-weight:600}
+.topbar-actions{display:flex;gap:8px}
+.btn-secondary{padding:6px 14px;border:1.5px solid var(--border);background:var(--white);border-radius:7px;font-family:'DM Sans',sans-serif;font-size:12.5px;font-weight:600;cursor:pointer;color:var(--text2);transition:all .12s}
+.btn-secondary:hover{border-color:var(--green);color:var(--green)}
+.btn-primary{padding:6px 16px;border:none;background:var(--green);color:#fff;border-radius:7px;font-family:'DM Sans',sans-serif;font-size:12.5px;font-weight:600;cursor:pointer}
+.btn-primary:hover{background:var(--green-dark)}
+.content{padding:24px;flex:1}
+.page-header{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:20px}
+.page-title{font-size:20px;font-weight:700;margin-bottom:3px}
+.page-subtitle{font-size:13px;color:var(--text2)}
+.tab-bar{display:flex;background:var(--white);border:1px solid var(--border);border-radius:var(--radius);padding:4px;width:fit-content;margin-bottom:20px}
+.tab-btn{padding:7px 20px;border:none;background:transparent;font-family:'DM Sans',sans-serif;font-size:13px;font-weight:500;color:var(--text2);border-radius:7px;cursor:pointer;transition:all .15s}
+.tab-btn.active{background:var(--green);color:#fff;font-weight:600;box-shadow:0 2px 8px rgba(22,163,74,.25)}
+.tab-btn:not(.active):hover{background:var(--bg);color:var(--text1)}
+.tab-pane{display:none}.tab-pane.active{display:block}
+.stats-row{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:20px}
+.stat-card{background:var(--white);border:1px solid var(--border);border-radius:var(--radius);padding:16px;display:flex;align-items:center;gap:12px;box-shadow:var(--shadow)}
+.stat-icon{width:40px;height:40px;border-radius:9px;display:flex;align-items:center;justify-content:center;font-size:18px}
+.stat-icon.green{background:var(--green-light)}.stat-icon.blue{background:var(--blue-light)}.stat-icon.yellow{background:var(--yellow-light)}.stat-icon.orange{background:var(--orange-light)}
+.stat-num{font-size:22px;font-weight:700;line-height:1}.stat-label{font-size:11.5px;color:var(--text2);margin-top:2px}
+.schedule-grid{display:grid;grid-template-columns:80px 1fr;gap:0;border:1px solid var(--border);border-radius:var(--radius);overflow:hidden;background:var(--white);box-shadow:var(--shadow);margin-bottom:20px}
+.schedule-header{grid-column:1/-1;display:flex;background:var(--bg);border-bottom:1px solid var(--border);}
+.schedule-time-col{width:80px;flex-shrink:0;font-size:11px;font-weight:700;color:var(--text3);padding:8px;text-align:center;border-right:1px solid var(--border);}
+.schedule-rooms{flex:1;display:grid;grid-template-columns:repeat(4,1fr);}
+.schedule-room{padding:8px 12px;font-size:12px;font-weight:700;color:var(--text2);border-right:1px solid var(--border);text-align:center;}
+.schedule-room:last-child{border-right:none}
+.schedule-row{grid-column:1/-1;display:flex;border-bottom:1px solid var(--border-light);}
+.schedule-row:last-child{border-bottom:none}
+.time-slot{width:80px;flex-shrink:0;font-size:11px;color:var(--text3);padding:6px 8px;text-align:center;border-right:1px solid var(--border);display:flex;align-items:center;justify-content:center;}
+.slots{flex:1;display:grid;grid-template-columns:repeat(4,1fr);}
+.slot{padding:5px 8px;border-right:1px solid var(--border-light);min-height:44px;cursor:pointer;transition:background .1s;}
+.slot:last-child{border-right:none}
+.slot:hover{background:var(--green-light)}
+.slot.booked{background:var(--green-light);cursor:default;}
+.slot.booked:hover{background:var(--green-light)}
+.meeting-chip{background:var(--green);color:#fff;border-radius:5px;padding:3px 7px;font-size:11px;font-weight:600;line-height:1.3;}
+.meeting-chip.pending{background:var(--yellow)}
+.table-wrap{background:var(--white);border:1px solid var(--border);border-radius:var(--radius);overflow:hidden;box-shadow:var(--shadow)}
+table{width:100%;border-collapse:collapse}
+thead th{padding:10px 14px;text-align:left;font-size:11px;font-weight:700;letter-spacing:.6px;text-transform:uppercase;color:var(--text3);background:var(--bg);border-bottom:1px solid var(--border);white-space:nowrap}
+tbody tr{border-bottom:1px solid var(--border);transition:background .1s}
+tbody tr:last-child{border-bottom:none}
+tbody tr:hover{background:#f8fafc}
+tbody td{padding:11px 14px;font-size:13px;vertical-align:middle}
+.td-name{font-weight:600}.td-meta{font-size:11.5px;color:var(--text2);margin-top:1px}
+.badge{display:inline-flex;align-items:center;padding:3px 9px;border-radius:20px;font-size:11px;font-weight:600}
+.badge-confirmed{background:var(--green-light);color:var(--green)}
+.badge-pending{background:var(--yellow-light);color:var(--yellow)}
+.badge-cancelled{background:var(--red-light);color:var(--red)}
+.row-btn{padding:3px 9px;border-radius:5px;font-family:'DM Sans',sans-serif;font-size:11px;font-weight:600;cursor:pointer;border:1.5px solid transparent;transition:all .12s}
+.row-btn.confirm{border-color:var(--green);color:var(--green);background:transparent}.row-btn.confirm:hover{background:var(--green);color:#fff}
+.row-btn.reject{border-color:var(--red);color:var(--red);background:transparent}.row-btn.reject:hover{background:var(--red);color:#fff}
+.row-btn.neutral{border-color:var(--border);color:var(--text2);background:transparent}.row-btn.neutral:hover{border-color:var(--green);color:var(--green)}
+.toolbar{display:flex;align-items:center;gap:8px;margin-bottom:14px;flex-wrap:wrap}
+.search-box{display:flex;align-items:center;gap:7px;background:var(--white);border:1.5px solid var(--border);border-radius:8px;padding:6px 11px;flex:1;min-width:180px;max-width:300px}
+.search-box input{border:none;outline:none;font-family:'DM Sans',sans-serif;font-size:13px;width:100%;background:transparent}
+.filter-tabs{display:flex;gap:3px;background:var(--white);border:1px solid var(--border);border-radius:8px;padding:3px}
+.filter-tab{padding:5px 12px;border:none;background:transparent;font-family:'DM Sans',sans-serif;font-size:12px;font-weight:500;color:var(--text2);border-radius:6px;cursor:pointer;transition:all .15s}
+.filter-tab.active{background:var(--green);color:#fff;font-weight:600}
+.filter-tab:not(.active):hover{background:var(--bg)}
+.settings-section{background:var(--white);border:1px solid var(--border);border-radius:var(--radius);padding:20px;margin-bottom:16px;box-shadow:var(--shadow)}
+.settings-title{font-size:14px;font-weight:700;margin-bottom:14px}
+.toggle-row{display:flex;align-items:center;justify-content:space-between;padding:10px 0;border-bottom:1px solid var(--border-light)}
+.toggle-row:last-child{border-bottom:none}
+.toggle-label{font-size:13px;font-weight:500}
+.toggle-desc{font-size:12px;color:var(--text2);margin-top:2px}
+.switch{position:relative;width:38px;height:21px;flex-shrink:0}
+.switch input{opacity:0;width:0;height:0}
+.slider{position:absolute;inset:0;background:#cbd5e1;border-radius:21px;cursor:pointer;transition:.2s}
+.slider::before{content:'';position:absolute;width:15px;height:15px;left:3px;top:3px;background:#fff;border-radius:50%;transition:.2s;box-shadow:0 1px 3px rgba(0,0,0,.2)}
+.switch input:checked + .slider{background:var(--green)}
+.switch input:checked + .slider::before{transform:translateX(17px)}
+.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:16px}
+.form-group{display:flex;flex-direction:column;gap:5px}
+.form-label{font-size:11.5px;font-weight:600;color:var(--text2);text-transform:uppercase;letter-spacing:.5px}
+.form-control{padding:8px 11px;border:1.5px solid var(--border);border-radius:7px;font-family:'DM Sans',sans-serif;font-size:13px;color:var(--text1);background:#fff;outline:none;transition:border-color .15s}
+.form-control:focus{border-color:var(--green)}
+.form-actions{display:flex;justify-content:flex-end;gap:8px;padding-top:12px;border-top:1px solid var(--border-light);margin-top:16px}
+.toast{position:fixed;bottom:22px;right:22px;background:var(--text1);color:#fff;padding:10px 18px;border-radius:8px;font-size:13px;font-weight:500;z-index:999;display:flex;align-items:center;gap:7px;box-shadow:0 8px 24px rgba(0,0,0,.18);opacity:0;transform:translateY(8px);transition:all .2s;pointer-events:none}
+.toast.show{opacity:1;transform:translateY(0)}.toast.success{background:var(--green)}.toast.error{background:var(--red)}
+</style>
+</head>
+<body>
+<header class="topbar">
+  <div class="topbar-left">
+    <a href="EventHub_v2_PC.html" class="logo-wrap"><div class="logo-mark">GC</div><span class="logo-name">GAME<span>CONNECTION</span></span></a>
+    <div class="topbar-sep"></div><span class="topbar-product">Event HQ</span>
+  </div>
+  <div class="topbar-right">
+    <div class="org-chip"><div class="avatar">QQ</div><span class="org-name">My Organization</span></div>
+    <a href="EventHQ_Dashboard_v4_PC.html" class="btn-back">← Dashboard</a>
+  </div>
+</header>
+<div class="app-body">
+  <nav class="sidebar">
+    <div class="sidebar-top">
+      <a class="nav-item" href="EventHQ_Dashboard_v4_PC.html"><span class="ni-icon">🗓️</span> My Events</a>
+      <a class="nav-item" onclick="showToast('Analytics coming soon')"><span class="ni-icon">📊</span> Analytics</a>
+      <div class="nav-sep"></div><div class="nav-label">Current Event</div>
+      <a class="nav-item" href="FreeRegistration_v2_PC.html"><span class="ni-icon">📋</span> Registration</a>
+      <a class="nav-item" href="PaidTicketing_v2_PC.html"><span class="ni-icon">🎟️</span> Ticketing</a>
+      <a class="nav-item" href="BoothManagement_v2_PC.html"><span class="ni-icon">🏪</span> Booth</a>
+      <a class="nav-item" href="SponsorshipManagement_v2_PC.html"><span class="ni-icon">🤝</span> Sponsorship</a>
+      <a class="nav-item" href="SessionManagement_v2_PC.html"><span class="ni-icon">🎤</span> Sessions</a>
+      <a class="nav-item" href="Awards_v3_PC.html"><span class="ni-icon">🏆</span> Awards</a>
+      <a class="nav-item" href="Attendees_v2_PC.html"><span class="ni-icon">👥</span> Attendees</a>
+      <a class="nav-item active" href="#"><span class="ni-icon">💬</span> Let's Meet</a>
+      <a class="nav-item" href="GameShowcase_v2_PC.html"><span class="ni-icon">🎮</span> Game Showcase</a>
+    </div>
+    <div class="sidebar-bottom"><a class="nav-item" onclick="showToast('Settings coming soon')"><span class="ni-icon">⚙️</span> Settings</a></div>
+  </nav>
+  <div class="main">
+    <div class="main-topbar">
+      <div class="breadcrumb">Let's Meet &rsaquo; <strong>Meeting Management</strong></div>
+      <div class="topbar-actions">
+        <button class="btn-secondary" onclick="showToast('Schedule PDF downloading…')">📄 Export Schedule</button>
+        <button class="btn-primary" onclick="showToast('Opening block-off dialog…')">+ Block Slot</button>
+      </div>
+    </div>
+    <div class="content">
+      <div class="page-header">
+        <div><div class="page-title">Let's Meet</div><div class="page-subtitle">Manage B2B meeting schedule, approve requests, and configure meeting rooms</div></div>
+        <span style="background:var(--green-light);color:var(--green);font-size:12px;font-weight:600;padding:4px 10px;border-radius:20px;">🎮 Game Connection 2026 · Paris · Jun 15–17</span>
+      </div>
+
+      <div class="tab-bar">
+        <button class="tab-btn active" onclick="switchTab('schedule',this)">📅 Schedule</button>
+        <button class="tab-btn" onclick="switchTab('requests',this)">📨 Requests <span style="background:var(--yellow);color:#fff;border-radius:10px;padding:1px 7px;font-size:11px;margin-left:2px;">5</span></button>
+        <button class="tab-btn" onclick="switchTab('all-meetings',this)">📋 All Meetings</button>
+        <button class="tab-btn" onclick="switchTab('settings',this)">⚙️ Settings</button>
+      </div>
+
+      <!-- TAB 1: SCHEDULE -->
+      <div id="schedule" class="tab-pane active">
+        <div class="stats-row">
+          <div class="stat-card"><div class="stat-icon green">💬</div><div><div class="stat-num">124</div><div class="stat-label">Total Meetings</div></div></div>
+          <div class="stat-card"><div class="stat-icon blue">✅</div><div><div class="stat-num">98</div><div class="stat-label">Confirmed</div></div></div>
+          <div class="stat-card"><div class="stat-icon yellow">⏳</div><div><div class="stat-num">5</div><div class="stat-label">Pending</div></div></div>
+          <div class="stat-card"><div class="stat-icon orange">🏛</div><div><div class="stat-num">4</div><div class="stat-label">Meeting Rooms</div></div></div>
+        </div>
+
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px;">
+          <div class="filter-tabs">
+            <button class="filter-tab active" onclick="setDay('Jun 15',this)">Jun 15</button>
+            <button class="filter-tab" onclick="setDay('Jun 16',this)">Jun 16</button>
+            <button class="filter-tab" onclick="setDay('Jun 17',this)">Jun 17</button>
+          </div>
+          <span style="font-size:12px;color:var(--text2);">Showing: <strong id="dayLabel">Jun 15</strong></span>
+        </div>
+
+        <div class="schedule-grid">
+          <div class="schedule-header">
+            <div class="schedule-time-col">Time</div>
+            <div class="schedule-rooms">
+              <div class="schedule-room">Room A</div>
+              <div class="schedule-room">Room B</div>
+              <div class="schedule-room">Room C</div>
+              <div class="schedule-room">Room D</div>
+            </div>
+          </div>
+          <div id="scheduleRows"></div>
+        </div>
+      </div>
+
+      <!-- TAB 2: REQUESTS -->
+      <div id="requests" class="tab-pane">
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Requester</th><th>With</th><th>Preferred Time</th><th>Purpose</th><th>Submitted</th><th>Actions</th></tr></thead>
+            <tbody id="requestsTable"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- TAB 3: ALL MEETINGS -->
+      <div id="all-meetings" class="tab-pane">
+        <div class="toolbar">
+          <div class="search-box"><span style="color:var(--text3)">🔍</span><input type="text" placeholder="Search meetings…" oninput="filterMeetings(this.value)"></div>
+          <div class="filter-tabs">
+            <button class="filter-tab active" onclick="setMeetingFilter('all',this)">All</button>
+            <button class="filter-tab" onclick="setMeetingFilter('confirmed',this)">Confirmed</button>
+            <button class="filter-tab" onclick="setMeetingFilter('pending',this)">Pending</button>
+          </div>
+          <button class="btn-secondary" style="margin-left:auto;font-size:12px;padding:5px 12px;" onclick="showToast('CSV exported!','success')">⬇ Export</button>
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Attendee A</th><th>Attendee B</th><th>Date & Time</th><th>Room</th><th>Duration</th><th>Status</th><th>Actions</th></tr></thead>
+            <tbody id="meetingsTable"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- TAB 4: SETTINGS -->
+      <div id="settings" class="tab-pane">
+        <div class="settings-section">
+          <div class="settings-title">⚙️ Meeting Configuration</div>
+          <div class="toggle-row">
+            <div><div class="toggle-label">Enable Let's Meet</div><div class="toggle-desc">Allow attendees to request B2B meetings</div></div>
+            <label class="switch"><input type="checkbox" checked onchange="showToast(this.checked?'Let\'s Meet enabled':'Let\'s Meet disabled')"><span class="slider"></span></label>
+          </div>
+          <div class="toggle-row">
+            <div><div class="toggle-label">Auto-approve Meetings</div><div class="toggle-desc">Automatically confirm all meeting requests</div></div>
+            <label class="switch"><input type="checkbox"><span class="slider"></span></label>
+          </div>
+          <div class="toggle-row">
+            <div><div class="toggle-label">Allow Self-scheduling</div><div class="toggle-desc">Attendees can pick their own time slots</div></div>
+            <label class="switch"><input type="checkbox" checked><span class="slider"></span></label>
+          </div>
+          <div class="toggle-row">
+            <div><div class="toggle-label">Send Reminders</div><div class="toggle-desc">Email reminders 24h and 1h before meetings</div></div>
+            <label class="switch"><input type="checkbox" checked><span class="slider"></span></label>
+          </div>
+        </div>
+        <div class="settings-section">
+          <div class="settings-title">📅 Meeting Hours</div>
+          <div class="form-grid">
+            <div class="form-group"><label class="form-label">Start Time</label><input type="time" class="form-control" value="09:00"></div>
+            <div class="form-group"><label class="form-label">End Time</label><input type="time" class="form-control" value="18:00"></div>
+            <div class="form-group"><label class="form-label">Slot Duration (min)</label><select class="form-control"><option>20</option><option selected>30</option><option>45</option><option>60</option></select></div>
+            <div class="form-group"><label class="form-label">Break Between Slots</label><select class="form-control"><option>0</option><option selected>5</option><option>10</option><option>15</option></select></div>
+          </div>
+          <div class="form-actions">
+            <button class="btn-secondary" onclick="showToast('Changes discarded')">Discard</button>
+            <button class="btn-primary" onclick="showToast('Settings saved!','success')">💾 Save Settings</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+<script>
+const times=['09:00','09:30','10:00','10:30','11:00','11:30','12:00','12:30','13:00','13:30','14:00','14:30','15:00','15:30','16:00','16:30','17:00','17:30'];
+const meetings=[
+  {a:'Alexandre Dupont',b:'Sarah Mitchell',date:'Jun 15',time:'09:00',room:'A',duration:30,status:'confirmed',purpose:'Publishing deal'},
+  {a:'Ren Zhang',b:'Emma Larsson',date:'Jun 15',time:'09:30',room:'B',duration:30,status:'confirmed',purpose:'Co-development'},
+  {a:'Felix Wagner',b:'Maria Kowalski',date:'Jun 15',time:'10:00',room:'A',duration:30,status:'confirmed',purpose:'Tech licensing'},
+  {a:'Rosa Almeida',b:'Dmitri Volkov',date:'Jun 15',time:'10:00',room:'C',duration:30,status:'confirmed',purpose:'Distribution'},
+  {a:'Jake Thompson',b:'Nina Petrov',date:'Jun 15',time:'10:30',room:'B',duration:30,status:'pending',purpose:'Investment'},
+  {a:'Omar Benali',b:'Kevin Park',date:'Jun 15',time:'11:00',room:'A',duration:30,status:'confirmed',purpose:'Publishing'},
+  {a:'Yuki Tanaka',b:'Tom Hendricks',date:'Jun 15',time:'11:30',room:'D',duration:30,status:'confirmed',purpose:'Localization'},
+  {a:'Hana Novák',b:'Marco Bianchi',date:'Jun 15',time:'14:00',room:'B',duration:30,status:'confirmed',purpose:'Co-publishing'},
+  {a:'Jean-Paul Girard',b:'Isabelle Laurent',date:'Jun 16',time:'09:00',room:'A',duration:30,status:'confirmed',purpose:'Partnership'},
+  {a:'Priya Sharma',b:'Thibault Moreau',date:'Jun 16',time:'10:30',room:'C',duration:30,status:'confirmed',purpose:'Mobile deal'},
+];
+const requests=[
+  {from:'Felix Wagner',to:'Alexandre Dupont',pref:'Jun 15 · 14:00',purpose:'Discuss engine licensing',date:'2026-04-01'},
+  {from:'Nina Petrov',to:'Jake Thompson',pref:'Jun 16 · 11:00',purpose:'Investment discussion',date:'2026-04-02'},
+  {from:'Thibault Moreau',to:'Ren Zhang',pref:'Jun 15 · 15:30',purpose:'Mobile publishing',date:'2026-04-03'},
+  {from:'Marco Bianchi',to:'Emma Larsson',pref:'Jun 17 · 10:00',purpose:'Co-development proposal',date:'2026-04-04'},
+  {from:'Céline Dubois',to:'Sarah Mitchell',pref:'Jun 16 · 14:30',purpose:'Peripheral partnership',date:'2026-04-05'},
+];
+let currentDay='Jun 15', meetingFilter='all', meetingSearch='';
+function buildSchedule(){
+  const dayMeetings=meetings.filter(m=>m.date===currentDay);
+  const rooms=['A','B','C','D'];
+  document.getElementById('scheduleRows').innerHTML=times.map(t=>`
+    <div class="schedule-row">
+      <div class="time-slot">${t}</div>
+      <div class="slots">${rooms.map(r=>{
+        const m=dayMeetings.find(x=>x.time===t&&x.room===r);
+        return `<div class="slot${m?' booked':''}" onclick="${m?'':'showToast(\'Slot available — click to block\')'}">
+          ${m?`<div class="meeting-chip${m.status==='pending'?' pending':''}">${m.a.split(' ')[0]}<br>↔ ${m.b.split(' ')[0]}</div>`:''}
+        </div>`;
+      }).join('')}</div>
+    </div>`).join('');
+}
+function buildRequests(){
+  document.getElementById('requestsTable').innerHTML=requests.map(r=>`
+    <tr><td><div class="td-name">${r.from}</div></td>
+    <td><div class="td-name">${r.to}</div></td>
+    <td>${r.pref}</td>
+    <td style="max-width:180px;font-size:12px;color:var(--text2);">${r.purpose}</td>
+    <td>${new Date(r.date).toLocaleDateString('en-GB',{day:'2-digit',month:'short'})}</td>
+    <td><div style="display:flex;gap:4px;">
+      <button class="row-btn confirm" onclick="approveRequest('${r.from}')">✓ Approve</button>
+      <button class="row-btn reject" onclick="rejectRequest('${r.from}')">✗ Decline</button>
+    </div></td></tr>`).join('');
+}
+function buildMeetings(){
+  let d=meetings;
+  if(meetingFilter!=='all') d=d.filter(m=>m.status===meetingFilter);
+  if(meetingSearch) d=d.filter(m=>(m.a+m.b).toLowerCase().includes(meetingSearch));
+  const sm={confirmed:'badge-confirmed',pending:'badge-pending'};
+  const sl={confirmed:'Confirmed',pending:'Pending'};
+  document.getElementById('meetingsTable').innerHTML=d.map(m=>`
+    <tr><td><div class="td-name">${m.a}</div></td>
+    <td><div class="td-name">${m.b}</div></td>
+    <td>${m.date} · ${m.time}</td>
+    <td>Room ${m.room}</td>
+    <td>${m.duration} min</td>
+    <td><span class="badge ${sm[m.status]}">${sl[m.status]}</span></td>
+    <td><div style="display:flex;gap:4px;">
+      <button class="row-btn neutral" onclick="showToast('Opening meeting details…')">👁</button>
+      <button class="row-btn reject" onclick="showToast('Meeting cancelled','error')">✗</button>
+    </div></td></tr>`).join('');
+}
+function approveRequest(from){const r=requests.find(x=>x.from===from);if(r){showToast(`${from}'s request approved!`,'success');r.status='approved';buildRequests();}}
+function rejectRequest(from){showToast(`${from}'s request declined`,'error');}
+function setDay(d,btn){currentDay=d;document.getElementById('dayLabel').textContent=d;document.querySelectorAll('.filter-tab').forEach(b=>b.classList.remove('active'));btn.classList.add('active');buildSchedule();}
+function filterMeetings(v){meetingSearch=v.toLowerCase();buildMeetings();}
+function setMeetingFilter(f,btn){meetingFilter=f;document.querySelectorAll('.filter-tab').forEach(b=>b.classList.remove('active'));btn.classList.add('active');buildMeetings();}
+function switchTab(id,btn){document.querySelectorAll('.tab-pane').forEach(p=>p.classList.remove('active'));document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));document.getElementById(id).classList.add('active');btn.classList.add('active');}
+let toastTimer;
+function showToast(msg,type){const t=document.getElementById('toast');t.textContent=(type==='success'?'✓ ':type==='error'?'⚠ ':'')+msg;t.className=`toast ${type||''} show`;clearTimeout(toastTimer);toastTimer=setTimeout(()=>t.classList.remove('show'),2800);}
+buildSchedule();buildRequests();buildMeetings();
+</script>
+</body>
+</html>
