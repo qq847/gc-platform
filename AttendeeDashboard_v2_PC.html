@@ -1,0 +1,509 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>My Dashboard — Game Connection</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+:root {
+  --green: #16a34a;
+  --green-light: #dcfce7;
+  --green-dark: #15803d;
+  --green-dim: rgba(22,163,74,0.08);
+  --bg: #f8f9fa;
+  --card: #ffffff;
+  --text: #111827;
+  --muted: #6b7280;
+  --faint: #9ca3af;
+  --border: #e5e7eb;
+  --radius: 10px;
+  --blue: #2563eb;
+  --purple: #7c3aed;
+}
+body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--text); line-height: 1.5; min-height: 100vh; }
+
+/* ── TOPBAR ── */
+.topbar {
+  position: sticky; top: 0; z-index: 100;
+  height: 60px; background: var(--card);
+  border-bottom: 1px solid var(--border);
+  display: flex; align-items: center; gap: 0;
+  padding: 0 28px; box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+}
+.topbar-logo { display: flex; align-items: center; gap: 8px; text-decoration: none; margin-right: 28px; }
+.topbar-logo-icon { width: 32px; height: 32px; background: var(--green); border-radius: 8px; display: flex; align-items: center; justify-content: center; }
+.topbar-logo-icon svg { width: 18px; height: 18px; fill: #fff; }
+.topbar-logo-text { font-size: 16px; font-weight: 700; color: var(--text); }
+.topbar-breadcrumb { font-size: 14px; color: var(--muted); display: flex; align-items: center; gap: 6px; }
+.topbar-breadcrumb a { color: var(--muted); text-decoration: none; }
+.topbar-breadcrumb a:hover { color: var(--green); }
+.topbar-spacer { flex: 1; }
+.topbar-right { display: flex; align-items: center; gap: 10px; }
+.notif-btn {
+  width: 36px; height: 36px; border-radius: 50%; border: 1px solid var(--border);
+  background: var(--card); cursor: pointer; font-size: 16px;
+  display: flex; align-items: center; justify-content: center; position: relative;
+}
+.avatar-btn {
+  width: 36px; height: 36px; border-radius: 50%;
+  background: var(--green); color: #fff; font-size: 14px; font-weight: 700;
+  display: flex; align-items: center; justify-content: center;
+  cursor: pointer; border: none; font-family: inherit;
+}
+
+/* ── LAYOUT ── */
+.layout { display: flex; min-height: calc(100vh - 60px); }
+
+/* ── SIDEBAR ── */
+.sidebar {
+  width: 220px; flex-shrink: 0;
+  background: var(--card); border-right: 1px solid var(--border);
+  padding: 20px 12px; display: flex; flex-direction: column; gap: 2px;
+  position: sticky; top: 60px; height: calc(100vh - 60px); overflow-y: auto;
+}
+.sidebar-section-label {
+  font-size: 10px; font-weight: 700; text-transform: uppercase;
+  letter-spacing: 0.08em; color: var(--faint); padding: 10px 10px 4px;
+}
+.sidebar-link {
+  display: flex; align-items: center; gap: 10px;
+  padding: 9px 12px; border-radius: 8px; font-size: 13px;
+  font-weight: 500; color: var(--muted); cursor: pointer;
+  border: none; background: none; font-family: inherit;
+  text-decoration: none; transition: all 0.15s; width: 100%; text-align: left;
+}
+.sidebar-link:hover { background: var(--bg); color: var(--text); }
+.sidebar-link.active { background: var(--green-dim); color: var(--green); font-weight: 600; }
+.sidebar-link .icon { font-size: 15px; width: 20px; text-align: center; flex-shrink: 0; }
+.sidebar-badge {
+  margin-left: auto; background: var(--green); color: #fff;
+  font-size: 10px; font-weight: 700; padding: 1px 6px;
+  border-radius: 10px; min-width: 18px; text-align: center;
+}
+.sidebar-divider { height: 1px; background: var(--border); margin: 8px 0; }
+.sidebar-user {
+  margin-top: auto; padding: 12px; border-top: 1px solid var(--border);
+  display: flex; align-items: center; gap: 10px;
+}
+.sidebar-user-avatar {
+  width: 36px; height: 36px; border-radius: 50%;
+  background: var(--green); color: #fff; font-size: 14px; font-weight: 700;
+  display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+}
+.sidebar-user-name { font-size: 13px; font-weight: 600; color: var(--text); }
+.sidebar-user-role { font-size: 11px; color: var(--muted); }
+
+/* ── MAIN ── */
+.main { flex: 1; padding: 28px 32px; max-width: 960px; }
+
+/* ── WELCOME ── */
+.welcome { margin-bottom: 28px; }
+.welcome-title { font-size: 24px; font-weight: 800; color: var(--text); }
+.welcome-sub { font-size: 14px; color: var(--muted); margin-top: 4px; }
+
+/* ── STATS ROW ── */
+.stats-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; margin-bottom: 28px; }
+.stat-card {
+  background: var(--card); border: 1px solid var(--border); border-radius: var(--radius);
+  padding: 18px 20px;
+}
+.stat-label { font-size: 12px; font-weight: 600; color: var(--muted); text-transform: uppercase; letter-spacing: 0.4px; margin-bottom: 6px; }
+.stat-value { font-size: 28px; font-weight: 800; color: var(--text); }
+.stat-value.green { color: var(--green); }
+.stat-sub { font-size: 12px; color: var(--faint); margin-top: 2px; }
+
+/* ── SECTION ── */
+.section { margin-bottom: 28px; }
+.section-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px; }
+.section-title { font-size: 16px; font-weight: 700; color: var(--text); }
+.section-link { font-size: 13px; color: var(--green); text-decoration: none; font-weight: 500; }
+.section-link:hover { text-decoration: underline; }
+
+/* ── EVENT CARD ── */
+.event-card {
+  background: var(--card); border: 1px solid var(--border); border-radius: var(--radius);
+  padding: 16px 20px; margin-bottom: 10px;
+  display: flex; align-items: center; gap: 16px;
+  transition: box-shadow 0.2s;
+}
+.event-card:hover { box-shadow: 0 2px 12px rgba(0,0,0,0.08); }
+.event-card-icon {
+  width: 48px; height: 48px; border-radius: 10px;
+  background: var(--green-light); font-size: 24px;
+  display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+}
+.event-card-info { flex: 1; min-width: 0; }
+.event-card-name { font-size: 15px; font-weight: 700; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.event-card-meta { font-size: 13px; color: var(--muted); margin-top: 2px; }
+.event-card-actions { display: flex; align-items: center; gap: 8px; flex-shrink: 0; }
+.badge-status {
+  padding: 4px 10px; border-radius: 20px; font-size: 12px; font-weight: 600;
+}
+.badge-registered { background: var(--green-light); color: var(--green-dark); }
+.badge-upcoming { background: #dbeafe; color: #1d4ed8; }
+.badge-past { background: #f3f4f6; color: #6b7280; }
+.btn-sm {
+  padding: 6px 14px; border-radius: 6px; font-family: inherit;
+  font-size: 13px; font-weight: 600; cursor: pointer; border: none; transition: all 0.2s;
+}
+.btn-sm-outline { background: transparent; color: var(--text); border: 1.5px solid var(--border); }
+.btn-sm-outline:hover { border-color: var(--green); color: var(--green); }
+.btn-sm-green { background: var(--green); color: #fff; }
+.btn-sm-green:hover { background: var(--green-dark); }
+
+/* ── EMPTY STATE ── */
+.empty-state {
+  background: var(--card); border: 1px solid var(--border); border-radius: var(--radius);
+  padding: 48px 24px; text-align: center;
+}
+.empty-icon { font-size: 48px; margin-bottom: 14px; }
+.empty-title { font-size: 17px; font-weight: 700; color: var(--text); margin-bottom: 6px; }
+.empty-sub { font-size: 14px; color: var(--muted); margin-bottom: 20px; }
+.btn-browse {
+  padding: 10px 24px; border-radius: 8px; font-family: inherit;
+  font-size: 14px; font-weight: 600; cursor: pointer; border: none;
+  background: var(--green); color: #fff; transition: all 0.2s;
+}
+.btn-browse:hover { background: var(--green-dark); }
+
+/* ── UPCOMING BANNER ── */
+.upcoming-banner {
+  background: var(--green-light); border: 1px solid #86efac; border-radius: var(--radius);
+  padding: 16px 20px; margin-bottom: 28px;
+  display: flex; align-items: center; gap: 14px;
+}
+.upcoming-banner-icon { font-size: 28px; }
+.upcoming-banner-text { flex: 1; }
+.upcoming-banner-title { font-size: 15px; font-weight: 700; color: var(--green-dark); }
+.upcoming-banner-sub { font-size: 13px; color: var(--green-dark); opacity: 0.8; margin-top: 2px; }
+.upcoming-banner-btn {
+  padding: 8px 18px; border-radius: 8px; font-family: inherit;
+  font-size: 13px; font-weight: 600; cursor: pointer; border: none;
+  background: var(--green); color: #fff;
+}
+
+/* ── RECOMMENDATION ── */
+.rec-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 14px; }
+.rec-card {
+  background: var(--card); border: 1px solid var(--border); border-radius: var(--radius);
+  padding: 16px; transition: box-shadow 0.2s;
+}
+.rec-card:hover { box-shadow: 0 2px 12px rgba(0,0,0,0.08); }
+.rec-card-name { font-size: 14px; font-weight: 700; color: var(--text); margin-bottom: 4px; }
+.rec-card-meta { font-size: 12px; color: var(--muted); margin-bottom: 12px; }
+.rec-card-btn {
+  width: 100%; padding: 8px; border-radius: 6px; font-family: inherit;
+  font-size: 13px; font-weight: 600; cursor: pointer; border: 1.5px solid var(--border);
+  background: transparent; color: var(--text); transition: all 0.2s;
+}
+.rec-card-btn:hover { border-color: var(--green); color: var(--green); }
+
+@media (max-width: 900px) {
+  .stats-row { grid-template-columns: repeat(2, 1fr); }
+  .sidebar { display: none; }
+  .main { padding: 20px 16px; }
+}
+</style>
+</head>
+<body>
+
+<!-- TOPBAR -->
+<div class="topbar">
+  <a class="topbar-logo" href="index.html">
+    <div class="topbar-logo-icon">
+      <svg viewBox="0 0 24 24"><path d="M21 6H3c-1.1 0-2 .9-2 2v8c0 1.1.9 2 2 2h18c1.1 0 2-.9 2-2V8c0-1.1-.9-2-2-2zm-10 7H8v3H6v-3H3v-2h3V8h2v3h3v2zm4.5 2c-.83 0-1.5-.67-1.5-1.5S14.67 12 15.5 12s1.5.67 1.5 1.5S16.33 15 15.5 15zm3-3c-.83 0-1.5-.67-1.5-1.5S17.67 10 18.5 10s1.5.67 1.5 1.5S19.33 12 18.5 12z"/></svg>
+    </div>
+    <span class="topbar-logo-text">GameConnection</span>
+  </a>
+  <div class="topbar-breadcrumb">
+    <span>/</span>
+    <span>My Dashboard</span>
+  </div>
+  <div class="topbar-spacer"></div>
+  <div class="topbar-right">
+    <button class="notif-btn" title="Notifications">🔔</button>
+    <div class="avatar-btn" id="topbarAvatar">R</div>
+  </div>
+</div>
+
+<div class="layout">
+
+  <!-- SIDEBAR -->
+  <div class="sidebar">
+    <div class="sidebar-section-label">My Activity</div>
+    <button class="sidebar-link active" onclick="showSection('events')">
+      <span class="icon">🎟️</span> My Events
+      <span class="sidebar-badge" id="eventsCount">0</span>
+    </button>
+    <button class="sidebar-link" onclick="showSection('saved')">
+      <span class="icon">🔖</span> Saved
+    </button>
+    <button class="sidebar-link" onclick="showSection('projects')">
+      <span class="icon">🕹️</span> My Projects
+    </button>
+    <button class="sidebar-link" onclick="showSection('connections')">
+      <span class="icon">👥</span> Connections
+    </button>
+    <div class="sidebar-divider"></div>
+    <div class="sidebar-section-label">Discover</div>
+    <a class="sidebar-link" href="index.html">
+      <span class="icon">📅</span> Browse Events
+    </a>
+    <button class="sidebar-link" onclick="showSection('recommendations')">
+      <span class="icon">✨</span> Recommended
+    </button>
+    <div class="sidebar-divider"></div>
+    <div class="sidebar-section-label">Account</div>
+    <button class="sidebar-link" onclick="showSection('profile')">
+      <span class="icon">👤</span> Profile
+    </button>
+    <button class="sidebar-link" onclick="showSection('settings')">
+      <span class="icon">⚙️</span> Settings
+    </button>
+
+    <div class="sidebar-user">
+      <div class="sidebar-user-avatar" id="sidebarAvatar">R</div>
+      <div>
+        <div class="sidebar-user-name" id="sidebarName">Ray Liu</div>
+        <div class="sidebar-user-role">Attendee</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- MAIN CONTENT -->
+  <div class="main">
+
+    <!-- WELCOME -->
+    <div class="welcome">
+      <div class="welcome-title">Welcome back, <span id="welcomeName">Ray</span> 👋</div>
+      <div class="welcome-sub">Here's what's happening with your events.</div>
+    </div>
+
+    <!-- STATS -->
+    <div class="stats-row">
+      <div class="stat-card">
+        <div class="stat-label">Registered Events</div>
+        <div class="stat-value green" id="statRegistered">0</div>
+        <div class="stat-sub">Total registrations</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Upcoming</div>
+        <div class="stat-value" id="statUpcoming">0</div>
+        <div class="stat-sub">Events ahead</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Saved Events</div>
+        <div class="stat-value" id="statSaved">0</div>
+        <div class="stat-sub">In your watchlist</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Connections</div>
+        <div class="stat-value" id="statConnections">0</div>
+        <div class="stat-sub">Industry contacts</div>
+      </div>
+    </div>
+
+    <!-- UPCOMING BANNER (shown if next event is within 30 days) -->
+    <div class="upcoming-banner" id="upcomingBanner" style="display:none">
+      <div class="upcoming-banner-icon">📅</div>
+      <div class="upcoming-banner-text">
+        <div class="upcoming-banner-title" id="bannerTitle">Your next event is coming up!</div>
+        <div class="upcoming-banner-sub" id="bannerSub"></div>
+      </div>
+      <button class="upcoming-banner-btn" id="bannerBtn">View Details</button>
+    </div>
+
+    <!-- MY EVENTS SECTION -->
+    <div class="section" id="section-events">
+      <div class="section-header">
+        <div class="section-title">My Registered Events</div>
+        <a class="section-link" href="index.html">Browse more →</a>
+      </div>
+      <div id="eventsListContainer">
+        <!-- populated by JS -->
+      </div>
+    </div>
+
+    <!-- SAVED SECTION -->
+    <div class="section" id="section-saved" style="display:none">
+      <div class="section-header">
+        <div class="section-title">Saved Events</div>
+        <a class="section-link" href="index.html">Browse events →</a>
+      </div>
+      <div class="empty-state">
+        <div class="empty-icon">🔖</div>
+        <div class="empty-title">No saved events yet</div>
+        <div class="empty-sub">Click "Save" on any event to add it here.</div>
+        <button class="btn-browse" onclick="window.location.href='index.html'">Browse Events</button>
+      </div>
+    </div>
+
+    <!-- PROJECTS SECTION -->
+    <div class="section" id="section-projects" style="display:none">
+      <div class="section-header">
+        <div class="section-title">My Projects</div>
+      </div>
+      <div class="empty-state">
+        <div class="empty-icon">🕹️</div>
+        <div class="empty-title">No projects submitted yet</div>
+        <div class="empty-sub">Submit your game to a Game Showcase at an upcoming event.</div>
+        <button class="btn-browse" onclick="window.location.href='index.html'">Find Events with Showcase</button>
+      </div>
+    </div>
+
+    <!-- CONNECTIONS SECTION -->
+    <div class="section" id="section-connections" style="display:none">
+      <div class="section-header">
+        <div class="section-title">My Connections</div>
+      </div>
+      <div class="empty-state">
+        <div class="empty-icon">👥</div>
+        <div class="empty-title">No connections yet</div>
+        <div class="empty-sub">Meet people at events and connect through Let's Meet.</div>
+        <button class="btn-browse" onclick="window.location.href='index.html'">Explore Events</button>
+      </div>
+    </div>
+
+    <!-- RECOMMENDATIONS SECTION -->
+    <div class="section" id="section-recommendations" style="display:none">
+      <div class="section-header">
+        <div class="section-title">Recommended for You</div>
+      </div>
+      <div class="rec-grid" id="recGrid">
+        <!-- populated by JS -->
+      </div>
+    </div>
+
+    <!-- PROFILE SECTION -->
+    <div class="section" id="section-profile" style="display:none">
+      <div class="section-header">
+        <div class="section-title">My Profile</div>
+      </div>
+      <div class="empty-state">
+        <div class="empty-icon">👤</div>
+        <div class="empty-title">Complete your profile</div>
+        <div class="empty-sub">Add your company, role, and interests to get better recommendations.</div>
+        <button class="btn-browse">Edit Profile</button>
+      </div>
+    </div>
+
+    <!-- SETTINGS SECTION -->
+    <div class="section" id="section-settings" style="display:none">
+      <div class="section-header">
+        <div class="section-title">Settings</div>
+      </div>
+      <div class="empty-state">
+        <div class="empty-icon">⚙️</div>
+        <div class="empty-title">Settings coming soon</div>
+        <div class="empty-sub">Notification preferences, privacy settings, and more.</div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<script>
+// ── Load registrations from localStorage ──
+const registrations = JSON.parse(localStorage.getItem('gc_registrations') || '[]');
+
+// ── User info (from last registration or default) ──
+const lastReg = registrations[registrations.length - 1];
+const userName = lastReg ? lastReg.name.split(' ')[0] : 'Ray';
+const userInitial = userName.charAt(0).toUpperCase();
+
+document.getElementById('welcomeName').textContent = userName;
+document.getElementById('sidebarName').textContent = lastReg ? lastReg.name : 'Ray Liu';
+document.getElementById('sidebarAvatar').textContent = userInitial;
+document.getElementById('topbarAvatar').textContent = userInitial;
+
+// ── Stats ──
+const now = new Date();
+const upcoming = registrations.filter(r => new Date(r.eventStart + 'T00:00:00') >= now);
+const past = registrations.filter(r => new Date(r.eventStart + 'T00:00:00') < now);
+
+document.getElementById('statRegistered').textContent = registrations.length;
+document.getElementById('statUpcoming').textContent = upcoming.length;
+document.getElementById('statSaved').textContent = 0;
+document.getElementById('statConnections').textContent = 0;
+document.getElementById('eventsCount').textContent = registrations.length;
+
+// ── Upcoming banner ──
+if (upcoming.length > 0) {
+  const next = upcoming.sort((a,b) => new Date(a.eventStart) - new Date(b.eventStart))[0];
+  const daysUntil = Math.ceil((new Date(next.eventStart + 'T00:00:00') - now) / (1000*60*60*24));
+  if (daysUntil <= 60) {
+    document.getElementById('upcomingBanner').style.display = 'flex';
+    document.getElementById('bannerTitle').textContent = next.eventTitle + ' is coming up!';
+    document.getElementById('bannerSub').textContent = daysUntil === 0 ? 'Today!' : daysUntil + ' days away · ' + next.eventCity;
+    document.getElementById('bannerBtn').onclick = () => {
+      window.location.href = 'EventPublicPage_v4_PC.html?title=' + encodeURIComponent(next.eventTitle) + '&start=' + next.eventStart + '&city=' + encodeURIComponent(next.eventCity);
+    };
+  }
+}
+
+// ── Events list ──
+function fmtDate(d) {
+  if (!d) return '';
+  const dt = new Date(d + 'T00:00:00');
+  return dt.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+}
+
+const container = document.getElementById('eventsListContainer');
+if (registrations.length === 0) {
+  container.innerHTML = `
+    <div class="empty-state">
+      <div class="empty-icon">🎟️</div>
+      <div class="empty-title">No events yet</div>
+      <div class="empty-sub">Register for your first game industry event to get started.</div>
+      <button class="btn-browse" onclick="window.location.href='index.html'">Browse Events</button>
+    </div>`;
+} else {
+  const sorted = [...registrations].sort((a,b) => new Date(a.eventStart) - new Date(b.eventStart));
+  sorted.forEach(reg => {
+    const isUpcoming = new Date(reg.eventStart + 'T00:00:00') >= now;
+    const card = document.createElement('div');
+    card.className = 'event-card';
+    card.innerHTML = `
+      <div class="event-card-icon">🎮</div>
+      <div class="event-card-info">
+        <div class="event-card-name">${reg.eventTitle}</div>
+        <div class="event-card-meta">${fmtDate(reg.eventStart)} · ${reg.eventCity || ''}</div>
+      </div>
+      <div class="event-card-actions">
+        <span class="badge-status ${isUpcoming ? 'badge-registered' : 'badge-past'}">${isUpcoming ? '✓ Registered' : 'Past'}</span>
+        <button class="btn-sm btn-sm-outline" onclick="window.location.href='EventPublicPage_v4_PC.html?title=${encodeURIComponent(reg.eventTitle)}&start=${reg.eventStart}&city=${encodeURIComponent(reg.eventCity||'')}'" >View</button>
+      </div>`;
+    container.appendChild(card);
+  });
+}
+
+// ── Recommendations (static sample) ──
+const recs = [
+  { name: 'Gamescom 2026', meta: 'Aug 19–23 · Cologne, Germany', emoji: '🎮' },
+  { name: 'Tokyo Game Show 2026', meta: 'Sep 24–27 · Chiba, Japan', emoji: '🕹️' },
+  { name: 'Nordic Game 2026', meta: 'May 22–24 · Malmö, Sweden', emoji: '🎯' },
+];
+const recGrid = document.getElementById('recGrid');
+recs.forEach(r => {
+  const card = document.createElement('div');
+  card.className = 'rec-card';
+  card.innerHTML = `
+    <div style="font-size:28px;margin-bottom:8px">${r.emoji}</div>
+    <div class="rec-card-name">${r.name}</div>
+    <div class="rec-card-meta">${r.meta}</div>
+    <button class="rec-card-btn" onclick="window.location.href='EventPublicPage_v4_PC.html?title=${encodeURIComponent(r.name)}'">View Event →</button>`;
+  recGrid.appendChild(card);
+});
+
+// ── Section switcher ──
+function showSection(name) {
+  document.querySelectorAll('[id^="section-"]').forEach(el => el.style.display = 'none');
+  document.getElementById('section-' + name).style.display = 'block';
+  document.querySelectorAll('.sidebar-link').forEach(el => el.classList.remove('active'));
+  event.currentTarget.classList.add('active');
+}
+</script>
+</body>
+</html>

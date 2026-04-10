@@ -1,0 +1,452 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Event – Game Connection</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+:root {
+  --green: #16a34a;
+  --green-light: #dcfce7;
+  --green-dark: #15803d;
+  --blue: #2563eb;
+  --bg: #f8f9fa;
+  --card: #ffffff;
+  --text: #111827;
+  --muted: #6b7280;
+  --border: #e5e7eb;
+  --radius: 10px;
+  --shadow: 0 1px 4px rgba(0,0,0,0.08);
+  --shadow2: 0 4px 16px rgba(0,0,0,0.10);
+}
+body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--text); line-height: 1.5; }
+
+/* ── NAVBAR ── */
+.navbar {
+  position: sticky; top: 0; z-index: 100;
+  background: #fff; border-bottom: 1px solid var(--border);
+  padding: 0 32px; height: 60px;
+  display: flex; align-items: center; gap: 16px;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+}
+.nav-logo { display: flex; align-items: center; gap: 8px; text-decoration: none; }
+.nav-logo-icon { width: 32px; height: 32px; background: var(--green); border-radius: 8px; display: flex; align-items: center; justify-content: center; }
+.nav-logo-icon svg { width: 18px; height: 18px; fill: #fff; }
+.nav-logo-text { font-size: 16px; font-weight: 700; color: var(--text); }
+.nav-back { color: var(--muted); text-decoration: none; font-size: 14px; display: flex; align-items: center; gap: 4px; transition: color 0.2s; }
+.nav-back:hover { color: var(--green); }
+.nav-divider { color: var(--border); font-size: 18px; }
+.nav-spacer { flex: 1; }
+.nav-btn { padding: 8px 20px; border-radius: 8px; font-family: inherit; font-size: 14px; font-weight: 600; cursor: pointer; border: none; transition: all 0.2s; }
+.nav-btn-outline { background: transparent; color: var(--text); border: 1.5px solid var(--border); }
+.nav-btn-outline:hover { border-color: var(--green); color: var(--green); }
+.nav-btn-primary { background: var(--green); color: #fff; }
+.nav-btn-primary:hover { background: var(--green-dark); }
+
+/* ── HERO ── */
+.hero {
+  width: 100%; max-width: 1100px; margin: 32px auto 0; padding: 0 24px;
+}
+.hero-cover {
+  width: 100%; height: 340px; border-radius: 14px; object-fit: cover;
+  background: linear-gradient(135deg, #1e3a5f 0%, #0d6e3f 100%);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 64px; overflow: hidden; position: relative;
+}
+.hero-cover img { width: 100%; height: 100%; object-fit: cover; border-radius: 14px; }
+.hero-cover-placeholder { font-size: 64px; }
+
+/* ── LAYOUT ── */
+.layout {
+  max-width: 1100px; margin: 0 auto; padding: 28px 24px 60px;
+  display: grid; grid-template-columns: 1fr 320px; gap: 28px;
+}
+
+/* ── MAIN CONTENT ── */
+.main {}
+.event-header { margin-bottom: 20px; }
+.event-badges { display: flex; align-items: center; gap: 8px; margin-bottom: 10px; flex-wrap: wrap; }
+.badge {
+  display: inline-flex; align-items: center; gap: 4px;
+  padding: 4px 10px; border-radius: 20px; font-size: 12px; font-weight: 600;
+}
+.badge-live { background: #dcfce7; color: #16a34a; }
+.badge-upcoming { background: #dbeafe; color: #1d4ed8; }
+.badge-past { background: #f3f4f6; color: #6b7280; }
+.badge-format { background: #f3f4f6; color: #374151; }
+.badge-type { background: #fef3c7; color: #92400e; }
+.event-title { font-size: 32px; font-weight: 800; color: var(--text); line-height: 1.2; margin-bottom: 12px; }
+.event-meta { display: flex; flex-wrap: wrap; gap: 16px; color: var(--muted); font-size: 14px; }
+.event-meta-item { display: flex; align-items: center; gap: 6px; }
+.event-meta-item svg { width: 16px; height: 16px; flex-shrink: 0; }
+
+/* ── SECTION ── */
+.section { background: var(--card); border: 1px solid var(--border); border-radius: var(--radius); padding: 24px; margin-bottom: 20px; }
+.section-title { font-size: 16px; font-weight: 700; color: var(--text); margin-bottom: 14px; padding-bottom: 12px; border-bottom: 1px solid var(--border); }
+.section-body { font-size: 15px; color: #374151; line-height: 1.7; }
+
+/* ── MODULES ── */
+.modules-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 10px; }
+.module-chip {
+  display: flex; align-items: center; gap: 8px;
+  padding: 10px 14px; border-radius: 8px;
+  background: var(--bg); border: 1px solid var(--border);
+  font-size: 13px; font-weight: 500; color: var(--text);
+}
+.module-chip .chip-icon { font-size: 18px; }
+.module-chip.active { background: var(--green-light); border-color: #86efac; color: var(--green-dark); }
+
+/* ── SIDEBAR ── */
+.sidebar {}
+.sidebar-card {
+  background: var(--card); border: 1px solid var(--border); border-radius: var(--radius);
+  padding: 24px; margin-bottom: 16px; position: sticky; top: 76px;
+}
+.sidebar-card-title { font-size: 13px; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 16px; }
+.reg-price { font-size: 28px; font-weight: 800; color: var(--text); margin-bottom: 4px; }
+.reg-price-sub { font-size: 13px; color: var(--muted); margin-bottom: 20px; }
+.btn-register {
+  width: 100%; padding: 14px; border-radius: 10px; font-family: inherit;
+  font-size: 16px; font-weight: 700; cursor: pointer; border: none;
+  background: var(--green); color: #fff; transition: all 0.2s;
+  display: flex; align-items: center; justify-content: center; gap: 8px;
+}
+.btn-register:hover { background: var(--green-dark); transform: translateY(-1px); box-shadow: 0 4px 12px rgba(22,163,74,0.3); }
+.btn-register:active { transform: translateY(0); }
+.btn-save {
+  width: 100%; padding: 10px; border-radius: 8px; font-family: inherit;
+  font-size: 14px; font-weight: 600; cursor: pointer; margin-top: 10px;
+  background: transparent; color: var(--text); border: 1.5px solid var(--border);
+  transition: all 0.2s;
+}
+.btn-save:hover { border-color: var(--green); color: var(--green); }
+.reg-divider { border: none; border-top: 1px solid var(--border); margin: 16px 0; }
+.reg-info-row { display: flex; justify-content: space-between; font-size: 13px; margin-bottom: 8px; }
+.reg-info-row .label { color: var(--muted); }
+.reg-info-row .value { font-weight: 600; color: var(--text); }
+.attendee-count { display: flex; align-items: center; gap: 8px; margin-top: 14px; padding-top: 14px; border-top: 1px solid var(--border); }
+.attendee-avatars { display: flex; }
+.attendee-avatar {
+  width: 28px; height: 28px; border-radius: 50%; border: 2px solid #fff;
+  background: var(--green); color: #fff; font-size: 11px; font-weight: 700;
+  display: flex; align-items: center; justify-content: center; margin-left: -8px;
+}
+.attendee-avatar:first-child { margin-left: 0; }
+.attendee-count-text { font-size: 13px; color: var(--muted); }
+.attendee-count-text strong { color: var(--text); }
+
+/* contact */
+.contact-row { display: flex; align-items: center; gap: 10px; margin-bottom: 12px; font-size: 14px; }
+.contact-row:last-child { margin-bottom: 0; }
+.contact-icon { width: 32px; height: 32px; border-radius: 8px; background: var(--bg); border: 1px solid var(--border); display: flex; align-items: center; justify-content: center; font-size: 16px; flex-shrink: 0; }
+.contact-label { font-size: 12px; color: var(--muted); }
+.contact-value { font-weight: 500; color: var(--text); }
+.contact-link { color: var(--blue); text-decoration: none; font-weight: 500; }
+.contact-link:hover { text-decoration: underline; }
+
+/* ── SUCCESS OVERLAY ── */
+.overlay {
+  position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 500;
+  display: flex; align-items: center; justify-content: center;
+  opacity: 0; pointer-events: none; transition: opacity 0.3s;
+}
+.overlay.open { opacity: 1; pointer-events: all; }
+.overlay-card {
+  background: #fff; border-radius: 16px; padding: 40px; max-width: 440px; width: 90%;
+  text-align: center; transform: scale(0.9); transition: transform 0.3s;
+}
+.overlay.open .overlay-card { transform: scale(1); }
+.overlay-icon { font-size: 56px; margin-bottom: 16px; }
+.overlay-title { font-size: 24px; font-weight: 800; color: var(--text); margin-bottom: 8px; }
+.overlay-sub { font-size: 15px; color: var(--muted); margin-bottom: 28px; }
+.overlay-btn {
+  padding: 12px 32px; border-radius: 10px; font-family: inherit;
+  font-size: 15px; font-weight: 700; cursor: pointer; border: none;
+  background: var(--green); color: #fff;
+}
+
+/* ── RESPONSIVE ── */
+@media (max-width: 768px) {
+  .layout { grid-template-columns: 1fr; }
+  .sidebar-card { position: static; }
+  .event-title { font-size: 24px; }
+  .hero-cover { height: 200px; }
+}
+</style>
+</head>
+<body>
+
+<!-- NAVBAR -->
+<nav class="navbar">
+  <a class="nav-logo" href="index.html">
+    <div class="nav-logo-icon">
+      <svg viewBox="0 0 24 24"><path d="M21 6H3c-1.1 0-2 .9-2 2v8c0 1.1.9 2 2 2h18c1.1 0 2-.9 2-2V8c0-1.1-.9-2-2-2zm-10 7H8v3H6v-3H3v-2h3V8h2v3h3v2zm4.5 2c-.83 0-1.5-.67-1.5-1.5S14.67 12 15.5 12s1.5.67 1.5 1.5S16.33 15 15.5 15zm3-3c-.83 0-1.5-.67-1.5-1.5S17.67 10 18.5 10s1.5.67 1.5 1.5S19.33 12 18.5 12z"/></svg>
+    </div>
+    <span class="nav-logo-text">GameConnection</span>
+  </a>
+  <span class="nav-divider">|</span>
+  <a class="nav-back" href="index.html">← Back to Events</a>
+  <div class="nav-spacer"></div>
+  <button class="nav-btn nav-btn-outline" onclick="document.getElementById('overlay').classList.add('open')">Register Now</button>
+</nav>
+
+<!-- HERO COVER -->
+<div class="hero">
+  <div class="hero-cover" id="heroCover">
+    <span class="hero-cover-placeholder" id="heroEmoji">🎮</span>
+  </div>
+</div>
+
+<!-- MAIN LAYOUT -->
+<div class="layout">
+
+  <!-- LEFT: MAIN CONTENT -->
+  <div class="main">
+    <div class="event-header">
+      <div class="event-badges">
+        <span class="badge badge-upcoming" id="statusBadge">● Upcoming</span>
+        <span class="badge badge-format" id="formatBadge">In-Person</span>
+        <span class="badge badge-type">Conference</span>
+      </div>
+      <h1 class="event-title" id="eventTitle">GDC 2027</h1>
+      <div class="event-meta">
+        <span class="event-meta-item">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+          <span id="eventDates">Mar 17–21, 2027</span>
+        </span>
+        <span class="event-meta-item">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/></svg>
+          <span id="eventLocation">San Francisco, USA</span>
+        </span>
+        <span class="event-meta-item">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87"/><path d="M16 3.13a4 4 0 010 7.75"/></svg>
+          <span id="eventAttendees">500+ Attendees</span>
+        </span>
+      </div>
+    </div>
+
+    <!-- ABOUT -->
+    <div class="section">
+      <div class="section-title">About This Event</div>
+      <div class="section-body" id="eventDesc">
+        The Game Developers Conference (GDC) is the world's largest professional game industry event. Join thousands of developers, publishers, investors, and service providers for five days of learning, inspiration, and networking in San Francisco.
+      </div>
+    </div>
+
+    <!-- MODULES -->
+    <div class="section" id="modulesSection">
+      <div class="section-title">What's Included</div>
+      <div class="modules-grid" id="modulesGrid">
+        <!-- populated by JS -->
+      </div>
+    </div>
+
+    <!-- SCHEDULE PLACEHOLDER -->
+    <div class="section" id="scheduleSection" style="display:none">
+      <div class="section-title">Schedule</div>
+      <div class="section-body" style="color:var(--muted);font-style:italic">Schedule will be announced closer to the event date.</div>
+    </div>
+
+  </div>
+
+  <!-- RIGHT: SIDEBAR -->
+  <div class="sidebar">
+    <div class="sidebar-card">
+      <div class="sidebar-card-title">Registration</div>
+      <div class="reg-price" id="regPrice">Free</div>
+      <div class="reg-price-sub" id="regSub">Open registration · No credit card required</div>
+      <button class="btn-register" onclick="document.getElementById('overlay').classList.add('open')">
+        🎟️ Register Now
+      </button>
+      <button class="btn-save" onclick="this.textContent='🔖 Saved!'">🔖 Save Event</button>
+      <hr class="reg-divider">
+      <div class="reg-info-row">
+        <span class="label">Status</span>
+        <span class="value" id="sideStatus">Upcoming</span>
+      </div>
+      <div class="reg-info-row">
+        <span class="label">Format</span>
+        <span class="value" id="sideFormat">In-Person</span>
+      </div>
+      <div class="reg-info-row">
+        <span class="label">Venue</span>
+        <span class="value" id="sideVenue">Moscone Center</span>
+      </div>
+      <div class="attendee-count">
+        <div class="attendee-avatars">
+          <div class="attendee-avatar">A</div>
+          <div class="attendee-avatar" style="background:#2563eb">B</div>
+          <div class="attendee-avatar" style="background:#7c3aed">C</div>
+        </div>
+        <span class="attendee-count-text"><strong id="attendeeNum">312</strong> people registered</span>
+      </div>
+    </div>
+
+    <div class="sidebar-card">
+      <div class="sidebar-card-title">Contact & Links</div>
+      <div class="contact-row">
+        <div class="contact-icon">🌐</div>
+        <div>
+          <div class="contact-label">Official Website</div>
+          <a class="contact-link" id="eventWebsite" href="#" target="_blank">gdconf.com</a>
+        </div>
+      </div>
+      <div class="contact-row">
+        <div class="contact-icon">👤</div>
+        <div>
+          <div class="contact-label">Contact</div>
+          <div class="contact-value" id="contactName">GDC Team</div>
+        </div>
+      </div>
+      <div class="contact-row">
+        <div class="contact-icon">✉️</div>
+        <div>
+          <div class="contact-label">Email</div>
+          <a class="contact-link" id="contactEmail" href="mailto:info@gdconf.com">info@gdconf.com</a>
+        </div>
+      </div>
+    </div>
+
+    <div class="sidebar-card" style="background:var(--green-light);border-color:#86efac">
+      <div style="font-size:13px;font-weight:700;color:var(--green-dark);margin-bottom:8px">🎯 Organizer</div>
+      <div style="font-size:14px;font-weight:600;color:var(--text)" id="organizerName">Game Developers Conference</div>
+      <div style="font-size:13px;color:var(--muted);margin-top:4px" id="organizerSub">Verified Organizer</div>
+    </div>
+  </div>
+
+</div>
+
+<!-- REGISTRATION SUCCESS OVERLAY -->
+<div class="overlay" id="overlay" onclick="if(event.target===this)this.classList.remove('open')">
+  <div class="overlay-card">
+    <div class="overlay-icon">🎉</div>
+    <div class="overlay-title">You're Registered!</div>
+    <div class="overlay-sub">We've sent a confirmation to your email. See you at <strong id="confirmEventName">the event</strong>!</div>
+    <button class="overlay-btn" onclick="window.location.href='AttendeeDashboard_v2_PC.html'">Go to My Dashboard →</button>
+  </div>
+</div>
+
+<script>
+// ── Read URL params to populate page ──
+const params = new URLSearchParams(window.location.search);
+
+const title   = params.get('title')   || 'GDC 2027';
+const start   = params.get('start')   || '2027-03-17';
+const end     = params.get('end')     || '2027-03-21';
+const city    = params.get('city')    || 'San Francisco';
+const country = params.get('country') || 'USA';
+const venue   = params.get('venue')   || 'Moscone Center';
+const format  = params.get('format')  || 'In-Person';
+const desc    = params.get('desc')    || 'Join thousands of game industry professionals for this premier event.';
+const website = params.get('website') || '#';
+const cname   = params.get('cname')   || '';
+const cemail  = params.get('cemail')  || '';
+const modules = (params.get('modules') || 'Free Registration,Panel/Session,Game Showcase').split(',');
+const status  = params.get('status')  || 'upcoming'; // live | upcoming | past
+const attendees = parseInt(params.get('attendees') || '312');
+
+// Populate
+document.title = title + ' – Game Connection';
+document.getElementById('eventTitle').textContent = title;
+document.getElementById('confirmEventName').textContent = title;
+document.getElementById('eventDesc').textContent = desc;
+document.getElementById('sideVenue').textContent = venue || '—';
+document.getElementById('sideFormat').textContent = format;
+document.getElementById('attendeeNum').textContent = attendees.toLocaleString();
+document.getElementById('organizerName').textContent = cname || 'Event Organizer';
+
+// Dates
+function fmtDate(d) {
+  if (!d) return '';
+  const dt = new Date(d + 'T00:00:00');
+  return dt.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+}
+const startFmt = fmtDate(start);
+const endFmt   = fmtDate(end);
+document.getElementById('eventDates').textContent = end && end !== start ? startFmt + ' – ' + endFmt : startFmt;
+document.getElementById('eventLocation').textContent = [city, country].filter(Boolean).join(', ');
+
+// Status badge
+const statusEl = document.getElementById('statusBadge');
+const sideStatusEl = document.getElementById('sideStatus');
+if (status === 'live') {
+  statusEl.textContent = '● Live Now';
+  statusEl.className = 'badge badge-live';
+  sideStatusEl.textContent = 'Live Now';
+} else if (status === 'past') {
+  statusEl.textContent = 'Past Event';
+  statusEl.className = 'badge badge-past';
+  sideStatusEl.textContent = 'Past';
+} else {
+  statusEl.textContent = '● Upcoming';
+  sideStatusEl.textContent = 'Upcoming';
+}
+
+// Format badge
+document.getElementById('formatBadge').textContent = format;
+
+// Website
+if (website && website !== '#') {
+  const a = document.getElementById('eventWebsite');
+  a.href = website.startsWith('http') ? website : 'https://' + website;
+  a.textContent = website.replace(/^https?:\/\//, '').replace(/\/$/, '');
+}
+
+// Contact
+if (cname) document.getElementById('contactName').textContent = cname;
+if (cemail) {
+  const a = document.getElementById('contactEmail');
+  a.href = 'mailto:' + cemail;
+  a.textContent = cemail;
+}
+
+// Emoji for cover placeholder
+const emojis = { 'Conference': '🎤', 'Trade Show': '🏢', 'Awards': '🏆', 'Esports': '🎮', 'Online': '💻' };
+document.getElementById('heroEmoji').textContent = emojis[format] || '🎮';
+
+// Modules
+const moduleData = [
+  { key: 'Free Registration', icon: '🎟️', label: 'Free Registration' },
+  { key: 'Paid Registration', icon: '💳', label: 'Paid Ticketing' },
+  { key: 'Free Pod', icon: '🛋️', label: 'Meeting Pods' },
+  { key: 'Paid Pod', icon: '🛋️', label: 'Paid Pods' },
+  { key: 'Free Booth', icon: '🏪', label: 'Exhibition Booths' },
+  { key: 'Paid Booth', icon: '🏪', label: 'Paid Booths' },
+  { key: 'Sponsorship', icon: '🤝', label: 'Sponsorship' },
+  { key: 'Panel/Session', icon: '🎙️', label: 'Panels & Sessions' },
+  { key: 'Award', icon: '🏆', label: 'Awards' },
+  { key: 'Buyer Invitation', icon: '🤵', label: 'Buyer Invitation' },
+  { key: "Let's Meet", icon: '🤝', label: "Let's Meet" },
+  { key: 'Game Showcase', icon: '🕹️', label: 'Game Showcase' },
+];
+const grid = document.getElementById('modulesGrid');
+moduleData.forEach(m => {
+  const active = modules.some(mod => mod.trim().toLowerCase().includes(m.key.toLowerCase()));
+  if (active) {
+    const chip = document.createElement('div');
+    chip.className = 'module-chip active';
+    chip.innerHTML = `<span class="chip-icon">${m.icon}</span>${m.label}`;
+    grid.appendChild(chip);
+  }
+});
+if (grid.children.length === 0) {
+  document.getElementById('modulesSection').style.display = 'none';
+}
+
+// Attendees display
+document.getElementById('eventAttendees').textContent = attendees.toLocaleString() + '+ Attendees';
+
+// Register button → go to register page
+document.querySelectorAll('.btn-register, .nav-btn-outline').forEach(btn => {
+  btn.addEventListener('click', () => {
+    const regParams = new URLSearchParams({
+      title, start, end, city, venue, format, cname, cemail
+    });
+    window.location.href = 'EventRegister_v1_PC.html?' + regParams.toString();
+  });
+});
+</script>
+</body>
+</html>
