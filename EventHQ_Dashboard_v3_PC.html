@@ -6841,12 +6841,29 @@ function openAttendeeDrawer(idx) {
   const checkedInBadge = r.checkedIn
     ? '<span style="background:#dcfce7;color:#16a34a;padding:3px 10px;border-radius:20px;font-size:12px;font-weight:600">✓ Checked In</span>'
     : '<span style="background:#f3f4f6;color:#9ca3af;padding:3px 10px;border-radius:20px;font-size:12px;font-weight:600">○ Pending</span>';
+  // Tags
+  if (!r.tags) r.tags = [];
+  const tagDefs = [
+    { key: 'vip',     label: 'VIP',     color: '#7c3aed', bg: '#ede9fe' },
+    { key: 'speaker', label: 'Speaker', color: '#1d4ed8', bg: '#dbeafe' },
+    { key: 'sponsor', label: 'Sponsor', color: '#b45309', bg: '#fef3c7' },
+    { key: 'press',   label: 'Press',   color: '#065f46', bg: '#d1fae5' },
+    { key: 'staff',   label: 'Staff',   color: '#374151', bg: '#f3f4f6' },
+  ];
+  const tagButtons = tagDefs.map(td => {
+    const active = r.tags.includes(td.key);
+    return `<button onclick="toggleAttTag(${idx},'${td.key}')" style="border:1px solid ${active ? td.color : '#e5e7eb'};background:${active ? td.bg : '#fff'};color:${active ? td.color : '#9ca3af'};border-radius:20px;padding:4px 12px;font-size:11px;font-weight:600;cursor:pointer">${td.label}</button>`;
+  }).join('');
   body.innerHTML = `
     <div style="text-align:center;margin-bottom:20px">
       <div style="width:64px;height:64px;border-radius:50%;background:linear-gradient(135deg,#1e3a8a,#2563eb);display:flex;align-items:center;justify-content:center;font-size:24px;font-weight:700;color:#fff;margin:0 auto 12px">${initials}</div>
       <div style="font-size:18px;font-weight:700">${r.name||'—'}</div>
       <div style="font-size:13px;color:#6b7280;margin-top:2px">${r.jobTitle||r.role||''} ${r.company?'@ '+r.company:''}</div>
       <div style="margin-top:8px">${checkedInBadge}</div>
+    </div>
+    <div style="margin-bottom:16px">
+      <div style="font-size:11px;font-weight:700;color:#9ca3af;text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px">Tags</div>
+      <div style="display:flex;flex-wrap:wrap;gap:6px">${tagButtons}</div>
     </div>
     <div style="display:flex;flex-direction:column;gap:10px;margin-bottom:20px">
       <div style="display:flex;justify-content:space-between;font-size:13px;padding:8px 0;border-bottom:1px solid #f3f4f6">
@@ -6863,9 +6880,9 @@ function openAttendeeDrawer(idx) {
       </div>
     </div>
     <div style="display:flex;flex-direction:column;gap:8px">
-      <button class="btn-primary" style="width:100%;justify-content:center" onclick="showToast('Email sent to ${r.name||'attendee'}')">&#9993; Send Email</button>
-      <button class="btn-secondary" style="width:100%;justify-content:center" onclick="toggleCheckinFromDrawer(${idx})">&#9654; Toggle Check-in</button>
-      <button class="btn-secondary" style="width:100%;justify-content:center;color:#dc2626;border-color:#fca5a5" onclick="showToast('Attendee removed')">&#128465; Remove Attendee</button>
+      <button class="btn-primary" style="width:100%;justify-content:center" onclick="showToast('Email sent to ${r.name||'attendee'}')">✉ Send Email</button>
+      <button class="btn-secondary" style="width:100%;justify-content:center" onclick="toggleCheckinFromDrawer(${idx})">▶ Toggle Check-in</button>
+      <button class="btn-secondary" style="width:100%;justify-content:center;color:#dc2626;border-color:#fca5a5" onclick="showToast('Attendee removed')">🗑 Remove Attendee</button>
     </div>
   `;
   drawer.style.display = 'block';
@@ -6884,6 +6901,16 @@ function toggleCheckinFromDrawer(idx) {
   openAttendeeDrawer(idx); // re-render drawer
   renderAttendees();
   showToast(r.checkedIn ? '✓ Checked in: ' + r.name : 'Check-in removed: ' + r.name);
+}
+function toggleAttTag(idx, tag) {
+  const r = _attDrawerRows[idx];
+  if (!r) return;
+  if (!r.tags) r.tags = [];
+  const i = r.tags.indexOf(tag);
+  if (i >= 0) r.tags.splice(i, 1);
+  else r.tags.push(tag);
+  openAttendeeDrawer(idx); // re-render with updated tags
+  showToast(i >= 0 ? 'Tag removed: ' + tag : 'Tag added: ' + tag);
 }
 // ── Sponsor Detail Toggle ────────────────────────────────────────────────────────────
 function toggleSponsorDetail(id) {
