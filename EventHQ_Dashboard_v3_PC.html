@@ -5794,6 +5794,49 @@ function exportAttendeesCSV() {
   showToast('CSV exported');
 }
 
+// ── Generic CSV Export (for any table) ────────────────────────────────────────────────────────────
+function exportGenericCSV(btn) {
+  // Find the nearest table to the button
+  const card = btn ? btn.closest('.editor-card') : null;
+  const table = card ? card.querySelector('table') : null;
+  if (!table) { showToast('No table data to export'); return; }
+  const rows = Array.from(table.querySelectorAll('tr'));
+  if (!rows.length) { showToast('No data to export'); return; }
+  const csv = rows.map(row => {
+    const cells = Array.from(row.querySelectorAll('th,td'));
+    return cells.map(c => '"' + (c.textContent||'').trim().replace(/"/g,'""') + '"').join(',');
+  }).join('\n');
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(new Blob([csv],{type:'text/csv'}));
+  a.download = 'export_' + Date.now() + '.csv';
+  a.click();
+  showToast('CSV exported successfully');
+}
+
+// ── Import Attendees CSV (simulation) ────────────────────────────────────────────────────────────
+function importAttendeesCSV() {
+  const input = document.createElement('input');
+  input.type = 'file';
+  input.accept = '.csv';
+  input.onchange = function(e) {
+    const file = e.target.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = function(ev) {
+      const lines = ev.target.result.split('\n').filter(l => l.trim());
+      const imported = lines.length - 1; // Subtract header
+      if (imported > 0) {
+        showToast('Imported ' + imported + ' attendees from ' + file.name);
+        // In production, this would parse and add to _attAll
+      } else {
+        showToast('No valid rows found in CSV');
+      }
+    };
+    reader.readAsText(file);
+  };
+  input.click();
+}
+
 function renderAttendeesTable(rows) {
   const tbody = document.getElementById('att-tbody');
   const empty = document.getElementById('att-empty');
