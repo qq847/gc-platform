@@ -2624,8 +2624,7 @@ body.dark-mode .unsaved-bar { background: #1e2533; border-color: #2d3748; }
         <div class="editor-card" style="margin-top:16px">
           <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px">
             <div style="font-weight:700;font-size:15px">🎤 Speaker Management</div>
-            <div style="display:flex;gap:8px">
-              <button class="btn-secondary" style="font-size:12px;padding:6px 12px" onclick="showToast('Send invitations coming soon')">📧 Invite All</button>
+            <div style="display:flex;ga              <button class="btn-secondary" style="font-size:12px;padding:6px 12px" onclick="openSpeakerInviteModal('All Speakers')">&#128231; Invite All</button>
               <button class="btn-primary" style="font-size:12px;padding:6px 12px" onclick="showToast('Add speaker coming soon')">+ Add Speaker</button>
             </div>
           </div>
@@ -2670,7 +2669,7 @@ body.dark-mode .unsaved-bar { background: #1e2533; border-color: #2d3748; }
                 </div>
               </div>
               <div style="display:flex;flex-direction:column;gap:4px;flex-shrink:0">
-                <button style="font-size:11px;background:#dcfce7;color:#16a34a;border:none;border-radius:4px;padding:4px 10px;cursor:pointer" onclick="showToast('Reminder sent to Tom Wu')">Remind</button>
+                <button style="font-size:11px;background:#dcfce7;color:#16a34a;border:none;border-radius:4px;padding:4px 10px;cursor:pointer" onclick="openSpeakerInviteModal('Tom Wu')">&#128231; Invite</button>
                 <button style="font-size:11px;background:#f3f4f6;color:#374151;border:none;border-radius:4px;padding:4px 10px;cursor:pointer" onclick="showToast('Edit speaker')">Edit</button>
               </div>
             </div>
@@ -3809,10 +3808,15 @@ body.dark-mode .unsaved-bar { background: #1e2533; border-color: #2d3748; }
             <span style="font-size:14px;font-weight:700;color:var(--text1)">Venue Map</span>
           </div>
           <div class="editor-topbar-right">
-            <button class="btn-secondary" onclick="showToast('Download map coming soon')">⬇️ Download</button>
-            <button class="btn-primary" onclick="showToast('Map saved')">Save Changes</button>
+            <div style="display:flex;align-items:center;gap:6px;background:#f3f4f6;border:1px solid #e5e7eb;border-radius:8px;padding:4px 10px">
+              <span style="font-size:13px;color:#9ca3af">&#128269;</span>
+              <input type="text" id="map-search" placeholder="Search booth / zone..." style="border:none;background:transparent;font-size:12px;outline:none;width:160px;color:var(--text1)" oninput="searchMapLocation(this.value)" />
+            </div>
+            <button class="btn-secondary" onclick="showToast('Download map coming soon')">&#11015;&#65039; Download</button>
+            <button class="btn-primary" onclick="clearDirty();showToast('Map saved')">Save Changes</button>
           </div>
         </div>
+        <div id="map-search-result" style="display:none;background:#fffbeb;border:1px solid #fde68a;border-radius:8px;padding:10px 14px;margin-bottom:12px;font-size:13px;color:#92400e"></div>
         <!-- Upload Area -->
         <div class="editor-card" style="margin-bottom:16px">
           <div style="font-weight:700;font-size:15px;margin-bottom:14px">🗺️ Floor Plan</div>
@@ -5061,6 +5065,31 @@ The Game Connection Team</textarea>
   <div id="att-drawer-body" style="padding:20px"></div>
 </div>
 <div id="att-drawer-overlay" style="display:none;position:fixed;top:0;left:0;width:100vw;height:100vh;background:rgba(0,0,0,.3);z-index:1099" onclick="closeAttendeeDrawer()"></div>
+<!-- Speaker Invite Modal -->
+<div id="speaker-invite-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:2000;display:none;align-items:center;justify-content:center">
+  <div style="background:#fff;border-radius:14px;padding:28px;width:520px;max-width:95vw;box-shadow:0 20px 60px rgba(0,0,0,.2)">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:18px">
+      <div style="font-size:16px;font-weight:700">&#128231; Speaker Invitation Email</div>
+      <button onclick="closeSpeakerInviteModal()" style="border:none;background:none;font-size:20px;cursor:pointer;color:#9ca3af">&times;</button>
+    </div>
+    <div style="margin-bottom:12px">
+      <div style="font-size:11px;color:#6b7280;margin-bottom:4px">TO</div>
+      <div id="speaker-invite-to" style="font-size:13px;font-weight:600;color:#1e40af;background:#eff6ff;border-radius:6px;padding:6px 10px"></div>
+    </div>
+    <div style="margin-bottom:12px">
+      <div style="font-size:11px;color:#6b7280;margin-bottom:4px">SUBJECT</div>
+      <input type="text" id="speaker-invite-subject" style="width:100%;border:1px solid #e5e7eb;border-radius:6px;padding:8px 10px;font-size:13px" />
+    </div>
+    <div style="margin-bottom:16px">
+      <div style="font-size:11px;color:#6b7280;margin-bottom:4px">MESSAGE</div>
+      <textarea id="speaker-invite-body" rows="8" style="width:100%;border:1px solid #e5e7eb;border-radius:6px;padding:8px 10px;font-size:13px;resize:vertical"></textarea>
+    </div>
+    <div style="display:flex;gap:10px;justify-content:flex-end">
+      <button class="btn-secondary" onclick="closeSpeakerInviteModal()">Cancel</button>
+      <button class="btn-primary" onclick="sendSpeakerInvite()">&#128640; Send Invitation</button>
+    </div>
+  </div>
+</div>
 <div class="toast" id="toast" style="display:none"></div>
 <div id="unsaved-bar" style="display:none;position:fixed;bottom:72px;left:50%;transform:translateX(-50%);background:#1e293b;color:#fff;border-radius:10px;padding:10px 20px;font-size:13px;font-weight:600;align-items:center;gap:12px;z-index:9999;box-shadow:0 4px 20px rgba(0,0,0,.3)">
   <span>&#9679; Unsaved changes</span>
@@ -6681,6 +6710,58 @@ function bulkAdjustPrices() {
   });
   showToast(`✅ Prices updated: €${_ticketPrices.eb} / €${_ticketPrices.std} / €${_ticketPrices.vip}`);
   markDirty();
+}
+// ── Map Search ────────────────────────────────────────────────────────────
+const _mapIndex = [
+  { name: 'Hall A', zone: 'Exhibition', desc: 'Main exhibition hall, 2,400 m², Booths A1–A24' },
+  { name: 'Hall B', zone: 'Conference', desc: 'Conference rooms B1–B8, Keynote stage' },
+  { name: 'Hall C', zone: 'Indie Zone', desc: 'Indie game showcase, 48 tables' },
+  { name: 'Main Stage', zone: 'Keynote', desc: 'Capacity 800, center of Hall B' },
+  { name: 'Registration', zone: 'Entrance', desc: 'Main entrance, badge pickup' },
+  { name: 'Press Room', zone: 'Media', desc: 'Hall A East wing, press accreditation' },
+  { name: 'VIP Lounge', zone: 'Networking', desc: 'Hall B 2F, invite only' },
+  { name: 'Booth A1', zone: 'Hall A', desc: 'Sony Interactive — 10m×10m Island Booth' },
+  { name: 'Booth A2', zone: 'Hall A', desc: 'Available — 10m×10m Island Booth' },
+  { name: 'Booth B3', zone: 'Hall B', desc: 'Tencent Games — 6m×6m Corner Booth' },
+  { name: 'Pod Zone', zone: 'Meeting Pods', desc: '12 free pods + 8 paid pods, Hall C North' },
+  { name: 'Food Court', zone: 'Services', desc: 'Ground floor between Hall A and B' },
+];
+function searchMapLocation(q) {
+  const result = document.getElementById('map-search-result');
+  if (!result) return;
+  if (!q.trim()) { result.style.display = 'none'; return; }
+  const matches = _mapIndex.filter(m =>
+    m.name.toLowerCase().includes(q.toLowerCase()) ||
+    m.zone.toLowerCase().includes(q.toLowerCase())
+  );
+  if (matches.length === 0) {
+    result.style.display = 'block';
+    result.innerHTML = `🔍 No results for "${q}"`;
+  } else {
+    result.style.display = 'block';
+    result.innerHTML = matches.map(m =>
+      `<div style="margin-bottom:4px"><strong>${m.name}</strong> <span style="color:#d97706">• ${m.zone}</span> — ${m.desc}</div>`
+    ).join('');
+  }
+}
+// ── Speaker Invite Modal ────────────────────────────────────────────────────────────
+function openSpeakerInviteModal(name) {
+  const modal = document.getElementById('speaker-invite-modal');
+  if (!modal) return;
+  document.getElementById('speaker-invite-to').textContent = name === 'All Speakers' ? 'Sarah Kim, Tom Wu, Lisa Park' : name;
+  document.getElementById('speaker-invite-subject').value = `You're invited to speak at GDC 2027`;
+  document.getElementById('speaker-invite-body').value =
+    `Dear ${name === 'All Speakers' ? 'Speaker' : name},\n\nWe are delighted to invite you to speak at GDC 2027 — the premier game industry conference, taking place June 12–14, 2027 in Frankfurt, Germany.\n\nYour expertise would be a tremendous addition to our program. We would love to have you join us for a 45-minute session in the Business or Technology track.\n\nPlease confirm your participation by clicking the link below:\n\n[Confirm Participation] [Decline]\n\nIf you have any questions, please don't hesitate to reach out.\n\nWarm regards,\nThe GDC 2027 Team`;
+  modal.style.display = 'flex';
+}
+function closeSpeakerInviteModal() {
+  const modal = document.getElementById('speaker-invite-modal');
+  if (modal) modal.style.display = 'none';
+}
+function sendSpeakerInvite() {
+  const to = document.getElementById('speaker-invite-to').textContent;
+  closeSpeakerInviteModal();
+  showToast('🚀 Invitation sent to ' + to);
 }
 // ── Registration Capacity Bar ────────────────────────────────────────────────────────────
 function updateCapacityBar() {
