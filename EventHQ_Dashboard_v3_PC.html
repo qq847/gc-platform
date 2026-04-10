@@ -1089,7 +1089,8 @@ body.dark-mode .unsaved-bar { background: #1e2533; border-color: #2d3748; }
                 <span style="font-size:11px;background:#dcfce7;color:#16a34a;padding:3px 9px;border-radius:20px;font-weight:600">Active</span>
                 <div style="font-size:12px;color:#6b7280;margin-top:6px">347 / 500</div>
               </div>
-              <button style="border:none;background:none;cursor:pointer;color:#9ca3af;font-size:14px" onclick="showToast('Edit coming soon')">✏️</button>
+              <button style="border:none;background:none;cursor:pointer;color:#9ca3af;font-size:14px" onclick="showToast('Edit coming soon')">&#9999;&#65039;</button>
+              <button style="border:none;background:none;cursor:pointer;color:#9ca3af;font-size:13px;padding:4px" title="Clone ticket type" onclick="cloneTicketType('General Admission')">&#128203;</button>
             </div>
             <div style="border:1px solid #e5e7eb;border-radius:10px;padding:14px;display:flex;align-items:center;gap:14px">
               <span style="font-size:22px">⭐</span>
@@ -1101,7 +1102,8 @@ body.dark-mode .unsaved-bar { background: #1e2533; border-color: #2d3748; }
                 <span style="font-size:11px;background:#dbeafe;color:#1e40af;padding:3px 9px;border-radius:20px;font-weight:600">Invite Only</span>
                 <div style="font-size:12px;color:#6b7280;margin-top:6px">38 issued</div>
               </div>
-              <button style="border:none;background:none;cursor:pointer;color:#9ca3af;font-size:14px" onclick="showToast('Edit coming soon')">✏️</button>
+              <button style="border:none;background:none;cursor:pointer;color:#9ca3af;font-size:14px" onclick="showToast('Edit coming soon')">&#9999;&#65039;</button>
+              <button style="border:none;background:none;cursor:pointer;color:#9ca3af;font-size:13px;padding:4px" title="Clone ticket type" onclick="cloneTicketType('Speaker Pass')">&#128203;</button>
             </div>
             <div style="border:1px solid #e5e7eb;border-radius:10px;padding:14px;display:flex;align-items:center;gap:14px">
               <span style="font-size:22px">🏢</span>
@@ -1113,9 +1115,11 @@ body.dark-mode .unsaved-bar { background: #1e2533; border-color: #2d3748; }
                 <span style="font-size:11px;background:#fef3c7;color:#d97706;padding:3px 9px;border-radius:20px;font-weight:600">Application</span>
                 <div style="font-size:12px;color:#6b7280;margin-top:6px">12 approved</div>
               </div>
-              <button style="border:none;background:none;cursor:pointer;color:#9ca3af;font-size:14px" onclick="showToast('Edit coming soon')">✏️</button>
+              <button style="border:none;background:none;cursor:pointer;color:#9ca3af;font-size:14px" onclick="showToast('Edit coming soon')">&#9999;&#65039;</button>
+              <button style="border:none;background:none;cursor:pointer;color:#9ca3af;font-size:13px;padding:4px" title="Clone ticket type" onclick="cloneTicketType('Press Pass')">&#128203;</button>
             </div>
           </div>
+          <div id="cloned-tickets" style="display:flex;flex-direction:column;gap:8px;margin-top:8px"></div>
         </div>
 
         <!-- Capacity & deadline -->
@@ -6615,6 +6619,30 @@ function toggleMatchDetail(id) {
   const isOpen = panel.style.display !== 'none';
   panel.style.display = isOpen ? 'none' : 'block';
   if (arrow) arrow.textContent = isOpen ? '▼' : '▲';
+}
+// ── Clone Ticket Type ────────────────────────────────────────────────────────────
+function cloneTicketType(name) {
+  const container = document.getElementById('cloned-tickets');
+  if (!container) return;
+  const cloneId = 'clone-' + Date.now();
+  const cloneName = 'Copy of ' + name;
+  const div = document.createElement('div');
+  div.id = cloneId;
+  div.style.cssText = 'border:2px dashed #93c5fd;border-radius:10px;padding:14px;display:flex;align-items:center;gap:14px;background:#eff6ff';
+  div.innerHTML = `
+    <span style="font-size:22px">🎫</span>
+    <div style="flex:1">
+      <input type="text" value="${cloneName}" style="font-size:14px;font-weight:700;border:none;background:transparent;outline:none;width:100%;color:#1e40af" />
+      <div style="font-size:12px;color:#6b7280;margin-top:2px">Cloned from ${name} · Edit name above</div>
+    </div>
+    <div style="text-align:right">
+      <span style="font-size:11px;background:#dbeafe;color:#1e40af;padding:3px 9px;border-radius:20px;font-weight:600">Draft</span>
+      <div style="font-size:12px;color:#6b7280;margin-top:6px">0 issued</div>
+    </div>
+    <button style="border:none;background:none;cursor:pointer;color:#dc2626;font-size:14px" onclick="document.getElementById('${cloneId}').remove();showToast('Clone removed')">&#128465;</button>
+  `;
+  container.appendChild(div);
+  showToast('📋 Cloned: ' + name);
 }
 // ── Registration Capacity Bar ────────────────────────────────────────────────────────────
 function updateCapacityBar() {
