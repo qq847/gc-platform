@@ -290,6 +290,50 @@ html,body{min-height:100vh;background:var(--bg);font-family:'DM Sans',sans-serif
         <div class="events-list" id="eventsList"></div>
       </div>
 
+      <!-- ══ VIEW: Attendees ══ -->
+      <div id="viewAttendees" style="display:none">
+        <div class="editor-topbar">
+          <div class="editor-topbar-left">
+            <button class="back-link" onclick="showEventEditor()">← Event Info</button>
+            <span style="font-size:14px;font-weight:700;color:var(--text1)" id="attEventTitle">Attendees</span>
+          </div>
+          <div class="editor-topbar-right">
+            <button class="btn-secondary" onclick="exportAttendeesCSV()">Export CSV</button>
+            <button class="btn-primary" onclick="showToast('Invite feature coming soon')">+ Invite</button>
+          </div>
+        </div>
+
+        <div style="margin-bottom:16px;display:flex;align-items:center;gap:12px">
+          <h2 style="font-size:22px;font-weight:700;color:var(--text1)">Attendees</h2>
+          <span id="att-count-badge" style="font-size:14px;color:var(--text3);font-weight:500"></span>
+        </div>
+
+        <div style="margin-bottom:16px">
+          <input id="att-search" class="form-input" type="text" placeholder="Search by name or company…" style="max-width:320px" oninput="filterAttendees()">
+        </div>
+
+        <div class="editor-card" style="padding:0;overflow:hidden">
+          <table style="width:100%;border-collapse:collapse">
+            <thead>
+              <tr style="background:#f8f9fa;border-bottom:1px solid #e5e7eb">
+                <th style="padding:12px 16px;text-align:left;font-size:12px;font-weight:600;color:#6b7280;text-transform:uppercase;letter-spacing:.5px">Name</th>
+                <th style="padding:12px 16px;text-align:left;font-size:12px;font-weight:600;color:#6b7280;text-transform:uppercase;letter-spacing:.5px">Company</th>
+                <th style="padding:12px 16px;text-align:left;font-size:12px;font-weight:600;color:#6b7280;text-transform:uppercase;letter-spacing:.5px">Role</th>
+                <th style="padding:12px 16px;text-align:left;font-size:12px;font-weight:600;color:#6b7280;text-transform:uppercase;letter-spacing:.5px">Check-in</th>
+              </tr>
+            </thead>
+            <tbody id="att-tbody"></tbody>
+          </table>
+          <div id="att-empty" style="display:none;padding:48px;text-align:center;color:#9ca3af">
+            <div style="font-size:32px;margin-bottom:8px">👥</div>
+            <div style="font-weight:500">No attendees yet</div>
+            <div style="font-size:13px;margin-top:4px">Registrations will appear here once people sign up.</div>
+          </div>
+        </div>
+
+        <div id="att-footer" style="margin-top:12px;font-size:13px;color:#6b7280"></div>
+      </div>
+
       <!-- ══ VIEW: Event Editor ══ -->
       <div id="viewEventEditor">
         <!-- Top action bar -->
@@ -441,7 +485,7 @@ const ALL_MODULES = [
 
 const SIDEBAR_NAV = [
   { label:'Overview',     icon:'📊', modId:null },
-  { label:'Attendees',    icon:'👥', modId:'free-reg' },
+  { label:'Attendees',    icon:'👥', modId:null, fn:'showAttendees' },
   { label:'Projects',     icon:'🎮', modId:'showcase' },
   { sep: true },
   { label:'Registration', icon:'🎟️', modId:'free-reg' },
@@ -572,6 +616,7 @@ function openEvent(idx) {
   populateEditor(currentEvent);
   document.getElementById('viewMyEvents').style.display = 'none';
   document.getElementById('viewEventEditor').style.display = 'block';
+  document.getElementById('viewAttendees').style.display = 'none';
   // Sidebar
   document.getElementById('event-nav-wrap').style.display = 'block';
   const nameEl = document.getElementById('event-nav-name');
@@ -830,10 +875,13 @@ function renderEventSidebarNav(ev) {
   const container = document.getElementById('event-nav-items');
   container.innerHTML = SIDEBAR_NAV.map(item => {
     if (item.sep) return '<div class="nav-sep"></div>';
-    // No-toggle items (Overview, Settings)
+    // No-toggle items (Overview, Attendees, Settings)
     if (!item.modId) {
-      const fn = item.label === 'Overview' ? "showToast('Overview coming soon')" : "showToast('Settings coming soon')";
-      return `<a class="nav-item" onclick="${fn}"><span class="ni-icon">${item.icon}</span><span class="ni-label on">${item.label}</span></a>`;
+      let fn;
+      if (item.fn) fn = item.fn + '()';
+      else if (item.label === 'Overview') fn = "showToast('Overview coming soon')";
+      else fn = "showToast('Settings coming soon')";
+      return `<a class="nav-item" onclick="${fn}" style="cursor:pointer"><span class="ni-icon">${item.icon}</span><span class="ni-label on">${item.label}</span></a>`;
     }
     const on = active.has(item.modId);
     const uid = 'ntog-' + item.modId;
@@ -849,10 +897,96 @@ function renderEventSidebarNav(ev) {
   }).join('');
 }
 
+// ── Attendees ────────────────────────────────────────────────────────────────
+let _attAll = [];
+
+function showAttendees() {
+  document.getElementById('viewMyEvents').style.display = 'none';
+  document.getElementById('viewEventEditor').style.display = 'none';
+  document.getElementById('viewAttendees').style.display = 'block';
+
+  const title = currentEvent ? (currentEvent.name || 'Untitled Event') : '';
+  document.getElementById('attEventTitle').textContent = title || 'Attendees';
+
+  const regs = (() => { try { return JSON.parse(localStorage.getItem('gc_registrations') || '[]'); } catch(e){ return []; } })();
+  let data = title ? regs.filter(r => r.eventTitle === title) : regs;
+
+  if (!data.length) {
+    data = [
+      {name:'Ray Zhang',  company:'Game Connection', jobTitle:'CEO',         checkedIn:true},
+      {name:'Alex Chen',  company:'Ubisoft',          jobTitle:'Producer',    checkedIn:true},
+      {name:'Sarah Kim',  company:'EA Games',         jobTitle:'Designer',    checkedIn:false},
+      {name:'Tom Wu',     company:'Tencent',          jobTitle:'Director',    checkedIn:true},
+      {name:'Lisa Park',  company:'Sony Interactive', jobTitle:'Dev Manager', checkedIn:false},
+    ];
+  } else {
+    data = data.map((r, i) => ({...r, checkedIn: i % 3 !== 2}));
+  }
+
+  _attAll = data;
+  document.getElementById('att-search').value = '';
+  renderAttendeesTable(_attAll);
+}
+
+function showEventEditor() {
+  document.getElementById('viewAttendees').style.display = 'none';
+  document.getElementById('viewEventEditor').style.display = 'block';
+}
+
+function renderAttendeesTable(rows) {
+  const tbody = document.getElementById('att-tbody');
+  const empty = document.getElementById('att-empty');
+  const footer = document.getElementById('att-footer');
+  const badge = document.getElementById('att-count-badge');
+  const checkedIn = rows.filter(r => r.checkedIn).length;
+  badge.textContent = rows.length + ' registered';
+  if (!rows.length) {
+    tbody.innerHTML = '';
+    empty.style.display = 'block';
+    footer.textContent = '';
+    return;
+  }
+  empty.style.display = 'none';
+  tbody.innerHTML = rows.map((r, i) => {
+    const ci = r.checkedIn
+      ? '<span style="color:#16a34a;font-weight:600">✓ Checked in</span>'
+      : '<span style="color:#9ca3af">○ Not yet</span>';
+    const bg = i % 2 === 0 ? '#fff' : '#fafafa';
+    return `<tr style="border-bottom:1px solid #f3f4f6;background:${bg}">
+      <td style="padding:12px 16px;font-weight:500;font-size:14px">${r.name||'—'}</td>
+      <td style="padding:12px 16px;font-size:14px;color:#374151">${r.company||'—'}</td>
+      <td style="padding:12px 16px;font-size:14px;color:#6b7280">${r.jobTitle||r.role||'—'}</td>
+      <td style="padding:12px 16px;font-size:14px">${ci}</td>
+    </tr>`;
+  }).join('');
+  footer.textContent = `Showing ${rows.length} attendee${rows.length!==1?'s':''} · ${checkedIn} checked in · ${rows.length-checkedIn} pending`;
+}
+
+function filterAttendees() {
+  const q = document.getElementById('att-search').value.toLowerCase().trim();
+  if (!q) { renderAttendeesTable(_attAll); return; }
+  renderAttendeesTable(_attAll.filter(r =>
+    (r.name||'').toLowerCase().includes(q) || (r.company||'').toLowerCase().includes(q)
+  ));
+}
+
+function exportAttendeesCSV() {
+  if (!_attAll.length) { showToast('No attendees to export'); return; }
+  const csv = ['Name,Company,Role,Checked In',
+    ..._attAll.map(r => [r.name||'',r.company||'',r.jobTitle||r.role||'',r.checkedIn?'Yes':'No']
+      .map(v=>'"'+String(v).replace(/"/g,'""')+'"').join(','))
+  ].join('\n');
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(new Blob([csv],{type:'text/csv'}));
+  a.download = 'attendees.csv'; a.click();
+  showToast('CSV exported');
+}
+
 // ── Show Views ────────────────────────────────────────────────────────────────
 function showMyEvents() {
   document.getElementById('viewMyEvents').style.display = 'block';
   document.getElementById('viewEventEditor').style.display = 'none';
+  document.getElementById('viewAttendees').style.display = 'none';
   document.getElementById('event-nav-wrap').style.display = 'none';
   document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
   document.getElementById('nav-my-events').classList.add('active');
