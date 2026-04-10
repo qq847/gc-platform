@@ -456,9 +456,13 @@ html,body{min-height:100vh;background:var(--bg);font-family:'DM Sans',sans-serif
           </div>
         </div>
 
-        <!-- Search + table -->
-        <div style="margin-bottom:12px">
-          <input id="proj-search" class="form-input" type="text" placeholder="Search by project name or company…" style="max-width:320px" oninput="filterProjects()">
+        <!-- View toggle + Search -->
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;gap:12px;flex-wrap:wrap">
+          <input id="proj-search" class="form-input" type="text" placeholder="Search by project name or company…" style="max-width:280px" oninput="filterProjects()">
+          <div style="display:flex;gap:4px;background:#f3f4f6;border-radius:6px;padding:3px">
+            <button id="proj-view-table" onclick="switchProjView('table',this)" style="font-size:12px;padding:5px 12px;border:none;border-radius:4px;cursor:pointer;background:#fff;font-weight:600;color:#374151">📋 Table</button>
+            <button id="proj-view-kanban" onclick="switchProjView('kanban',this)" style="font-size:12px;padding:5px 12px;border:none;border-radius:4px;cursor:pointer;background:transparent;color:#6b7280">📦 Kanban</button>
+          </div>
         </div>
         <div class="editor-card" style="padding:0;overflow:hidden">
           <table style="width:100%;border-collapse:collapse">
@@ -481,6 +485,83 @@ html,body{min-height:100vh;background:var(--bg);font-family:'DM Sans',sans-serif
           </div>
         </div>
         <div id="proj-footer" style="margin-top:10px;font-size:12px;color:#9ca3af"></div>
+
+        <!-- Kanban Board -->
+        <div id="proj-kanban" style="display:none;margin-top:4px">
+          <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px">
+            <!-- Submitted -->
+            <div style="background:#f8f9fa;border-radius:10px;padding:12px">
+              <div style="font-size:12px;font-weight:700;color:#374151;text-transform:uppercase;letter-spacing:.5px;margin-bottom:10px;display:flex;align-items:center;gap:6px">
+                <span style="width:8px;height:8px;background:#6b7280;border-radius:50%;display:inline-block"></span>Submitted
+                <span style="margin-left:auto;font-size:11px;background:#e5e7eb;color:#6b7280;border-radius:10px;padding:1px 7px">3</span>
+              </div>
+              <div style="display:flex;flex-direction:column;gap:8px">
+                <div style="background:#fff;border-radius:8px;padding:12px;border:1px solid #e5e7eb;cursor:pointer" onclick="showToast('Project details coming soon')">
+                  <div style="font-size:13px;font-weight:600;margin-bottom:4px">Neon Drift</div>
+                  <div style="font-size:11px;color:#6b7280">Indie Studio X · Racing</div>
+                  <div style="display:flex;gap:4px;margin-top:6px"><span style="font-size:10px;background:#dbeafe;color:#1e40af;padding:1px 6px;border-radius:3px">PC</span><span style="font-size:10px;background:#f3e8ff;color:#7e22ce;padding:1px 6px;border-radius:3px">Console</span></div>
+                </div>
+                <div style="background:#fff;border-radius:8px;padding:12px;border:1px solid #e5e7eb;cursor:pointer" onclick="showToast('Project details coming soon')">
+                  <div style="font-size:13px;font-weight:600;margin-bottom:4px">Pixel Quest</div>
+                  <div style="font-size:11px;color:#6b7280">RetroWave · Platformer</div>
+                  <div style="display:flex;gap:4px;margin-top:6px"><span style="font-size:10px;background:#dcfce7;color:#166534;padding:1px 6px;border-radius:3px">Mobile</span></div>
+                </div>
+              </div>
+            </div>
+            <!-- Under Review -->
+            <div style="background:#fffbeb;border-radius:10px;padding:12px">
+              <div style="font-size:12px;font-weight:700;color:#374151;text-transform:uppercase;letter-spacing:.5px;margin-bottom:10px;display:flex;align-items:center;gap:6px">
+                <span style="width:8px;height:8px;background:#d97706;border-radius:50%;display:inline-block"></span>Under Review
+                <span style="margin-left:auto;font-size:11px;background:#fde68a;color:#92400e;border-radius:10px;padding:1px 7px">4</span>
+              </div>
+              <div style="display:flex;flex-direction:column;gap:8px">
+                <div style="background:#fff;border-radius:8px;padding:12px;border:1px solid #fde68a;cursor:pointer" onclick="showToast('Project details coming soon')">
+                  <div style="font-size:13px;font-weight:600;margin-bottom:4px">Shadow Protocol</div>
+                  <div style="font-size:11px;color:#6b7280">DarkByte · Stealth RPG</div>
+                  <div style="display:flex;gap:4px;margin-top:6px"><span style="font-size:10px;background:#dbeafe;color:#1e40af;padding:1px 6px;border-radius:3px">PC</span></div>
+                </div>
+                <div style="background:#fff;border-radius:8px;padding:12px;border:1px solid #fde68a;cursor:pointer" onclick="showToast('Project details coming soon')">
+                  <div style="font-size:13px;font-weight:600;margin-bottom:4px">Crystal Realms</div>
+                  <div style="font-size:11px;color:#6b7280">Gemstone Games · MMORPG</div>
+                  <div style="display:flex;gap:4px;margin-top:6px"><span style="font-size:10px;background:#dbeafe;color:#1e40af;padding:1px 6px;border-radius:3px">PC</span><span style="font-size:10px;background:#f3e8ff;color:#7e22ce;padding:1px 6px;border-radius:3px">Console</span></div>
+                </div>
+              </div>
+            </div>
+            <!-- Approved -->
+            <div style="background:#f0fdf4;border-radius:10px;padding:12px">
+              <div style="font-size:12px;font-weight:700;color:#374151;text-transform:uppercase;letter-spacing:.5px;margin-bottom:10px;display:flex;align-items:center;gap:6px">
+                <span style="width:8px;height:8px;background:#16a34a;border-radius:50%;display:inline-block"></span>Approved
+                <span style="margin-left:auto;font-size:11px;background:#bbf7d0;color:#166534;border-radius:10px;padding:1px 7px">5</span>
+              </div>
+              <div style="display:flex;flex-direction:column;gap:8px">
+                <div style="background:#fff;border-radius:8px;padding:12px;border:1px solid #bbf7d0;cursor:pointer" onclick="showToast('Project details coming soon')">
+                  <div style="font-size:13px;font-weight:600;margin-bottom:4px">Cyber Odyssey</div>
+                  <div style="font-size:11px;color:#6b7280">FutureLab · Action RPG</div>
+                  <div style="display:flex;gap:4px;margin-top:6px"><span style="font-size:10px;background:#dbeafe;color:#1e40af;padding:1px 6px;border-radius:3px">PC</span><span style="font-size:10px;background:#f3e8ff;color:#7e22ce;padding:1px 6px;border-radius:3px">Console</span><span style="font-size:10px;background:#dcfce7;color:#166534;padding:1px 6px;border-radius:3px">Mobile</span></div>
+                </div>
+                <div style="background:#fff;border-radius:8px;padding:12px;border:1px solid #bbf7d0;cursor:pointer" onclick="showToast('Project details coming soon')">
+                  <div style="font-size:13px;font-weight:600;margin-bottom:4px">Starfall Arena</div>
+                  <div style="font-size:11px;color:#6b7280">Nova Games · Battle Royale</div>
+                  <div style="display:flex;gap:4px;margin-top:6px"><span style="font-size:10px;background:#dbeafe;color:#1e40af;padding:1px 6px;border-radius:3px">PC</span></div>
+                </div>
+              </div>
+            </div>
+            <!-- Rejected -->
+            <div style="background:#fff5f5;border-radius:10px;padding:12px">
+              <div style="font-size:12px;font-weight:700;color:#374151;text-transform:uppercase;letter-spacing:.5px;margin-bottom:10px;display:flex;align-items:center;gap:6px">
+                <span style="width:8px;height:8px;background:#dc2626;border-radius:50%;display:inline-block"></span>Rejected
+                <span style="margin-left:auto;font-size:11px;background:#fecaca;color:#991b1b;border-radius:10px;padding:1px 7px">2</span>
+              </div>
+              <div style="display:flex;flex-direction:column;gap:8px">
+                <div style="background:#fff;border-radius:8px;padding:12px;border:1px solid #fecaca;cursor:pointer" onclick="showToast('Project details coming soon')">
+                  <div style="font-size:13px;font-weight:600;margin-bottom:4px">Dark Harvest</div>
+                  <div style="font-size:11px;color:#6b7280">Midnight Dev · Horror</div>
+                  <div style="font-size:10px;color:#dc2626;margin-top:4px">Reason: Content policy</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
       <!-- ══ VIEW: Free Ticket ══ -->
       <div id="viewFreeTicket" style="display:none">
@@ -2910,6 +2991,46 @@ html,body{min-height:100vh;background:var(--bg);font-family:'DM Sans',sans-serif
             </div>
           </div>
         </div>
+        <!-- Wayfinding -->
+        <div class="editor-card" style="margin-top:16px">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px">
+            <div style="font-weight:700;font-size:15px">🦭 Wayfinding &amp; Navigation Tips</div>
+            <button class="btn-secondary" style="font-size:12px;padding:6px 12px" onclick="showToast('QR code generated!')">Generate QR Code</button>
+          </div>
+          <div style="display:flex;flex-direction:column;gap:8px">
+            <div style="border:1px solid #e5e7eb;border-radius:8px;padding:12px;display:flex;align-items:flex-start;gap:12px">
+              <div style="width:32px;height:32px;background:#dbeafe;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0">🚶</div>
+              <div>
+                <div style="font-size:13px;font-weight:600;margin-bottom:2px">Main Entrance → Hall A (Exhibition)</div>
+                <div style="font-size:12px;color:#6b7280">Enter through North Gate → Turn left past Registration Desk → Follow blue signage → Hall A is on your right (~2 min walk)</div>
+              </div>
+            </div>
+            <div style="border:1px solid #e5e7eb;border-radius:8px;padding:12px;display:flex;align-items:flex-start;gap:12px">
+              <div style="width:32px;height:32px;background:#dcfce7;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0">🤝</div>
+              <div>
+                <div style="font-size:13px;font-weight:600;margin-bottom:2px">Main Entrance → Hall B (Meetings)</div>
+                <div style="font-size:12px;color:#6b7280">Enter through North Gate → Continue straight → Hall B is directly ahead, follow green signage (~1 min walk)</div>
+              </div>
+            </div>
+            <div style="border:1px solid #e5e7eb;border-radius:8px;padding:12px;display:flex;align-items:flex-start;gap:12px">
+              <div style="width:32px;height:32px;background:#fef3c7;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0">🎤</div>
+              <div>
+                <div style="font-size:13px;font-weight:600;margin-bottom:2px">Main Entrance → Hall C (Conference)</div>
+                <div style="font-size:12px;color:#6b7280">Enter through North Gate → Turn right at Registration Desk → Follow yellow signage to Hall C (~3 min walk)</div>
+              </div>
+            </div>
+            <div style="border:1px solid #e5e7eb;border-radius:8px;padding:12px;display:flex;align-items:flex-start;gap:12px">
+              <div style="width:32px;height:32px;background:#f3e8ff;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0">🎮</div>
+              <div>
+                <div style="font-size:13px;font-weight:600;margin-bottom:2px">Main Entrance → Game Showcase</div>
+                <div style="font-size:12px;color:#6b7280">Enter through North Gate → Turn left → Pass Hall A → Showcase Area is at the south end, follow purple signage (~4 min walk)</div>
+              </div>
+            </div>
+          </div>
+          <div style="margin-top:12px;padding:10px;background:#f0fdf4;border-radius:8px;border:1px solid #bbf7d0">
+            <div style="font-size:12px;color:#166534">📱 <strong>Attendee App:</strong> Download the event app for real-time indoor navigation and booth finder. QR code available at all information desks.</div>
+          </div>
+        </div>
       </div>
 
             <!-- ══ VIEW: Preview ══ -->
@@ -4577,6 +4698,28 @@ function filterGames(status, btn) {
     b.style.background = b===btn ? '#fff' : 'transparent';
     b.style.fontWeight = b===btn ? '600' : '400';
     b.style.color = b===btn ? '#374151' : '#6b7280';
+  });
+}
+function switchProjView(view, btn) {
+  const tableWrap = document.querySelector('#viewProjects .editor-card[style*="padding:0"]');
+  const kanban = document.getElementById('proj-kanban');
+  const footer = document.getElementById('proj-footer');
+  const search = document.getElementById('proj-search');
+  if (view === 'kanban') {
+    if (tableWrap) tableWrap.style.display = 'none';
+    if (footer) footer.style.display = 'none';
+    if (search) search.closest('div').style.display = 'none';
+    if (kanban) kanban.style.display = 'block';
+  } else {
+    if (tableWrap) tableWrap.style.display = '';
+    if (footer) footer.style.display = '';
+    if (search) search.closest('div').style.display = '';
+    if (kanban) kanban.style.display = 'none';
+  }
+  btn.closest('div').querySelectorAll('button').forEach(b => {
+    b.style.background = b === btn ? '#fff' : 'transparent';
+    b.style.fontWeight = b === btn ? '600' : '400';
+    b.style.color = b === btn ? '#374151' : '#6b7280';
   });
 }
 function filterMeetings(status, btn) {
