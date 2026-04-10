@@ -508,10 +508,10 @@
       <!-- Stats Row -->
       <div class="stats-row">
         <div class="stat-card highlight" onclick="showSection('tickets')">
-          <div class="stat-icon">🎟️</div>
-          <div class="stat-value">3</div>
+          <div class="stat-icon">🎫</div>
+          <div class="stat-value" id="stat-registered">0</div>
           <div class="stat-label">Registered Events</div>
-          <div class="stat-sub">2 upcoming · 1 ended</div>
+          <div class="stat-sub" id="stat-registered-sub">Loading...</div>
         </div>
         <div class="stat-card" onclick="showSection('meetings')">
           <div class="stat-icon">🤝</div>
@@ -541,77 +541,13 @@
             <div class="card-title">📅 My Registered Events</div>
             <button class="card-action" onclick="showSection('tickets')">View all →</button>
           </div>
-          <div class="card-body">
-            <!-- Event 1 -->
-            <div class="event-item">
-              <div class="event-date-box">
-                <div class="event-date-month">APR</div>
-                <div class="event-date-day">15</div>
-              </div>
-              <div class="event-info">
-                <div class="event-name">Indie Game Fest 2026</div>
-                <div class="event-meta">
-                  <span>📍 Berlin, Germany</span>
-                  <span>·</span>
-                  <span>Apr 15–17, 2026</span>
-                </div>
-                <div class="event-tags">
-                  <span class="event-tag tag-ticket">🎟️ Standard Pass</span>
-                  <span class="event-tag tag-platform">⭐ On Platform</span>
-                  <span class="event-tag tag-upcoming">Upcoming</span>
-                </div>
-                <div class="event-actions">
-                  <button class="btn-sm btn-sm-primary" onclick="window.location.href='EventPublicPage_v2_PC.html'">View Event</button>
-                  <button class="btn-sm btn-sm-secondary" onclick="openTicketModal('IGF2026')">View Ticket</button>
-                  <button class="btn-sm btn-sm-secondary" onclick="window.location.href='MySchedule_v1_PC.html'">My Schedule</button>
-                </div>
-              </div>
-            </div>
-            <!-- Event 2 -->
-            <div class="event-item">
-              <div class="event-date-box">
-                <div class="event-date-month">MAY</div>
-                <div class="event-date-day">14</div>
-              </div>
-              <div class="event-info">
-                <div class="event-name">Game Connection Asia 2026</div>
-                <div class="event-meta">
-                  <span>📍 Singapore</span>
-                  <span>·</span>
-                  <span>May 14–16, 2026</span>
-                </div>
-                <div class="event-tags">
-                  <span class="event-tag tag-ticket">🎟️ Industry Pro</span>
-                  <span class="event-tag tag-platform">⭐ On Platform</span>
-                  <span class="event-tag tag-upcoming">Upcoming</span>
-                </div>
-                <div class="event-actions">
-                  <button class="btn-sm btn-sm-primary" onclick="window.location.href='EventPublicPage_v2_PC.html'">View Event</button>
-                  <button class="btn-sm btn-sm-secondary" onclick="openTicketModal('GCA2026')">View Ticket</button>
-                </div>
-              </div>
-            </div>
-            <!-- Event 3 -->
-            <div class="event-item">
-              <div class="event-date-box">
-                <div class="event-date-month">MAR</div>
-                <div class="event-date-day">17</div>
-              </div>
-              <div class="event-info">
-                <div class="event-name">GDC 2026</div>
-                <div class="event-meta">
-                  <span>📍 San Francisco, USA</span>
-                  <span>·</span>
-                  <span>Mar 17–21, 2026</span>
-                </div>
-                <div class="event-tags">
-                  <span class="event-tag tag-external">External Event</span>
-                  <span class="event-tag tag-ended">Ended</span>
-                </div>
-                <div class="event-actions">
-                  <button class="btn-sm btn-sm-secondary" onclick="window.open('https://gdconf.com','_blank')">View Details</button>
-                </div>
-              </div>
+          <div class="card-body" id="my-events-list">
+            <!-- Dynamically populated from localStorage -->
+            <div style="text-align:center;padding:24px;color:#9ca3af;" id="no-events-msg">
+              <div style="font-size:32px;margin-bottom:8px">🎫</div>
+              <div style="font-size:14px;font-weight:600;margin-bottom:4px">No registered events yet</div>
+              <div style="font-size:12px">Browse events and register to see them here</div>
+              <button class="btn-sm btn-sm-primary" style="margin-top:12px" onclick="window.location.href='ConferenceCalendar_v2_PC.html'">Browse Events →</button>
             </div>
           </div>
         </div>
@@ -1020,6 +956,85 @@
 </div>
 
 <script>
+  // ── localStorage Data Loading ──
+  function loadDashboardData() {
+    const registrations = JSON.parse(localStorage.getItem('gc_registrations') || '[]');
+    const now = new Date();
+
+    // Update stats
+    const total = registrations.length;
+    const upcoming = registrations.filter(r => r.eventStart && new Date(r.eventStart) >= now).length;
+    const ended = total - upcoming;
+    document.getElementById('stat-registered').textContent = total;
+    document.getElementById('stat-registered-sub').textContent =
+      total === 0 ? 'No events yet' : `${upcoming} upcoming · ${ended} ended`;
+
+    // Render events list
+    const container = document.getElementById('my-events-list');
+    const noMsg = document.getElementById('no-events-msg');
+    if (total === 0) {
+      noMsg.style.display = 'block';
+      return;
+    }
+    noMsg.style.display = 'none';
+
+    // Sort by event start date (newest first)
+    const sorted = [...registrations].sort((a, b) => {
+      const da = a.eventStart ? new Date(a.eventStart) : new Date(0);
+      const db = b.eventStart ? new Date(b.eventStart) : new Date(0);
+      return da - db;
+    });
+
+    const html = sorted.map(reg => {
+      const startDate = reg.eventStart ? new Date(reg.eventStart + 'T00:00:00') : null;
+      const endDate   = reg.eventEnd   ? new Date(reg.eventEnd   + 'T00:00:00') : null;
+      const isUpcoming = startDate && startDate >= now;
+      const isEnded    = endDate   && endDate   < now;
+      const monthNames = ['JAN','FEB','MAR','APR','MAY','JUN','JUL','AUG','SEP','OCT','NOV','DEC'];
+      const month = startDate ? monthNames[startDate.getMonth()] : '---';
+      const day   = startDate ? startDate.getDate() : '--';
+      const statusTag = isEnded
+        ? '<span class="event-tag tag-ended">Ended</span>'
+        : '<span class="event-tag tag-upcoming">Upcoming</span>';
+      const cityStr = reg.eventCity ? `📍 ${reg.eventCity}` : '';
+      const dateStr = (() => {
+        if (!startDate) return '';
+        const s = startDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+        if (!endDate || reg.eventStart === reg.eventEnd) return s + ', ' + startDate.getFullYear();
+        const e = endDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+        return s + '–' + e + ', ' + startDate.getFullYear();
+      })();
+      return `
+        <div class="event-item">
+          <div class="event-date-box">
+            <div class="event-date-month">${month}</div>
+            <div class="event-date-day">${day}</div>
+          </div>
+          <div class="event-info">
+            <div class="event-name">${reg.eventTitle || 'Event'}</div>
+            <div class="event-meta">
+              ${cityStr ? `<span>${cityStr}</span><span>·</span>` : ''}
+              <span>${dateStr}</span>
+            </div>
+            <div class="event-tags">
+              <span class="event-tag tag-platform">⭐ On Platform</span>
+              ${statusTag}
+            </div>
+            <div class="event-actions">
+              <button class="btn-sm btn-sm-primary" onclick="window.location.href='EventPublicPage_v3_PC.html'">View Event</button>
+            </div>
+          </div>
+        </div>
+      `;
+    }).join('');
+
+    // Prepend dynamic events before the no-events message
+    container.innerHTML = html + '<div style="display:none" id="no-events-msg"></div>';
+  }
+
+  // Run on load
+  document.addEventListener('DOMContentLoaded', loadDashboardData);
+
   // Section switching
   function showSection(name) {
     ['overview','tickets','meetings','schedule','saved'].forEach(s => {

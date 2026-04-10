@@ -301,7 +301,7 @@
   <div class="nav-logo">GC <span>/ Game Connection</span></div>
   <div class="nav-spacer"></div>
   <button class="nav-signin">Sign In</button>
-  <button class="nav-register" onclick="showToast('🎉 Registration coming soon!')">Register Now</button>
+  <button class="nav-register" onclick="goToRegister()">Register Now</button>
 </nav>
 
 <!-- FLOATING SOURCE BADGE -->
@@ -377,8 +377,14 @@
 
     <!-- FEATURED GAMES -->
     <div class="section">
-      <div class="section-title">🎮 Featured Games</div>
-      <div class="games-grid">
+      <div class="section-title">🎮 Game Showcase</div>
+      <!-- Your Applied Projects (from localStorage) -->
+      <div id="my-projects-section" style="display:none;margin-bottom:20px;padding:16px;background:#f0fdf4;border:1px solid #86efac;border-radius:10px;">
+        <div style="font-size:13px;font-weight:700;color:#15803d;margin-bottom:12px;">✅ Your Applied Projects</div>
+        <div id="my-projects-grid" class="games-grid"></div>
+      </div>
+      <!-- Static Featured Games -->
+      <div class="games-grid" id="featured-games-grid">
         <div class="game-card">
           <div class="game-cover game-cover-1"></div>
           <div class="game-info">
@@ -537,7 +543,7 @@
       <div class="widget-title">🎟️ Register</div>
       <h3>Join Indie Game Fest 2026</h3>
       <p>Early bird pricing ends March 31. Don't miss out!</p>
-      <button class="btn-register" onclick="showToast('🎉 Registration form coming soon!')">Register Now →</button>
+      <button class="btn-register" onclick="goToRegister()">Register Now →</button>
     </div>
 
     <!-- Event Info -->
@@ -596,8 +602,8 @@
   <h2>Ready to Join Indie Game Fest 2026?</h2>
   <p>3 days, 320 exhibitors, 48 sessions — don't miss the most important indie event of the year.</p>
   <div class="cta-buttons">
-    <button class="btn-cta-primary" onclick="showToast('🎉 Registration coming soon!')">Register as Attendee</button>
-    <button class="btn-cta-secondary" onclick="showToast('📋 Exhibitor form coming soon!')">Exhibit Your Game</button>
+    <button class="btn-cta-primary" onclick="goToRegister()">Register as Attendee</button>
+    <button class="btn-cta-secondary" onclick="applyProject()">Apply with Your Game</button>
   </div>
 </div>
 
@@ -610,6 +616,85 @@
 <div class="toast" id="toast"></div>
 
 <script>
+  // Event context
+  const EVENT_TITLE = 'Indie Game Fest 2026';
+  const EVENT_START = '2026-04-15';
+  const EVENT_END   = '2026-04-17';
+  const EVENT_CITY  = 'Berlin';
+  const EVENT_COUNTRY = 'Germany';
+
+  // Navigate to registration form
+  function goToRegister() {
+    const params = new URLSearchParams({
+      title: EVENT_TITLE,
+      start: EVENT_START,
+      end: EVENT_END,
+      city: EVENT_CITY,
+      country: EVENT_COUNTRY
+    });
+    window.location.href = 'AttendeeRegForm_v1_PC.html?' + params.toString();
+  }
+
+  // Apply project to this event
+  function applyProject() {
+    const projects = JSON.parse(localStorage.getItem('gc_projects') || '[]');
+    if (projects.length === 0) {
+      showToast('📋 No projects found. Submit a project first!');
+      setTimeout(() => { window.location.href = 'ProjectSubmitWizard_v1_PC.html'; }, 1500);
+      return;
+    }
+    // Store event application intent
+    const applications = JSON.parse(localStorage.getItem('gc_event_applications') || '[]');
+    const alreadyApplied = applications.some(a => a.eventTitle === EVENT_TITLE);
+    if (alreadyApplied) {
+      showToast('✅ You have already applied to this event!');
+      return;
+    }
+    // Use the most recent project
+    const project = projects[projects.length - 1];
+    applications.push({
+      eventTitle: EVENT_TITLE,
+      eventStart: EVENT_START,
+      eventEnd: EVENT_END,
+      eventCity: EVENT_CITY,
+      projectTitle: project.title || project.name || 'My Game',
+      studio: project.studio || '',
+      genre: project.genre || project.genres || '',
+      appliedAt: new Date().toISOString(),
+      status: 'pending'
+    });
+    localStorage.setItem('gc_event_applications', JSON.stringify(applications));
+    showToast('🎮 Project applied to ' + EVENT_TITLE + '!');
+    loadMyProjects();
+  }
+
+  // Load user's applied projects from localStorage
+  function loadMyProjects() {
+    const applications = JSON.parse(localStorage.getItem('gc_event_applications') || '[]');
+    const eventApps = applications.filter(a => a.eventTitle === EVENT_TITLE);
+    const section = document.getElementById('my-projects-section');
+    const grid = document.getElementById('my-projects-grid');
+    if (eventApps.length > 0) {
+      section.style.display = 'block';
+      grid.innerHTML = eventApps.map(app => `
+        <div class="game-card">
+          <div class="game-cover" style="background:linear-gradient(135deg,#16a34a,#0d9b72);display:flex;align-items:center;justify-content:center;font-size:32px;">🎮</div>
+          <div class="game-info">
+            <div class="game-developer">${app.studio || 'Your Studio'}</div>
+            <div class="game-title">${app.projectTitle}</div>
+            <div class="game-genre">${app.genre || 'Game'}</div>
+            <span class="game-badge" style="background:#d1fae5;color:#065f46;">✅ Applied</span>
+          </div>
+        </div>
+      `).join('');
+    } else {
+      section.style.display = 'none';
+    }
+  }
+
+  // Init: load applied projects on page load
+  document.addEventListener('DOMContentLoaded', loadMyProjects);
+
   let currentStatus = 'live';
   let currentSource = 'platform';
 

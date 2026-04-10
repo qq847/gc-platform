@@ -705,29 +705,11 @@
     <div class="card">
       <div class="section">
         <div class="section-title">Attending <span class="annotation">即将参加的展会</span></div>
-        <div class="attending-grid">
-
-          <div class="attending-card">
-            <div class="attending-event-name">Game Connection Europe 2026</div>
-            <div class="attending-meta">📅 Apr 2 – 3, 2026</div>
-            <div class="attending-meta">📍 Lyon, France</div>
-            <span class="attending-status status-attending">● Attending</span>
+        <div class="attending-grid" id="attending-grid">
+          <!-- Dynamically populated from localStorage -->
+          <div id="no-attending-msg" style="grid-column:1/-1;text-align:center;padding:20px;color:#9ca3af;font-size:13px;">
+            No upcoming events. <a href="ConferenceCalendar_v2_PC.html" style="color:#16a34a;">Browse events →</a>
           </div>
-
-          <div class="attending-card">
-            <div class="attending-event-name">GDC 2026</div>
-            <div class="attending-meta">📅 Mar 17 – 21, 2026</div>
-            <div class="attending-meta">📍 San Francisco, USA</div>
-            <span class="attending-status status-attended">✓ Attended</span>
-          </div>
-
-          <div class="attending-card">
-            <div class="attending-event-name">Tokyo Game Show 2026</div>
-            <div class="attending-meta">📅 Sep 24 – 27, 2026</div>
-            <div class="attending-meta">📍 Tokyo, Japan</div>
-            <span class="attending-status status-registered">Registered</span>
-          </div>
-
         </div>
       </div>
     </div>
@@ -948,6 +930,54 @@
 </div>
 
 <script>
+  // ── Load Events Attending from localStorage ──
+  function loadAttendingEvents() {
+    const registrations = JSON.parse(localStorage.getItem('gc_registrations') || '[]');
+    const now = new Date();
+    const grid = document.getElementById('attending-grid');
+    const noMsg = document.getElementById('no-attending-msg');
+
+    if (registrations.length === 0) {
+      noMsg.style.display = 'block';
+      return;
+    }
+
+    noMsg.style.display = 'none';
+
+    const html = registrations.map(reg => {
+      const startDate = reg.eventStart ? new Date(reg.eventStart + 'T00:00:00') : null;
+      const endDate   = reg.eventEnd   ? new Date(reg.eventEnd   + 'T00:00:00') : null;
+      const isEnded   = endDate && endDate < now;
+      const isAttending = startDate && startDate <= now && (!endDate || endDate >= now);
+
+      let statusClass = 'status-registered';
+      let statusText  = 'Registered';
+      if (isEnded) { statusClass = 'status-attended'; statusText = '✓ Attended'; }
+      else if (isAttending) { statusClass = 'status-attending'; statusText = '● Attending'; }
+
+      const dateStr = (() => {
+        if (!startDate) return '';
+        const s = startDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+        if (!endDate || reg.eventStart === reg.eventEnd) return s + ', ' + startDate.getFullYear();
+        const e = endDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+        return s + ' – ' + e + ', ' + startDate.getFullYear();
+      })();
+
+      return `
+        <div class="attending-card">
+          <div class="attending-event-name">${reg.eventTitle || 'Event'}</div>
+          ${dateStr ? `<div class="attending-meta">📅 ${dateStr}</div>` : ''}
+          ${reg.eventCity ? `<div class="attending-meta">📍 ${reg.eventCity}</div>` : ''}
+          <span class="attending-status ${statusClass}">${statusText}</span>
+        </div>
+      `;
+    }).join('');
+
+    grid.innerHTML = html;
+  }
+
+  document.addEventListener('DOMContentLoaded', loadAttendingEvents);
+
   let currentModalBlock = null;
   let currentModalEventName = '';
 
