@@ -4972,6 +4972,12 @@ async function _pcProjLoadBatch(reset) {
       moreBtn.style.cssText = 'text-align:center;padding:24px';
       grid.parentElement.appendChild(moreBtn);
     }
+    // Auto top-up: if displayed cards not a multiple of 4 and more data exists, silently load more
+    const _displayedCount = grid.querySelectorAll('.pc-proj-card').length;
+    if (_pcProjOffset < _pcProjTotal && _displayedCount % 4 !== 0) {
+      setTimeout(() => _pcProjLoadBatch(false), 0);
+      return;
+    }
     if (_pcProjOffset < _pcProjTotal) {
       moreBtn.innerHTML = `<button style="padding:10px 32px;border-radius:24px;background:#16a34a;color:#fff;border:none;font-size:13px;font-weight:700;cursor:pointer;transition:background .15s" onmouseover="this.style.background='#15803d'" onmouseout="this.style.background='#16a34a'" onclick="_pcProjLoadBatch(false)">Load More (${(_pcProjTotal - _pcProjOffset).toLocaleString()} remaining)</button>`;
     } else {
