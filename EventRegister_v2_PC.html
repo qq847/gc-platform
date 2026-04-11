@@ -455,9 +455,14 @@ button { font-family: var(--font); cursor: pointer; }
 <script>
 // ─── URL PARAMS ───────────────────────────────────────────
 const P = new URLSearchParams(location.search);
-const eventName  = P.get('eventName')  || 'Game Connection Europe 2027';
-const eventDate  = P.get('eventDate')  || 'Mar 17–21, 2027';
-const eventCity  = P.get('eventCity')  || 'Lyon, France';
+const eventName  = P.get('eventName') || P.get('title') || 'Game Connection Europe 2027';
+const _startRaw  = P.get('start') || '';
+const _endRaw    = P.get('end')   || '';
+const _city      = P.get('city')  || '';
+const _country   = P.get('country') || '';
+function _fmtDate(d){ if(!d) return ''; const dt=new Date(d); return dt.toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'}); }
+const eventDate  = P.get('eventDate') || (_startRaw&&_endRaw ? _fmtDate(_startRaw)+' – '+_fmtDate(_endRaw) : 'Mar 17–21, 2027');
+const eventCity  = P.get('eventCity') || [_city,_country].filter(Boolean).join(', ') || 'Lyon, France';
 const preTicket  = P.get('ticketId')   || '';
 const prePrice   = P.get('ticketPrice')|| '';
 const base       = location.href.replace(/[^/]*$/, '');

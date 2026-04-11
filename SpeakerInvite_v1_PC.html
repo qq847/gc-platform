@@ -388,10 +388,16 @@ button{font-family:var(--font);cursor:pointer}
 
 <script>
 const P = new URLSearchParams(location.search);
-const eventName = P.get('eventName') || 'Game Connection Europe 2027';
-const eventDate = P.get('eventDate') || 'Mar 17–21, 2027';
-const eventCity = P.get('eventCity') || 'Lyon, France';
-const eventUrl  = P.get('eventUrl') || 'EventPublicPage_v4_PC.html';
+const eventName = P.get('eventName') || P.get('title') || 'Game Connection Europe 2027';
+const _sRaw     = P.get('start') || '';
+const _eRaw     = P.get('end')   || '';
+const _cty      = P.get('city')  || '';
+const _ctr      = P.get('country') || '';
+function _fd(d){ if(!d) return ''; const dt=new Date(d); return dt.toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'}); }
+const eventDate = P.get('eventDate') || (_sRaw&&_eRaw ? _fd(_sRaw)+' – '+_fd(_eRaw) : 'Mar 17–21, 2027');
+const eventCity = P.get('eventCity') || [_cty,_ctr].filter(Boolean).join(', ') || 'Lyon, France';
+const _base3    = location.href.replace(/[^/]*$/, '');
+const eventUrl  = P.get('eventUrl') || _base3 + 'EventPublicPage_v4_PC.html';
 
 document.getElementById('navEvent').textContent = eventName;
 document.getElementById('inviteEventName').textContent = eventName;

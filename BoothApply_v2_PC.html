@@ -474,9 +474,14 @@ button{font-family:var(--font);cursor:pointer}
 
 <script>
 const P = new URLSearchParams(location.search);
-const eventName = P.get('eventName') || 'Game Connection Europe 2027';
-const eventDate = P.get('eventDate') || 'Mar 17–21, 2027';
-const eventCity = P.get('eventCity') || 'Lyon, France';
+const eventName = P.get('eventName') || P.get('title') || 'Game Connection Europe 2027';
+const startRaw  = P.get('start') || '';
+const endRaw    = P.get('end')   || '';
+const city      = P.get('city')  || '';
+const country2  = P.get('country') || '';
+function fmtDate(d){ if(!d) return ''; const dt=new Date(d); return dt.toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'}); }
+const eventDate = P.get('eventDate') || (startRaw&&endRaw ? fmtDate(startRaw)+' – '+fmtDate(endRaw) : 'Mar 17–21, 2027');
+const eventCity = P.get('eventCity') || [city,country2].filter(Boolean).join(', ') || 'Lyon, France';
 const base      = location.href.replace(/[^/]*$/, '');
 const eventUrl  = P.get('eventUrl') || base + 'EventPublicPage_v4_PC.html';
 
@@ -595,8 +600,9 @@ document.getElementById('submitBtn').addEventListener('click', () => {
   window.scrollTo({ top: 0, behavior: 'smooth' });
 });
 
-// Init
-switchType('booth');
+// Init: read URL type param
+const urlType = P.get('type') || 'booth';
+switchType(['booth','pod','showcase'].includes(urlType) ? urlType : 'booth');
 </script>
 </body>
 </html>
