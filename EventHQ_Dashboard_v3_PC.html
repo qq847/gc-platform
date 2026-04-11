@@ -804,13 +804,72 @@ body.dark-mode .unsaved-bar { background: #1e2533; border-color: #2d3748; }
             <button class="btn-secondary" style="font-size:12px;padding:6px 14px" onclick="showToast('API docs opening...')">View API Documentation</button>
           </div>
           <div class="editor-card" style="margin-bottom:16px">
-            <div style="font-weight:700;font-size:15px;margin-bottom:4px">Webhooks</div>
-            <div style="font-size:13px;color:#6b7280;margin-bottom:14px">Receive real-time event notifications at your endpoint</div>
-            <div style="border:1px solid #e5e7eb;border-radius:8px;padding:12px;margin-bottom:12px">
-              <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px"><div style="font-size:13px;font-weight:600">https://api.myapp.com/webhooks/eventhq</div><span style="font-size:11px;background:#dcfce7;color:#166534;padding:2px 8px;border-radius:10px;font-weight:600">Active</span></div>
-              <div style="font-size:11px;color:#6b7280">Events: registration.created, ticket.purchased, game.submitted</div>
+            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px">
+              <div style="font-weight:700;font-size:15px">Webhooks</div>
+              <button onclick="openAddWebhookModal()" style="padding:6px 14px;font-size:12px;background:#2563eb;color:#fff;border:none;border-radius:6px;cursor:pointer;font-weight:600">+ Add Webhook</button>
             </div>
-            <button class="btn-secondary" style="font-size:12px;padding:6px 14px" onclick="showToast('Webhook URL saved to API settings')">+ Add Webhook</button>
+            <div style="font-size:13px;color:#6b7280;margin-bottom:14px">Receive real-time event notifications at your endpoint</div>
+            <div id="webhook-list" style="display:flex;flex-direction:column;gap:10px">
+              <div style="border:1px solid #e5e7eb;border-radius:8px;padding:12px">
+                <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">
+                  <div style="font-size:13px;font-weight:600;font-family:monospace">https://api.myapp.com/webhooks/eventhq</div>
+                  <div style="display:flex;gap:6px;align-items:center">
+                    <span style="font-size:11px;background:#dcfce7;color:#166534;padding:2px 8px;border-radius:10px;font-weight:600">Active</span>
+                    <button onclick="testWebhook(this)" style="font-size:11px;padding:3px 10px;background:#f3f4f6;border:none;border-radius:5px;cursor:pointer">Test</button>
+                    <button onclick="this.closest('div[style*=border]').remove();showToast('Webhook removed')" style="font-size:11px;padding:3px 8px;background:#fee2e2;color:#dc2626;border:none;border-radius:5px;cursor:pointer">Delete</button>
+                  </div>
+                </div>
+                <div style="display:flex;gap:6px;flex-wrap:wrap">
+                  <span style="font-size:10px;background:#eff6ff;color:#2563eb;padding:2px 7px;border-radius:10px">registration.created</span>
+                  <span style="font-size:10px;background:#eff6ff;color:#2563eb;padding:2px 7px;border-radius:10px">ticket.purchased</span>
+                  <span style="font-size:10px;background:#eff6ff;color:#2563eb;padding:2px 7px;border-radius:10px">game.submitted</span>
+                </div>
+                <div style="font-size:11px;color:#9ca3af;margin-top:6px">Last triggered: 2 hours ago &nbsp;|&nbsp; Success rate: 100%</div>
+              </div>
+              <div style="border:1px solid #e5e7eb;border-radius:8px;padding:12px">
+                <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">
+                  <div style="font-size:13px;font-weight:600;font-family:monospace">https://hooks.slack.com/services/T00/B00/xxx</div>
+                  <div style="display:flex;gap:6px;align-items:center">
+                    <span style="font-size:11px;background:#fef3c7;color:#92400e;padding:2px 8px;border-radius:10px;font-weight:600">Paused</span>
+                    <button onclick="testWebhook(this)" style="font-size:11px;padding:3px 10px;background:#f3f4f6;border:none;border-radius:5px;cursor:pointer">Test</button>
+                    <button onclick="this.closest('div[style*=border]').remove();showToast('Webhook removed')" style="font-size:11px;padding:3px 8px;background:#fee2e2;color:#dc2626;border:none;border-radius:5px;cursor:pointer">Delete</button>
+                  </div>
+                </div>
+                <div style="display:flex;gap:6px;flex-wrap:wrap">
+                  <span style="font-size:10px;background:#fef3c7;color:#92400e;padding:2px 7px;border-radius:10px">meeting.confirmed</span>
+                  <span style="font-size:10px;background:#fef3c7;color:#92400e;padding:2px 7px;border-radius:10px">award.winner</span>
+                </div>
+                <div style="font-size:11px;color:#9ca3af;margin-top:6px">Last triggered: 3 days ago &nbsp;|&nbsp; Success rate: 94%</div>
+              </div>
+            </div>
+          </div>
+          <!-- Add Webhook Modal -->
+          <div id="add-webhook-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:9999;display:none;align-items:center;justify-content:center">
+            <div style="background:#fff;border-radius:16px;padding:28px;width:520px;max-width:95vw;box-shadow:0 20px 60px rgba(0,0,0,0.2)">
+              <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px">
+                <div style="font-size:18px;font-weight:800">Add Webhook Endpoint</div>
+                <button onclick="document.getElementById('add-webhook-modal').style.display='none'" style="background:none;border:none;font-size:20px;cursor:pointer;color:#6b7280">×</button>
+              </div>
+              <div style="margin-bottom:14px">
+                <div style="font-size:12px;color:#6b7280;margin-bottom:4px">Endpoint URL</div>
+                <input id="webhook-url-input" type="url" class="form-input" placeholder="https://your-server.com/webhook" style="width:100%;box-sizing:border-box">
+              </div>
+              <div style="margin-bottom:14px">
+                <div style="font-size:12px;color:#6b7280;margin-bottom:8px">Events to Subscribe</div>
+                <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px">
+                  <label style="display:flex;align-items:center;gap:6px;font-size:13px;cursor:pointer"><input type="checkbox" checked> registration.created</label>
+                  <label style="display:flex;align-items:center;gap:6px;font-size:13px;cursor:pointer"><input type="checkbox" checked> ticket.purchased</label>
+                  <label style="display:flex;align-items:center;gap:6px;font-size:13px;cursor:pointer"><input type="checkbox"> game.submitted</label>
+                  <label style="display:flex;align-items:center;gap:6px;font-size:13px;cursor:pointer"><input type="checkbox"> meeting.confirmed</label>
+                  <label style="display:flex;align-items:center;gap:6px;font-size:13px;cursor:pointer"><input type="checkbox"> award.winner</label>
+                  <label style="display:flex;align-items:center;gap:6px;font-size:13px;cursor:pointer"><input type="checkbox"> checkin.completed</label>
+                </div>
+              </div>
+              <div style="display:flex;gap:10px;justify-content:flex-end;margin-top:20px">
+                <button onclick="document.getElementById('add-webhook-modal').style.display='none'" class="btn-secondary" style="font-size:13px">Cancel</button>
+                <button onclick="saveNewWebhook()" class="btn-primary" style="font-size:13px">Save Webhook</button>
+              </div>
+            </div>
           </div>
           <div class="editor-card">
             <div style="font-weight:700;font-size:15px;margin-bottom:14px">Connected Integrations</div>
@@ -8522,6 +8581,28 @@ function announceWinners() {
   }, 800);
 }
 // ── Settings: API Key Actions ────────────────────────────────────────────────────────────
+// -- Settings: Webhook Manager
+function openAddWebhookModal() {
+  const modal = document.getElementById('add-webhook-modal');
+  if (modal) { modal.style.display = 'flex'; }
+}
+function testWebhook(btn) {
+  const row = btn.closest('div');
+  showToast('Test payload sent to webhook endpoint');
+}
+function saveNewWebhook() {
+  const url = document.getElementById('webhook-url-input');
+  if (!url || !url.value.trim()) { showToast('Please enter a valid URL'); return; }
+  const list = document.getElementById('webhook-list');
+  if (list) {
+    const div = document.createElement('div');
+    div.style.cssText = 'border:1px solid #e5e7eb;border-radius:8px;padding:12px';
+    div.innerHTML = '<div style="font-size:13px;font-weight:600;font-family:monospace">' + url.value.trim() + '</div><div style="font-size:11px;color:#9ca3af;margin-top:4px">Just added</div>';
+    list.appendChild(div);
+  }
+  document.getElementById('add-webhook-modal').style.display = 'none';
+  showToast('Webhook endpoint saved');
+}
 // ── Analytics Live Traffic Refresh ────────────────────────────────────────
 function refreshLiveTraffic() {
   const count = Math.floor(Math.random() * 150) + 180;
