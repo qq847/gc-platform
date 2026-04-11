@@ -1,0 +1,581 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Buyer Invitation — Game Connection</title>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --c-bg:#f3f4f6;--c-surface:#f8f9fa;--c-card:#fff;--c-border:#e5e7eb;--c-border2:#d1d5db;
+  --c-text:#111827;--c-muted:#6b7280;--c-dim:#9ca3af;
+  --c-green:#16a34a;--c-green-d:#15803d;--c-green-bg:rgba(22,163,74,.08);
+  --c-blue:#2563eb;--c-blue-bg:rgba(37,99,235,.08);
+  --c-red:#dc2626;--c-red-bg:rgba(220,38,38,.08);
+  --r-sm:6px;--r-md:10px;--r-lg:16px;--r-xl:20px;
+  --shadow:0 1px 3px rgba(0,0,0,.06),0 4px 16px rgba(0,0,0,.08);
+  --trans:.18s ease;
+  --font:'DM Sans',-apple-system,BlinkMacSystemFont,'Inter','Segoe UI',sans-serif;
+}
+html{scroll-behavior:smooth}
+body{font-family:var(--font);background:var(--c-bg);color:var(--c-text);line-height:1.6;min-height:100vh}
+button{font-family:var(--font);cursor:pointer}
+@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&display=swap');
+
+/* ── NAV ── */
+.topnav{position:sticky;top:0;z-index:100;background:#fff;border-bottom:1px solid var(--c-border);height:60px;display:flex;align-items:center;padding:0 32px;gap:16px}
+.nav-logo{display:flex;align-items:center;gap:10px;font-weight:700;font-size:1rem;color:var(--c-text);cursor:pointer}
+.nav-logo-mark{width:32px;height:32px;background:var(--c-green);border-radius:8px;display:flex;align-items:center;justify-content:center;color:#fff;font-weight:800;font-size:13px;letter-spacing:-.5px}
+.nav-back{margin-left:auto;display:flex;align-items:center;gap:6px;font-size:0.875rem;font-weight:600;color:var(--c-muted);border:1.5px solid var(--c-border);border-radius:8px;padding:6px 14px;background:#fff;transition:var(--trans)}
+.nav-back:hover{border-color:var(--c-green);color:var(--c-green)}
+.nav-event-badge{font-size:0.8rem;font-weight:600;color:var(--c-green);background:var(--c-green-bg);border-radius:6px;padding:3px 10px;border:1px solid rgba(22,163,74,.2)}
+
+/* ── PAGE ── */
+.page-wrap{max-width:760px;margin:0 auto;padding:48px 24px}
+
+/* ── INVITATION CARD ── */
+.invite-card{background:#fff;border:1.5px solid var(--c-border);border-radius:var(--r-xl);overflow:hidden;box-shadow:var(--shadow);margin-bottom:24px}
+.invite-banner{background:linear-gradient(135deg,var(--c-green) 0%,#15803d 100%);padding:32px 32px 28px;color:#fff;position:relative;overflow:hidden}
+.invite-banner::before{content:'';position:absolute;top:-40px;right:-40px;width:200px;height:200px;background:rgba(255,255,255,.08);border-radius:50%}
+.invite-banner::after{content:'';position:absolute;bottom:-60px;left:-20px;width:160px;height:160px;background:rgba(255,255,255,.06);border-radius:50%}
+.invite-label{font-size:0.75rem;font-weight:700;text-transform:uppercase;letter-spacing:.1em;opacity:.8;margin-bottom:8px}
+.invite-title{font-size:1.5rem;font-weight:700;margin-bottom:6px;position:relative;z-index:1}
+.invite-sub{font-size:0.9rem;opacity:.85;position:relative;z-index:1}
+.invite-badge{display:inline-flex;align-items:center;gap:6px;background:rgba(255,255,255,.2);border-radius:20px;padding:4px 14px;font-size:0.8rem;font-weight:700;margin-top:12px;position:relative;z-index:1}
+
+.invite-body{padding:28px 32px}
+.invite-section{margin-bottom:24px}
+.invite-section:last-child{margin-bottom:0}
+.section-heading{font-size:0.75rem;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--c-dim);margin-bottom:12px}
+
+.info-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.info-item{background:var(--c-bg);border-radius:var(--r-md);padding:12px 16px}
+.info-item-label{font-size:0.75rem;font-weight:700;color:var(--c-dim);text-transform:uppercase;letter-spacing:.04em;margin-bottom:4px}
+.info-item-value{font-size:0.9rem;font-weight:600;color:var(--c-text)}
+
+.benefit-list{display:flex;flex-direction:column;gap:8px}
+.benefit-item{display:flex;align-items:flex-start;gap:10px;padding:10px 14px;background:var(--c-green-bg);border:1px solid rgba(22,163,74,.15);border-radius:var(--r-md)}
+.benefit-icon{font-size:1rem;flex-shrink:0;margin-top:1px}
+.benefit-text{font-size:0.875rem;color:var(--c-text)}
+.benefit-text strong{font-weight:700}
+
+.schedule-list{display:flex;flex-direction:column;gap:8px}
+.schedule-item{display:flex;gap:14px;padding:10px 14px;background:var(--c-bg);border-radius:var(--r-md);align-items:flex-start}
+.schedule-time{font-size:0.75rem;font-weight:700;color:var(--c-green);min-width:80px;padding-top:2px}
+.schedule-title{font-size:0.875rem;font-weight:600;color:var(--c-text)}
+.schedule-desc{font-size:0.8rem;color:var(--c-muted)}
+
+/* ── STEP FORM ── */
+.step-card{background:#fff;border:1.5px solid var(--c-border);border-radius:var(--r-xl);padding:28px 32px;box-shadow:var(--shadow);display:none}
+.step-card.active{display:block}
+.step-header{display:flex;align-items:center;gap:12px;margin-bottom:24px}
+.step-num{width:32px;height:32px;border-radius:50%;background:var(--c-green);color:#fff;font-weight:700;font-size:0.875rem;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.step-title{font-size:1.1rem;font-weight:700;color:var(--c-text)}
+.step-sub{font-size:0.85rem;color:var(--c-muted)}
+
+.form-row{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px}
+.form-group{margin-bottom:16px}
+.form-group.full{grid-column:1/-1}
+.form-label{display:block;font-size:0.8rem;font-weight:700;color:var(--c-text);margin-bottom:6px}
+.form-label span{color:var(--c-red)}
+.form-input{width:100%;border:1.5px solid var(--c-border);border-radius:var(--r-md);padding:10px 14px;font-family:var(--font);font-size:0.875rem;color:var(--c-text);background:#fff;outline:none;transition:var(--trans)}
+.form-input:focus{border-color:var(--c-green)}
+select.form-input{cursor:pointer}
+textarea.form-input{resize:vertical;min-height:80px}
+
+.interest-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.interest-chip{border:1.5px solid var(--c-border);border-radius:var(--r-md);padding:8px 10px;text-align:center;font-size:0.8rem;font-weight:600;color:var(--c-muted);cursor:pointer;transition:var(--trans)}
+.interest-chip:hover,.interest-chip.active{border-color:var(--c-green);background:var(--c-green-bg);color:var(--c-green)}
+
+.slot-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:8px;margin-top:8px}
+.slot-item{border:1.5px solid var(--c-border);border-radius:var(--r-md);padding:10px 14px;cursor:pointer;transition:var(--trans)}
+.slot-item:hover,.slot-item.selected{border-color:var(--c-green);background:var(--c-green-bg)}
+.slot-day{font-size:0.7rem;font-weight:700;color:var(--c-dim);text-transform:uppercase;letter-spacing:.04em}
+.slot-time{font-size:0.875rem;font-weight:700;color:var(--c-text)}
+.slot-avail{font-size:0.75rem;color:var(--c-green)}
+
+.form-actions{display:flex;gap:12px;margin-top:24px}
+.btn-primary{flex:1;padding:12px;border-radius:var(--r-md);border:none;background:var(--c-green);color:#fff;font-family:var(--font);font-size:0.95rem;font-weight:700;cursor:pointer;transition:var(--trans)}
+.btn-primary:hover{background:var(--c-green-d)}
+.btn-secondary{padding:12px 24px;border-radius:var(--r-md);border:1.5px solid var(--c-border);background:#fff;color:var(--c-muted);font-family:var(--font);font-size:0.95rem;font-weight:600;cursor:pointer;transition:var(--trans)}
+.btn-secondary:hover{border-color:var(--c-border2);color:var(--c-text)}
+.btn-decline{padding:12px 24px;border-radius:var(--r-md);border:1.5px solid var(--c-red-bg);background:var(--c-red-bg);color:var(--c-red);font-family:var(--font);font-size:0.95rem;font-weight:600;cursor:pointer;transition:var(--trans)}
+.btn-decline:hover{background:var(--c-red);color:#fff}
+
+/* ── CTA BUTTONS ── */
+.cta-row{display:flex;gap:12px;margin-top:24px}
+.btn-accept{flex:1;padding:14px;border-radius:var(--r-md);border:none;background:var(--c-green);color:#fff;font-family:var(--font);font-size:1rem;font-weight:700;cursor:pointer;transition:var(--trans)}
+.btn-accept:hover{background:var(--c-green-d)}
+.btn-maybe{padding:14px 24px;border-radius:var(--r-md);border:1.5px solid var(--c-border);background:#fff;color:var(--c-muted);font-family:var(--font);font-size:1rem;font-weight:600;cursor:pointer;transition:var(--trans)}
+.btn-maybe:hover{border-color:var(--c-border2);color:var(--c-text)}
+
+/* ── SUCCESS ── */
+.success-card{background:#fff;border:1.5px solid var(--c-border);border-radius:var(--r-xl);padding:48px 32px;text-align:center;box-shadow:var(--shadow);display:none}
+.success-card.active{display:block}
+.success-icon{font-size:3.5rem;margin-bottom:16px}
+.success-title{font-size:1.4rem;font-weight:700;color:var(--c-text);margin-bottom:8px}
+.success-sub{font-size:0.95rem;color:var(--c-muted);max-width:420px;margin:0 auto 28px}
+.success-details{background:var(--c-green-bg);border:1px solid rgba(22,163,74,.2);border-radius:var(--r-lg);padding:16px 20px;text-align:left;max-width:380px;margin:0 auto 24px}
+.success-detail-row{display:flex;justify-content:space-between;align-items:center;padding:6px 0;border-bottom:1px solid rgba(22,163,74,.1)}
+.success-detail-row:last-child{border-bottom:none}
+.success-detail-label{font-size:0.8rem;color:var(--c-muted);font-weight:600}
+.success-detail-value{font-size:0.875rem;font-weight:700;color:var(--c-text)}
+.btn-back{padding:12px 32px;border-radius:var(--r-md);border:1.5px solid var(--c-green);background:#fff;color:var(--c-green);font-family:var(--font);font-size:0.95rem;font-weight:700;cursor:pointer;transition:var(--trans)}
+.btn-back:hover{background:var(--c-green-bg)}
+
+/* ── PROGRESS ── */
+.progress-bar{display:flex;align-items:center;gap:8px;margin-bottom:28px}
+.progress-step{display:flex;align-items:center;gap:6px;font-size:0.8rem;font-weight:600;color:var(--c-dim)}
+.progress-step.active{color:var(--c-green)}
+.progress-step.done{color:var(--c-green)}
+.progress-dot{width:24px;height:24px;border-radius:50%;border:2px solid var(--c-border);display:flex;align-items:center;justify-content:center;font-size:0.7rem;font-weight:700;color:var(--c-dim);background:#fff;transition:var(--trans)}
+.progress-step.active .progress-dot{border-color:var(--c-green);color:var(--c-green)}
+.progress-step.done .progress-dot{border-color:var(--c-green);background:var(--c-green);color:#fff}
+.progress-line{flex:1;height:2px;background:var(--c-border);border-radius:1px}
+.progress-line.done{background:var(--c-green)}
+
+@media(max-width:600px){
+  .info-grid{grid-template-columns:1fr}
+  .form-row{grid-template-columns:1fr}
+  .interest-grid{grid-template-columns:repeat(2,1fr)}
+  .slot-grid{grid-template-columns:1fr}
+  .cta-row{flex-direction:column}
+}
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav class="topnav">
+  <div class="nav-logo" onclick="history.back()">
+    <div class="nav-logo-mark">GC</div>
+    <span>GAMECONNECTION</span>
+  </div>
+  <span class="nav-event-badge" id="nav-event-name">Event</span>
+  <button class="nav-back" onclick="history.back()">← Back to Event</button>
+</nav>
+
+<div class="page-wrap">
+
+  <!-- PROGRESS BAR -->
+  <div class="progress-bar" id="progress-bar">
+    <div class="progress-step active" id="prog-1"><div class="progress-dot">1</div>Invitation</div>
+    <div class="progress-line" id="prog-line-1"></div>
+    <div class="progress-step" id="prog-2"><div class="progress-dot">2</div>Your Profile</div>
+    <div class="progress-line" id="prog-line-2"></div>
+    <div class="progress-step" id="prog-3"><div class="progress-dot">3</div>Preferences</div>
+    <div class="progress-line" id="prog-line-3"></div>
+    <div class="progress-step" id="prog-4"><div class="progress-dot">4</div>Confirm</div>
+  </div>
+
+  <!-- STEP 1: INVITATION DETAILS -->
+  <div class="step-card active" id="step-1">
+    <!-- INVITATION CARD -->
+    <div class="invite-card">
+      <div class="invite-banner">
+        <div class="invite-label">Exclusive Buyer Invitation</div>
+        <div class="invite-title" id="event-title-banner">Game Connection 2027</div>
+        <div class="invite-sub" id="event-date-banner">Mar 17–21, 2027 · Lyon Convention Centre, France</div>
+        <div class="invite-badge">💼 Buyer Program</div>
+      </div>
+      <div class="invite-body">
+        <div class="invite-section">
+          <div class="section-heading">Event Details</div>
+          <div class="info-grid">
+            <div class="info-item">
+              <div class="info-item-label">Dates</div>
+              <div class="info-item-value" id="info-dates">Mar 17–21, 2027</div>
+            </div>
+            <div class="info-item">
+              <div class="info-item-label">Venue</div>
+              <div class="info-item-value" id="info-venue">Lyon Convention Centre</div>
+            </div>
+            <div class="info-item">
+              <div class="info-item-label">Format</div>
+              <div class="info-item-value" id="info-format">In-Person</div>
+            </div>
+            <div class="info-item">
+              <div class="info-item-label">Expected Attendees</div>
+              <div class="info-item-value" id="info-attendees">1,200+</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="invite-section">
+          <div class="section-heading">Buyer Program Benefits</div>
+          <div class="benefit-list">
+            <div class="benefit-item">
+              <div class="benefit-icon">🤝</div>
+              <div class="benefit-text"><strong>Pre-scheduled B2B Meetings</strong> — Up to 20 curated meetings with developers and publishers over 3 days</div>
+            </div>
+            <div class="benefit-item">
+              <div class="benefit-icon">🎯</div>
+              <div class="benefit-text"><strong>Exclusive Matchmaking</strong> — AI-powered matching based on your acquisition and publishing criteria</div>
+            </div>
+            <div class="benefit-item">
+              <div class="benefit-icon">🏆</div>
+              <div class="benefit-text"><strong>VIP Access</strong> — Priority access to award ceremonies, keynotes, and networking dinners</div>
+            </div>
+            <div class="benefit-item">
+              <div class="benefit-icon">📋</div>
+              <div class="benefit-text"><strong>Game Showcase Preview</strong> — Early access to all submitted game demos before the event opens</div>
+            </div>
+            <div class="benefit-item">
+              <div class="benefit-icon">✈️</div>
+              <div class="benefit-text"><strong>Travel Support</strong> — Complimentary accommodation for 3 nights (subject to availability)</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="invite-section">
+          <div class="section-heading">Buyer Day Schedule</div>
+          <div class="schedule-list">
+            <div class="schedule-item">
+              <div class="schedule-time">Day 1 · 09:00</div>
+              <div><div class="schedule-title">Buyer Orientation & Welcome Breakfast</div><div class="schedule-desc">Meet the organizers and fellow buyers</div></div>
+            </div>
+            <div class="schedule-item">
+              <div class="schedule-time">Day 1 · 10:00</div>
+              <div><div class="schedule-title">Game Showcase Preview (Buyers Only)</div><div class="schedule-desc">Exclusive early access to all game demos</div></div>
+            </div>
+            <div class="schedule-item">
+              <div class="schedule-time">Day 1–3 · All Day</div>
+              <div><div class="schedule-title">Pre-Scheduled B2B Meetings</div><div class="schedule-desc">30-minute curated meetings in dedicated meeting rooms</div></div>
+            </div>
+            <div class="schedule-item">
+              <div class="schedule-time">Day 2 · 19:00</div>
+              <div><div class="schedule-title">VIP Networking Dinner</div><div class="schedule-desc">Exclusive dinner for buyers, publishers, and key speakers</div></div>
+            </div>
+            <div class="schedule-item">
+              <div class="schedule-time">Day 3 · 17:00</div>
+              <div><div class="schedule-title">Award Ceremony</div><div class="schedule-desc">Celebrate the best games of the year</div></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="cta-row">
+      <button class="btn-accept" onclick="goToStep(2)">Accept Invitation →</button>
+      <button class="btn-maybe" onclick="alert('You can come back to this invitation at any time.')">Decide Later</button>
+    </div>
+  </div>
+
+  <!-- STEP 2: YOUR PROFILE -->
+  <div class="step-card" id="step-2">
+    <div class="step-header">
+      <div class="step-num">2</div>
+      <div>
+        <div class="step-title">Your Profile</div>
+        <div class="step-sub">Tell us about yourself so we can match you with the right developers</div>
+      </div>
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label class="form-label">First Name <span>*</span></label>
+        <input class="form-input" type="text" id="f-first" placeholder="Sarah">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Last Name <span>*</span></label>
+        <input class="form-input" type="text" id="f-last" placeholder="Chen">
+      </div>
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label class="form-label">Company <span>*</span></label>
+        <input class="form-input" type="text" id="f-company" placeholder="Devolver Digital">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Job Title <span>*</span></label>
+        <input class="form-input" type="text" id="f-title" placeholder="Publishing Director">
+      </div>
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label class="form-label">Business Email <span>*</span></label>
+        <input class="form-input" type="email" id="f-email" placeholder="sarah@devolver.com">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Company Type <span>*</span></label>
+        <select class="form-input" id="f-type">
+          <option value="">Select type...</option>
+          <option>Publisher</option>
+          <option>Investor / VC</option>
+          <option>Platform Holder</option>
+          <option>Distributor</option>
+          <option>Service Provider</option>
+        </select>
+      </div>
+    </div>
+    <div class="form-group">
+      <label class="form-label">Company Website</label>
+      <input class="form-input" type="url" id="f-website" placeholder="https://devolverdigital.com">
+    </div>
+    <div class="form-actions">
+      <button class="btn-secondary" onclick="goToStep(1)">← Back</button>
+      <button class="btn-primary" onclick="validateStep2()">Continue →</button>
+    </div>
+  </div>
+
+  <!-- STEP 3: PREFERENCES -->
+  <div class="step-card" id="step-3">
+    <div class="step-header">
+      <div class="step-num">3</div>
+      <div>
+        <div class="step-title">Your Preferences</div>
+        <div class="step-sub">Help us match you with the most relevant developers and games</div>
+      </div>
+    </div>
+
+    <div class="form-group">
+      <label class="form-label">Genres of Interest (select all that apply)</label>
+      <div class="interest-grid" id="genre-grid">
+        <div class="interest-chip" onclick="toggleChip(this)">🎮 Action</div>
+        <div class="interest-chip" onclick="toggleChip(this)">🗡️ RPG</div>
+        <div class="interest-chip" onclick="toggleChip(this)">🧩 Puzzle</div>
+        <div class="interest-chip" onclick="toggleChip(this)">🏃 Platformer</div>
+        <div class="interest-chip" onclick="toggleChip(this)">🔫 Shooter</div>
+        <div class="interest-chip" onclick="toggleChip(this)">⚔️ Strategy</div>
+        <div class="interest-chip" onclick="toggleChip(this)">🏎️ Racing</div>
+        <div class="interest-chip" onclick="toggleChip(this)">⚽ Sports</div>
+        <div class="interest-chip" onclick="toggleChip(this)">👻 Horror</div>
+        <div class="interest-chip" onclick="toggleChip(this)">🌍 Open World</div>
+        <div class="interest-chip" onclick="toggleChip(this)">📱 Mobile</div>
+        <div class="interest-chip" onclick="toggleChip(this)">🎲 Casual</div>
+      </div>
+    </div>
+
+    <div class="form-group">
+      <label class="form-label">Target Platforms</label>
+      <div class="interest-grid">
+        <div class="interest-chip" onclick="toggleChip(this)">🖥️ PC</div>
+        <div class="interest-chip" onclick="toggleChip(this)">🎮 Console</div>
+        <div class="interest-chip" onclick="toggleChip(this)">📱 Mobile</div>
+        <div class="interest-chip" onclick="toggleChip(this)">🥽 VR/AR</div>
+        <div class="interest-chip" onclick="toggleChip(this)">☁️ Cloud</div>
+        <div class="interest-chip" onclick="toggleChip(this)">🌐 Browser</div>
+      </div>
+    </div>
+
+    <div class="form-row">
+      <div class="form-group">
+        <label class="form-label">Development Stage</label>
+        <select class="form-input">
+          <option value="">Any stage</option>
+          <option>Concept / Prototype</option>
+          <option>Alpha</option>
+          <option>Beta</option>
+          <option>Gold / Ready to Ship</option>
+          <option>Post-Launch</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Budget Range (per deal)</label>
+        <select class="form-input">
+          <option value="">Any range</option>
+          <option>Under €100K</option>
+          <option>€100K – €500K</option>
+          <option>€500K – €2M</option>
+          <option>€2M – €10M</option>
+          <option>€10M+</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="form-group">
+      <label class="form-label">Select your preferred meeting slots</label>
+      <div class="slot-grid">
+        <div class="slot-item" onclick="toggleSlot(this)">
+          <div class="slot-day">Day 1 — Mar 17</div>
+          <div class="slot-time">09:00 – 12:00</div>
+          <div class="slot-avail">8 slots available</div>
+        </div>
+        <div class="slot-item" onclick="toggleSlot(this)">
+          <div class="slot-day">Day 1 — Mar 17</div>
+          <div class="slot-time">14:00 – 17:00</div>
+          <div class="slot-avail">6 slots available</div>
+        </div>
+        <div class="slot-item" onclick="toggleSlot(this)">
+          <div class="slot-day">Day 2 — Mar 18</div>
+          <div class="slot-time">09:00 – 12:00</div>
+          <div class="slot-avail">10 slots available</div>
+        </div>
+        <div class="slot-item" onclick="toggleSlot(this)">
+          <div class="slot-day">Day 2 — Mar 18</div>
+          <div class="slot-time">14:00 – 17:00</div>
+          <div class="slot-avail">7 slots available</div>
+        </div>
+        <div class="slot-item" onclick="toggleSlot(this)">
+          <div class="slot-day">Day 3 — Mar 19</div>
+          <div class="slot-time">09:00 – 12:00</div>
+          <div class="slot-avail">5 slots available</div>
+        </div>
+        <div class="slot-item" onclick="toggleSlot(this)">
+          <div class="slot-day">Day 3 — Mar 19</div>
+          <div class="slot-time">14:00 – 16:00</div>
+          <div class="slot-avail">4 slots available</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="form-group">
+      <label class="form-label">Additional notes for the organizer</label>
+      <textarea class="form-input" placeholder="Any specific requirements, dietary restrictions, or topics you'd like to discuss..."></textarea>
+    </div>
+
+    <div class="form-actions">
+      <button class="btn-secondary" onclick="goToStep(2)">← Back</button>
+      <button class="btn-primary" onclick="goToStep(4)">Review & Confirm →</button>
+    </div>
+  </div>
+
+  <!-- STEP 4: CONFIRM -->
+  <div class="step-card" id="step-4">
+    <div class="step-header">
+      <div class="step-num">4</div>
+      <div>
+        <div class="step-title">Confirm Your Acceptance</div>
+        <div class="step-sub">Review your details before confirming</div>
+      </div>
+    </div>
+
+    <div class="info-grid" style="margin-bottom:20px">
+      <div class="info-item">
+        <div class="info-item-label">Name</div>
+        <div class="info-item-value" id="confirm-name">—</div>
+      </div>
+      <div class="info-item">
+        <div class="info-item-label">Company</div>
+        <div class="info-item-value" id="confirm-company">—</div>
+      </div>
+      <div class="info-item">
+        <div class="info-item-label">Title</div>
+        <div class="info-item-value" id="confirm-title">—</div>
+      </div>
+      <div class="info-item">
+        <div class="info-item-label">Email</div>
+        <div class="info-item-value" id="confirm-email">—</div>
+      </div>
+    </div>
+
+    <div class="benefit-list" style="margin-bottom:20px">
+      <div class="benefit-item">
+        <div class="benefit-icon">✅</div>
+        <div class="benefit-text">By accepting, you confirm your attendance and agree to the Buyer Program terms. The organizer will contact you within 48 hours to confirm your slot allocation.</div>
+      </div>
+    </div>
+
+    <div class="form-actions">
+      <button class="btn-secondary" onclick="goToStep(3)">← Back</button>
+      <button class="btn-primary" onclick="submitAcceptance()">Confirm Acceptance ✓</button>
+    </div>
+  </div>
+
+  <!-- SUCCESS -->
+  <div class="success-card" id="success-card">
+    <div class="success-icon">🎉</div>
+    <div class="success-title">Invitation Accepted!</div>
+    <div class="success-sub">Welcome to the Buyer Program. The organizer will contact you within 48 hours with your personalized meeting schedule.</div>
+    <div class="success-details">
+      <div class="success-detail-row">
+        <span class="success-detail-label">Event</span>
+        <span class="success-detail-value" id="s-event">Game Connection 2027</span>
+      </div>
+      <div class="success-detail-row">
+        <span class="success-detail-label">Program</span>
+        <span class="success-detail-value">Buyer Program</span>
+      </div>
+      <div class="success-detail-row">
+        <span class="success-detail-label">Status</span>
+        <span class="success-detail-value" style="color:var(--c-green)">✓ Confirmed</span>
+      </div>
+      <div class="success-detail-row">
+        <span class="success-detail-label">Next Step</span>
+        <span class="success-detail-value">Check your email</span>
+      </div>
+    </div>
+    <button class="btn-back" onclick="history.back()">← Back to Event</button>
+  </div>
+
+</div>
+
+<script>
+const P = new URLSearchParams(location.search);
+const eventName = P.get('title') || 'Game Connection 2027';
+const startDate = P.get('start') || '';
+const endDate   = P.get('end')   || '';
+const city      = P.get('city')  || '';
+const country   = P.get('country') || '';
+const venue     = P.get('venue') || '';
+const attendees = P.get('attendees') || '1,200+';
+
+document.getElementById('nav-event-name').textContent = eventName;
+document.title = 'Buyer Invitation — ' + eventName;
+document.getElementById('event-title-banner').textContent = eventName;
+document.getElementById('s-event').textContent = eventName;
+
+function formatDate(d){ if(!d) return ''; const dt=new Date(d); return dt.toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'}); }
+const dateStr = startDate && endDate ? formatDate(startDate) + ' – ' + formatDate(endDate) : 'TBD';
+const locationStr = [city,country].filter(Boolean).join(', ') || 'TBD';
+const venueStr = venue || 'TBD';
+document.getElementById('event-date-banner').textContent = dateStr + (locationStr!=='TBD'?' · '+locationStr:'');
+document.getElementById('info-dates').textContent = dateStr;
+document.getElementById('info-venue').textContent = venueStr;
+document.getElementById('info-attendees').textContent = attendees + '+';
+
+let currentStep = 1;
+
+function goToStep(n){
+  document.getElementById('step-'+currentStep).classList.remove('active');
+  // Update progress
+  for(let i=1;i<=4;i++){
+    const s = document.getElementById('prog-'+i);
+    s.classList.remove('active','done');
+    if(i<n) s.classList.add('done');
+    else if(i===n) s.classList.add('active');
+    if(i<4){
+      const l = document.getElementById('prog-line-'+i);
+      l.classList.toggle('done', i<n);
+    }
+    // Update dot
+    const dot = s.querySelector('.progress-dot');
+    if(i<n) dot.textContent='✓';
+    else dot.textContent=i;
+  }
+  currentStep = n;
+  document.getElementById('step-'+n).classList.add('active');
+  window.scrollTo({top:0,behavior:'smooth'});
+  // Populate confirm
+  if(n===4){
+    document.getElementById('confirm-name').textContent = (document.getElementById('f-first').value+' '+document.getElementById('f-last').value).trim() || '—';
+    document.getElementById('confirm-company').textContent = document.getElementById('f-company').value || '—';
+    document.getElementById('confirm-title').textContent = document.getElementById('f-title').value || '—';
+    document.getElementById('confirm-email').textContent = document.getElementById('f-email').value || '—';
+  }
+}
+
+function validateStep2(){
+  const first = document.getElementById('f-first').value.trim();
+  const last  = document.getElementById('f-last').value.trim();
+  const comp  = document.getElementById('f-company').value.trim();
+  const email = document.getElementById('f-email').value.trim();
+  const type  = document.getElementById('f-type').value;
+  if(!first||!last||!comp||!email||!type){
+    alert('Please fill in all required fields.');
+    return;
+  }
+  goToStep(3);
+}
+
+function toggleChip(el){ el.classList.toggle('active'); }
+function toggleSlot(el){ el.classList.toggle('selected'); }
+
+function submitAcceptance(){
+  document.getElementById('step-4').classList.remove('active');
+  document.getElementById('progress-bar').style.display='none';
+  document.getElementById('success-card').classList.add('active');
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+</script>
+</body>
+</html>

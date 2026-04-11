@@ -1,0 +1,411 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Let's Meet — Game Connection</title>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --c-bg:#f3f4f6;--c-surface:#f8f9fa;--c-card:#fff;--c-border:#e5e7eb;--c-border2:#d1d5db;
+  --c-text:#111827;--c-muted:#6b7280;--c-dim:#9ca3af;
+  --c-green:#16a34a;--c-green-d:#15803d;--c-green-bg:rgba(22,163,74,.08);
+  --c-blue:#2563eb;--c-blue-bg:rgba(37,99,235,.08);
+  --r-sm:6px;--r-md:10px;--r-lg:16px;--r-xl:20px;
+  --shadow:0 1px 3px rgba(0,0,0,.06),0 4px 16px rgba(0,0,0,.08);
+  --shadow-sm:0 1px 3px rgba(0,0,0,.06);
+  --trans:.18s ease;
+  --font:'DM Sans',-apple-system,BlinkMacSystemFont,'Inter','Segoe UI',sans-serif;
+}
+html{scroll-behavior:smooth}
+body{font-family:var(--font);background:var(--c-bg);color:var(--c-text);line-height:1.6;min-height:100vh}
+a{color:inherit;text-decoration:none}
+button{font-family:var(--font);cursor:pointer}
+@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&display=swap');
+
+/* ── NAV ── */
+.topnav{position:sticky;top:0;z-index:100;background:#fff;border-bottom:1px solid var(--c-border);height:60px;display:flex;align-items:center;padding:0 32px;gap:16px}
+.nav-logo{display:flex;align-items:center;gap:10px;font-weight:700;font-size:1rem;color:var(--c-text)}
+.nav-logo-mark{width:32px;height:32px;background:var(--c-green);border-radius:8px;display:flex;align-items:center;justify-content:center;color:#fff;font-weight:800;font-size:13px;letter-spacing:-.5px}
+.nav-back{margin-left:auto;display:flex;align-items:center;gap:6px;font-size:0.875rem;font-weight:600;color:var(--c-muted);border:1.5px solid var(--c-border);border-radius:8px;padding:6px 14px;background:#fff;transition:var(--trans)}
+.nav-back:hover{border-color:var(--c-green);color:var(--c-green)}
+.nav-event-badge{font-size:0.8rem;font-weight:600;color:var(--c-green);background:var(--c-green-bg);border-radius:6px;padding:3px 10px;border:1px solid rgba(22,163,74,.2)}
+
+/* ── LAYOUT ── */
+.page-wrap{max-width:1200px;margin:0 auto;padding:32px 24px}
+.page-header{margin-bottom:28px}
+.page-title{font-size:1.75rem;font-weight:700;color:var(--c-text);margin-bottom:6px}
+.page-subtitle{font-size:0.95rem;color:var(--c-muted)}
+.page-stats{display:flex;gap:20px;margin-top:16px;flex-wrap:wrap}
+.stat-chip{display:flex;align-items:center;gap:6px;font-size:0.85rem;font-weight:600;color:var(--c-muted);background:#fff;border:1px solid var(--c-border);border-radius:8px;padding:6px 14px}
+.stat-chip strong{color:var(--c-text)}
+
+/* ── MAIN GRID ── */
+.main-grid{display:grid;grid-template-columns:280px 1fr;gap:24px;align-items:start}
+
+/* ── FILTER PANEL ── */
+.filter-panel{background:#fff;border:1px solid var(--c-border);border-radius:var(--r-lg);padding:20px;position:sticky;top:80px}
+.filter-section{margin-bottom:20px}
+.filter-section:last-child{margin-bottom:0}
+.filter-label{font-size:0.75rem;font-weight:700;color:var(--c-dim);text-transform:uppercase;letter-spacing:.06em;margin-bottom:10px}
+.search-box{position:relative}
+.search-box input{width:100%;border:1.5px solid var(--c-border);border-radius:var(--r-md);padding:9px 12px 9px 36px;font-family:var(--font);font-size:0.875rem;color:var(--c-text);background:#fff;transition:var(--trans);outline:none}
+.search-box input:focus{border-color:var(--c-green)}
+.search-box::before{content:'🔍';position:absolute;left:10px;top:50%;transform:translateY(-50%);font-size:0.875rem}
+.role-chips{display:flex;flex-wrap:wrap;gap:6px}
+.role-chip{border:1.5px solid var(--c-border);border-radius:20px;padding:4px 12px;font-size:0.8rem;font-weight:600;color:var(--c-muted);background:#fff;cursor:pointer;transition:var(--trans)}
+.role-chip:hover,.role-chip.active{border-color:var(--c-green);background:var(--c-green-bg);color:var(--c-green)}
+.filter-toggle{width:100%;display:flex;align-items:center;justify-content:space-between;padding:8px 0;font-size:0.875rem;font-weight:600;color:var(--c-text);background:none;border:none;border-top:1px solid var(--c-border);margin-top:8px;padding-top:12px}
+
+/* ── ATTENDEE GRID ── */
+.attendee-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:16px}
+.attendee-card{background:#fff;border:1.5px solid var(--c-border);border-radius:var(--r-lg);padding:20px;transition:var(--trans);cursor:pointer}
+.attendee-card:hover{border-color:var(--c-green);box-shadow:0 4px 20px rgba(22,163,74,.12);transform:translateY(-2px)}
+.att-av{width:48px;height:48px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:1rem;color:#fff;margin-bottom:12px}
+.att-name{font-weight:700;font-size:0.95rem;color:var(--c-text);margin-bottom:2px}
+.att-company{font-size:0.8rem;color:var(--c-muted);margin-bottom:8px}
+.att-role{display:inline-block;font-size:0.75rem;font-weight:600;border-radius:20px;padding:2px 10px;margin-bottom:12px}
+.att-tags{display:flex;flex-wrap:wrap;gap:4px;margin-bottom:14px}
+.att-tag{font-size:0.7rem;font-weight:600;color:var(--c-muted);background:var(--c-bg);border-radius:4px;padding:2px 7px}
+.btn-meet{width:100%;padding:8px;border-radius:var(--r-md);border:1.5px solid var(--c-green);background:var(--c-green-bg);color:var(--c-green);font-family:var(--font);font-size:0.8rem;font-weight:700;transition:var(--trans)}
+.btn-meet:hover{background:var(--c-green);color:#fff}
+.btn-meet.requested{border-color:var(--c-border2);background:#f9fafb;color:var(--c-muted);cursor:default}
+
+/* ── RESULTS BAR ── */
+.results-bar{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px}
+.results-count{font-size:0.875rem;font-weight:600;color:var(--c-muted)}
+.sort-select{border:1.5px solid var(--c-border);border-radius:var(--r-md);padding:6px 12px;font-family:var(--font);font-size:0.8rem;color:var(--c-text);background:#fff;outline:none;cursor:pointer}
+
+/* ── MODAL ── */
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.4);z-index:200;display:none;align-items:center;justify-content:center;padding:24px}
+.modal-overlay.open{display:flex}
+.modal{background:#fff;border-radius:var(--r-xl);width:100%;max-width:520px;max-height:90vh;overflow-y:auto;box-shadow:0 20px 60px rgba(0,0,0,.2)}
+.modal-header{padding:24px 24px 0;display:flex;align-items:flex-start;justify-content:space-between}
+.modal-title{font-size:1.1rem;font-weight:700;color:var(--c-text)}
+.modal-close{width:32px;height:32px;border-radius:50%;border:none;background:var(--c-bg);color:var(--c-muted);font-size:1.1rem;display:flex;align-items:center;justify-content:center;cursor:pointer;flex-shrink:0}
+.modal-close:hover{background:var(--c-border)}
+.modal-body{padding:20px 24px 24px}
+.modal-att-info{display:flex;align-items:center;gap:14px;padding:16px;background:var(--c-bg);border-radius:var(--r-md);margin-bottom:20px}
+.modal-att-av{width:48px;height:48px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:1rem;color:#fff;flex-shrink:0}
+.modal-att-name{font-weight:700;font-size:0.95rem;color:var(--c-text)}
+.modal-att-company{font-size:0.8rem;color:var(--c-muted)}
+.form-group{margin-bottom:16px}
+.form-label{display:block;font-size:0.8rem;font-weight:700;color:var(--c-text);margin-bottom:6px}
+.time-slots{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.time-slot{border:1.5px solid var(--c-border);border-radius:var(--r-md);padding:8px;text-align:center;font-size:0.78rem;font-weight:600;color:var(--c-muted);cursor:pointer;transition:var(--trans)}
+.time-slot:hover,.time-slot.selected{border-color:var(--c-green);background:var(--c-green-bg);color:var(--c-green)}
+.time-slot.full{border-color:var(--c-border);background:#f9fafb;color:var(--c-dim);cursor:not-allowed;text-decoration:line-through}
+textarea{width:100%;border:1.5px solid var(--c-border);border-radius:var(--r-md);padding:10px 12px;font-family:var(--font);font-size:0.875rem;color:var(--c-text);resize:vertical;min-height:80px;outline:none;transition:var(--trans)}
+textarea:focus{border-color:var(--c-green)}
+.btn-send{width:100%;padding:12px;border-radius:var(--r-md);border:none;background:var(--c-green);color:#fff;font-family:var(--font);font-size:0.95rem;font-weight:700;cursor:pointer;transition:var(--trans)}
+.btn-send:hover{background:var(--c-green-d)}
+.btn-send:disabled{background:var(--c-dim);cursor:not-allowed}
+
+/* ── SUCCESS STATE ── */
+.success-state{text-align:center;padding:40px 24px}
+.success-icon{font-size:3rem;margin-bottom:16px}
+.success-title{font-size:1.2rem;font-weight:700;color:var(--c-text);margin-bottom:8px}
+.success-sub{font-size:0.9rem;color:var(--c-muted);margin-bottom:24px}
+.btn-outline{padding:10px 24px;border-radius:var(--r-md);border:1.5px solid var(--c-green);background:#fff;color:var(--c-green);font-family:var(--font);font-size:0.875rem;font-weight:700;cursor:pointer;transition:var(--trans)}
+.btn-outline:hover{background:var(--c-green-bg)}
+
+/* ── MY REQUESTS ── */
+.my-requests-bar{background:#fff;border:1px solid var(--c-border);border-radius:var(--r-lg);padding:16px 20px;margin-bottom:20px;display:flex;align-items:center;justify-content:space-between}
+.req-count{font-size:0.875rem;font-weight:600;color:var(--c-text)}
+.req-count span{color:var(--c-green)}
+.btn-view-requests{padding:7px 16px;border-radius:var(--r-md);border:1.5px solid var(--c-green);background:var(--c-green-bg);color:var(--c-green);font-family:var(--font);font-size:0.8rem;font-weight:700;cursor:pointer;transition:var(--trans)}
+.btn-view-requests:hover{background:var(--c-green);color:#fff}
+
+/* ── EMPTY ── */
+.empty-state{text-align:center;padding:60px 24px;color:var(--c-muted)}
+.empty-icon{font-size:3rem;margin-bottom:12px}
+.empty-title{font-size:1rem;font-weight:700;color:var(--c-text);margin-bottom:6px}
+
+@media(max-width:768px){
+  .main-grid{grid-template-columns:1fr}
+  .filter-panel{position:static}
+  .attendee-grid{grid-template-columns:repeat(auto-fill,minmax(160px,1fr))}
+}
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav class="topnav">
+  <div class="nav-logo" onclick="history.back()" style="cursor:pointer">
+    <div class="nav-logo-mark">GC</div>
+    <span>GAMECONNECTION</span>
+  </div>
+  <span class="nav-event-badge" id="nav-event-name">Event</span>
+  <button class="nav-back" onclick="history.back()">← Back to Event</button>
+</nav>
+
+<!-- PAGE WRAP -->
+<div class="page-wrap">
+  <!-- HEADER -->
+  <div class="page-header">
+    <div class="page-title">🤝 Let's Meet</div>
+    <div class="page-subtitle">Browse attendees and request pre-scheduled business meetings</div>
+    <div class="page-stats">
+      <div class="stat-chip"><strong id="stat-total">0</strong> attendees</div>
+      <div class="stat-chip"><strong id="stat-available">0</strong> available for meetings</div>
+      <div class="stat-chip"><strong id="stat-my-requests">0</strong> requests sent</div>
+    </div>
+  </div>
+
+  <!-- MY REQUESTS BAR -->
+  <div class="my-requests-bar">
+    <div class="req-count">You have sent <span id="req-count-text">0</span> meeting request(s)</div>
+    <button class="btn-view-requests" onclick="alert('My Requests view coming soon!')">View My Requests →</button>
+  </div>
+
+  <!-- MAIN GRID -->
+  <div class="main-grid">
+    <!-- FILTER PANEL -->
+    <div class="filter-panel">
+      <div class="filter-section">
+        <div class="filter-label">Search</div>
+        <div class="search-box">
+          <input type="text" id="search-input" placeholder="Name or company..." oninput="applyFilters()">
+        </div>
+      </div>
+      <div class="filter-section">
+        <div class="filter-label">Role</div>
+        <div class="role-chips" id="role-chips">
+          <button class="role-chip active" data-role="All" onclick="setRole(this)">All</button>
+          <button class="role-chip" data-role="Developer" onclick="setRole(this)">Developer</button>
+          <button class="role-chip" data-role="Publisher" onclick="setRole(this)">Publisher</button>
+          <button class="role-chip" data-role="Investor" onclick="setRole(this)">Investor</button>
+          <button class="role-chip" data-role="Service" onclick="setRole(this)">Service</button>
+          <button class="role-chip" data-role="Press" onclick="setRole(this)">Press</button>
+        </div>
+      </div>
+      <div class="filter-section">
+        <div class="filter-label">Availability</div>
+        <div class="role-chips">
+          <button class="role-chip active" data-avail="all" onclick="setAvail(this)">All</button>
+          <button class="role-chip" data-avail="available" onclick="setAvail(this)">Available</button>
+          <button class="role-chip" data-avail="requested" onclick="setAvail(this)">Requested</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- RIGHT CONTENT -->
+    <div>
+      <div class="results-bar">
+        <div class="results-count" id="results-count">Showing 0 attendees</div>
+        <select class="sort-select" id="sort-select" onchange="applyFilters()">
+          <option value="name">Sort: Name A–Z</option>
+          <option value="company">Sort: Company</option>
+          <option value="role">Sort: Role</option>
+        </select>
+      </div>
+      <div class="attendee-grid" id="attendee-grid"></div>
+      <div class="empty-state" id="empty-state" style="display:none">
+        <div class="empty-icon">🔍</div>
+        <div class="empty-title">No attendees found</div>
+        <div>Try adjusting your filters</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- MEETING REQUEST MODAL -->
+<div class="modal-overlay" id="modal-overlay" onclick="if(event.target===this)closeModal()">
+  <div class="modal" id="modal">
+    <div id="modal-content-area"></div>
+  </div>
+</div>
+
+<script>
+const P = new URLSearchParams(location.search);
+const eventName = P.get('title') || 'Game Connection 2027';
+document.getElementById('nav-event-name').textContent = eventName;
+document.title = 'Let\'s Meet — ' + eventName;
+
+const COLORS = ['#16a34a','#2563eb','#7c3aed','#d97706','#dc2626','#0891b2','#059669','#9333ea'];
+function initials(n){ return n.split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase(); }
+function avatarBg(i){ return COLORS[i%COLORS.length]; }
+
+const ATTENDEES = [
+  { name:'Sarah Chen',       company:'Devolver Digital',      role:'Publisher',  tags:['Indie','Action','RPG'],    bio:'Looking for innovative indie titles for our 2027 lineup.' },
+  { name:'James Park',       company:'Supercell',              role:'Developer',  tags:['Mobile','F2P','Strategy'], bio:'Lead designer working on next-gen mobile strategy games.' },
+  { name:'Maria Santos',     company:'Ubisoft',                role:'Developer',  tags:['AAA','Open World','RPG'],  bio:'Senior producer at Ubisoft Paris, exploring co-dev opportunities.' },
+  { name:'Alex Kim',         company:'Discord',                role:'Service',    tags:['Community','Platform'],    bio:'Partnership lead at Discord, helping studios grow communities.' },
+  { name:'Yuki Tanaka',      company:'Unity Technologies',     role:'Service',    tags:['Engine','Tools','AI'],     bio:'Developer relations at Unity, showcasing AI-powered dev tools.' },
+  { name:'Emma Wilson',      company:'CD Projekt Red',         role:'Developer',  tags:['RPG','Narrative','AAA'],   bio:'Narrative director, seeking writing and localization partners.' },
+  { name:'Lucas Müller',     company:'Riot Games',             role:'Publisher',  tags:['Esports','Competitive'],   bio:'Publishing director focused on competitive multiplayer titles.' },
+  { name:'Priya Sharma',     company:'Andreessen Horowitz',    role:'Investor',   tags:['VC','Seed','Series A'],    bio:'Partner at a16z games fund, actively investing in early-stage studios.' },
+  { name:'Tom Nakamura',     company:'Bandai Namco',           role:'Publisher',  tags:['Japan','Console','IP'],    bio:'International licensing and publishing for Asian markets.' },
+  { name:'Anya Petrov',      company:'Wargaming',              role:'Developer',  tags:['F2P','War','Strategy'],    bio:'Game director exploring new IP and co-development deals.' },
+  { name:'Carlos Mendez',    company:'Konami',                 role:'Publisher',  tags:['Console','Mobile','IP'],   bio:'Business development, seeking licensing and co-publishing.' },
+  { name:'Ingrid Larsson',   company:'DICE',                   role:'Developer',  tags:['FPS','AAA','Engine'],      bio:'Technical director, interested in middleware and tools partnerships.' },
+  { name:'Ravi Patel',       company:'Sequoia Capital',        role:'Investor',   tags:['VC','Growth','Series B'],  bio:'Sequoia games vertical, looking for breakout studios.' },
+  { name:'Mei Lin',          company:'NetEase Games',          role:'Publisher',  tags:['China','Mobile','PC'],     bio:'Global publishing lead for NetEase, seeking Western studios.' },
+  { name:'Finn O\'Brien',    company:'Paradox Interactive',    role:'Developer',  tags:['Strategy','Grand Strategy'],bio:'Studio head, open to co-dev and publishing discussions.' },
+  { name:'Zara Ahmed',       company:'Embracer Group',         role:'Publisher',  tags:['Acquisition','Mid-core'],  bio:'M&A and publishing at Embracer, actively acquiring studios.' },
+  { name:'Dmitri Volkov',    company:'4A Games',               role:'Developer',  tags:['FPS','Post-Apocalyptic'],  bio:'Creative director, seeking distribution and co-publishing.' },
+  { name:'Hana Kobayashi',   company:'Square Enix',            role:'Publisher',  tags:['JRPG','Console','IP'],     bio:'International publishing, looking for narrative-driven titles.' },
+  { name:'Ben Carter',       company:'Epic Games',             role:'Service',    tags:['Store','Engine','EGS'],    bio:'Developer relations at Epic, supporting studios on EGS.' },
+  { name:'Lena Fischer',     company:'Daedalic Entertainment', role:'Developer',  tags:['Adventure','Indie','PC'],  bio:'Producer seeking co-publishing and distribution partners.' },
+  { name:'Marco Rossi',      company:'505 Games',              role:'Publisher',  tags:['Indie','AA','PC'],         bio:'Publishing director, strong track record with indie AA titles.' },
+  { name:'Aisha Johnson',    company:'Tencent Games',          role:'Publisher',  tags:['China','Mobile','PC'],     bio:'Global investment and publishing lead at Tencent.' },
+  { name:'Henrik Svensson',  company:'Paradox Arc',            role:'Publisher',  tags:['Indie','Strategy','PC'],   bio:'Head of Paradox Arc, the indie publishing label.' },
+  { name:'Nadia Okafor',     company:'Take-Two Interactive',   role:'Publisher',  tags:['AAA','Console','Sports'],  bio:'Business development, exploring new IP acquisitions.' },
+];
+
+let currentRole = 'All';
+let currentAvail = 'all';
+let requestedSet = new Set();
+
+function setRole(btn){
+  document.querySelectorAll('[data-role]').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  currentRole = btn.dataset.role;
+  applyFilters();
+}
+function setAvail(btn){
+  document.querySelectorAll('[data-avail]').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  currentAvail = btn.dataset.avail;
+  applyFilters();
+}
+
+function applyFilters(){
+  const q = document.getElementById('search-input').value.toLowerCase();
+  const sort = document.getElementById('sort-select').value;
+  let filtered = ATTENDEES.filter(a=>{
+    const matchRole = currentRole==='All' || a.role===currentRole;
+    const matchSearch = !q || a.name.toLowerCase().includes(q) || a.company.toLowerCase().includes(q);
+    const matchAvail = currentAvail==='all'
+      || (currentAvail==='available' && !requestedSet.has(a.name))
+      || (currentAvail==='requested' && requestedSet.has(a.name));
+    return matchRole && matchSearch && matchAvail;
+  });
+  if(sort==='name') filtered.sort((a,b)=>a.name.localeCompare(b.name));
+  else if(sort==='company') filtered.sort((a,b)=>a.company.localeCompare(b.company));
+  else if(sort==='role') filtered.sort((a,b)=>a.role.localeCompare(b.role));
+
+  const grid = document.getElementById('attendee-grid');
+  const empty = document.getElementById('empty-state');
+  const count = document.getElementById('results-count');
+  count.textContent = `Showing ${filtered.length} attendee${filtered.length!==1?'s':''}`;
+  if(filtered.length===0){
+    grid.innerHTML=''; empty.style.display='block';
+  } else {
+    empty.style.display='none';
+    grid.innerHTML = filtered.map((a,i)=>{
+      const idx = ATTENDEES.indexOf(a);
+      const requested = requestedSet.has(a.name);
+      const roleColor = a.role==='Publisher'?'#7c3aed':a.role==='Developer'?'#16a34a':a.role==='Investor'?'#d97706':'#2563eb';
+      return `<div class="attendee-card" onclick="openModal(${idx})">
+        <div class="att-av" style="background:${avatarBg(idx)}">${initials(a.name)}</div>
+        <div class="att-name">${a.name}</div>
+        <div class="att-company">${a.company}</div>
+        <span class="att-role" style="background:${roleColor}22;color:${roleColor};border:1px solid ${roleColor}44">${a.role}</span>
+        <div class="att-tags">${a.tags.map(t=>`<span class="att-tag">${t}</span>`).join('')}</div>
+        <button class="btn-meet${requested?' requested':''}" onclick="event.stopPropagation();${requested?'':'openModal('+idx+')'}">
+          ${requested?'✓ Requested':'Request Meeting'}
+        </button>
+      </div>`;
+    }).join('');
+  }
+  document.getElementById('stat-total').textContent = ATTENDEES.length;
+  document.getElementById('stat-available').textContent = ATTENDEES.length - requestedSet.size;
+  document.getElementById('stat-my-requests').textContent = requestedSet.size;
+  document.getElementById('req-count-text').textContent = requestedSet.size;
+}
+
+const TIME_SLOTS = [
+  {day:'Day 1',time:'09:00–09:30',full:false},{day:'Day 1',time:'09:30–10:00',full:false},
+  {day:'Day 1',time:'10:30–11:00',full:true}, {day:'Day 1',time:'11:00–11:30',full:false},
+  {day:'Day 1',time:'14:00–14:30',full:false},{day:'Day 1',time:'14:30–15:00',full:false},
+  {day:'Day 2',time:'09:00–09:30',full:false},{day:'Day 2',time:'10:00–10:30',full:false},
+  {day:'Day 2',time:'13:00–13:30',full:true}, {day:'Day 2',time:'15:00–15:30',full:false},
+  {day:'Day 3',time:'09:30–10:00',full:false},{day:'Day 3',time:'11:00–11:30',full:false},
+];
+let selectedSlots = new Set();
+let currentAttIdx = -1;
+
+function openModal(idx){
+  currentAttIdx = idx;
+  selectedSlots = new Set();
+  const a = ATTENDEES[idx];
+  const roleColor = a.role==='Publisher'?'#7c3aed':a.role==='Developer'?'#16a34a':a.role==='Investor'?'#d97706':'#2563eb';
+  document.getElementById('modal-content-area').innerHTML = `
+    <div class="modal-header">
+      <div class="modal-title">Request a Meeting</div>
+      <button class="modal-close" onclick="closeModal()">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="modal-att-info">
+        <div class="modal-att-av" style="background:${avatarBg(idx)}">${initials(a.name)}</div>
+        <div>
+          <div class="modal-att-name">${a.name}</div>
+          <div class="modal-att-company">${a.company} · <span style="color:${roleColor};font-weight:600">${a.role}</span></div>
+          <div style="font-size:0.8rem;color:var(--c-muted);margin-top:4px">${a.bio}</div>
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Select preferred time slots (choose up to 3)</label>
+        <div class="time-slots" id="time-slots-grid">
+          ${TIME_SLOTS.map((s,i)=>`
+            <div class="time-slot${s.full?' full':''}" data-idx="${i}" onclick="${s.full?'':'toggleSlot('+i+')'}">
+              <div style="font-size:0.7rem;font-weight:700;color:var(--c-dim)">${s.day}</div>
+              <div>${s.time}</div>
+              ${s.full?'<div style="font-size:0.65rem;color:var(--c-dim)">Full</div>':''}
+            </div>`).join('')}
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Message (optional)</label>
+        <textarea id="meeting-message" placeholder="Introduce yourself and explain why you'd like to meet..."></textarea>
+      </div>
+      <button class="btn-send" id="btn-send" onclick="sendRequest()" disabled>Select at least one time slot to send</button>
+    </div>`;
+  document.getElementById('modal-overlay').classList.add('open');
+}
+
+function toggleSlot(i){
+  const el = document.querySelector(`.time-slot[data-idx="${i}"]`);
+  if(selectedSlots.has(i)){
+    selectedSlots.delete(i);
+    el.classList.remove('selected');
+  } else {
+    if(selectedSlots.size>=3){ alert('You can select up to 3 time slots.'); return; }
+    selectedSlots.add(i);
+    el.classList.add('selected');
+  }
+  const btn = document.getElementById('btn-send');
+  if(selectedSlots.size>0){
+    btn.disabled=false;
+    btn.textContent=`Send Meeting Request (${selectedSlots.size} slot${selectedSlots.size>1?'s':''} selected)`;
+  } else {
+    btn.disabled=true;
+    btn.textContent='Select at least one time slot to send';
+  }
+}
+
+function sendRequest(){
+  const a = ATTENDEES[currentAttIdx];
+  requestedSet.add(a.name);
+  document.getElementById('modal-content-area').innerHTML = `
+    <div class="success-state">
+      <div class="success-icon">✅</div>
+      <div class="success-title">Meeting Request Sent!</div>
+      <div class="success-sub">Your request has been sent to <strong>${a.name}</strong> at ${a.company}.<br>You'll receive a confirmation once they accept.</div>
+      <button class="btn-outline" onclick="closeModal()">Back to Attendees</button>
+    </div>`;
+  applyFilters();
+}
+
+function closeModal(){
+  document.getElementById('modal-overlay').classList.remove('open');
+  currentAttIdx = -1;
+}
+
+// Init
+applyFilters();
+</script>
+</body>
+</html>
