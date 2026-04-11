@@ -297,9 +297,9 @@ body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--t
         <div class="stat-sub">Events ahead</div>
       </div>
       <div class="stat-card">
-        <div class="stat-label">Saved Events</div>
+        <div class="stat-label">Business Roles</div>
         <div class="stat-value" id="statSaved">0</div>
-        <div class="stat-sub">In your watchlist</div>
+        <div class="stat-sub">Sponsor / Exhibitor</div>
       </div>
       <div class="stat-card">
         <div class="stat-label">Connections</div>
@@ -450,12 +450,22 @@ document.getElementById('topbarAvatar').textContent = userInitial;
 const now = new Date();
 const upcoming = registrations.filter(r => new Date(r.eventStart + 'T00:00:00') >= now);
 const past = registrations.filter(r => new Date(r.eventStart + 'T00:00:00') < now);
+const sponsors = (() => { try { return JSON.parse(localStorage.getItem('gc_sponsor_applications') || '[]'); } catch(e){ return []; } })();
+const booths   = (() => { try { return JSON.parse(localStorage.getItem('gc_booth_bookings')       || '[]'); } catch(e){ return []; } })();
 
 document.getElementById('statRegistered').textContent = registrations.length;
 document.getElementById('statUpcoming').textContent = upcoming.length;
-document.getElementById('statSaved').textContent = 0;
+document.getElementById('statSaved').textContent = sponsors.length + booths.length; // repurposed: total business roles
 document.getElementById('statConnections').textContent = 0;
 document.getElementById('eventsCount').textContent = registrations.length;
+
+// ── Dynamic role labels ──
+const roles = [];
+if (registrations.length > 0) roles.push('Attendee');
+if (sponsors.length > 0) roles.push('Sponsor');
+if (booths.length > 0) roles.push('Exhibitor');
+const roleEl = document.querySelector('.sidebar-user-role');
+if (roleEl) roleEl.textContent = roles.length > 0 ? roles.join(' · ') : 'Member';
 
 // ── Upcoming banner ──
 if (upcoming.length > 0) {
@@ -526,55 +536,66 @@ recs.forEach(r => {
 });
 
 // ── Load Purchases ──
+function fmtPrice(p) { return (p === 0 || p === undefined) ? 'Free' : '€' + Number(p).toLocaleString(); }
+
 function renderPurchases() {
   // Tickets
-  const regs = (() => { try { return JSON.parse(localStorage.getItem('gc_registrations') || '[]'); } catch(e){ return []; } })();
+  const regs2 = (() => { try { return JSON.parse(localStorage.getItem('gc_registrations') || '[]'); } catch(e){ return []; } })();
   const ticketEl = document.getElementById('purchaseTickets');
-  if (regs.length === 0) {
+  if (regs2.length === 0) {
     ticketEl.innerHTML = '<div style="font-size:13px;color:var(--muted);padding:12px 0">No ticket purchases yet.</div>';
   } else {
-    ticketEl.innerHTML = regs.map(r => `
+    ticketEl.innerHTML = regs2.map(r => `
       <div style="display:flex;align-items:center;gap:12px;padding:12px;border:1px solid var(--border);border-radius:8px;margin-bottom:8px;background:var(--card)">
         <div style="font-size:24px">🎟️</div>
         <div style="flex:1">
           <div style="font-size:13px;font-weight:700">${r.eventTitle || 'Event'}</div>
           <div style="font-size:11px;color:var(--muted)">${r.ticketType || 'General Admission'} · ${r.eventStart || ''} · ${r.eventCity || ''}</div>
         </div>
-        <span style="font-size:11px;font-weight:700;padding:3px 10px;border-radius:20px;background:#dcfce7;color:#15803d">✓ Confirmed</span>
+        <div style="display:flex;align-items:center;gap:8px">
+          <span style="font-size:13px;font-weight:800;color:#16a34a">${fmtPrice(r.ticketPrice)}</span>
+          <span style="font-size:11px;font-weight:700;padding:3px 10px;border-radius:20px;background:#dcfce7;color:#15803d">✓ Confirmed</span>
+        </div>
       </div>`).join('');
   }
 
   // Sponsorships
-  const sponsors = (() => { try { return JSON.parse(localStorage.getItem('gc_sponsor_applications') || '[]'); } catch(e){ return []; } })();
+  const sponsors2 = (() => { try { return JSON.parse(localStorage.getItem('gc_sponsor_applications') || '[]'); } catch(e){ return []; } })();
   const sponsorEl = document.getElementById('purchaseSponsors');
-  if (sponsors.length === 0) {
+  if (sponsors2.length === 0) {
     sponsorEl.innerHTML = '<div style="font-size:13px;color:var(--muted);padding:12px 0">No sponsorship applications yet.</div>';
   } else {
-    sponsorEl.innerHTML = sponsors.map(s => `
+    sponsorEl.innerHTML = sponsors2.map(s => `
       <div style="display:flex;align-items:center;gap:12px;padding:12px;border:1px solid var(--border);border-radius:8px;margin-bottom:8px;background:var(--card)">
         <div style="font-size:24px">🤝</div>
         <div style="flex:1">
           <div style="font-size:13px;font-weight:700">${s.eventTitle || 'Event'}</div>
           <div style="font-size:11px;color:var(--muted)">${s.package || ''} · ${s.company || ''}</div>
         </div>
-        <span style="font-size:11px;font-weight:700;padding:3px 10px;border-radius:20px;background:#fef9c3;color:#854d0e">${s.status || 'Pending Review'}</span>
+        <div style="display:flex;align-items:center;gap:8px">
+          <span style="font-size:13px;font-weight:800;color:#7c3aed">${s.price > 0 ? '€' + Number(s.price).toLocaleString() : 'Custom'}</span>
+          <span style="font-size:11px;font-weight:700;padding:3px 10px;border-radius:20px;background:#fef9c3;color:#854d0e">${s.status || 'Pending Review'}</span>
+        </div>
       </div>`).join('');
   }
 
   // Booth Bookings
-  const booths = (() => { try { return JSON.parse(localStorage.getItem('gc_booth_bookings') || '[]'); } catch(e){ return []; } })();
+  const booths2 = (() => { try { return JSON.parse(localStorage.getItem('gc_booth_bookings') || '[]'); } catch(e){ return []; } })();
   const boothEl = document.getElementById('purchaseBooths');
-  if (booths.length === 0) {
+  if (booths2.length === 0) {
     boothEl.innerHTML = '<div style="font-size:13px;color:var(--muted);padding:12px 0">No booth bookings yet.</div>';
   } else {
-    boothEl.innerHTML = booths.map(b => `
+    boothEl.innerHTML = booths2.map(b => `
       <div style="display:flex;align-items:center;gap:12px;padding:12px;border:1px solid var(--border);border-radius:8px;margin-bottom:8px;background:var(--card)">
         <div style="font-size:24px">🏪</div>
         <div style="flex:1">
           <div style="font-size:13px;font-weight:700">${b.eventTitle || 'Event'}</div>
           <div style="font-size:11px;color:var(--muted)">Booth ${b.boothNumber || ''} · ${b.boothType || ''} · ${b.company || ''}</div>
         </div>
-        <span style="font-size:11px;font-weight:700;padding:3px 10px;border-radius:20px;background:#dcfce7;color:#15803d">${b.status || 'Confirmed'}</span>
+        <div style="display:flex;align-items:center;gap:8px">
+          <span style="font-size:13px;font-weight:800;color:#ea580c">${b.price > 0 ? '€' + Number(b.price).toLocaleString() : '—'}</span>
+          <span style="font-size:11px;font-weight:700;padding:3px 10px;border-radius:20px;background:#dcfce7;color:#15803d">${b.status || 'Confirmed'}</span>
+        </div>
       </div>`).join('');
   }
 }

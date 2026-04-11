@@ -189,7 +189,7 @@ body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--t
   <span class="nav-divider">|</span>
   <a class="nav-back" href="index.html">← Back to Events</a>
   <div class="nav-spacer"></div>
-  <button class="nav-btn nav-btn-outline" onclick="document.getElementById('overlay').classList.add('open')">Register Now</button>
+  <button class="nav-btn nav-btn-outline" id="navRegisterBtn">Register Now</button>
 </nav>
 
 <!-- HERO COVER -->
@@ -257,7 +257,7 @@ body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--t
       <div class="sidebar-card-title">Registration</div>
       <div class="reg-price" id="regPrice">Free</div>
       <div class="reg-price-sub" id="regSub">Open registration · No credit card required</div>
-      <button class="btn-register" onclick="document.getElementById('overlay').classList.add('open')">
+      <button class="btn-register" id="sideRegisterBtn">
         🎟️ Register Now
       </button>
       <button class="btn-save" onclick="this.textContent='🔖 Saved!'">🔖 Save Event</button>
@@ -452,19 +452,22 @@ if (grid.children.length === 0) {
 // Attendees display
 document.getElementById('eventAttendees').textContent = attendees.toLocaleString() + '+ Attendees';
 
-// Register button → go to register page
-document.querySelectorAll('.btn-register, .nav-btn-outline').forEach(btn => {
-  btn.addEventListener('click', () => {
-    const regParams = new URLSearchParams({
-      title, start, end, city, venue, format, cname, cemail
-    });
-    window.location.href = 'EventRegister_v1_PC.html?' + regParams.toString();
-  });
-});
+// Register buttons → go to register page (no inline onclick conflict)
+function goToRegister() {
+  const regParams = new URLSearchParams({ title, start, end, city, venue, format, cname, cemail });
+  window.location.href = 'EventRegister_v1_PC.html?' + regParams.toString();
+}
+const navBtn  = document.getElementById('navRegisterBtn');
+const sideBtn = document.getElementById('sideRegisterBtn');
+if (navBtn)  navBtn.addEventListener('click', goToRegister);
+if (sideBtn) sideBtn.addEventListener('click', goToRegister);
 
 // Show Sponsor / Booth cards based on enabled modules
 const hasSponsor = modules.some(m => m.toLowerCase().includes('sponsor'));
-const hasBooth   = modules.some(m => m.toLowerCase().includes('booth'));
+const hasBooth   = modules.some(m => {
+  const ml = m.toLowerCase();
+  return ml.includes('booth') || ml.includes('exhib');
+});
 if (hasSponsor) document.getElementById('sponsorCard').style.display = 'block';
 if (hasBooth)   document.getElementById('boothCard').style.display   = 'block';
 
