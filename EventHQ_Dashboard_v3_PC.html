@@ -1223,8 +1223,29 @@ body.dark-mode .unsaved-bar { background: #1e2533; border-color: #2d3748; }
                 <input type="text" id="qr-sim-input" class="form-input" placeholder="Enter attendee name or email" style="flex:1">
                 <button class="btn-primary" style="font-size:12px;padding:8px 14px" onclick="simulateCheckin()">Check In</button>
               </div>
-              <div id="qr-sim-result" style="font-size:13px;color:#6b7280">Scan or type to check in an attendee</div>
-              <div style="margin-top:12px;padding:10px;background:#f0fdf4;border-radius:8px;border:1px solid #bbf7d0">
+              <div id="qr-sim-result" style="font-size:13px;color:#6b7280;min-height:22px">Scan or type to check in an attendee</div>
+              <!-- Live counter -->
+              <div style="display:flex;gap:12px;margin-top:12px">
+                <div style="flex:1;background:#f0fdf4;border:1px solid #bbf7d0;border-radius:8px;padding:10px;text-align:center">
+                  <div id="ci-counter" style="font-size:22px;font-weight:800;color:#16a34a">247</div>
+                  <div style="font-size:11px;color:#166534">Checked In</div>
+                </div>
+                <div style="flex:1;background:#fff7ed;border:1px solid #fed7aa;border-radius:8px;padding:10px;text-align:center">
+                  <div id="ci-pending" style="font-size:22px;font-weight:800;color:#d97706">151</div>
+                  <div style="font-size:11px;color:#92400e">Pending</div>
+                </div>
+                <div style="flex:1;background:#eff6ff;border:1px solid #bfdbfe;border-radius:8px;padding:10px;text-align:center">
+                  <div id="ci-rate" style="font-size:22px;font-weight:800;color:#2563eb">62%</div>
+                  <div style="font-size:11px;color:#1e40af">Rate</div>
+                </div>
+              </div>
+              <!-- Batch check-in -->
+              <div style="margin-top:12px;display:flex;gap:8px">
+                <button onclick="batchCheckin('vip')" class="btn-secondary" style="font-size:11px;padding:5px 12px">Check-in VIPs (12)</button>
+                <button onclick="batchCheckin('press')" class="btn-secondary" style="font-size:11px;padding:5px 12px">Check-in Press (8)</button>
+                <button onclick="batchCheckin('all')" style="font-size:11px;padding:5px 12px;background:#16a34a;color:#fff;border:none;border-radius:6px;cursor:pointer;font-weight:600">Batch All Pending</button>
+              </div>
+              <div style="margin-top:10px;padding:10px;background:#f0fdf4;border-radius:8px;border:1px solid #bbf7d0">
                 <div style="font-size:12px;color:#166534">✅ <strong>Live check-in:</strong> In production, this connects to the mobile scanner app. Attendees scan their QR badge at entry gates for instant check-in.</div>
               </div>
             </div>
@@ -7852,6 +7873,29 @@ function simulateCheckin() {
     if (result) result.innerHTML = `<span style="color:#dc2626">❌ No attendee found matching "${val}"</span>`;
   }
   if (input) input.value = '';
+}
+function batchCheckin(group) {
+  let count = 0;
+  if (group === 'all') {
+    (_attAll || []).forEach(a => { if (!a.checkedIn) { a.checkedIn = true; count++; } });
+  } else if (group === 'vip') {
+    count = 12;
+    showToast('12 VIP guests checked in via batch');
+  } else if (group === 'press') {
+    count = 8;
+    showToast('8 Press members checked in via batch');
+  }
+  if (group === 'all') {
+    renderAttTable(_attAll);
+    showToast(count + ' attendees batch checked in');
+  }
+  // Update counters
+  const ciEl = document.getElementById('ci-counter');
+  const pendEl = document.getElementById('ci-pending');
+  const rateEl = document.getElementById('ci-rate');
+  if (ciEl) { const cur = parseInt(ciEl.textContent) || 247; ciEl.textContent = cur + count; }
+  if (pendEl) { const cur = parseInt(pendEl.textContent) || 151; pendEl.textContent = Math.max(0, cur - count); }
+  if (rateEl) { const total = 398; const ci = parseInt(document.getElementById('ci-counter')?.textContent) || 247; rateEl.textContent = Math.round(ci/total*100) + '%'; }
 }
 function filterAttendees() {
   const q = document.getElementById('att-search').value.toLowerCase().trim();
