@@ -1,0 +1,483 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Sponsorship — Game Connection</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800;900&display=swap');
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+:root {
+  --c-bg:#f3f4f6; --c-card:#ffffff; --c-border:#e5e7eb; --c-border2:#d1d5db;
+  --c-text:#111827; --c-muted:#6b7280; --c-dim:#9ca3af;
+  --c-green:#16a34a; --c-green-d:#15803d; --c-green-bg:rgba(22,163,74,.08); --c-green-bd:rgba(22,163,74,.25);
+  --c-amber:#d97706; --c-amber-bg:rgba(217,119,6,.1); --c-amber-bd:rgba(217,119,6,.3);
+  --c-blue:#2563eb; --c-blue-bg:rgba(37,99,235,.08); --c-blue-bd:rgba(37,99,235,.25);
+  --c-purple:#7c3aed; --c-purple-bg:rgba(124,58,237,.08); --c-purple-bd:rgba(124,58,237,.25);
+  --c-red:#dc2626;
+  --r-sm:6px; --r-md:10px; --r-lg:16px;
+  --shadow-sm:0 1px 3px rgba(0,0,0,.06);
+  --shadow:0 4px 16px rgba(0,0,0,.08);
+  --trans:.18s ease;
+  --font:'DM Sans',-apple-system,BlinkMacSystemFont,'Inter','Segoe UI',sans-serif;
+}
+html{scroll-behavior:smooth}
+body{font-family:var(--font);background:var(--c-bg);color:var(--c-text);line-height:1.6;min-height:100vh}
+a{color:inherit;text-decoration:none}
+button{font-family:var(--font);cursor:pointer}
+::-webkit-scrollbar{width:6px}
+::-webkit-scrollbar-track{background:var(--c-bg)}
+::-webkit-scrollbar-thumb{background:var(--c-border2);border-radius:3px}
+
+/* NAV */
+.nav{position:sticky;top:0;z-index:200;background:rgba(255,255,255,.95);backdrop-filter:blur(12px);border-bottom:1px solid var(--c-border);height:56px;display:flex;align-items:center;padding:0 24px;gap:16px;box-shadow:0 1px 4px rgba(0,0,0,.06)}
+.nav-logo{font-size:14px;font-weight:800;color:var(--c-green);letter-spacing:-.3px;display:flex;align-items:center;gap:6px}
+.nav-logo svg{width:18px;height:18px}
+.nav-sep{width:1px;height:20px;background:var(--c-border)}
+.nav-back{font-size:12px;color:var(--c-muted);display:flex;align-items:center;gap:4px;transition:color var(--trans);cursor:pointer}
+.nav-back:hover{color:var(--c-text)}
+.nav-spacer{flex:1}
+.nav-event{font-size:13px;font-weight:600}
+
+/* STEPPER */
+.stepper-wrap{background:var(--c-card);border-bottom:1px solid var(--c-border);padding:0 40px}
+.stepper{max-width:760px;margin:0 auto;display:flex;align-items:center;padding:16px 0}
+.step{display:flex;align-items:center;gap:8px;font-size:12px;font-weight:600;color:var(--c-dim);flex:1}
+.step.active{color:var(--c-green)}
+.step.done{color:var(--c-muted)}
+.step-num{width:24px;height:24px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;background:var(--c-bg);border:2px solid var(--c-border);color:var(--c-dim);flex-shrink:0;transition:all var(--trans)}
+.step.active .step-num{background:var(--c-green);border-color:var(--c-green);color:#fff}
+.step.done .step-num{background:var(--c-green-bg);border-color:var(--c-green-bd);color:var(--c-green)}
+.step-line{flex:1;height:1px;background:var(--c-border);margin:0 8px}
+
+/* PAGE HEADER */
+.page-header{background:var(--c-card);border-bottom:1px solid var(--c-border);padding:28px 40px}
+.page-header-inner{max-width:1100px;margin:0 auto}
+.page-title{font-size:22px;font-weight:800;margin-bottom:4px}
+.page-sub{font-size:13px;color:var(--c-muted)}
+
+/* LAYOUT */
+.page-body{max-width:1100px;margin:0 auto;padding:32px 24px 80px}
+
+/* TIER GRID */
+.tier-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:32px}
+@media(max-width:900px){.tier-grid{grid-template-columns:1fr 1fr}}
+
+/* TIER CARD */
+.tier-card{background:var(--c-card);border:2px solid var(--c-border);border-radius:var(--r-lg);padding:22px 18px;cursor:pointer;transition:all var(--trans);position:relative;display:flex;flex-direction:column}
+.tier-card:hover{box-shadow:var(--shadow);transform:translateY(-2px)}
+.tier-card.selected{box-shadow:var(--shadow)}
+.tier-card.popular{border-color:var(--c-blue)}
+.tier-card.selected.bronze{border-color:var(--c-amber)}
+.tier-card.selected.silver{border-color:#94a3b8}
+.tier-card.selected.gold{border-color:var(--c-amber)}
+.tier-card.selected.platinum{border-color:var(--c-purple)}
+.tier-popular-badge{position:absolute;top:-1px;left:50%;transform:translateX(-50%);background:var(--c-blue);color:#fff;font-size:10px;font-weight:700;padding:3px 12px;border-radius:0 0 8px 8px;letter-spacing:.3px;white-space:nowrap}
+.tier-icon{width:40px;height:40px;border-radius:var(--r-sm);display:flex;align-items:center;justify-content:center;font-size:20px;margin-bottom:12px}
+.tier-name{font-size:16px;font-weight:800;margin-bottom:4px}
+.tier-price{font-size:22px;font-weight:900;margin-bottom:2px}
+.tier-price-note{font-size:11px;color:var(--c-muted);margin-bottom:14px}
+.tier-divider{height:1px;background:var(--c-border);margin-bottom:14px}
+.tier-features{flex:1;display:flex;flex-direction:column;gap:7px;margin-bottom:16px}
+.tier-feature{font-size:12px;display:flex;align-items:flex-start;gap:6px;color:var(--c-muted)}
+.tier-feature svg{flex-shrink:0;margin-top:2px}
+.tier-feature.highlight{color:var(--c-text);font-weight:500}
+.tier-select-btn{width:100%;padding:9px;border-radius:var(--r-sm);border:1.5px solid var(--c-border2);background:#fff;font-family:var(--font);font-size:13px;font-weight:700;color:var(--c-muted);cursor:pointer;transition:all var(--trans);margin-top:auto}
+.tier-card.selected .tier-select-btn{background:var(--c-green);border-color:var(--c-green);color:#fff}
+.tier-card:not(.selected):hover .tier-select-btn{border-color:var(--c-green-bd);color:var(--c-green)}
+
+/* COMPARISON TABLE */
+.compare-toggle{text-align:center;margin-bottom:24px}
+.compare-toggle button{font-size:12px;font-weight:600;color:var(--c-green);background:none;border:none;cursor:pointer;text-decoration:underline;text-underline-offset:2px}
+.compare-table{width:100%;border-collapse:collapse;font-size:12px;margin-bottom:32px;background:var(--c-card);border-radius:var(--r-lg);overflow:hidden;border:1px solid var(--c-border)}
+.compare-table th{padding:10px 14px;text-align:center;font-weight:700;border-bottom:1px solid var(--c-border);background:var(--c-bg);color:var(--c-muted);font-size:11px;text-transform:uppercase;letter-spacing:.4px}
+.compare-table th:first-child{text-align:left}
+.compare-table td{padding:9px 14px;border-bottom:1px solid var(--c-border);text-align:center;color:var(--c-muted)}
+.compare-table td:first-child{text-align:left;font-weight:500;color:var(--c-text)}
+.compare-table tr:last-child td{border-bottom:none}
+.compare-table tr:hover td{background:var(--c-bg)}
+.check-yes{color:var(--c-green);font-size:14px}
+.check-no{color:var(--c-dim);font-size:14px}
+
+/* FORM SECTION */
+.form-section{display:none}
+.form-section.visible{display:block}
+.card{background:var(--c-card);border:1px solid var(--c-border);border-radius:var(--r-lg);padding:28px;box-shadow:var(--shadow-sm);margin-bottom:16px}
+.card-title{font-size:14px;font-weight:700;color:var(--c-muted);text-transform:uppercase;letter-spacing:.6px;margin-bottom:20px}
+.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.form-group{display:flex;flex-direction:column;gap:5px}
+.form-group.span2{grid-column:span 2}
+.form-label{font-size:12px;font-weight:600;color:var(--c-text)}
+.form-label .req{color:var(--c-red);margin-left:2px}
+.form-input,.form-select,.form-textarea{font-family:var(--font);font-size:13px;padding:9px 12px;border-radius:var(--r-sm);border:1.5px solid var(--c-border2);background:#fff;color:var(--c-text);transition:border-color var(--trans),box-shadow var(--trans);outline:none;width:100%}
+.form-input:focus,.form-select:focus,.form-textarea:focus{border-color:var(--c-green);box-shadow:0 0 0 3px var(--c-green-bg)}
+.form-textarea{resize:vertical;min-height:80px}
+.form-select{appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%236b7280' stroke-width='2.5'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 10px center;padding-right:28px}
+
+/* SELECTED TIER SUMMARY */
+.tier-summary-bar{background:var(--c-green-bg);border:1.5px solid var(--c-green-bd);border-radius:var(--r-md);padding:14px 18px;display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;flex-wrap:wrap;gap:10px}
+.tier-summary-left{display:flex;align-items:center;gap:10px}
+.tier-summary-icon{font-size:20px}
+.tier-summary-name{font-size:14px;font-weight:700;color:var(--c-green)}
+.tier-summary-price{font-size:13px;color:var(--c-muted)}
+.tier-summary-change{font-size:12px;font-weight:600;color:var(--c-green);cursor:pointer;text-decoration:underline;text-underline-offset:2px}
+
+/* SUBMIT */
+.btn-submit{width:100%;padding:13px;border-radius:var(--r-md);border:none;background:var(--c-green);color:#fff;font-family:var(--font);font-size:14px;font-weight:700;cursor:pointer;transition:background var(--trans),transform var(--trans);margin-top:8px;letter-spacing:.2px}
+.btn-submit:hover{background:var(--c-green-d);transform:translateY(-1px)}
+.btn-submit:disabled{background:var(--c-dim);cursor:not-allowed;transform:none}
+
+/* SUCCESS */
+.success-page{display:none;max-width:600px;margin:0 auto;padding:32px 24px 80px}
+.success-icon{width:64px;height:64px;border-radius:50%;background:var(--c-green-bg);border:2px solid var(--c-green-bd);display:flex;align-items:center;justify-content:center;margin:0 auto 20px}
+.success-title{font-size:22px;font-weight:800;text-align:center;margin-bottom:8px}
+.success-sub{font-size:14px;color:var(--c-muted);text-align:center;margin-bottom:28px}
+.success-ref{background:var(--c-green-bg);border:1.5px solid var(--c-green-bd);border-radius:var(--r-lg);padding:20px 24px;margin-bottom:20px}
+.success-ref-row{display:flex;justify-content:space-between;font-size:13px;margin-bottom:8px}
+.success-ref-row:last-child{margin-bottom:0}
+.success-ref-label{color:var(--c-muted)}
+.success-ref-val{font-weight:600}
+.success-next{background:var(--c-bg);border:1px solid var(--c-border);border-radius:var(--r-lg);padding:18px 20px;margin-bottom:20px}
+.success-next-title{font-size:13px;font-weight:700;margin-bottom:10px}
+.next-item{display:flex;align-items:flex-start;gap:10px;margin-bottom:8px;font-size:13px;color:var(--c-muted)}
+.next-item:last-child{margin-bottom:0}
+.next-num{width:20px;height:20px;border-radius:50%;background:var(--c-green-bg);border:1px solid var(--c-green-bd);color:var(--c-green);font-size:11px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px}
+.btn-primary{display:block;width:100%;padding:13px;border-radius:var(--r-md);border:none;background:var(--c-green);color:#fff;font-family:var(--font);font-size:14px;font-weight:700;cursor:pointer;transition:background var(--trans);text-align:center}
+.btn-primary:hover{background:var(--c-green-d)}
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav class="nav">
+  <a class="nav-logo" href="index.html">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polygon points="5,3 19,12 5,21"/></svg>
+    GC Platform
+  </a>
+  <div class="nav-sep"></div>
+  <a class="nav-back" href="javascript:history.back()">
+    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M19 12H5M12 5l-7 7 7 7"/></svg>
+    Back to Event
+  </a>
+  <div class="nav-spacer"></div>
+  <span class="nav-event" id="navEvent"></span>
+</nav>
+
+<!-- STEPPER -->
+<div class="stepper-wrap">
+  <div class="stepper">
+    <div class="step active" id="step1"><div class="step-num">1</div>Choose Package</div>
+    <div class="step-line"></div>
+    <div class="step" id="step2"><div class="step-num">2</div>Company Details</div>
+    <div class="step-line"></div>
+    <div class="step" id="step3"><div class="step-num">3</div>Submitted</div>
+  </div>
+</div>
+
+<!-- PAGE HEADER -->
+<div class="page-header" id="headerSection">
+  <div class="page-header-inner">
+    <div class="page-title">Sponsorship Packages</div>
+    <div class="page-sub" id="headerSub">Reach game developers, publishers, and investors at <span id="headerEventName"></span>. Select a package to get started.</div>
+  </div>
+</div>
+
+<!-- STEP 1: TIER SELECTION -->
+<div class="page-body" id="step1Page">
+  <div class="tier-grid">
+
+    <!-- BRONZE -->
+    <div class="tier-card bronze" id="tier-bronze" onclick="selectTier('bronze')">
+      <div class="tier-icon" style="background:var(--c-amber-bg)">🥉</div>
+      <div class="tier-name">Bronze</div>
+      <div class="tier-price">€3,500</div>
+      <div class="tier-price-note">One-time package</div>
+      <div class="tier-divider"></div>
+      <div class="tier-features">
+        <div class="tier-feature highlight"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="var(--c-green)" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>Logo on event website</div>
+        <div class="tier-feature highlight"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="var(--c-green)" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>2 complimentary passes</div>
+        <div class="tier-feature highlight"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="var(--c-green)" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>Logo in printed programme</div>
+        <div class="tier-feature"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="var(--c-dim)" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>Speaking slot</div>
+        <div class="tier-feature"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="var(--c-dim)" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>Dedicated booth</div>
+        <div class="tier-feature"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="var(--c-dim)" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>Attendee list access</div>
+      </div>
+      <button class="tier-select-btn" id="btn-bronze">Select Bronze</button>
+    </div>
+
+    <!-- SILVER -->
+    <div class="tier-card silver" id="tier-silver" onclick="selectTier('silver')">
+      <div class="tier-icon" style="background:rgba(148,163,184,.12)">🥈</div>
+      <div class="tier-name">Silver</div>
+      <div class="tier-price">€7,500</div>
+      <div class="tier-price-note">One-time package</div>
+      <div class="tier-divider"></div>
+      <div class="tier-features">
+        <div class="tier-feature highlight"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="var(--c-green)" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>Logo on event website</div>
+        <div class="tier-feature highlight"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="var(--c-green)" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>4 complimentary passes</div>
+        <div class="tier-feature highlight"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="var(--c-green)" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>Logo in printed programme</div>
+        <div class="tier-feature highlight"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="var(--c-green)" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>1 speaking slot (30 min)</div>
+        <div class="tier-feature highlight"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="var(--c-green)" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>Small booth (3m×2m)</div>
+        <div class="tier-feature"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="var(--c-dim)" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>Attendee list access</div>
+      </div>
+      <button class="tier-select-btn" id="btn-silver">Select Silver</button>
+    </div>
+
+    <!-- GOLD -->
+    <div class="tier-card gold popular" id="tier-gold" onclick="selectTier('gold')">
+      <div class="tier-popular-badge">MOST POPULAR</div>
+      <div class="tier-icon" style="background:var(--c-amber-bg)">🥇</div>
+      <div class="tier-name">Gold</div>
+      <div class="tier-price">€15,000</div>
+      <div class="tier-price-note">One-time package</div>
+      <div class="tier-divider"></div>
+      <div class="tier-features">
+        <div class="tier-feature highlight"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="var(--c-green)" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>Premium logo placement</div>
+        <div class="tier-feature highlight"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="var(--c-green)" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>8 complimentary passes</div>
+        <div class="tier-feature highlight"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="var(--c-green)" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>2 speaking slots (45 min)</div>
+        <div class="tier-feature highlight"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="var(--c-green)" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>Medium booth (4m×3m)</div>
+        <div class="tier-feature highlight"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="var(--c-green)" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>Attendee list (post-event)</div>
+        <div class="tier-feature highlight"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="var(--c-green)" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>Social media mentions</div>
+      </div>
+      <button class="tier-select-btn" id="btn-gold">Select Gold</button>
+    </div>
+
+    <!-- PLATINUM -->
+    <div class="tier-card platinum" id="tier-platinum" onclick="selectTier('platinum')">
+      <div class="tier-icon" style="background:var(--c-purple-bg)">💎</div>
+      <div class="tier-name">Platinum</div>
+      <div class="tier-price">€30,000</div>
+      <div class="tier-price-note">Exclusive · 1 slot only</div>
+      <div class="tier-divider"></div>
+      <div class="tier-features">
+        <div class="tier-feature highlight"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="var(--c-green)" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>Title sponsor branding</div>
+        <div class="tier-feature highlight"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="var(--c-green)" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>15 complimentary passes</div>
+        <div class="tier-feature highlight"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="var(--c-green)" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>Keynote speaking slot</div>
+        <div class="tier-feature highlight"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="var(--c-green)" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>Large booth (6m×4m)</div>
+        <div class="tier-feature highlight"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="var(--c-green)" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>Full attendee list</div>
+        <div class="tier-feature highlight"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="var(--c-green)" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>Exclusive VIP dinner host</div>
+      </div>
+      <button class="tier-select-btn" id="btn-platinum">Select Platinum</button>
+    </div>
+
+  </div>
+
+  <!-- COMPARE TOGGLE -->
+  <div class="compare-toggle">
+    <button onclick="toggleCompare()">Compare all packages in detail ↓</button>
+  </div>
+
+  <!-- COMPARISON TABLE -->
+  <div id="compareTable" style="display:none">
+    <table class="compare-table">
+      <thead>
+        <tr>
+          <th>Feature</th>
+          <th>Bronze</th>
+          <th>Silver</th>
+          <th>Gold</th>
+          <th>Platinum</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr><td>Price</td><td>€3,500</td><td>€7,500</td><td>€15,000</td><td>€30,000</td></tr>
+        <tr><td>Complimentary passes</td><td>2</td><td>4</td><td>8</td><td>15</td></tr>
+        <tr><td>Logo on website</td><td class="check-yes">✓</td><td class="check-yes">✓</td><td class="check-yes">✓ Premium</td><td class="check-yes">✓ Title</td></tr>
+        <tr><td>Logo in programme</td><td class="check-yes">✓</td><td class="check-yes">✓</td><td class="check-yes">✓</td><td class="check-yes">✓</td></tr>
+        <tr><td>Speaking slot</td><td class="check-no">—</td><td>1 × 30 min</td><td>2 × 45 min</td><td>Keynote</td></tr>
+        <tr><td>Exhibition booth</td><td class="check-no">—</td><td>3m × 2m</td><td>4m × 3m</td><td>6m × 4m</td></tr>
+        <tr><td>Social media mentions</td><td class="check-no">—</td><td class="check-no">—</td><td class="check-yes">✓</td><td class="check-yes">✓ Dedicated</td></tr>
+        <tr><td>Attendee list</td><td class="check-no">—</td><td class="check-no">—</td><td>Post-event</td><td>Full access</td></tr>
+        <tr><td>VIP dinner</td><td class="check-no">—</td><td class="check-no">—</td><td class="check-no">—</td><td class="check-yes">✓ Host</td></tr>
+        <tr><td>Dedicated account manager</td><td class="check-no">—</td><td class="check-no">—</td><td class="check-yes">✓</td><td class="check-yes">✓</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div style="text-align:center;font-size:13px;color:var(--c-muted)">
+    Need a custom package? <a href="mailto:sponsors@gameconnection.com" style="color:var(--c-green);font-weight:600">Contact us</a>
+  </div>
+</div>
+
+<!-- STEP 2: COMPANY FORM -->
+<div class="page-body form-section" id="step2Page">
+  <div class="tier-summary-bar" id="tierSummaryBar">
+    <div class="tier-summary-left">
+      <span class="tier-summary-icon" id="sumIcon">🥇</span>
+      <div>
+        <div class="tier-summary-name" id="sumName">Gold Package</div>
+        <div class="tier-summary-price" id="sumPrice">€15,000</div>
+      </div>
+    </div>
+    <span class="tier-summary-change" onclick="changeTier()">Change package</span>
+  </div>
+
+  <div class="card">
+    <div class="card-title">Company Information</div>
+    <div class="form-grid">
+      <div class="form-group">
+        <label class="form-label">Company Name <span class="req">*</span></label>
+        <input class="form-input" id="f-company" type="text" placeholder="Acme Games Ltd." autocomplete="organization">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Industry</label>
+        <select class="form-select" id="f-industry">
+          <option value="">Select…</option>
+          <option>Game Developer</option><option>Game Publisher</option>
+          <option>Investor / VC</option><option>Platform / Distributor</option>
+          <option>Technology / Middleware</option><option>Media / Press</option>
+          <option>Service Provider</option><option>Other</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Contact Person <span class="req">*</span></label>
+        <input class="form-input" id="f-contact" type="text" placeholder="Full name" autocomplete="name">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Job Title</label>
+        <input class="form-input" id="f-jobtitle" type="text" placeholder="Head of Partnerships">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Email <span class="req">*</span></label>
+        <input class="form-input" id="f-email" type="email" placeholder="partnerships@company.com" autocomplete="email">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Phone</label>
+        <input class="form-input" id="f-phone" type="tel" placeholder="+1 (555) 000-0000" autocomplete="tel">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Country <span class="req">*</span></label>
+        <select class="form-select" id="f-country">
+          <option value="">Select country…</option>
+          <option>United States</option><option>United Kingdom</option><option>Germany</option>
+          <option>France</option><option>Japan</option><option>Canada</option>
+          <option>Australia</option><option>China</option><option>South Korea</option>
+          <option>Sweden</option><option>Netherlands</option><option>Other</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Company Website</label>
+        <input class="form-input" id="f-website" type="url" placeholder="https://company.com">
+      </div>
+      <div class="form-group span2">
+        <label class="form-label">Sponsorship Goals</label>
+        <textarea class="form-textarea" id="f-goals" placeholder="What are your main objectives for sponsoring this event? (e.g. brand awareness, recruiting, business development…)"></textarea>
+      </div>
+    </div>
+    <div style="margin-top:14px;font-size:12px;color:var(--c-muted)">
+      By submitting, you agree to our <a href="#" style="color:var(--c-green);text-decoration:underline">Sponsorship Terms</a> and <a href="#" style="color:var(--c-green);text-decoration:underline">Privacy Policy</a>. Our team will follow up within 2 business days.
+    </div>
+    <button class="btn-submit" id="submitBtn" disabled onclick="submitForm()">Submit Application →</button>
+  </div>
+</div>
+
+<!-- STEP 3: SUCCESS -->
+<div class="success-page" id="step3Page">
+  <div class="card" style="text-align:center;padding:40px">
+    <div class="success-icon">
+      <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="var(--c-green)" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+    </div>
+    <div class="success-title">Application Received!</div>
+    <div class="success-sub">Our sponsorship team will review your application and contact you within 2 business days.</div>
+    <div class="success-ref">
+      <div class="success-ref-row"><span class="success-ref-label">Reference</span><span class="success-ref-val" id="confRef">—</span></div>
+      <div class="success-ref-row"><span class="success-ref-label">Package</span><span class="success-ref-val" id="confPackage">—</span></div>
+      <div class="success-ref-row"><span class="success-ref-label">Company</span><span class="success-ref-val" id="confCompany">—</span></div>
+      <div class="success-ref-row"><span class="success-ref-label">Contact</span><span class="success-ref-val" id="confEmail">—</span></div>
+    </div>
+    <div class="success-next">
+      <div class="success-next-title">What happens next</div>
+      <div class="next-item"><div class="next-num">1</div><div>Our team reviews your application and confirms availability.</div></div>
+      <div class="next-item"><div class="next-num">2</div><div>You'll receive a sponsorship agreement to sign electronically.</div></div>
+      <div class="next-item"><div class="next-num">3</div><div>Invoice is issued; payment activates your package benefits.</div></div>
+      <div class="next-item"><div class="next-num">4</div><div>Your dedicated account manager onboards you with next steps.</div></div>
+    </div>
+    <a class="btn-primary" id="backEventLink" href="#">Back to Event</a>
+  </div>
+</div>
+
+<script>
+const P = new URLSearchParams(location.search);
+const eventName = P.get('eventName') || 'Game Connection Europe 2027';
+const eventUrl  = P.get('eventUrl') || 'EventPublicPage_v4_PC.html';
+
+document.getElementById('navEvent').textContent = eventName;
+document.getElementById('headerEventName').textContent = eventName;
+document.getElementById('backEventLink').href = eventUrl;
+
+const tiers = {
+  bronze:   { icon:'🥉', name:'Bronze Package',   price:'€3,500' },
+  silver:   { icon:'🥈', name:'Silver Package',   price:'€7,500' },
+  gold:     { icon:'🥇', name:'Gold Package',     price:'€15,000' },
+  platinum: { icon:'💎', name:'Platinum Package', price:'€30,000' },
+};
+
+let selectedTier = null;
+
+function selectTier(tier) {
+  selectedTier = tier;
+  // Visual selection
+  document.querySelectorAll('.tier-card').forEach(c => c.classList.remove('selected'));
+  document.getElementById('tier-' + tier).classList.add('selected');
+  document.querySelectorAll('.tier-select-btn').forEach(b => b.textContent = b.id.replace('btn-', '').replace(/^\w/, c => c.toUpperCase()) + ' Package');
+  document.getElementById('btn-' + tier).textContent = '✓ Selected';
+
+  // Advance to step 2 after short delay
+  setTimeout(() => {
+    document.getElementById('step1').classList.remove('active'); document.getElementById('step1').classList.add('done');
+    document.getElementById('step2').classList.add('active');
+    document.getElementById('step1Page').style.display = 'none';
+    document.getElementById('headerSection').style.display = 'none';
+    document.getElementById('step2Page').classList.add('visible');
+
+    const t = tiers[tier];
+    document.getElementById('sumIcon').textContent = t.icon;
+    document.getElementById('sumName').textContent = t.name;
+    document.getElementById('sumPrice').textContent = t.price;
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+    validateForm();
+  }, 300);
+}
+
+function changeTier() {
+  document.getElementById('step1').classList.remove('done'); document.getElementById('step1').classList.add('active');
+  document.getElementById('step2').classList.remove('active');
+  document.getElementById('step1Page').style.display = '';
+  document.getElementById('headerSection').style.display = '';
+  document.getElementById('step2Page').classList.remove('visible');
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+function toggleCompare() {
+  const el = document.getElementById('compareTable');
+  el.style.display = el.style.display === 'none' ? '' : 'none';
+}
+
+function validateForm() {
+  const company = document.getElementById('f-company').value.trim();
+  const contact = document.getElementById('f-contact').value.trim();
+  const email   = document.getElementById('f-email').value.trim();
+  const country = document.getElementById('f-country').value;
+  document.getElementById('submitBtn').disabled = !(company && contact && email && country);
+}
+
+['f-company','f-contact','f-email','f-country'].forEach(id => {
+  document.getElementById(id).addEventListener('input', validateForm);
+  document.getElementById(id).addEventListener('change', validateForm);
+});
+
+function submitForm() {
+  const ref = 'SP-' + Math.random().toString(36).substr(2,8).toUpperCase();
+  document.getElementById('confRef').textContent = ref;
+  document.getElementById('confPackage').textContent = tiers[selectedTier].name;
+  document.getElementById('confCompany').textContent = document.getElementById('f-company').value.trim();
+  document.getElementById('confEmail').textContent = document.getElementById('f-email').value.trim();
+
+  document.getElementById('step2').classList.remove('active'); document.getElementById('step2').classList.add('done');
+  document.getElementById('step3').classList.add('active');
+  document.getElementById('step2Page').classList.remove('visible');
+  document.getElementById('step3Page').style.display = '';
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+</script>
+</body>
+</html>
