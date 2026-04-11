@@ -5561,6 +5561,28 @@ The {Event Name} Team</textarea>
                 </div>
               </div>
 
+              <div class="form-group">
+                <div class="form-label">Event Tags <span style="color:var(--text3);font-weight:400">(optional)</span></div>
+                <div id="tags-container" style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:8px">
+                  <span class="event-tag" style="font-size:11px;background:#dbeafe;color:#1e40af;padding:3px 10px;border-radius:12px;display:flex;align-items:center;gap:4px;cursor:pointer" onclick="removeEventTag(this)">Gaming ×</span>
+                  <span class="event-tag" style="font-size:11px;background:#dcfce7;color:#166534;padding:3px 10px;border-radius:12px;display:flex;align-items:center;gap:4px;cursor:pointer" onclick="removeEventTag(this)">B2B ×</span>
+                  <span class="event-tag" style="font-size:11px;background:#f3e8ff;color:#7e22ce;padding:3px 10px;border-radius:12px;display:flex;align-items:center;gap:4px;cursor:pointer" onclick="removeEventTag(this)">Indie ×</span>
+                </div>
+                <div style="display:flex;gap:8px">
+                  <input class="form-input" id="tag-input" type="text" placeholder="Add tag (e.g. AAA, VR, Esports)" style="flex:1" onkeydown="if(event.key==='Enter'){addEventTag();event.preventDefault()}">
+                  <button class="btn-secondary" style="padding:6px 14px;font-size:12px" onclick="addEventTag()">+ Add</button>
+                </div>
+                <div style="margin-top:6px;display:flex;flex-wrap:wrap;gap:4px">
+                  <span style="font-size:10px;color:#9ca3af">Quick add:</span>
+                  <span style="font-size:10px;background:#f3f4f6;color:#374151;padding:2px 8px;border-radius:8px;cursor:pointer" onclick="quickAddTag('AAA')">AAA</span>
+                  <span style="font-size:10px;background:#f3f4f6;color:#374151;padding:2px 8px;border-radius:8px;cursor:pointer" onclick="quickAddTag('VR')">VR</span>
+                  <span style="font-size:10px;background:#f3f4f6;color:#374151;padding:2px 8px;border-radius:8px;cursor:pointer" onclick="quickAddTag('Esports')">Esports</span>
+                  <span style="font-size:10px;background:#f3f4f6;color:#374151;padding:2px 8px;border-radius:8px;cursor:pointer" onclick="quickAddTag('Mobile')">Mobile</span>
+                  <span style="font-size:10px;background:#f3f4f6;color:#374151;padding:2px 8px;border-radius:8px;cursor:pointer" onclick="quickAddTag('Console')">Console</span>
+                  <span style="font-size:10px;background:#f3f4f6;color:#374151;padding:2px 8px;border-radius:8px;cursor:pointer" onclick="quickAddTag('PC')">PC</span>
+                </div>
+              </div>
+
               <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:8px">
                 <button class="btn-secondary" onclick="showMyEvents()">Cancel</button>
                 <button class="btn-primary" onclick="saveEvent()">Save Changes</button>
@@ -7497,6 +7519,38 @@ function rejectRegApp(id) {
   td[td.length-1].innerHTML = '<span style="font-size:11px;background:#fee2e2;color:#dc2626;padding:3px 12px;border-radius:4px;font-weight:600">✗ Rejected</span>';
   row.style.opacity = '0.6';
   showToast('❌ Application rejected', 'error');
+}
+// ── Event Tags ───────────────────────────────────────────────────────────
+const _tagColors = [
+  ['#dbeafe','#1e40af'],['#dcfce7','#166534'],['#f3e8ff','#7e22ce'],
+  ['#fef3c7','#92400e'],['#fee2e2','#991b1b'],['#e0f2fe','#0369a1'],
+  ['#fce7f3','#9d174d'],['#f0fdf4','#14532d']
+];
+function addEventTag() {
+  const inp = document.getElementById('tag-input');
+  const val = inp.value.trim();
+  if (!val) return;
+  const container = document.getElementById('tags-container');
+  const existing = Array.from(container.querySelectorAll('.event-tag')).map(t => t.textContent.replace(' ×','').trim());
+  if (existing.includes(val)) { showToast('Tag already added', 'warning'); return; }
+  const [bg, color] = _tagColors[existing.length % _tagColors.length];
+  const span = document.createElement('span');
+  span.className = 'event-tag';
+  span.style.cssText = `font-size:11px;background:${bg};color:${color};padding:3px 10px;border-radius:12px;display:flex;align-items:center;gap:4px;cursor:pointer`;
+  span.textContent = val + ' ×';
+  span.onclick = function() { removeEventTag(this); };
+  container.appendChild(span);
+  inp.value = '';
+  markDirty();
+}
+function removeEventTag(el) {
+  el.remove();
+  markDirty();
+}
+function quickAddTag(tag) {
+  const inp = document.getElementById('tag-input');
+  inp.value = tag;
+  addEventTag();
 }
 // ── Pod Availability Checker ───────────────────────────────────────────────────────────
 function checkPodAvailability() {
