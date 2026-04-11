@@ -3,491 +3,882 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Event – Game Connection</title>
-<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<title id="pageTitle">Event – Game Connection</title>
 <style>
-*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 :root {
   --green: #16a34a;
   --green-light: #dcfce7;
-  --green-dark: #15803d;
+  --green-dark: #14532d;
+  --purple: #7c3aed;
+  --purple-light: #ede9fe;
+  --orange: #ea580c;
+  --orange-light: #ffedd5;
   --blue: #2563eb;
-  --bg: #f8f9fa;
+  --blue-light: #dbeafe;
+  --yellow: #ca8a04;
+  --yellow-light: #fef9c3;
+  --red: #dc2626;
+  --red-light: #fee2e2;
+  --bg: #f8fafc;
   --card: #ffffff;
-  --text: #111827;
-  --muted: #6b7280;
-  --border: #e5e7eb;
-  --radius: 10px;
-  --shadow: 0 1px 4px rgba(0,0,0,0.08);
-  --shadow2: 0 4px 16px rgba(0,0,0,0.10);
+  --border: #e2e8f0;
+  --text: #0f172a;
+  --muted: #64748b;
+  --radius: 12px;
+  --shadow: 0 1px 3px rgba(0,0,0,.08), 0 4px 16px rgba(0,0,0,.06);
 }
-body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--text); line-height: 1.5; }
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: var(--bg); color: var(--text); line-height: 1.6; }
 
-/* ── NAVBAR ── */
-.navbar {
-  position: sticky; top: 0; z-index: 100;
-  background: #fff; border-bottom: 1px solid var(--border);
-  padding: 0 32px; height: 60px;
-  display: flex; align-items: center; gap: 16px;
-  box-shadow: 0 1px 4px rgba(0,0,0,0.06);
-}
-.nav-logo { display: flex; align-items: center; gap: 8px; text-decoration: none; }
-.nav-logo-icon { width: 32px; height: 32px; background: var(--green); border-radius: 8px; display: flex; align-items: center; justify-content: center; }
-.nav-logo-icon svg { width: 18px; height: 18px; fill: #fff; }
-.nav-logo-text { font-size: 16px; font-weight: 700; color: var(--text); }
-.nav-back { color: var(--muted); text-decoration: none; font-size: 14px; display: flex; align-items: center; gap: 4px; transition: color 0.2s; }
-.nav-back:hover { color: var(--green); }
+/* NAV */
+.nav { position: sticky; top: 0; z-index: 100; background: rgba(255,255,255,.95); backdrop-filter: blur(8px); border-bottom: 1px solid var(--border); display: flex; align-items: center; padding: 0 32px; height: 56px; gap: 12px; }
+.nav-logo { font-weight: 800; font-size: 15px; color: var(--green); text-decoration: none; display: flex; align-items: center; gap: 6px; }
+.nav-logo::before { content: '🎮'; font-size: 18px; }
 .nav-divider { color: var(--border); font-size: 18px; }
+.nav-back { font-size: 13px; color: var(--muted); text-decoration: none; }
+.nav-back:hover { color: var(--text); }
 .nav-spacer { flex: 1; }
-.nav-btn { padding: 8px 20px; border-radius: 8px; font-family: inherit; font-size: 14px; font-weight: 600; cursor: pointer; border: none; transition: all 0.2s; }
-.nav-btn-outline { background: transparent; color: var(--text); border: 1.5px solid var(--border); }
-.nav-btn-outline:hover { border-color: var(--green); color: var(--green); }
-.nav-btn-primary { background: var(--green); color: #fff; }
-.nav-btn-primary:hover { background: var(--green-dark); }
+.nav-btn { padding: 7px 18px; border-radius: 8px; font-size: 13px; font-weight: 600; cursor: pointer; border: none; }
+.nav-btn-outline { background: var(--green); color: #fff; }
+.nav-btn-outline:hover { background: #15803d; }
 
-/* ── HERO ── */
-.hero {
-  width: 100%; max-width: 1100px; margin: 32px auto 0; padding: 0 24px;
-}
-.hero-cover {
-  width: 100%; height: 340px; border-radius: 14px; object-fit: cover;
-  background: linear-gradient(135deg, #1e3a5f 0%, #0d6e3f 100%);
-  display: flex; align-items: center; justify-content: center;
-  font-size: 64px; overflow: hidden; position: relative;
-}
-.hero-cover img { width: 100%; height: 100%; object-fit: cover; border-radius: 14px; }
-.hero-cover-placeholder { font-size: 64px; }
+/* HERO */
+.hero { position: relative; height: 340px; background: linear-gradient(135deg, #0f2027 0%, #1a3a2a 50%, #0d3320 100%); overflow: hidden; display: flex; align-items: flex-end; }
+.hero-bg-pattern { position: absolute; inset: 0; opacity: .07; background-image: radial-gradient(circle, #fff 1px, transparent 1px); background-size: 32px 32px; }
+.hero-cover { position: absolute; inset: 0; object-fit: cover; opacity: .35; }
+.hero-gradient { position: absolute; bottom: 0; left: 0; right: 0; height: 60%; background: linear-gradient(to top, rgba(0,0,0,.7), transparent); }
+.hero-content { position: relative; z-index: 2; padding: 32px 40px; width: 100%; }
+.hero-tags { display: flex; gap: 8px; margin-bottom: 12px; flex-wrap: wrap; }
+.hero-tag { font-size: 11px; font-weight: 700; padding: 3px 10px; border-radius: 20px; letter-spacing: .5px; text-transform: uppercase; }
+.tag-upcoming { background: #22c55e; color: #fff; }
+.tag-inperson { background: rgba(255,255,255,.2); color: #fff; border: 1px solid rgba(255,255,255,.3); }
+.tag-conf { background: #f59e0b; color: #fff; }
+.hero-title { font-size: 32px; font-weight: 900; color: #fff; line-height: 1.2; margin-bottom: 10px; text-shadow: 0 2px 8px rgba(0,0,0,.4); }
+.hero-meta { display: flex; gap: 20px; flex-wrap: wrap; }
+.hero-meta-item { font-size: 14px; color: rgba(255,255,255,.85); display: flex; align-items: center; gap: 5px; }
 
-/* ── LAYOUT ── */
-.layout {
-  max-width: 1100px; margin: 0 auto; padding: 28px 24px 60px;
-  display: grid; grid-template-columns: 1fr 320px; gap: 28px;
-}
+/* LAYOUT */
+.page-wrap { max-width: 1200px; margin: 0 auto; padding: 32px 24px; display: grid; grid-template-columns: 1fr 320px; gap: 28px; align-items: start; }
+.main-col { display: flex; flex-direction: column; gap: 24px; }
+.side-col { position: sticky; top: 68px; display: flex; flex-direction: column; gap: 16px; }
 
-/* ── MAIN CONTENT ── */
-.main {}
-.event-header { margin-bottom: 20px; }
-.event-badges { display: flex; align-items: center; gap: 8px; margin-bottom: 10px; flex-wrap: wrap; }
-.badge {
-  display: inline-flex; align-items: center; gap: 4px;
-  padding: 4px 10px; border-radius: 20px; font-size: 12px; font-weight: 600;
-}
-.badge-live { background: #dcfce7; color: #16a34a; }
-.badge-upcoming { background: #dbeafe; color: #1d4ed8; }
-.badge-past { background: #f3f4f6; color: #6b7280; }
-.badge-format { background: #f3f4f6; color: #374151; }
-.badge-type { background: #fef3c7; color: #92400e; }
-.event-title { font-size: 32px; font-weight: 800; color: var(--text); line-height: 1.2; margin-bottom: 12px; }
-.event-meta { display: flex; flex-wrap: wrap; gap: 16px; color: var(--muted); font-size: 14px; }
-.event-meta-item { display: flex; align-items: center; gap: 6px; }
-.event-meta-item svg { width: 16px; height: 16px; flex-shrink: 0; }
+/* STAT BAR */
+.stat-bar { background: var(--card); border: 1px solid var(--border); border-radius: var(--radius); padding: 20px 28px; display: grid; grid-template-columns: repeat(4, 1fr); gap: 0; box-shadow: var(--shadow); }
+.stat-bar-item { text-align: center; padding: 0 16px; }
+.stat-bar-item + .stat-bar-item { border-left: 1px solid var(--border); }
+.stat-bar-num { font-size: 26px; font-weight: 900; color: var(--text); line-height: 1; }
+.stat-bar-label { font-size: 11px; color: var(--muted); margin-top: 4px; text-transform: uppercase; letter-spacing: .5px; }
 
-/* ── SECTION ── */
-.section { background: var(--card); border: 1px solid var(--border); border-radius: var(--radius); padding: 24px; margin-bottom: 20px; }
-.section-title { font-size: 16px; font-weight: 700; color: var(--text); margin-bottom: 14px; padding-bottom: 12px; border-bottom: 1px solid var(--border); }
-.section-body { font-size: 15px; color: #374151; line-height: 1.7; }
+/* SECTION CARD */
+.section-card { background: var(--card); border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden; box-shadow: var(--shadow); }
+.section-head { padding: 18px 24px 14px; border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; }
+.section-head-left { display: flex; align-items: center; gap: 10px; }
+.section-icon { font-size: 20px; }
+.section-title { font-size: 16px; font-weight: 800; color: var(--text); }
+.section-count { font-size: 12px; color: var(--muted); background: var(--bg); padding: 2px 8px; border-radius: 20px; border: 1px solid var(--border); }
+.section-body { padding: 20px 24px; }
 
-/* ── MODULES ── */
-.modules-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 10px; }
-.module-chip {
-  display: flex; align-items: center; gap: 8px;
-  padding: 10px 14px; border-radius: 8px;
-  background: var(--bg); border: 1px solid var(--border);
-  font-size: 13px; font-weight: 500; color: var(--text);
-}
-.module-chip .chip-icon { font-size: 18px; }
-.module-chip.active { background: var(--green-light); border-color: #86efac; color: var(--green-dark); }
+/* ABOUT */
+.about-text { font-size: 14px; color: #374151; line-height: 1.75; }
+.module-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 8px; margin-top: 16px; }
+.module-chip { display: flex; align-items: center; gap: 7px; padding: 8px 12px; border-radius: 8px; font-size: 12px; font-weight: 600; border: 1px solid var(--border); background: var(--bg); color: var(--text); }
 
-/* ── SIDEBAR ── */
-.sidebar {}
-.sidebar-card {
-  background: var(--card); border: 1px solid var(--border); border-radius: var(--radius);
-  padding: 24px; margin-bottom: 16px; position: sticky; top: 76px;
-}
-.sidebar-card-title { font-size: 13px; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 16px; }
-.reg-price { font-size: 28px; font-weight: 800; color: var(--text); margin-bottom: 4px; }
-.reg-price-sub { font-size: 13px; color: var(--muted); margin-bottom: 20px; }
-.btn-register {
-  width: 100%; padding: 14px; border-radius: 10px; font-family: inherit;
-  font-size: 16px; font-weight: 700; cursor: pointer; border: none;
-  background: var(--green); color: #fff; transition: all 0.2s;
-  display: flex; align-items: center; justify-content: center; gap: 8px;
-}
-.btn-register:hover { background: var(--green-dark); transform: translateY(-1px); box-shadow: 0 4px 12px rgba(22,163,74,0.3); }
-.btn-register:active { transform: translateY(0); }
-.btn-save {
-  width: 100%; padding: 10px; border-radius: 8px; font-family: inherit;
-  font-size: 14px; font-weight: 600; cursor: pointer; margin-top: 10px;
-  background: transparent; color: var(--text); border: 1.5px solid var(--border);
-  transition: all 0.2s;
-}
-.btn-save:hover { border-color: var(--green); color: var(--green); }
-.reg-divider { border: none; border-top: 1px solid var(--border); margin: 16px 0; }
-.reg-info-row { display: flex; justify-content: space-between; font-size: 13px; margin-bottom: 8px; }
-.reg-info-row .label { color: var(--muted); }
-.reg-info-row .value { font-weight: 600; color: var(--text); }
-.attendee-count { display: flex; align-items: center; gap: 8px; margin-top: 14px; padding-top: 14px; border-top: 1px solid var(--border); }
-.attendee-avatars { display: flex; }
-.attendee-avatar {
-  width: 28px; height: 28px; border-radius: 50%; border: 2px solid #fff;
-  background: var(--green); color: #fff; font-size: 11px; font-weight: 700;
-  display: flex; align-items: center; justify-content: center; margin-left: -8px;
-}
-.attendee-avatar:first-child { margin-left: 0; }
-.attendee-count-text { font-size: 13px; color: var(--muted); }
-.attendee-count-text strong { color: var(--text); }
+/* TICKETS */
+.ticket-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 14px; }
+.ticket-card { border: 2px solid var(--border); border-radius: 10px; padding: 18px; position: relative; transition: border-color .2s, box-shadow .2s; }
+.ticket-card:hover { border-color: var(--green); box-shadow: 0 0 0 3px rgba(22,163,74,.1); }
+.ticket-card.sold-out { opacity: .6; }
+.ticket-badge { position: absolute; top: 12px; right: 12px; font-size: 10px; font-weight: 700; padding: 2px 8px; border-radius: 20px; text-transform: uppercase; letter-spacing: .4px; }
+.badge-free { background: var(--green-light); color: var(--green); }
+.badge-paid { background: var(--blue-light); color: var(--blue); }
+.badge-vip { background: var(--purple-light); color: var(--purple); }
+.badge-soldout { background: var(--red-light); color: var(--red); }
+.ticket-name { font-size: 15px; font-weight: 800; margin-bottom: 4px; padding-right: 60px; }
+.ticket-price { font-size: 24px; font-weight: 900; color: var(--green); margin: 8px 0 4px; }
+.ticket-price.paid { color: var(--blue); }
+.ticket-price.vip { color: var(--purple); }
+.ticket-remain { font-size: 11px; color: var(--muted); margin-bottom: 12px; }
+.ticket-remain .low { color: var(--red); font-weight: 700; }
+.ticket-perks { list-style: none; display: flex; flex-direction: column; gap: 4px; margin-bottom: 14px; }
+.ticket-perks li { font-size: 12px; color: #374151; display: flex; align-items: flex-start; gap: 6px; }
+.ticket-perks li::before { content: '✓'; color: var(--green); font-weight: 700; flex-shrink: 0; margin-top: 1px; }
+.ticket-btn { width: 100%; padding: 9px; border-radius: 8px; font-size: 13px; font-weight: 700; cursor: pointer; border: none; background: var(--green); color: #fff; transition: background .2s; }
+.ticket-btn:hover { background: #15803d; }
+.ticket-btn.paid { background: var(--blue); }
+.ticket-btn.paid:hover { background: #1d4ed8; }
+.ticket-btn.vip { background: var(--purple); }
+.ticket-btn.vip:hover { background: #6d28d9; }
+.ticket-btn:disabled { background: #9ca3af; cursor: not-allowed; }
 
-/* contact */
-.contact-row { display: flex; align-items: center; gap: 10px; margin-bottom: 12px; font-size: 14px; }
-.contact-row:last-child { margin-bottom: 0; }
-.contact-icon { width: 32px; height: 32px; border-radius: 8px; background: var(--bg); border: 1px solid var(--border); display: flex; align-items: center; justify-content: center; font-size: 16px; flex-shrink: 0; }
-.contact-label { font-size: 12px; color: var(--muted); }
-.contact-value { font-weight: 500; color: var(--text); }
-.contact-link { color: var(--blue); text-decoration: none; font-weight: 500; }
-.contact-link:hover { text-decoration: underline; }
+/* SPONSORSHIP */
+.sponsor-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 14px; }
+.sponsor-card { border-radius: 10px; padding: 20px; position: relative; border: 2px solid transparent; transition: all .2s; }
+.sponsor-card:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(0,0,0,.1); }
+.sponsor-card.platinum { background: linear-gradient(135deg, #1e1b4b 0%, #312e81 100%); color: #fff; border-color: #818cf8; }
+.sponsor-card.gold { background: linear-gradient(135deg, #78350f 0%, #92400e 100%); color: #fff; border-color: #fbbf24; }
+.sponsor-card.silver { background: linear-gradient(135deg, #1e293b 0%, #334155 100%); color: #fff; border-color: #94a3b8; }
+.sponsor-card.custom { background: var(--bg); border-color: var(--border); color: var(--text); }
+.sponsor-tier { font-size: 10px; font-weight: 800; letter-spacing: 1px; text-transform: uppercase; opacity: .7; margin-bottom: 6px; }
+.sponsor-name { font-size: 16px; font-weight: 900; margin-bottom: 4px; }
+.sponsor-price { font-size: 22px; font-weight: 900; margin: 10px 0 12px; }
+.sponsor-perks { list-style: none; display: flex; flex-direction: column; gap: 4px; margin-bottom: 16px; }
+.sponsor-perks li { font-size: 12px; opacity: .9; display: flex; align-items: flex-start; gap: 6px; }
+.sponsor-perks li::before { content: '★'; font-size: 10px; flex-shrink: 0; margin-top: 2px; }
+.sponsor-btn { width: 100%; padding: 9px; border-radius: 8px; font-size: 13px; font-weight: 700; cursor: pointer; border: 2px solid rgba(255,255,255,.4); background: rgba(255,255,255,.15); color: #fff; transition: all .2s; }
+.sponsor-btn:hover { background: rgba(255,255,255,.25); }
+.sponsor-card.custom .sponsor-btn { border-color: var(--border); background: var(--green); color: #fff; }
 
-/* ── SUCCESS OVERLAY ── */
-.overlay {
-  position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 500;
-  display: flex; align-items: center; justify-content: center;
-  opacity: 0; pointer-events: none; transition: opacity 0.3s;
-}
-.overlay.open { opacity: 1; pointer-events: all; }
-.overlay-card {
-  background: #fff; border-radius: 16px; padding: 40px; max-width: 440px; width: 90%;
-  text-align: center; transform: scale(0.9); transition: transform 0.3s;
-}
-.overlay.open .overlay-card { transform: scale(1); }
-.overlay-icon { font-size: 56px; margin-bottom: 16px; }
-.overlay-title { font-size: 24px; font-weight: 800; color: var(--text); margin-bottom: 8px; }
-.overlay-sub { font-size: 15px; color: var(--muted); margin-bottom: 28px; }
-.overlay-btn {
-  padding: 12px 32px; border-radius: 10px; font-family: inherit;
-  font-size: 15px; font-weight: 700; cursor: pointer; border: none;
-  background: var(--green); color: #fff;
-}
+/* BOOTHS */
+.booth-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 14px; }
+.booth-card { border: 2px solid var(--border); border-radius: 10px; padding: 18px; transition: all .2s; }
+.booth-card:hover { border-color: var(--orange); box-shadow: 0 0 0 3px rgba(234,88,12,.1); }
+.booth-type-icon { font-size: 32px; margin-bottom: 10px; }
+.booth-type-name { font-size: 15px; font-weight: 800; margin-bottom: 4px; }
+.booth-size { font-size: 12px; color: var(--muted); margin-bottom: 8px; }
+.booth-price { font-size: 20px; font-weight: 900; color: var(--orange); margin-bottom: 4px; }
+.booth-avail { font-size: 11px; margin-bottom: 12px; }
+.booth-avail .low { color: var(--red); font-weight: 700; }
+.booth-features { list-style: none; display: flex; flex-direction: column; gap: 3px; margin-bottom: 14px; }
+.booth-features li { font-size: 12px; color: #374151; display: flex; align-items: flex-start; gap: 6px; }
+.booth-features li::before { content: '→'; color: var(--orange); font-weight: 700; flex-shrink: 0; }
+.booth-btn { width: 100%; padding: 9px; border-radius: 8px; font-size: 13px; font-weight: 700; cursor: pointer; border: none; background: var(--orange); color: #fff; transition: background .2s; }
+.booth-btn:hover { background: #c2410c; }
 
-/* ── RESPONSIVE ── */
-@media (max-width: 768px) {
-  .layout { grid-template-columns: 1fr; }
-  .sidebar-card { position: static; }
-  .event-title { font-size: 24px; }
-  .hero-cover { height: 200px; }
-}
+/* SCHEDULE */
+.schedule-day { margin-bottom: 20px; }
+.schedule-day-label { font-size: 12px; font-weight: 800; color: var(--muted); text-transform: uppercase; letter-spacing: .8px; margin-bottom: 10px; padding-bottom: 6px; border-bottom: 1px solid var(--border); }
+.session-row { display: flex; gap: 14px; padding: 12px 0; border-bottom: 1px solid #f1f5f9; align-items: flex-start; }
+.session-row:last-child { border-bottom: none; }
+.session-time { font-size: 12px; font-weight: 700; color: var(--muted); min-width: 80px; padding-top: 2px; }
+.session-info { flex: 1; }
+.session-title { font-size: 13px; font-weight: 700; color: var(--text); margin-bottom: 2px; }
+.session-meta { font-size: 11px; color: var(--muted); }
+.session-tag { display: inline-block; font-size: 10px; font-weight: 700; padding: 1px 7px; border-radius: 20px; margin-right: 4px; }
+.stag-keynote { background: var(--purple-light); color: var(--purple); }
+.stag-panel { background: var(--blue-light); color: var(--blue); }
+.stag-workshop { background: var(--yellow-light); color: var(--yellow); }
+.stag-networking { background: var(--green-light); color: var(--green); }
+.stag-award { background: var(--orange-light); color: var(--orange); }
+
+/* PROJECTS */
+.project-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 14px; }
+.project-card { border: 1px solid var(--border); border-radius: 10px; overflow: hidden; transition: all .2s; cursor: pointer; }
+.project-card:hover { box-shadow: 0 4px 16px rgba(0,0,0,.12); transform: translateY(-2px); }
+.project-cover { height: 110px; display: flex; align-items: center; justify-content: center; font-size: 40px; }
+.project-info { padding: 12px; }
+.project-name { font-size: 13px; font-weight: 700; margin-bottom: 2px; }
+.project-company { font-size: 11px; color: var(--muted); }
+.project-genre { display: inline-block; font-size: 10px; font-weight: 600; padding: 2px 7px; border-radius: 20px; background: var(--bg); border: 1px solid var(--border); margin-top: 6px; color: var(--muted); }
+
+/* ATTENDEES */
+.attendee-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 12px; }
+.attendee-card { display: flex; align-items: center; gap: 10px; padding: 10px 12px; border: 1px solid var(--border); border-radius: 8px; background: var(--card); }
+.attendee-avatar { width: 36px; height: 36px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 14px; font-weight: 800; color: #fff; flex-shrink: 0; }
+.attendee-name { font-size: 12px; font-weight: 700; line-height: 1.3; }
+.attendee-company { font-size: 10px; color: var(--muted); }
+.attendee-role-tag { font-size: 9px; font-weight: 700; padding: 1px 6px; border-radius: 20px; margin-top: 3px; display: inline-block; }
+
+/* COLLAPSE */
+.collapse-wrap { overflow: hidden; transition: max-height .4s ease; }
+.collapse-wrap.collapsed { max-height: 0 !important; }
+.show-more-btn { width: 100%; margin-top: 14px; padding: 9px; border-radius: 8px; font-size: 13px; font-weight: 600; cursor: pointer; border: 1px solid var(--border); background: var(--bg); color: var(--muted); transition: all .2s; }
+.show-more-btn:hover { background: var(--green-light); color: var(--green); border-color: var(--green); }
+
+/* SIDEBAR */
+.side-card { background: var(--card); border: 1px solid var(--border); border-radius: var(--radius); padding: 20px; box-shadow: var(--shadow); }
+.side-card-title { font-size: 11px; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: .8px; margin-bottom: 12px; }
+.reg-price-big { font-size: 28px; font-weight: 900; color: var(--green); line-height: 1; }
+.reg-price-sub { font-size: 12px; color: var(--muted); margin: 4px 0 14px; }
+.btn-register { width: 100%; padding: 12px; border-radius: 10px; font-size: 14px; font-weight: 800; cursor: pointer; border: none; background: var(--green); color: #fff; margin-bottom: 8px; transition: background .2s; }
+.btn-register:hover { background: #15803d; }
+.btn-save { width: 100%; padding: 10px; border-radius: 10px; font-size: 13px; font-weight: 600; cursor: pointer; border: 1px solid var(--border); background: transparent; color: var(--muted); transition: all .2s; }
+.btn-save:hover { background: var(--bg); color: var(--text); }
+.side-divider { border: none; border-top: 1px solid var(--border); margin: 14px 0; }
+.side-info-row { display: flex; justify-content: space-between; font-size: 12px; padding: 4px 0; }
+.side-info-label { color: var(--muted); }
+.side-info-val { font-weight: 600; color: var(--text); }
+.side-cta { display: block; width: 100%; padding: 11px; border-radius: 10px; font-size: 13px; font-weight: 700; cursor: pointer; border: none; margin-bottom: 8px; transition: all .2s; text-align: center; }
+.side-cta-sponsor { background: var(--purple); color: #fff; }
+.side-cta-sponsor:hover { background: #6d28d9; }
+.side-cta-booth { background: var(--orange); color: #fff; }
+.side-cta-booth:hover { background: #c2410c; }
+.attendee-mini { display: flex; align-items: center; gap: 8px; margin-top: 10px; }
+.attendee-mini-avatars { display: flex; }
+.attendee-mini-avatars span { width: 28px; height: 28px; border-radius: 50%; border: 2px solid #fff; display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 800; color: #fff; margin-left: -8px; }
+.attendee-mini-avatars span:first-child { margin-left: 0; }
+.attendee-mini-count { font-size: 12px; color: var(--muted); }
+
+/* ORGANIZER */
+.org-card { display: flex; align-items: center; gap: 12px; padding: 14px; background: var(--green-light); border-radius: 10px; }
+.org-avatar { width: 44px; height: 44px; border-radius: 50%; background: var(--green); display: flex; align-items: center; justify-content: center; font-size: 18px; color: #fff; font-weight: 800; flex-shrink: 0; }
+.org-name { font-size: 14px; font-weight: 800; }
+.org-verified { font-size: 11px; color: var(--green); font-weight: 600; }
+.org-contact { font-size: 11px; color: var(--muted); margin-top: 2px; }
+
+/* COUNTDOWN */
+.countdown-strip { background: linear-gradient(90deg, var(--green-dark), #166534); color: #fff; padding: 10px 24px; display: flex; align-items: center; justify-content: center; gap: 24px; border-radius: 10px; margin-bottom: 4px; }
+.cd-unit { text-align: center; }
+.cd-num { font-size: 22px; font-weight: 900; line-height: 1; }
+.cd-label { font-size: 10px; opacity: .7; text-transform: uppercase; letter-spacing: .5px; }
+.cd-sep { font-size: 20px; font-weight: 900; opacity: .4; padding-bottom: 8px; }
 </style>
 </head>
 <body>
 
-<!-- NAVBAR -->
-<nav class="navbar">
-  <a class="nav-logo" href="index.html">
-    <div class="nav-logo-icon">
-      <svg viewBox="0 0 24 24"><path d="M21 6H3c-1.1 0-2 .9-2 2v8c0 1.1.9 2 2 2h18c1.1 0 2-.9 2-2V8c0-1.1-.9-2-2-2zm-10 7H8v3H6v-3H3v-2h3V8h2v3h3v2zm4.5 2c-.83 0-1.5-.67-1.5-1.5S14.67 12 15.5 12s1.5.67 1.5 1.5S16.33 15 15.5 15zm3-3c-.83 0-1.5-.67-1.5-1.5S17.67 10 18.5 10s1.5.67 1.5 1.5S19.33 12 18.5 12z"/></svg>
-    </div>
-    <span class="nav-logo-text">GameConnection</span>
-  </a>
+<!-- NAV -->
+<nav class="nav">
+  <a class="nav-logo" href="index.html">GameConnection</a>
   <span class="nav-divider">|</span>
   <a class="nav-back" href="index.html">← Back to Events</a>
   <div class="nav-spacer"></div>
-  <button class="nav-btn nav-btn-outline" id="navRegisterBtn">Register Now</button>
+  <button class="nav-btn nav-btn-outline" id="navRegisterBtn">🎟️ Register Now</button>
 </nav>
 
-<!-- HERO COVER -->
+<!-- HERO -->
 <div class="hero">
-  <div class="hero-cover" id="heroCover">
-    <span class="hero-cover-placeholder" id="heroEmoji">🎮</span>
+  <div class="hero-bg-pattern"></div>
+  <div class="hero-gradient"></div>
+  <div class="hero-content">
+    <div class="hero-tags">
+      <span class="hero-tag tag-upcoming" id="heroStatus">Upcoming</span>
+      <span class="hero-tag tag-inperson" id="heroFormat">In-Person</span>
+      <span class="hero-tag tag-conf">Conference</span>
+    </div>
+    <div class="hero-title" id="heroTitle">Game Connection Europe 2027</div>
+    <div class="hero-meta">
+      <span class="hero-meta-item">📅 <span id="heroDates">Mar 17 – Mar 21, 2027</span></span>
+      <span class="hero-meta-item">📍 <span id="heroCity">Lyon, France</span></span>
+      <span class="hero-meta-item">🏛️ <span id="heroVenue">Cité Internationale</span></span>
+      <span class="hero-meta-item">👥 <span id="heroAttendees">847+ Attendees</span></span>
+    </div>
   </div>
 </div>
 
-<!-- MAIN LAYOUT -->
-<div class="layout">
+<!-- PAGE WRAP -->
+<div class="page-wrap">
 
-  <!-- LEFT: MAIN CONTENT -->
-  <div class="main">
-    <div class="event-header">
-      <div class="event-badges">
-        <span class="badge badge-upcoming" id="statusBadge">● Upcoming</span>
-        <span class="badge badge-format" id="formatBadge">In-Person</span>
-        <span class="badge badge-type">Conference</span>
+  <!-- ===== MAIN COLUMN ===== -->
+  <div class="main-col">
+
+    <!-- STAT BAR -->
+    <div class="stat-bar">
+      <div class="stat-bar-item">
+        <div class="stat-bar-num" id="statReg">847</div>
+        <div class="stat-bar-label">Registered</div>
       </div>
-      <h1 class="event-title" id="eventTitle">GDC 2027</h1>
-      <div class="event-meta">
-        <span class="event-meta-item">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
-          <span id="eventDates">Mar 17–21, 2027</span>
-        </span>
-        <span class="event-meta-item">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/></svg>
-          <span id="eventLocation">San Francisco, USA</span>
-        </span>
-        <span class="event-meta-item">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87"/><path d="M16 3.13a4 4 0 010 7.75"/></svg>
-          <span id="eventAttendees">500+ Attendees</span>
-        </span>
+      <div class="stat-bar-item">
+        <div class="stat-bar-num" id="statDays">340</div>
+        <div class="stat-bar-label">Days to Go</div>
+      </div>
+      <div class="stat-bar-item">
+        <div class="stat-bar-num" id="statBooths">38</div>
+        <div class="stat-bar-label">Booths Available</div>
+      </div>
+      <div class="stat-bar-item">
+        <div class="stat-bar-num" id="statSponsors">12</div>
+        <div class="stat-bar-label">Sponsors</div>
       </div>
     </div>
 
     <!-- ABOUT -->
-    <div class="section">
-      <div class="section-title">About This Event</div>
-      <div class="section-body" id="eventDesc">
-        The Game Developers Conference (GDC) is the world's largest professional game industry event. Join thousands of developers, publishers, investors, and service providers for five days of learning, inspiration, and networking in San Francisco.
-      </div>
-    </div>
-
-    <!-- MODULES -->
-    <div class="section" id="modulesSection">
-      <div class="section-title">What's Included</div>
-      <div class="modules-grid" id="modulesGrid">
-        <!-- populated by JS -->
-      </div>
-    </div>
-
-    <!-- SCHEDULE PLACEHOLDER -->
-    <div class="section" id="scheduleSection" style="display:none">
-      <div class="section-title">Schedule</div>
-      <div class="section-body" style="color:var(--muted);font-style:italic">Schedule will be announced closer to the event date.</div>
-    </div>
-
-  </div>
-
-  <!-- RIGHT: SIDEBAR -->
-  <div class="sidebar">
-    <div class="sidebar-card">
-      <div class="sidebar-card-title">Registration</div>
-      <div class="reg-price" id="regPrice">Free</div>
-      <div class="reg-price-sub" id="regSub">Open registration · No credit card required</div>
-      <button class="btn-register" id="sideRegisterBtn">
-        🎟️ Register Now
-      </button>
-      <button class="btn-save" onclick="this.textContent='🔖 Saved!'">🔖 Save Event</button>
-      <hr class="reg-divider">
-      <div class="reg-info-row">
-        <span class="label">Status</span>
-        <span class="value" id="sideStatus">Upcoming</span>
-      </div>
-      <div class="reg-info-row">
-        <span class="label">Format</span>
-        <span class="value" id="sideFormat">In-Person</span>
-      </div>
-      <div class="reg-info-row">
-        <span class="label">Venue</span>
-        <span class="value" id="sideVenue">Moscone Center</span>
-      </div>
-      <div class="attendee-count">
-        <div class="attendee-avatars">
-          <div class="attendee-avatar">A</div>
-          <div class="attendee-avatar" style="background:#2563eb">B</div>
-          <div class="attendee-avatar" style="background:#7c3aed">C</div>
+    <div class="section-card">
+      <div class="section-head">
+        <div class="section-head-left">
+          <span class="section-icon">📋</span>
+          <span class="section-title">About This Event</span>
         </div>
-        <span class="attendee-count-text"><strong id="attendeeNum">312</strong> people registered</span>
+      </div>
+      <div class="section-body">
+        <p class="about-text" id="aboutText">Game Connection is the premier B2B matchmaking event for the global games industry. Meet developers, publishers, investors and service providers for three days of curated business meetings, panels and networking.</p>
+        <div class="module-grid" id="moduleGrid"></div>
       </div>
     </div>
 
-    <div class="sidebar-card">
-      <div class="sidebar-card-title">Contact & Links</div>
-      <div class="contact-row">
-        <div class="contact-icon">🌐</div>
+    <!-- TICKETS -->
+    <div class="section-card" id="ticketsSection">
+      <div class="section-head">
+        <div class="section-head-left">
+          <span class="section-icon">🎟️</span>
+          <span class="section-title">Tickets</span>
+          <span class="section-count" id="ticketCount">4 types</span>
+        </div>
+      </div>
+      <div class="section-body">
+        <div class="ticket-grid" id="ticketGrid"></div>
+        <div class="collapse-wrap collapsed" id="ticketExtra"></div>
+        <button class="show-more-btn" id="ticketMoreBtn" style="display:none" onclick="toggleCollapse('ticketExtra','ticketMoreBtn','ticket')">Show all tickets ↓</button>
+      </div>
+    </div>
+
+    <!-- SPONSORSHIP -->
+    <div class="section-card" id="sponsorSection">
+      <div class="section-head">
+        <div class="section-head-left">
+          <span class="section-icon">🤝</span>
+          <span class="section-title">Sponsorship Packages</span>
+          <span class="section-count" id="sponsorCount">4 packages</span>
+        </div>
+      </div>
+      <div class="section-body">
+        <div class="sponsor-grid" id="sponsorGrid"></div>
+        <div class="collapse-wrap collapsed" id="sponsorExtra"></div>
+        <button class="show-more-btn" id="sponsorMoreBtn" style="display:none" onclick="toggleCollapse('sponsorExtra','sponsorMoreBtn','sponsor')">Show all packages ↓</button>
+      </div>
+    </div>
+
+    <!-- BOOTHS -->
+    <div class="section-card" id="boothSection">
+      <div class="section-head">
+        <div class="section-head-left">
+          <span class="section-icon">🏪</span>
+          <span class="section-title">Exhibition Booths</span>
+          <span class="section-count" id="boothCount">3 types</span>
+        </div>
+      </div>
+      <div class="section-body">
+        <div class="booth-grid" id="boothGrid"></div>
+      </div>
+    </div>
+
+    <!-- SCHEDULE -->
+    <div class="section-card">
+      <div class="section-head">
+        <div class="section-head-left">
+          <span class="section-icon">📅</span>
+          <span class="section-title">Schedule & Sessions</span>
+          <span class="section-count" id="sessionCount">12 sessions</span>
+        </div>
+      </div>
+      <div class="section-body" id="scheduleBody"></div>
+      <div class="collapse-wrap collapsed" id="scheduleExtra" style="padding: 0 24px;"></div>
+      <div style="padding: 0 24px 20px;">
+        <button class="show-more-btn" id="scheduleMoreBtn" onclick="toggleCollapse('scheduleExtra','scheduleMoreBtn','schedule')">Show full schedule ↓</button>
+      </div>
+    </div>
+
+    <!-- PROJECTS -->
+    <div class="section-card">
+      <div class="section-head">
+        <div class="section-head-left">
+          <span class="section-icon">🕹️</span>
+          <span class="section-title">Exhibiting Games & Projects</span>
+          <span class="section-count" id="projectCount">18 projects</span>
+        </div>
+      </div>
+      <div class="section-body">
+        <div class="project-grid" id="projectGrid"></div>
+        <div class="collapse-wrap collapsed" id="projectExtra">
+          <div class="project-grid" id="projectExtraGrid" style="margin-top:14px"></div>
+        </div>
+        <button class="show-more-btn" id="projectMoreBtn" onclick="toggleCollapse('projectExtra','projectMoreBtn','project')">Show all projects ↓</button>
+      </div>
+    </div>
+
+    <!-- ATTENDEES -->
+    <div class="section-card">
+      <div class="section-head">
+        <div class="section-head-left">
+          <span class="section-icon">👥</span>
+          <span class="section-title">Registered Attendees</span>
+          <span class="section-count" id="attendeeCount">847 people</span>
+        </div>
+      </div>
+      <div class="section-body">
+        <div class="attendee-grid" id="attendeeGrid"></div>
+        <div class="collapse-wrap collapsed" id="attendeeExtra">
+          <div class="attendee-grid" id="attendeeExtraGrid" style="margin-top:12px"></div>
+        </div>
+        <button class="show-more-btn" id="attendeeMoreBtn" onclick="toggleCollapse('attendeeExtra','attendeeMoreBtn','attendee')">Show more attendees ↓</button>
+      </div>
+    </div>
+
+  </div><!-- end main-col -->
+
+  <!-- ===== SIDE COLUMN ===== -->
+  <div class="side-col">
+
+    <!-- COUNTDOWN -->
+    <div class="countdown-strip" id="countdownStrip">
+      <div class="cd-unit"><div class="cd-num" id="cdDays">340</div><div class="cd-label">Days</div></div>
+      <div class="cd-sep">:</div>
+      <div class="cd-unit"><div class="cd-num" id="cdHours">14</div><div class="cd-label">Hours</div></div>
+      <div class="cd-sep">:</div>
+      <div class="cd-unit"><div class="cd-num" id="cdMins">32</div><div class="cd-label">Mins</div></div>
+    </div>
+
+    <!-- REGISTER -->
+    <div class="side-card">
+      <div class="side-card-title">Registration</div>
+      <div class="reg-price-big" id="sidePrice">Free</div>
+      <div class="reg-price-sub" id="sidePriceSub">Open registration · No credit card required</div>
+      <button class="btn-register" id="sideRegisterBtn">🎟️ Register Now</button>
+      <button class="btn-save" onclick="this.textContent=this.textContent.includes('Save')?'🔖 Saved!':'🔖 Save Event'">🔖 Save Event</button>
+      <hr class="side-divider">
+      <div class="side-info-row"><span class="side-info-label">Status</span><span class="side-info-val" id="sideStatus">Upcoming</span></div>
+      <div class="side-info-row"><span class="side-info-label">Format</span><span class="side-info-val" id="sideFormat">In-Person</span></div>
+      <div class="side-info-row"><span class="side-info-label">Venue</span><span class="side-info-val" id="sideVenue">Cité Internationale</span></div>
+      <div class="side-info-row"><span class="side-info-label">Dates</span><span class="side-info-val" id="sideDates">Mar 17–21</span></div>
+      <hr class="side-divider">
+      <div class="attendee-mini">
+        <div class="attendee-mini-avatars" id="miniAvatars"></div>
+        <div class="attendee-mini-count" id="miniCount">847 registered</div>
+      </div>
+    </div>
+
+    <!-- SPONSOR CTA -->
+    <div class="side-card" id="sponsorCTACard" style="display:none">
+      <div class="side-card-title">🤝 Become a Sponsor</div>
+      <p style="font-size:12px;color:var(--muted);margin-bottom:12px;line-height:1.6">Get your brand in front of thousands of industry professionals. Packages from €4,000.</p>
+      <button class="side-cta side-cta-sponsor" id="btn-sponsor">View Sponsorship Packages →</button>
+    </div>
+
+    <!-- BOOTH CTA -->
+    <div class="side-card" id="boothCTACard" style="display:none">
+      <div class="side-card-title">🏪 Book an Exhibition Booth</div>
+      <p style="font-size:12px;color:var(--muted);margin-bottom:12px;line-height:1.6">Showcase your games and products to a targeted audience. <span id="boothRemainText">38 spaces remaining.</span></p>
+      <button class="side-cta side-cta-booth" id="btn-booth">Browse Available Booths →</button>
+    </div>
+
+    <!-- CONTACT -->
+    <div class="side-card">
+      <div class="side-card-title">Contact & Links</div>
+      <div style="display:flex;flex-direction:column;gap:8px">
+        <a id="eventWebsite" href="#" target="_blank" style="font-size:12px;color:var(--blue);text-decoration:none;display:flex;align-items:center;gap:6px">🌐 <span id="websiteText">Official Website</span></a>
+        <div style="font-size:12px;color:var(--muted);display:flex;align-items:center;gap:6px">👤 <span id="contactName">Organizer</span></div>
+        <a id="contactEmail" href="#" style="font-size:12px;color:var(--blue);text-decoration:none;display:flex;align-items:center;gap:6px">✉️ <span id="emailText">Contact</span></a>
+      </div>
+    </div>
+
+    <!-- ORGANIZER -->
+    <div class="side-card">
+      <div class="org-card">
+        <div class="org-avatar" id="orgAvatar">G</div>
         <div>
-          <div class="contact-label">Official Website</div>
-          <a class="contact-link" id="eventWebsite" href="#" target="_blank">gdconf.com</a>
-        </div>
-      </div>
-      <div class="contact-row">
-        <div class="contact-icon">👤</div>
-        <div>
-          <div class="contact-label">Contact</div>
-          <div class="contact-value" id="contactName">GDC Team</div>
-        </div>
-      </div>
-      <div class="contact-row">
-        <div class="contact-icon">✉️</div>
-        <div>
-          <div class="contact-label">Email</div>
-          <a class="contact-link" id="contactEmail" href="mailto:info@gdconf.com">info@gdconf.com</a>
+          <div class="org-name" id="orgName">Game Connection Team</div>
+          <div class="org-verified">✓ Verified Organizer</div>
+          <div class="org-contact" id="orgContact">contact@game-connection.com</div>
         </div>
       </div>
     </div>
 
-    <!-- Sponsor CTA Card -->
-    <div class="sidebar-card" id="sponsorCard" style="display:none">
-      <div class="sidebar-card-title">🤝 Become a Sponsor</div>
-      <div style="font-size:13px;color:var(--muted);margin-bottom:12px">Get your brand in front of thousands of industry professionals. Choose a sponsorship package that fits your goals.</div>
-      <button id="btn-sponsor" style="width:100%;padding:11px;background:#7c3aed;color:#fff;border:none;border-radius:9px;font-size:14px;font-weight:700;cursor:pointer;transition:background .2s" onmouseover="this.style.background='#6d28d9'" onmouseout="this.style.background='#7c3aed'">View Sponsorship Packages</button>
-    </div>
+  </div><!-- end side-col -->
 
-    <!-- Booth CTA Card -->
-    <div class="sidebar-card" id="boothCard" style="display:none">
-      <div class="sidebar-card-title">🏪 Book an Exhibition Booth</div>
-      <div style="font-size:13px;color:var(--muted);margin-bottom:12px">Showcase your games, products, or services to a targeted audience. Limited booth spaces available.</div>
-      <button id="btn-booth" style="width:100%;padding:11px;background:#ea580c;color:#fff;border:none;border-radius:9px;font-size:14px;font-weight:700;cursor:pointer;transition:background .2s" onmouseover="this.style.background='#c2410c'" onmouseout="this.style.background='#ea580c'">Browse Available Booths</button>
-    </div>
+</div><!-- end page-wrap -->
 
-    <div class="sidebar-card" style="background:var(--green-light);border-color:#86efac">
-      <div style="font-size:13px;font-weight:700;color:var(--green-dark);margin-bottom:8px">🎯 Organizer</div>
-      <div style="font-size:14px;font-weight:600;color:var(--text)" id="organizerName">Game Developers Conference</div>
-      <div style="font-size:13px;color:var(--muted);margin-top:4px" id="organizerSub">Verified Organizer</div>
-    </div>
-  </div>
-
-</div>
-
-<!-- REGISTRATION SUCCESS OVERLAY -->
-<div class="overlay" id="overlay" onclick="if(event.target===this)this.classList.remove('open')">
-  <div class="overlay-card">
-    <div class="overlay-icon">🎉</div>
-    <div class="overlay-title">You're Registered!</div>
-    <div class="overlay-sub">We've sent a confirmation to your email. See you at <strong id="confirmEventName">the event</strong>!</div>
-    <button class="overlay-btn" onclick="window.location.href='AttendeeDashboard_v2_PC.html'">Go to My Dashboard →</button>
-  </div>
-</div>
+</body>
 
 <script>
-// ── Read URL params to populate page ──
-const params = new URLSearchParams(window.location.search);
+// ── URL params ──
+const params = new URLSearchParams(location.search);
+const title    = params.get('title')    || 'Game Connection Europe 2027';
+const start    = params.get('start')    || '2027-03-17';
+const end      = params.get('end')      || '2027-03-21';
+const city     = params.get('city')     || 'Lyon';
+const country  = params.get('country')  || 'France';
+const venue    = params.get('venue')    || 'Cité Internationale';
+const format   = params.get('format')   || 'In-Person';
+const desc     = params.get('desc')     || 'Game Connection is the premier B2B matchmaking event for the global games industry.';
+const website  = params.get('website')  || 'game-connection.com';
+const cname    = params.get('cname')    || 'Game Connection Team';
+const cemail   = params.get('cemail')   || 'contact@game-connection.com';
+const modules  = (params.get('modules') || 'Free Registration,Paid Registration,Sponsorship,Paid Booth,Panel/Session,Game Showcase,Award').split(',').map(m=>m.trim());
+const attendees= parseInt(params.get('attendees') || '847');
+const status   = params.get('status')   || 'upcoming';
 
-const title   = params.get('title')   || 'GDC 2027';
-const start   = params.get('start')   || '2027-03-17';
-const end     = params.get('end')     || '2027-03-21';
-const city    = params.get('city')    || 'San Francisco';
-const country = params.get('country') || 'USA';
-const venue   = params.get('venue')   || 'Moscone Center';
-const format  = params.get('format')  || 'In-Person';
-const desc    = params.get('desc')    || 'Join thousands of game industry professionals for this premier event.';
-const website = params.get('website') || '#';
-const cname   = params.get('cname')   || '';
-const cemail  = params.get('cemail')  || '';
-const modules = (params.get('modules') || 'Free Registration,Panel/Session,Game Showcase').split(',');
-const status  = params.get('status')  || 'upcoming'; // live | upcoming | past
-const attendees = parseInt(params.get('attendees') || '312');
-
-// Populate
+// ── Page title & hero ──
 document.title = title + ' – Game Connection';
-document.getElementById('eventTitle').textContent = title;
-document.getElementById('confirmEventName').textContent = title;
-document.getElementById('eventDesc').textContent = desc;
-document.getElementById('sideVenue').textContent = venue || '—';
-document.getElementById('sideFormat').textContent = format;
-document.getElementById('attendeeNum').textContent = attendees.toLocaleString();
-document.getElementById('organizerName').textContent = cname || 'Event Organizer';
+document.getElementById('pageTitle').textContent = title + ' – Game Connection';
+document.getElementById('heroTitle').textContent = title;
+document.getElementById('heroCity').textContent = city + ', ' + country;
+document.getElementById('heroVenue').textContent = venue;
+document.getElementById('heroFormat').textContent = format;
+document.getElementById('heroStatus').textContent = status.charAt(0).toUpperCase() + status.slice(1);
+document.getElementById('heroAttendees').textContent = attendees.toLocaleString() + '+ Attendees';
 
 // Dates
-function fmtDate(d) {
-  if (!d) return '';
-  const dt = new Date(d + 'T00:00:00');
-  return dt.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+function fmtDate(s) {
+  const d = new Date(s + 'T00:00:00');
+  return d.toLocaleDateString('en-US', { month:'short', day:'numeric', year:'numeric' });
 }
-const startFmt = fmtDate(start);
-const endFmt   = fmtDate(end);
-document.getElementById('eventDates').textContent = end && end !== start ? startFmt + ' – ' + endFmt : startFmt;
-document.getElementById('eventLocation').textContent = [city, country].filter(Boolean).join(', ');
+const startD = new Date(start + 'T00:00:00');
+const endD   = new Date(end   + 'T00:00:00');
+const dateStr = startD.toLocaleDateString('en-US',{month:'short',day:'numeric'}) + ' – ' + endD.toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'});
+document.getElementById('heroDates').textContent = dateStr;
+document.getElementById('sideDates').textContent = dateStr;
+document.getElementById('sideVenue').textContent = venue;
+document.getElementById('sideFormat').textContent = format;
+document.getElementById('sideStatus').textContent = status.charAt(0).toUpperCase() + status.slice(1);
 
-// Status badge
-const statusEl = document.getElementById('statusBadge');
-const sideStatusEl = document.getElementById('sideStatus');
-if (status === 'live') {
-  statusEl.textContent = '● Live Now';
-  statusEl.className = 'badge badge-live';
-  sideStatusEl.textContent = 'Live Now';
-} else if (status === 'past') {
-  statusEl.textContent = 'Past Event';
-  statusEl.className = 'badge badge-past';
-  sideStatusEl.textContent = 'Past';
-} else {
-  statusEl.textContent = '● Upcoming';
-  sideStatusEl.textContent = 'Upcoming';
+// About
+document.getElementById('aboutText').textContent = desc;
+
+// ── Countdown ──
+function updateCountdown() {
+  const now = new Date();
+  const diff = startD - now;
+  if (diff <= 0) { document.getElementById('countdownStrip').innerHTML = '<div style="color:#fff;font-weight:700">🎉 Event is Live Now!</div>'; return; }
+  const d = Math.floor(diff / 86400000);
+  const h = Math.floor((diff % 86400000) / 3600000);
+  const m = Math.floor((diff % 3600000) / 60000);
+  document.getElementById('cdDays').textContent = d;
+  document.getElementById('cdHours').textContent = String(h).padStart(2,'0');
+  document.getElementById('cdMins').textContent = String(m).padStart(2,'0');
+  document.getElementById('statDays').textContent = d;
+}
+updateCountdown();
+setInterval(updateCountdown, 30000);
+
+// ── Stats ──
+document.getElementById('statReg').textContent = attendees.toLocaleString();
+document.getElementById('heroAttendees').textContent = attendees.toLocaleString() + '+ Attendees';
+document.getElementById('attendeeCount').textContent = attendees.toLocaleString() + ' people';
+document.getElementById('miniCount').textContent = attendees.toLocaleString() + ' registered';
+
+// ── Module chips ──
+const moduleIcons = {
+  'free registration':'🎟️','paid registration':'💳','sponsorship':'🤝','free booth':'🏪','paid booth':'🏪',
+  'panel':'🎙️','session':'🎙️','panel/session':'🎙️','game showcase':'🕹️','award':'🏆',
+  'networking':'🌐','workshop':'🔧','keynote':'🎤','matchmaking':'🤝','press':'📰'
+};
+const mgEl = document.getElementById('moduleGrid');
+modules.forEach(m => {
+  const icon = moduleIcons[m.toLowerCase()] || '✦';
+  const chip = document.createElement('div');
+  chip.className = 'module-chip';
+  chip.innerHTML = `<span>${icon}</span><span>${m}</span>`;
+  mgEl.appendChild(chip);
+});
+
+// ── Module detection ──
+const hasFreeReg   = modules.some(m => m.toLowerCase().includes('free') && m.toLowerCase().includes('reg'));
+const hasPaidReg   = modules.some(m => m.toLowerCase().includes('paid') && m.toLowerCase().includes('reg'));
+const hasSponsor   = modules.some(m => m.toLowerCase().includes('sponsor'));
+const hasBooth     = modules.some(m => { const ml=m.toLowerCase(); return ml.includes('booth') || ml.includes('exhib'); });
+const hasSchedule  = modules.some(m => { const ml=m.toLowerCase(); return ml.includes('panel') || ml.includes('session') || ml.includes('schedule') || ml.includes('keynote'); });
+const hasShowcase  = modules.some(m => m.toLowerCase().includes('showcase') || m.toLowerCase().includes('game'));
+const hasAward     = modules.some(m => m.toLowerCase().includes('award'));
+
+// ── Contact ──
+document.getElementById('eventWebsite').href = 'https://' + website;
+document.getElementById('websiteText').textContent = website;
+document.getElementById('contactName').textContent = cname;
+document.getElementById('contactEmail').href = 'mailto:' + cemail;
+document.getElementById('emailText').textContent = cemail;
+document.getElementById('orgName').textContent = cname;
+document.getElementById('orgContact').textContent = cemail;
+document.getElementById('orgAvatar').textContent = cname.charAt(0).toUpperCase();
+
+// ── Tickets ──
+const ticketDefs = [];
+if (hasFreeReg || (!hasFreeReg && !hasPaidReg)) {
+  ticketDefs.push({
+    name: 'General Admission', type: 'free', price: 0, total: 500, sold: 312,
+    perks: ['Full event access (3 days)', 'Access to all panels & sessions', 'Networking areas', 'Event app & matchmaking', 'Digital event program']
+  });
+}
+if (hasPaidReg) {
+  ticketDefs.push({
+    name: 'Professional Pass', type: 'paid', price: 299, total: 300, sold: 187,
+    perks: ['All General Admission benefits', 'Priority seating at keynotes', 'Networking lounge access', 'Official event kit & badge', 'Post-event recordings access']
+  });
+  ticketDefs.push({
+    name: 'Business Pass', type: 'paid', price: 499, total: 200, sold: 143,
+    perks: ['All Professional Pass benefits', 'Pre-scheduled meetings (up to 20)', 'Business lounge access', 'Dedicated meeting room booking', 'Early check-in & priority entry']
+  });
+  ticketDefs.push({
+    name: 'VIP Pass', type: 'vip', price: 899, total: 50, sold: 41,
+    perks: ['All Business Pass benefits', 'Speaker & investor dinner (Day 1)', 'VIP lounge & concierge service', 'Exclusive roundtable sessions', 'Personalized meeting facilitation']
+  });
+  ticketDefs.push({
+    name: 'Investor Pass', type: 'vip', price: 1499, total: 20, sold: 18,
+    perks: ['All VIP benefits', 'Curated studio pitch sessions', 'Private deal room access', 'Dedicated investor matchmaking', 'Post-event portfolio report']
+  });
+}
+if (hasAward) {
+  ticketDefs.push({
+    name: 'Award Ceremony Ticket', type: 'paid', price: 149, total: 200, sold: 88,
+    perks: ['Gala dinner access', 'Award ceremony seating', 'Cocktail reception', 'Award program booklet']
+  });
 }
 
-// Format badge
-document.getElementById('formatBadge').textContent = format;
+document.getElementById('ticketCount').textContent = ticketDefs.length + ' types';
+const tGrid = document.getElementById('ticketGrid');
+const tExtra = document.getElementById('ticketExtra');
+const TICKET_SHOW = 4;
 
-// Website
-if (website && website !== '#') {
-  const a = document.getElementById('eventWebsite');
-  a.href = website.startsWith('http') ? website : 'https://' + website;
-  a.textContent = website.replace(/^https?:\/\//, '').replace(/\/$/, '');
+ticketDefs.forEach((t, i) => {
+  const remain = t.total - t.sold;
+  const soldOut = remain <= 0;
+  const lowStock = remain > 0 && remain <= 10;
+  const card = document.createElement('div');
+  card.className = 'ticket-card' + (soldOut ? ' sold-out' : '');
+  const badgeClass = soldOut ? 'badge-soldout' : (t.type === 'free' ? 'badge-free' : t.type === 'vip' ? 'badge-vip' : 'badge-paid');
+  const badgeText  = soldOut ? 'Sold Out' : (t.type === 'free' ? 'Free' : t.type === 'vip' ? 'VIP' : 'Paid');
+  const priceStr   = t.price === 0 ? 'Free' : '€' + t.price;
+  const remainStr  = soldOut ? '<span class="low">Sold Out</span>' : lowStock ? `<span class="low">Only ${remain} left!</span>` : `${remain} of ${t.total} remaining`;
+  card.innerHTML = `
+    <span class="ticket-badge ${badgeClass}">${badgeText}</span>
+    <div class="ticket-name">${t.name}</div>
+    <div class="ticket-price ${t.type}">${priceStr}</div>
+    <div class="ticket-remain">${remainStr}</div>
+    <ul class="ticket-perks">${t.perks.map(p=>`<li>${p}</li>`).join('')}</ul>
+    <button class="ticket-btn ${t.type}" ${soldOut?'disabled':''} onclick="goToRegister('${t.name}',${t.price})">${soldOut ? 'Sold Out' : 'Get Ticket →'}</button>`;
+  if (i < TICKET_SHOW) tGrid.appendChild(card);
+  else tExtra.appendChild(card);
+});
+if (ticketDefs.length > TICKET_SHOW) {
+  document.getElementById('ticketMoreBtn').style.display = 'block';
+  document.getElementById('ticketMoreBtn').textContent = `Show all ${ticketDefs.length} ticket types ↓`;
 }
 
-// Contact
-if (cname) document.getElementById('contactName').textContent = cname;
-if (cemail) {
-  const a = document.getElementById('contactEmail');
-  a.href = 'mailto:' + cemail;
-  a.textContent = cemail;
-}
-
-// Emoji for cover placeholder
-const emojis = { 'Conference': '🎤', 'Trade Show': '🏢', 'Awards': '🏆', 'Esports': '🎮', 'Online': '💻' };
-document.getElementById('heroEmoji').textContent = emojis[format] || '🎮';
-
-// Modules
-const moduleData = [
-  { key: 'Free Registration', icon: '🎟️', label: 'Free Registration' },
-  { key: 'Paid Registration', icon: '💳', label: 'Paid Ticketing' },
-  { key: 'Free Pod', icon: '🛋️', label: 'Meeting Pods' },
-  { key: 'Paid Pod', icon: '🛋️', label: 'Paid Pods' },
-  { key: 'Free Booth', icon: '🏪', label: 'Exhibition Booths' },
-  { key: 'Paid Booth', icon: '🏪', label: 'Paid Booths' },
-  { key: 'Sponsorship', icon: '🤝', label: 'Sponsorship' },
-  { key: 'Panel/Session', icon: '🎙️', label: 'Panels & Sessions' },
-  { key: 'Award', icon: '🏆', label: 'Awards' },
-  { key: 'Buyer Invitation', icon: '🤵', label: 'Buyer Invitation' },
-  { key: "Let's Meet", icon: '🤝', label: "Let's Meet" },
-  { key: 'Game Showcase', icon: '🕹️', label: 'Game Showcase' },
+// ── Sponsorship ──
+const sponsorDefs = [
+  { tier: 'Platinum', cls: 'platinum', price: '€15,000', perks: ['Logo on all event materials', 'Premium booth (6×6m)', 'Speaking slot (30 min)', '10 VIP passes', 'Dedicated email blast to 8,000+ subscribers', 'Social media spotlight (3 posts)', 'Banner placement in main hall'] },
+  { tier: 'Gold', cls: 'gold', price: '€8,000', perks: ['Logo on event materials', 'Standard booth (3×3m)', 'Panel participation slot', '5 Professional passes', 'Email mention to subscribers', 'Social media mention (1 post)', 'Logo on event app'] },
+  { tier: 'Silver', cls: 'silver', price: '€4,000', perks: ['Logo on event website', 'Tabletop display space', '3 Professional passes', 'Logo on event app', 'Social media mention'] },
+  { tier: 'Custom', cls: 'custom', price: 'Custom', perks: ['Tailored package for your goals', 'Flexible budget options', 'Mix and match benefits', 'Dedicated account manager', 'Contact us to discuss'] },
 ];
-const grid = document.getElementById('modulesGrid');
-moduleData.forEach(m => {
-  const active = modules.some(mod => mod.trim().toLowerCase().includes(m.key.toLowerCase()));
-  if (active) {
-    const chip = document.createElement('div');
-    chip.className = 'module-chip active';
-    chip.innerHTML = `<span class="chip-icon">${m.icon}</span>${m.label}`;
-    grid.appendChild(chip);
+
+if (hasSponsor) {
+  document.getElementById('sponsorCTACard').style.display = 'block';
+  document.getElementById('statSponsors').textContent = '12';
+  const sGrid = document.getElementById('sponsorGrid');
+  const sExtra = document.getElementById('sponsorExtra');
+  const SPONSOR_SHOW = 4;
+  sponsorDefs.forEach((s, i) => {
+    const card = document.createElement('div');
+    card.className = 'sponsor-card ' + s.cls;
+    card.innerHTML = `
+      <div class="sponsor-tier">${s.tier} Sponsor</div>
+      <div class="sponsor-name">${s.tier}</div>
+      <div class="sponsor-price">${s.price}</div>
+      <ul class="sponsor-perks">${s.perks.map(p=>`<li>${p}</li>`).join('')}</ul>
+      <button class="sponsor-btn" onclick="goToSponsor('${s.tier}')">Apply Now →</button>`;
+    if (i < SPONSOR_SHOW) sGrid.appendChild(card);
+    else sExtra.appendChild(card);
+  });
+  if (sponsorDefs.length > SPONSOR_SHOW) {
+    document.getElementById('sponsorMoreBtn').style.display = 'block';
+  }
+} else {
+  document.getElementById('sponsorSection').style.display = 'none';
+}
+
+// ── Booths ──
+const boothDefs = [
+  { icon: '🏪', name: 'Standard Booth', size: '3×3m · 9 sqm', price: '€2,500', avail: 18, total: 30, features: ['Back wall & side panels', 'Table + 2 chairs', '1 power outlet', 'Fascia with company name', 'Wi-Fi access', '2 exhibitor passes'] },
+  { icon: '🏬', name: 'Double Booth', size: '6×3m · 18 sqm', price: '€4,500', avail: 12, total: 20, features: ['Corner or inline position', 'Custom back wall option', '2 tables + 4 chairs', '2 power outlets', 'Dedicated Wi-Fi', '4 exhibitor passes'] },
+  { icon: '🏟️', name: 'Island Booth', size: '6×6m · 36 sqm', price: '€9,000', avail: 4, total: 8, features: ['Premium floor position', 'Open 4-side access', 'Custom build option', 'Private meeting area', 'Dedicated power circuit', '8 exhibitor passes'] },
+  { icon: '🖥️', name: 'Demo Station', size: '2×1m · kiosk', price: '€800', avail: 14, total: 20, features: ['Monitor + stand included', '1 exhibitor pass', 'Power & Wi-Fi', 'Ideal for game demos', 'High-traffic location'] },
+  { icon: '🎮', name: 'Indie Corner', size: '2×2m · 4 sqm', price: 'Free', avail: 6, total: 10, features: ['For indie studios only', 'Table + 2 chairs', 'Power & Wi-Fi', '1 exhibitor pass', 'Apply via selection process'] },
+];
+
+if (hasBooth) {
+  document.getElementById('boothCTACard').style.display = 'block';
+  const totalAvail = boothDefs.reduce((a,b)=>a+b.avail,0);
+  document.getElementById('statBooths').textContent = totalAvail;
+  document.getElementById('boothRemainText').textContent = totalAvail + ' spaces remaining.';
+  document.getElementById('boothCount').textContent = boothDefs.length + ' types';
+  const bGrid = document.getElementById('boothGrid');
+  boothDefs.forEach(b => {
+    const lowStock = b.avail <= 3;
+    const soldOut  = b.avail <= 0;
+    const card = document.createElement('div');
+    card.className = 'booth-card';
+    card.innerHTML = `
+      <div class="booth-type-icon">${b.icon}</div>
+      <div class="booth-type-name">${b.name}</div>
+      <div class="booth-size">${b.size}</div>
+      <div class="booth-price">${b.price}</div>
+      <div class="booth-avail">${soldOut ? '<span class="low">Fully Booked</span>' : lowStock ? `<span class="low">Only ${b.avail} left!</span>` : `${b.avail} of ${b.total} available`}</div>
+      <ul class="booth-features">${b.features.map(f=>`<li>${f}</li>`).join('')}</ul>
+      <button class="booth-btn" ${soldOut?'disabled':''} onclick="goToBooth('${b.name}',${b.avail})">${soldOut ? 'Fully Booked' : 'Book Now →'}</button>`;
+    bGrid.appendChild(card);
+  });
+} else {
+  document.getElementById('boothSection').style.display = 'none';
+}
+
+// ── Schedule ──
+const days = [];
+const startMs = startD.getTime();
+for (let i = 0; i < 3; i++) {
+  const d = new Date(startMs + i * 86400000);
+  const label = d.toLocaleDateString('en-US',{weekday:'long',month:'long',day:'numeric'});
+  days.push({ label, sessions: [] });
+}
+const sessionData = [
+  { day:0, time:'09:00', title:'Opening Keynote: The Future of B2B in Games', speaker:'Sarah Chen, CEO – NexGen Publishing', type:'keynote' },
+  { day:0, time:'10:30', title:'Investor Roundtable: Funding Indie Studios in 2027', speaker:'Panel of 5 investors', type:'panel' },
+  { day:0, time:'12:00', title:'Networking Lunch & Matchmaking Sessions', speaker:'Open to all attendees', type:'networking' },
+  { day:0, time:'14:00', title:'Workshop: Pitching to Publishers — What Works', speaker:'Marcus Lee, Head of Acquisitions – Ubisoft', type:'workshop' },
+  { day:0, time:'16:00', title:'Game Showcase Opens — Exhibition Hall A', speaker:'18 studios presenting', type:'networking' },
+  { day:1, time:'09:30', title:'Panel: Cross-Platform Strategy for Indie Developers', speaker:'4 studio founders', type:'panel' },
+  { day:1, time:'11:00', title:'Workshop: Monetization Models Beyond F2P', speaker:'Dr. Yuki Tanaka, Analyst – GameData', type:'workshop' },
+  { day:1, time:'13:00', title:'Speed Networking — Publisher & Developer Matching', speaker:'Facilitated by GC Team', type:'networking' },
+  { day:1, time:'15:00', title:'Fireside Chat: Building a Global Studio from Day 1', speaker:'Alex Petrov, Founder – Pixel Forge', type:'keynote' },
+  { day:1, time:'17:30', title:'Sponsor Cocktail Reception — VIP Lounge', speaker:'Platinum & Gold sponsors + VIP pass holders', type:'networking' },
+  { day:2, time:'09:00', title:'Panel: AI in Game Development — Hype vs. Reality', speaker:'5 industry experts', type:'panel' },
+  { day:2, time:'11:00', title:'Final Pitch Competition — Top 8 Studios', speaker:'Jury of publishers & investors', type:'keynote' },
+  { day:2, time:'14:00', title:'Closing Keynote: Where the Industry Goes Next', speaker:'James Wright, GC Founder', type:'keynote' },
+  { day:2, time:'16:00', title:'Game Connection Awards Ceremony', speaker:'Hosted by GC Team', type:'award' },
+  { day:2, time:'18:00', title:'Farewell Networking & Drinks', speaker:'All attendees', type:'networking' },
+];
+sessionData.forEach(s => days[s.day].sessions.push(s));
+document.getElementById('sessionCount').textContent = sessionData.length + ' sessions';
+
+const tagClass = { keynote:'stag-keynote', panel:'stag-panel', workshop:'stag-workshop', networking:'stag-networking', award:'stag-award' };
+const SCHED_SHOW_DAYS = 1;
+const schedBody = document.getElementById('scheduleBody');
+const schedExtra = document.getElementById('scheduleExtra');
+
+days.forEach((day, di) => {
+  const dayEl = document.createElement('div');
+  dayEl.className = 'schedule-day';
+  dayEl.innerHTML = `<div class="schedule-day-label">Day ${di+1} — ${day.label}</div>` +
+    day.sessions.map(s => `
+      <div class="session-row">
+        <div class="session-time">${s.time}</div>
+        <div class="session-info">
+          <div class="session-title"><span class="session-tag ${tagClass[s.type]||''}">${s.type}</span>${s.title}</div>
+          <div class="session-meta">${s.speaker}</div>
+        </div>
+      </div>`).join('');
+  if (di < SCHED_SHOW_DAYS) schedBody.appendChild(dayEl);
+  else schedExtra.appendChild(dayEl);
+});
+
+// ── Projects ──
+const projectColors = ['#16a34a','#2563eb','#7c3aed','#ea580c','#ca8a04','#0891b2','#be185d','#0f766e'];
+const projectData = [
+  { name:'Neon Abyss 2', company:'Veewo Games', genre:'Roguelite', emoji:'🌌' },
+  { name:'Pixel Frontier', company:'Indie Pixel Co.', genre:'Strategy', emoji:'🏰' },
+  { name:'Stellar Drift', company:'Orbit Studios', genre:'Sci-Fi RPG', emoji:'🚀' },
+  { name:'Shadow Protocol', company:'Dark Matter Games', genre:'Stealth', emoji:'🕵️' },
+  { name:'Bloom Garden', company:'Cozy Corner Dev', genre:'Simulation', emoji:'🌸' },
+  { name:'Iron Citadel', company:'Forge Interactive', genre:'Tower Defense', emoji:'⚔️' },
+  { name:'Quantum Break 2', company:'Remedy Entertainment', genre:'Action', emoji:'⚡' },
+  { name:'Deep Roots', company:'Earthbound Studios', genre:'Survival', emoji:'🌲' },
+  { name:'Cyber Heist', company:'Neon Noir Games', genre:'Puzzle', emoji:'💻' },
+  { name:'Arcane Realms', company:'Mystic Forge', genre:'Fantasy RPG', emoji:'🧙' },
+  { name:'Drift Kings', company:'Turbo Dev', genre:'Racing', emoji:'🏎️' },
+  { name:'Void Walker', company:'Eclipse Studios', genre:'Horror', emoji:'👻' },
+  { name:'Harvest Moon 2027', company:'Marvelous Inc.', genre:'Farming Sim', emoji:'🌾' },
+  { name:'Mech Uprising', company:'Steel Frame Games', genre:'Mech Action', emoji:'🤖' },
+  { name:'Lost Isles', company:'Wanderer Games', genre:'Adventure', emoji:'🏝️' },
+  { name:'Prism Puzzle', company:'Color Theory Dev', genre:'Puzzle', emoji:'🔮' },
+  { name:'Battle Hymn', company:'War Drum Studios', genre:'Strategy', emoji:'🥁' },
+  { name:'Echoes of Time', company:'Chronos Games', genre:'Narrative', emoji:'⏳' },
+];
+document.getElementById('projectCount').textContent = projectData.length + ' projects';
+const PROJECT_SHOW = 6;
+const pGrid = document.getElementById('projectGrid');
+const pExtraGrid = document.getElementById('projectExtraGrid');
+
+projectData.forEach((p, i) => {
+  const card = document.createElement('div');
+  card.className = 'project-card';
+  const bg = projectColors[i % projectColors.length];
+  card.innerHTML = `
+    <div class="project-cover" style="background:${bg}20">${p.emoji}</div>
+    <div class="project-info">
+      <div class="project-name">${p.name}</div>
+      <div class="project-company">${p.company}</div>
+      <span class="project-genre">${p.genre}</span>
+    </div>`;
+  if (i < PROJECT_SHOW) pGrid.appendChild(card);
+  else pExtraGrid.appendChild(card);
+});
+
+// ── Attendees ──
+const roleColors = { 'Developer':'#16a34a','Publisher':'#2563eb','Investor':'#7c3aed','Service Provider':'#ea580c','Press':'#ca8a04','Other':'#64748b' };
+const attendeeData = [
+  { name:'Alex Chen', company:'Indie Forge', role:'Developer' },
+  { name:'Maria Santos', company:'Nexus Publishing', role:'Publisher' },
+  { name:'James Wright', company:'GC Ventures', role:'Investor' },
+  { name:'Yuki Tanaka', company:'GameData Analytics', role:'Service Provider' },
+  { name:'Lucas Müller', company:'Pixel Storm', role:'Developer' },
+  { name:'Sophie Dubois', company:'GamePress EU', role:'Press' },
+  { name:'Raj Patel', company:'Horizon Games', role:'Developer' },
+  { name:'Emma Wilson', company:'Arc Capital', role:'Investor' },
+  { name:'Carlos Rivera', company:'Turbo Studios', role:'Developer' },
+  { name:'Aisha Okonkwo', company:'Bloom Interactive', role:'Developer' },
+  { name:'Tom Nakamura', company:'Sakura Games', role:'Publisher' },
+  { name:'Nina Kovač', company:'Adriatic Dev', role:'Developer' },
+  { name:'Ben Foster', company:'Lighthouse VC', role:'Investor' },
+  { name:'Lena Schmidt', company:'Berlin Game Lab', role:'Developer' },
+  { name:'Omar Hassan', company:'Desert Fox Games', role:'Developer' },
+  { name:'Priya Sharma', company:'Mumbai Pixels', role:'Developer' },
+  { name:'Ethan Park', company:'Seoul Studio', role:'Developer' },
+  { name:'Isabelle Martin', company:'Paris Game Week', role:'Press' },
+  { name:'David Kim', company:'KR Ventures', role:'Investor' },
+  { name:'Fatima Al-Rashid', company:'Gulf Games', role:'Service Provider' },
+];
+const ATTENDEE_SHOW = 12;
+const aGrid = document.getElementById('attendeeGrid');
+const aExtraGrid = document.getElementById('attendeeExtraGrid');
+const miniAvatars = document.getElementById('miniAvatars');
+
+attendeeData.forEach((a, i) => {
+  const color = roleColors[a.role] || '#64748b';
+  const initials = a.name.split(' ').map(n=>n[0]).join('');
+  const roleTagColors = { 'Developer':'background:#dcfce7;color:#16a34a','Publisher':'background:#dbeafe;color:#2563eb','Investor':'background:#ede9fe;color:#7c3aed','Service Provider':'background:#ffedd5;color:#ea580c','Press':'background:#fef9c3;color:#ca8a04','Other':'background:#f1f5f9;color:#64748b' };
+  const card = document.createElement('div');
+  card.className = 'attendee-card';
+  card.innerHTML = `
+    <div class="attendee-avatar" style="background:${color}">${initials}</div>
+    <div>
+      <div class="attendee-name">${a.name}</div>
+      <div class="attendee-company">${a.company}</div>
+      <span class="attendee-role-tag" style="${roleTagColors[a.role]||''}">${a.role}</span>
+    </div>`;
+  if (i < ATTENDEE_SHOW) aGrid.appendChild(card);
+  else aExtraGrid.appendChild(card);
+
+  // mini avatars (first 4)
+  if (i < 4) {
+    const av = document.createElement('span');
+    av.style.background = color;
+    av.textContent = initials;
+    miniAvatars.appendChild(av);
   }
 });
-if (grid.children.length === 0) {
-  document.getElementById('modulesSection').style.display = 'none';
+
+// ── Collapse toggle ──
+const collapseState = {};
+function toggleCollapse(extraId, btnId, key) {
+  const el = document.getElementById(extraId);
+  const btn = document.getElementById(btnId);
+  if (!collapseState[key]) {
+    el.style.maxHeight = el.scrollHeight + 'px';
+    el.classList.remove('collapsed');
+    btn.textContent = btn.textContent.replace('↓','↑').replace('Show','Hide');
+    collapseState[key] = true;
+  } else {
+    el.style.maxHeight = '0';
+    el.classList.add('collapsed');
+    btn.textContent = btn.textContent.replace('↑','↓').replace('Hide','Show');
+    collapseState[key] = false;
+  }
 }
 
-// Attendees display
-document.getElementById('eventAttendees').textContent = attendees.toLocaleString() + '+ Attendees';
-
-// Register buttons → go to register page (no inline onclick conflict)
-function goToRegister() {
-  const regParams = new URLSearchParams({ title, start, end, city, venue, format, cname, cemail });
-  window.location.href = 'EventRegister_v1_PC.html?' + regParams.toString();
+// ── Navigation ──
+function goToRegister(ticketType, ticketPrice) {
+  const p = new URLSearchParams({ title, start, end, city, venue, format, cname, cemail, modules: modules.join(','), preTicket: ticketType || '', prePrice: ticketPrice || 0 });
+  window.location.href = 'EventRegister_v1_PC.html?' + p.toString();
 }
-const navBtn  = document.getElementById('navRegisterBtn');
-const sideBtn = document.getElementById('sideRegisterBtn');
-if (navBtn)  navBtn.addEventListener('click', goToRegister);
-if (sideBtn) sideBtn.addEventListener('click', goToRegister);
-
-// Show Sponsor / Booth cards based on enabled modules
-const hasSponsor = modules.some(m => m.toLowerCase().includes('sponsor'));
-const hasBooth   = modules.some(m => {
-  const ml = m.toLowerCase();
-  return ml.includes('booth') || ml.includes('exhib');
-});
-if (hasSponsor) document.getElementById('sponsorCard').style.display = 'block';
-if (hasBooth)   document.getElementById('boothCard').style.display   = 'block';
-
-// Sponsor button → go to sponsor apply page
-const btnSponsor = document.getElementById('btn-sponsor');
-if (btnSponsor) {
-  btnSponsor.addEventListener('click', () => {
-    const p = new URLSearchParams({ title, start, end, city, venue, format, cname, cemail });
-    window.location.href = 'SponsorApply_v1_PC.html?' + p.toString();
-  });
+function goToSponsor(pkg) {
+  const p = new URLSearchParams({ title, start, end, city, cname, cemail, package: pkg });
+  window.location.href = 'SponsorApply_v1_PC.html?' + p.toString();
+}
+function goToBooth(boothType, avail) {
+  const p = new URLSearchParams({ title, start, end, city, venue, cname, cemail, boothType });
+  window.location.href = 'BoothBook_v1_PC.html?' + p.toString();
 }
 
-// Booth button → go to booth booking page
-const btnBooth = document.getElementById('btn-booth');
-if (btnBooth) {
-  btnBooth.addEventListener('click', () => {
-    const p = new URLSearchParams({ title, start, end, city, venue, format, cname, cemail });
-    window.location.href = 'BoothBook_v1_PC.html?' + p.toString();
-  });
-}
+document.getElementById('navRegisterBtn').addEventListener('click', () => goToRegister());
+document.getElementById('sideRegisterBtn').addEventListener('click', () => goToRegister());
+document.getElementById('btn-sponsor').addEventListener('click', () => goToSponsor(''));
+document.getElementById('btn-booth').addEventListener('click', () => goToBooth('',''));
 </script>
-</body>
 </html>
