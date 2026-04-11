@@ -260,8 +260,11 @@ body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--t
       <span class="icon">👤</span> Profile
     </button>
     <button class="sidebar-link" onclick="showSection('settings')">
-      <span class="icon">⚙️</span> Settings
-    </button>
+          <span class="icon">⚙️</span> Settings
+        </button>
+        <button class="sidebar-link" onclick="showSection('purchases')">
+          <span class="icon">🧾</span> My Purchases
+        </button>
 
     <div class="sidebar-user">
       <div class="sidebar-user-avatar" id="sidebarAvatar">R</div>
@@ -401,6 +404,31 @@ body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--t
       </div>
     </div>
 
+    <!-- PURCHASES SECTION -->
+    <div class="section" id="section-purchases" style="display:none">
+      <div class="section-header">
+        <div class="section-title">🧾 My Purchases</div>
+      </div>
+
+      <!-- Tickets / Registrations -->
+      <div style="margin-bottom:20px">
+        <div style="font-size:12px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;margin-bottom:10px">🎟️ Tickets &amp; Registrations</div>
+        <div id="purchaseTickets"></div>
+      </div>
+
+      <!-- Sponsorships -->
+      <div style="margin-bottom:20px">
+        <div style="font-size:12px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;margin-bottom:10px">🤝 Sponsorship Applications</div>
+        <div id="purchaseSponsors"></div>
+      </div>
+
+      <!-- Booth Bookings -->
+      <div style="margin-bottom:20px">
+        <div style="font-size:12px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;margin-bottom:10px">🏪 Booth Bookings</div>
+        <div id="purchaseBooths"></div>
+      </div>
+    </div>
+
   </div>
 </div>
 
@@ -496,6 +524,61 @@ recs.forEach(r => {
     <button class="rec-card-btn" onclick="window.location.href='EventPublicPage_v4_PC.html?title=${encodeURIComponent(r.name)}'">View Event →</button>`;
   recGrid.appendChild(card);
 });
+
+// ── Load Purchases ──
+function renderPurchases() {
+  // Tickets
+  const regs = (() => { try { return JSON.parse(localStorage.getItem('gc_registrations') || '[]'); } catch(e){ return []; } })();
+  const ticketEl = document.getElementById('purchaseTickets');
+  if (regs.length === 0) {
+    ticketEl.innerHTML = '<div style="font-size:13px;color:var(--muted);padding:12px 0">No ticket purchases yet.</div>';
+  } else {
+    ticketEl.innerHTML = regs.map(r => `
+      <div style="display:flex;align-items:center;gap:12px;padding:12px;border:1px solid var(--border);border-radius:8px;margin-bottom:8px;background:var(--card)">
+        <div style="font-size:24px">🎟️</div>
+        <div style="flex:1">
+          <div style="font-size:13px;font-weight:700">${r.eventTitle || 'Event'}</div>
+          <div style="font-size:11px;color:var(--muted)">${r.ticketType || 'General Admission'} · ${r.eventStart || ''} · ${r.eventCity || ''}</div>
+        </div>
+        <span style="font-size:11px;font-weight:700;padding:3px 10px;border-radius:20px;background:#dcfce7;color:#15803d">✓ Confirmed</span>
+      </div>`).join('');
+  }
+
+  // Sponsorships
+  const sponsors = (() => { try { return JSON.parse(localStorage.getItem('gc_sponsor_applications') || '[]'); } catch(e){ return []; } })();
+  const sponsorEl = document.getElementById('purchaseSponsors');
+  if (sponsors.length === 0) {
+    sponsorEl.innerHTML = '<div style="font-size:13px;color:var(--muted);padding:12px 0">No sponsorship applications yet.</div>';
+  } else {
+    sponsorEl.innerHTML = sponsors.map(s => `
+      <div style="display:flex;align-items:center;gap:12px;padding:12px;border:1px solid var(--border);border-radius:8px;margin-bottom:8px;background:var(--card)">
+        <div style="font-size:24px">🤝</div>
+        <div style="flex:1">
+          <div style="font-size:13px;font-weight:700">${s.eventTitle || 'Event'}</div>
+          <div style="font-size:11px;color:var(--muted)">${s.package || ''} · ${s.company || ''}</div>
+        </div>
+        <span style="font-size:11px;font-weight:700;padding:3px 10px;border-radius:20px;background:#fef9c3;color:#854d0e">${s.status || 'Pending Review'}</span>
+      </div>`).join('');
+  }
+
+  // Booth Bookings
+  const booths = (() => { try { return JSON.parse(localStorage.getItem('gc_booth_bookings') || '[]'); } catch(e){ return []; } })();
+  const boothEl = document.getElementById('purchaseBooths');
+  if (booths.length === 0) {
+    boothEl.innerHTML = '<div style="font-size:13px;color:var(--muted);padding:12px 0">No booth bookings yet.</div>';
+  } else {
+    boothEl.innerHTML = booths.map(b => `
+      <div style="display:flex;align-items:center;gap:12px;padding:12px;border:1px solid var(--border);border-radius:8px;margin-bottom:8px;background:var(--card)">
+        <div style="font-size:24px">🏪</div>
+        <div style="flex:1">
+          <div style="font-size:13px;font-weight:700">${b.eventTitle || 'Event'}</div>
+          <div style="font-size:11px;color:var(--muted)">Booth ${b.boothNumber || ''} · ${b.boothType || ''} · ${b.company || ''}</div>
+        </div>
+        <span style="font-size:11px;font-weight:700;padding:3px 10px;border-radius:20px;background:#dcfce7;color:#15803d">${b.status || 'Confirmed'}</span>
+      </div>`).join('');
+  }
+}
+renderPurchases();
 
 // ── Section switcher ──
 function showSection(name) {

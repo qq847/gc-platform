@@ -1,0 +1,431 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Book a Booth</title>
+<style>
+  :root {
+    --bg: #f8fafc; --card: #fff; --border: #e2e8f0;
+    --text: #0f172a; --muted: #64748b; --accent: #ea580c;
+    --accent-light: #fff7ed; --green: #16a34a; --green-light: #f0fdf4;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; }
+
+  .nav { background: var(--card); border-bottom: 1px solid var(--border); padding: 0 32px; height: 56px; display: flex; align-items: center; gap: 16px; position: sticky; top: 0; z-index: 100; }
+  .nav-back { font-size: 13px; color: var(--muted); cursor: pointer; display: flex; align-items: center; gap: 6px; text-decoration: none; }
+  .nav-back:hover { color: var(--text); }
+  .nav-title { font-size: 15px; font-weight: 700; }
+  .nav-event { font-size: 13px; color: var(--muted); margin-left: auto; }
+
+  .page { max-width: 1040px; margin: 0 auto; padding: 32px 24px; display: grid; grid-template-columns: 1fr 320px; gap: 24px; }
+  @media (max-width: 768px) { .page { grid-template-columns: 1fr; } }
+
+  .card { background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 24px; margin-bottom: 20px; }
+  .card-title { font-size: 16px; font-weight: 700; color: var(--text); margin-bottom: 16px; display: flex; align-items: center; gap: 8px; }
+
+  /* BOOTH TYPES */
+  .booth-types { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
+  @media (max-width: 600px) { .booth-types { grid-template-columns: 1fr; } }
+  .btype { border: 2px solid var(--border); border-radius: 10px; padding: 16px; cursor: pointer; transition: all .2s; text-align: center; position: relative; }
+  .btype:hover { border-color: var(--accent); background: var(--accent-light); }
+  .btype.selected { border-color: var(--accent); background: var(--accent-light); }
+  .btype-icon { font-size: 28px; margin-bottom: 8px; }
+  .btype-name { font-size: 13px; font-weight: 700; color: var(--text); margin-bottom: 4px; }
+  .btype-size { font-size: 11px; color: var(--muted); margin-bottom: 6px; }
+  .btype-price { font-size: 16px; font-weight: 800; color: var(--accent); }
+  .btype-check { position: absolute; top: 10px; right: 10px; width: 18px; height: 18px; border-radius: 50%; border: 2px solid var(--border); display: flex; align-items: center; justify-content: center; font-size: 10px; color: #fff; }
+  .btype.selected .btype-check { background: var(--accent); border-color: var(--accent); }
+
+  /* FLOOR PLAN */
+  .floor-plan-wrap { overflow-x: auto; }
+  .floor-legend { display: flex; gap: 16px; flex-wrap: wrap; margin-bottom: 12px; }
+  .legend-item { display: flex; align-items: center; gap: 6px; font-size: 12px; color: var(--muted); }
+  .legend-dot { width: 12px; height: 12px; border-radius: 3px; }
+
+  .booth-cell { cursor: pointer; transition: opacity .15s; }
+  .booth-cell:hover { opacity: .8; }
+  .booth-cell.taken { cursor: not-allowed; }
+  .booth-cell.selected-cell rect { stroke: #ea580c !important; stroke-width: 3 !important; }
+
+  /* FORM */
+  .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 14px; }
+  .form-row.single { grid-template-columns: 1fr; }
+  .form-group { display: flex; flex-direction: column; gap: 5px; }
+  .form-group label { font-size: 12px; font-weight: 600; color: var(--muted); }
+  .form-group input, .form-group select, .form-group textarea {
+    padding: 9px 12px; border: 1.5px solid var(--border); border-radius: 8px;
+    font-size: 13px; color: var(--text); background: var(--bg); font-family: inherit;
+  }
+  .form-group input:focus, .form-group select:focus { outline: none; border-color: var(--accent); }
+
+  /* SIDEBAR */
+  .sidebar { position: sticky; top: 72px; height: fit-content; }
+  .summary-card { background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 24px; }
+  .summary-title { font-size: 15px; font-weight: 700; margin-bottom: 16px; }
+  .summary-row { display: flex; justify-content: space-between; align-items: flex-start; padding: 8px 0; border-bottom: 1px solid var(--border); font-size: 13px; }
+  .summary-row:last-of-type { border-bottom: none; }
+  .summary-row .label { color: var(--muted); }
+  .summary-row .value { font-weight: 600; color: var(--text); text-align: right; max-width: 160px; }
+  .summary-total { display: flex; justify-content: space-between; align-items: center; padding: 14px 0 0; margin-top: 8px; border-top: 2px solid var(--border); }
+  .summary-total .label { font-size: 14px; font-weight: 700; }
+  .summary-total .value { font-size: 20px; font-weight: 800; color: var(--accent); }
+  .btn-submit { width: 100%; padding: 14px; background: var(--accent); color: #fff; border: none; border-radius: 10px; font-size: 15px; font-weight: 700; cursor: pointer; margin-top: 16px; transition: background .2s; }
+  .btn-submit:hover { background: #c2410c; }
+  .terms { font-size: 11px; color: var(--muted); margin-top: 10px; text-align: center; line-height: 1.5; }
+  .terms a { color: var(--accent); }
+
+  /* SUCCESS */
+  .success-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,.5); z-index: 200; align-items: center; justify-content: center; }
+  .success-overlay.open { display: flex; }
+  .success-card { background: #fff; border-radius: 16px; padding: 48px 40px; max-width: 440px; width: 90%; text-align: center; }
+  .success-icon { font-size: 56px; margin-bottom: 16px; }
+  .success-title { font-size: 22px; font-weight: 800; margin-bottom: 8px; }
+  .success-sub { font-size: 14px; color: var(--muted); margin-bottom: 24px; line-height: 1.6; }
+  .success-btn { padding: 12px 28px; background: var(--accent); color: #fff; border: none; border-radius: 9px; font-size: 14px; font-weight: 700; cursor: pointer; }
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav class="nav">
+  <a class="nav-back" id="backLink" href="#">← Back to Event</a>
+  <span style="color:var(--border)">|</span>
+  <span class="nav-title">🏪 Book an Exhibition Booth</span>
+  <span class="nav-event" id="navEventName"></span>
+</nav>
+
+<div class="page">
+  <div>
+
+    <!-- Step 1: Booth Type -->
+    <div class="card">
+      <div class="card-title">📦 Step 1 — Select Booth Type</div>
+      <div class="booth-types">
+        <div class="btype selected" data-type="standard" data-price="2500" onclick="selectType(this)">
+          <div class="btype-check">✓</div>
+          <div class="btype-icon">🏪</div>
+          <div class="btype-name">Standard Booth</div>
+          <div class="btype-size">3m × 3m (9m²)</div>
+          <div class="btype-price">€2,500</div>
+        </div>
+        <div class="btype" data-type="double" data-price="4500" onclick="selectType(this)">
+          <div class="btype-check"></div>
+          <div class="btype-icon">🏬</div>
+          <div class="btype-name">Double Booth</div>
+          <div class="btype-size">6m × 3m (18m²)</div>
+          <div class="btype-price">€4,500</div>
+        </div>
+        <div class="btype" data-type="island" data-price="8000" onclick="selectType(this)">
+          <div class="btype-check"></div>
+          <div class="btype-icon">🏛️</div>
+          <div class="btype-name">Island Booth</div>
+          <div class="btype-size">6m × 6m (36m²)</div>
+          <div class="btype-price">€8,000</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Step 2: Floor Plan -->
+    <div class="card">
+      <div class="card-title">🗺️ Step 2 — Select Your Booth Location</div>
+      <div class="floor-legend">
+        <div class="legend-item"><div class="legend-dot" style="background:#86efac"></div>Available</div>
+        <div class="legend-item"><div class="legend-dot" style="background:#93c5fd"></div>Taken</div>
+        <div class="legend-item"><div class="legend-dot" style="background:#fdba74"></div>Your Selection</div>
+        <div class="legend-item"><div class="legend-dot" style="background:#e2e8f0"></div>Reserved</div>
+      </div>
+      <div class="floor-plan-wrap">
+        <svg id="floorPlan" width="680" height="340" viewBox="0 0 680 340" style="border:1px solid var(--border);border-radius:8px;background:#f8fafc;max-width:100%">
+          <!-- Main Stage -->
+          <rect x="240" y="10" width="200" height="50" rx="6" fill="#1e3a8a" opacity=".9"/>
+          <text x="340" y="40" text-anchor="middle" fill="#fff" font-size="13" font-weight="700">🎤 Main Stage</text>
+
+          <!-- Aisle labels -->
+          <text x="340" y="85" text-anchor="middle" fill="#94a3b8" font-size="10">— Aisle A —</text>
+          <text x="340" y="205" text-anchor="middle" fill="#94a3b8" font-size="10">— Aisle B —</text>
+          <text x="340" y="305" text-anchor="middle" fill="#94a3b8" font-size="10">— Aisle C —</text>
+
+          <!-- Row 1: B01-B08 -->
+          <!-- B01 Available -->
+          <g class="booth-cell" id="cell-B01" onclick="selectBooth('B01',this)">
+            <rect x="20" y="95" width="70" height="50" rx="5" fill="#86efac" stroke="#4ade80" stroke-width="1.5"/>
+            <text x="55" y="118" text-anchor="middle" fill="#15803d" font-size="11" font-weight="700">B01</text>
+            <text x="55" y="132" text-anchor="middle" fill="#15803d" font-size="9">Available</text>
+          </g>
+          <!-- B02 Taken -->
+          <g class="booth-cell taken" id="cell-B02">
+            <rect x="100" y="95" width="70" height="50" rx="5" fill="#93c5fd" stroke="#60a5fa" stroke-width="1.5"/>
+            <text x="135" y="118" text-anchor="middle" fill="#1d4ed8" font-size="11" font-weight="700">B02</text>
+            <text x="135" y="132" text-anchor="middle" fill="#1d4ed8" font-size="9">Sony</text>
+          </g>
+          <!-- B03 Taken -->
+          <g class="booth-cell taken" id="cell-B03">
+            <rect x="180" y="95" width="70" height="50" rx="5" fill="#93c5fd" stroke="#60a5fa" stroke-width="1.5"/>
+            <text x="215" y="118" text-anchor="middle" fill="#1d4ed8" font-size="11" font-weight="700">B03</text>
+            <text x="215" y="132" text-anchor="middle" fill="#1d4ed8" font-size="9">Microsoft</text>
+          </g>
+          <!-- B04 Available -->
+          <g class="booth-cell" id="cell-B04" onclick="selectBooth('B04',this)">
+            <rect x="260" y="95" width="70" height="50" rx="5" fill="#86efac" stroke="#4ade80" stroke-width="1.5"/>
+            <text x="295" y="118" text-anchor="middle" fill="#15803d" font-size="11" font-weight="700">B04</text>
+            <text x="295" y="132" text-anchor="middle" fill="#15803d" font-size="9">Available</text>
+          </g>
+          <!-- B05 Taken -->
+          <g class="booth-cell taken" id="cell-B05">
+            <rect x="340" y="95" width="70" height="50" rx="5" fill="#93c5fd" stroke="#60a5fa" stroke-width="1.5"/>
+            <text x="375" y="118" text-anchor="middle" fill="#1d4ed8" font-size="11" font-weight="700">B05</text>
+            <text x="375" y="132" text-anchor="middle" fill="#1d4ed8" font-size="9">EA Games</text>
+          </g>
+          <!-- B06 Available -->
+          <g class="booth-cell" id="cell-B06" onclick="selectBooth('B06',this)">
+            <rect x="420" y="95" width="70" height="50" rx="5" fill="#86efac" stroke="#4ade80" stroke-width="1.5"/>
+            <text x="455" y="118" text-anchor="middle" fill="#15803d" font-size="11" font-weight="700">B06</text>
+            <text x="455" y="132" text-anchor="middle" fill="#15803d" font-size="9">Available</text>
+          </g>
+          <!-- B07 Reserved -->
+          <g class="booth-cell taken" id="cell-B07">
+            <rect x="500" y="95" width="70" height="50" rx="5" fill="#e2e8f0" stroke="#cbd5e1" stroke-width="1.5"/>
+            <text x="535" y="118" text-anchor="middle" fill="#94a3b8" font-size="11" font-weight="700">B07</text>
+            <text x="535" y="132" text-anchor="middle" fill="#94a3b8" font-size="9">Reserved</text>
+          </g>
+          <!-- B08 Available -->
+          <g class="booth-cell" id="cell-B08" onclick="selectBooth('B08',this)">
+            <rect x="590" y="95" width="70" height="50" rx="5" fill="#86efac" stroke="#4ade80" stroke-width="1.5"/>
+            <text x="625" y="118" text-anchor="middle" fill="#15803d" font-size="11" font-weight="700">B08</text>
+            <text x="625" y="132" text-anchor="middle" fill="#15803d" font-size="9">Available</text>
+          </g>
+
+          <!-- Row 2: B09-B15 -->
+          <!-- B09 Taken -->
+          <g class="booth-cell taken" id="cell-B09">
+            <rect x="20" y="215" width="70" height="50" rx="5" fill="#93c5fd" stroke="#60a5fa" stroke-width="1.5"/>
+            <text x="55" y="238" text-anchor="middle" fill="#1d4ed8" font-size="11" font-weight="700">B09</text>
+            <text x="55" y="252" text-anchor="middle" fill="#1d4ed8" font-size="9">Tencent</text>
+          </g>
+          <!-- B10 Available -->
+          <g class="booth-cell" id="cell-B10" onclick="selectBooth('B10',this)">
+            <rect x="100" y="215" width="70" height="50" rx="5" fill="#86efac" stroke="#4ade80" stroke-width="1.5"/>
+            <text x="135" y="238" text-anchor="middle" fill="#15803d" font-size="11" font-weight="700">B10</text>
+            <text x="135" y="252" text-anchor="middle" fill="#15803d" font-size="9">Available</text>
+          </g>
+          <!-- B11 Available -->
+          <g class="booth-cell" id="cell-B11" onclick="selectBooth('B11',this)">
+            <rect x="180" y="215" width="70" height="50" rx="5" fill="#86efac" stroke="#4ade80" stroke-width="1.5"/>
+            <text x="215" y="238" text-anchor="middle" fill="#15803d" font-size="11" font-weight="700">B11</text>
+            <text x="215" y="252" text-anchor="middle" fill="#15803d" font-size="9">Available</text>
+          </g>
+          <!-- B12 Taken -->
+          <g class="booth-cell taken" id="cell-B12">
+            <rect x="260" y="215" width="70" height="50" rx="5" fill="#93c5fd" stroke="#60a5fa" stroke-width="1.5"/>
+            <text x="295" y="238" text-anchor="middle" fill="#1d4ed8" font-size="11" font-weight="700">B12</text>
+            <text x="295" y="252" text-anchor="middle" fill="#1d4ed8" font-size="9">Bandai</text>
+          </g>
+          <!-- B13 Available -->
+          <g class="booth-cell" id="cell-B13" onclick="selectBooth('B13',this)">
+            <rect x="340" y="215" width="70" height="50" rx="5" fill="#86efac" stroke="#4ade80" stroke-width="1.5"/>
+            <text x="375" y="238" text-anchor="middle" fill="#15803d" font-size="11" font-weight="700">B13</text>
+            <text x="375" y="252" text-anchor="middle" fill="#15803d" font-size="9">Available</text>
+          </g>
+          <!-- B14 Reserved -->
+          <g class="booth-cell taken" id="cell-B14">
+            <rect x="420" y="215" width="70" height="50" rx="5" fill="#e2e8f0" stroke="#cbd5e1" stroke-width="1.5"/>
+            <text x="455" y="238" text-anchor="middle" fill="#94a3b8" font-size="11" font-weight="700">B14</text>
+            <text x="455" y="252" text-anchor="middle" fill="#94a3b8" font-size="9">Reserved</text>
+          </g>
+          <!-- B15 Available -->
+          <g class="booth-cell" id="cell-B15" onclick="selectBooth('B15',this)">
+            <rect x="500" y="215" width="70" height="50" rx="5" fill="#86efac" stroke="#4ade80" stroke-width="1.5"/>
+            <text x="535" y="238" text-anchor="middle" fill="#15803d" font-size="11" font-weight="700">B15</text>
+            <text x="535" y="252" text-anchor="middle" fill="#15803d" font-size="9">Available</text>
+          </g>
+        </svg>
+      </div>
+      <div id="boothSelectionMsg" style="margin-top:10px;font-size:13px;color:var(--muted)">Click an available booth on the floor plan to select it.</div>
+    </div>
+
+    <!-- Step 3: Company Info -->
+    <div class="card">
+      <div class="card-title">🏢 Step 3 — Company Information</div>
+      <div class="form-row">
+        <div class="form-group">
+          <label>Company Name *</label>
+          <input type="text" id="companyName" placeholder="e.g. Indie Studio Ltd">
+        </div>
+        <div class="form-group">
+          <label>Industry *</label>
+          <select id="industry">
+            <option value="">Select</option>
+            <option>Game Developer</option><option>Game Publisher</option>
+            <option>Technology Provider</option><option>Investment / VC</option>
+            <option>Media / Press</option><option>Service Provider</option><option>Other</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label>Contact Person *</label>
+          <input type="text" id="contactPerson" placeholder="Full name">
+        </div>
+        <div class="form-group">
+          <label>Business Email *</label>
+          <input type="email" id="bizEmail" placeholder="you@company.com">
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label>Phone</label>
+          <input type="tel" id="phone" placeholder="+1 (555) 000-0000">
+        </div>
+        <div class="form-group">
+          <label>Country *</label>
+          <select id="country">
+            <option value="">Select country</option>
+            <option>United States</option><option>United Kingdom</option><option>Germany</option>
+            <option>France</option><option>China</option><option>Japan</option><option>South Korea</option>
+            <option>Canada</option><option>Australia</option><option>Other</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-row single">
+        <div class="form-group">
+          <label>What will you be showcasing?</label>
+          <textarea id="showcase" placeholder="Describe the games, products, or services you plan to exhibit…"></textarea>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- SIDEBAR -->
+  <div class="sidebar">
+    <div class="summary-card">
+      <div class="summary-title">📋 Booking Summary</div>
+      <div class="summary-row">
+        <span class="label">Event</span>
+        <span class="value" id="summaryEvent" style="font-size:12px">—</span>
+      </div>
+      <div class="summary-row">
+        <span class="label">Booth Type</span>
+        <span class="value" id="summaryType">Standard (9m²)</span>
+      </div>
+      <div class="summary-row">
+        <span class="label">Booth Number</span>
+        <span class="value" id="summaryBooth">Not selected</span>
+      </div>
+      <div class="summary-row">
+        <span class="label">Setup Date</span>
+        <span class="value" id="summarySetup">Day before event</span>
+      </div>
+      <div class="summary-row">
+        <span class="label">Includes</span>
+        <span class="value" id="summaryIncludes" style="font-size:11px">Table, 2 chairs, power, WiFi, name board</span>
+      </div>
+      <div class="summary-total">
+        <span class="label">Total</span>
+        <span class="value" id="summaryTotal">€2,500</span>
+      </div>
+      <button class="btn-submit" onclick="submitBooking()">Confirm Booking →</button>
+      <p class="terms">By booking, you agree to our <a href="#">Exhibitor Terms</a>. Payment due within 14 days of confirmation.</p>
+    </div>
+  </div>
+</div>
+
+<!-- SUCCESS OVERLAY -->
+<div class="success-overlay" id="successOverlay">
+  <div class="success-card">
+    <div class="success-icon">🎊</div>
+    <div class="success-title">Booth Booked!</div>
+    <div class="success-sub">Your booth <strong id="successBooth"></strong> at <strong id="successEvent"></strong> has been reserved. Our team will send you a confirmation and invoice shortly.</div>
+    <button class="success-btn" onclick="window.location.href='AttendeeDashboard_v2_PC.html'">Go to My Dashboard →</button>
+  </div>
+</div>
+
+<script>
+const params = new URLSearchParams(window.location.search);
+const title  = params.get('title')  || 'the event';
+const start  = params.get('start')  || '';
+const end    = params.get('end')    || '';
+const city   = params.get('city')   || '';
+const venue  = params.get('venue')  || '';
+const format = params.get('format') || 'In-Person';
+const cname  = params.get('cname')  || '';
+const cemail = params.get('cemail') || '';
+
+document.getElementById('navEventName').textContent = title;
+document.getElementById('summaryEvent').textContent = title;
+document.getElementById('successEvent').textContent = title;
+
+const backParams = new URLSearchParams({ title, start, end, city, venue, format, cname, cemail });
+document.getElementById('backLink').href = 'EventPublicPage_v4_PC.html?' + backParams.toString();
+
+const typeData = {
+  standard: { label: 'Standard (9m²)',  price: 2500, includes: 'Table, 2 chairs, power, WiFi, name board' },
+  double:   { label: 'Double (18m²)',   price: 4500, includes: '2 tables, 4 chairs, power, WiFi, name board, carpet' },
+  island:   { label: 'Island (36m²)',   price: 8000, includes: 'Custom build, 360° access, premium location, AV support' }
+};
+
+let selectedBooth = null;
+let selectedType  = 'standard';
+
+function selectType(el) {
+  document.querySelectorAll('.btype').forEach(b => { b.classList.remove('selected'); b.querySelector('.btype-check').textContent = ''; });
+  el.classList.add('selected');
+  el.querySelector('.btype-check').textContent = '✓';
+  selectedType = el.dataset.type;
+  const d = typeData[selectedType];
+  document.getElementById('summaryType').textContent = d.label;
+  document.getElementById('summaryTotal').textContent = '€' + d.price.toLocaleString();
+  document.getElementById('summaryIncludes').textContent = d.includes;
+}
+
+function selectBooth(id, el) {
+  // Deselect previous
+  if (selectedBooth) {
+    const prev = document.getElementById('cell-' + selectedBooth);
+    if (prev) { prev.classList.remove('selected-cell'); prev.querySelector('rect').setAttribute('fill', '#86efac'); }
+  }
+  selectedBooth = id;
+  el.classList.add('selected-cell');
+  el.querySelector('rect').setAttribute('fill', '#fdba74');
+  el.querySelector('rect').setAttribute('stroke', '#ea580c');
+  document.getElementById('summaryBooth').textContent = id;
+  document.getElementById('boothSelectionMsg').textContent = '✅ Booth ' + id + ' selected. Fill in your details below.';
+  document.getElementById('boothSelectionMsg').style.color = '#16a34a';
+  document.getElementById('successBooth').textContent = id;
+}
+
+function submitBooking() {
+  const company = document.getElementById('companyName').value.trim();
+  const contact = document.getElementById('contactPerson').value.trim();
+  const email   = document.getElementById('bizEmail').value.trim();
+  const country = document.getElementById('country').value;
+  const industry = document.getElementById('industry').value;
+  if (!company || !contact || !email || !country || !industry) {
+    alert('Please fill in all required fields (Company Name, Industry, Contact, Email, Country).');
+    return;
+  }
+  if (!selectedBooth) {
+    alert('Please select a booth location on the floor plan.');
+    return;
+  }
+  const d = typeData[selectedType];
+  const bookings = (() => { try { return JSON.parse(localStorage.getItem('gc_booth_bookings') || '[]'); } catch(e){ return []; } })();
+  bookings.unshift({
+    id: Date.now(),
+    eventTitle: title,
+    boothNumber: selectedBooth,
+    boothType: d.label,
+    price: d.price,
+    company, contact, email, country, industry,
+    showcase: document.getElementById('showcase').value,
+    status: 'Confirmed',
+    bookedAt: new Date().toISOString()
+  });
+  localStorage.setItem('gc_booth_bookings', JSON.stringify(bookings));
+  document.getElementById('successOverlay').classList.add('open');
+}
+</script>
+</body>
+</html>

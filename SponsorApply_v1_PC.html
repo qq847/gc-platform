@@ -1,0 +1,394 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Become a Sponsor</title>
+<style>
+  :root {
+    --bg: #f8fafc; --card: #fff; --border: #e2e8f0;
+    --text: #0f172a; --muted: #64748b; --accent: #7c3aed;
+    --accent-light: #f5f3ff; --green: #16a34a; --green-light: #f0fdf4;
+    --red: #dc2626; --orange: #ea580c;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; }
+
+  /* NAV */
+  .nav { background: var(--card); border-bottom: 1px solid var(--border); padding: 0 32px; height: 56px; display: flex; align-items: center; gap: 16px; position: sticky; top: 0; z-index: 100; }
+  .nav-back { font-size: 13px; color: var(--muted); cursor: pointer; display: flex; align-items: center; gap: 6px; text-decoration: none; }
+  .nav-back:hover { color: var(--text); }
+  .nav-title { font-size: 15px; font-weight: 700; color: var(--text); }
+  .nav-event { font-size: 13px; color: var(--muted); margin-left: auto; }
+
+  /* LAYOUT */
+  .page { max-width: 960px; margin: 0 auto; padding: 32px 24px; display: grid; grid-template-columns: 1fr 340px; gap: 24px; }
+  @media (max-width: 768px) { .page { grid-template-columns: 1fr; } }
+
+  /* CARDS */
+  .card { background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 24px; margin-bottom: 20px; }
+  .card-title { font-size: 16px; font-weight: 700; color: var(--text); margin-bottom: 16px; display: flex; align-items: center; gap: 8px; }
+  .section-label { font-size: 11px; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: .06em; margin-bottom: 12px; }
+
+  /* PACKAGES */
+  .packages { display: flex; flex-direction: column; gap: 12px; }
+  .pkg { border: 2px solid var(--border); border-radius: 10px; padding: 16px 20px; cursor: pointer; transition: all .2s; position: relative; }
+  .pkg:hover { border-color: var(--accent); background: var(--accent-light); }
+  .pkg.selected { border-color: var(--accent); background: var(--accent-light); }
+  .pkg-header { display: flex; align-items: center; gap: 12px; margin-bottom: 8px; }
+  .pkg-badge { font-size: 11px; font-weight: 700; padding: 3px 10px; border-radius: 20px; }
+  .pkg-name { font-size: 15px; font-weight: 700; color: var(--text); }
+  .pkg-price { font-size: 20px; font-weight: 800; color: var(--accent); margin-left: auto; }
+  .pkg-perks { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }
+  .perk { font-size: 11px; background: #f1f5f9; color: var(--muted); padding: 3px 9px; border-radius: 20px; }
+  .pkg-check { position: absolute; top: 14px; right: 16px; width: 20px; height: 20px; border-radius: 50%; border: 2px solid var(--border); display: flex; align-items: center; justify-content: center; font-size: 11px; color: #fff; }
+  .pkg.selected .pkg-check { background: var(--accent); border-color: var(--accent); }
+
+  /* FORM */
+  .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 14px; }
+  .form-row.single { grid-template-columns: 1fr; }
+  .form-group { display: flex; flex-direction: column; gap: 5px; }
+  .form-group label { font-size: 12px; font-weight: 600; color: var(--muted); }
+  .form-group input, .form-group select, .form-group textarea {
+    padding: 9px 12px; border: 1.5px solid var(--border); border-radius: 8px;
+    font-size: 13px; color: var(--text); background: var(--bg); transition: border-color .2s;
+    font-family: inherit;
+  }
+  .form-group input:focus, .form-group select:focus, .form-group textarea:focus {
+    outline: none; border-color: var(--accent);
+  }
+  .form-group textarea { resize: vertical; min-height: 80px; }
+
+  /* GOALS */
+  .goals-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+  .goal-chip { border: 1.5px solid var(--border); border-radius: 8px; padding: 10px 12px; cursor: pointer; font-size: 12px; font-weight: 600; color: var(--muted); transition: all .2s; display: flex; align-items: center; gap: 6px; }
+  .goal-chip:hover { border-color: var(--accent); color: var(--accent); background: var(--accent-light); }
+  .goal-chip.selected { border-color: var(--accent); color: var(--accent); background: var(--accent-light); }
+
+  /* SIDEBAR */
+  .sidebar { position: sticky; top: 72px; height: fit-content; }
+  .summary-card { background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 24px; }
+  .summary-title { font-size: 15px; font-weight: 700; margin-bottom: 16px; }
+  .summary-row { display: flex; justify-content: space-between; align-items: center; padding: 8px 0; border-bottom: 1px solid var(--border); font-size: 13px; }
+  .summary-row:last-of-type { border-bottom: none; }
+  .summary-row .label { color: var(--muted); }
+  .summary-row .value { font-weight: 600; color: var(--text); }
+  .summary-total { display: flex; justify-content: space-between; align-items: center; padding: 14px 0 0; margin-top: 8px; border-top: 2px solid var(--border); }
+  .summary-total .label { font-size: 14px; font-weight: 700; }
+  .summary-total .value { font-size: 20px; font-weight: 800; color: var(--accent); }
+
+  .btn-submit { width: 100%; padding: 14px; background: var(--accent); color: #fff; border: none; border-radius: 10px; font-size: 15px; font-weight: 700; cursor: pointer; margin-top: 16px; transition: background .2s; }
+  .btn-submit:hover { background: #6d28d9; }
+  .btn-submit:disabled { background: #c4b5fd; cursor: not-allowed; }
+
+  .terms { font-size: 11px; color: var(--muted); margin-top: 10px; text-align: center; line-height: 1.5; }
+  .terms a { color: var(--accent); }
+
+  /* SUCCESS STATE */
+  .success-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,.5); z-index: 200; align-items: center; justify-content: center; }
+  .success-overlay.open { display: flex; }
+  .success-card { background: #fff; border-radius: 16px; padding: 48px 40px; max-width: 440px; width: 90%; text-align: center; }
+  .success-icon { font-size: 56px; margin-bottom: 16px; }
+  .success-title { font-size: 22px; font-weight: 800; margin-bottom: 8px; }
+  .success-sub { font-size: 14px; color: var(--muted); margin-bottom: 24px; line-height: 1.6; }
+  .success-btn { padding: 12px 28px; background: var(--accent); color: #fff; border: none; border-radius: 9px; font-size: 14px; font-weight: 700; cursor: pointer; }
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav class="nav">
+  <a class="nav-back" id="backLink" href="#">← Back to Event</a>
+  <span style="color:var(--border)">|</span>
+  <span class="nav-title">🤝 Sponsorship Application</span>
+  <span class="nav-event" id="navEventName"></span>
+</nav>
+
+<div class="page">
+  <!-- LEFT: MAIN CONTENT -->
+  <div>
+
+    <!-- Step 1: Choose Package -->
+    <div class="card">
+      <div class="card-title">📦 Step 1 — Choose a Sponsorship Package</div>
+      <div class="packages" id="packagesContainer">
+
+        <div class="pkg selected" data-pkg="platinum" data-price="15000" onclick="selectPkg(this)">
+          <div class="pkg-check">✓</div>
+          <div class="pkg-header">
+            <span class="pkg-badge" style="background:#e0e7ff;color:#4338ca">💎 Platinum</span>
+            <span class="pkg-name">Platinum Sponsor</span>
+            <span class="pkg-price">€15,000</span>
+          </div>
+          <div style="font-size:12px;color:var(--muted);margin-bottom:8px">Maximum brand exposure across all event touchpoints. Premier partner status.</div>
+          <div class="pkg-perks">
+            <span class="perk">Logo on Main Stage</span><span class="perk">10 VIP Passes</span><span class="perk">Speaking Slot (30 min)</span>
+            <span class="perk">Dedicated Booth (9m²)</span><span class="perk">Email Blast Feature</span><span class="perk">Social Media Campaign</span>
+            <span class="perk">Press Release Mention</span><span class="perk">App Banner Ad</span>
+          </div>
+        </div>
+
+        <div class="pkg" data-pkg="gold" data-price="8000" onclick="selectPkg(this)">
+          <div class="pkg-check"></div>
+          <div class="pkg-header">
+            <span class="pkg-badge" style="background:#fef9c3;color:#854d0e">🥇 Gold</span>
+            <span class="pkg-name">Gold Sponsor</span>
+            <span class="pkg-price">€8,000</span>
+          </div>
+          <div style="font-size:12px;color:var(--muted);margin-bottom:8px">Strong brand presence with premium placement and networking opportunities.</div>
+          <div class="pkg-perks">
+            <span class="perk">Logo on Stage Banner</span><span class="perk">6 VIP Passes</span><span class="perk">Panel Participation</span>
+            <span class="perk">Booth (6m²)</span><span class="perk">Social Media Mention</span><span class="perk">Newsletter Feature</span>
+          </div>
+        </div>
+
+        <div class="pkg" data-pkg="silver" data-price="4000" onclick="selectPkg(this)">
+          <div class="pkg-check"></div>
+          <div class="pkg-header">
+            <span class="pkg-badge" style="background:#f1f5f9;color:#475569">🥈 Silver</span>
+            <span class="pkg-name">Silver Sponsor</span>
+            <span class="pkg-price">€4,000</span>
+          </div>
+          <div style="font-size:12px;color:var(--muted);margin-bottom:8px">Solid brand visibility with key placement in event materials and digital channels.</div>
+          <div class="pkg-perks">
+            <span class="perk">Logo on Materials</span><span class="perk">4 Passes</span><span class="perk">Booth (3m²)</span>
+            <span class="perk">Social Media Tag</span><span class="perk">Website Listing</span>
+          </div>
+        </div>
+
+        <div class="pkg" data-pkg="custom" data-price="0" onclick="selectPkg(this)">
+          <div class="pkg-check"></div>
+          <div class="pkg-header">
+            <span class="pkg-badge" style="background:#fce7f3;color:#9d174d">✨ Custom</span>
+            <span class="pkg-name">Custom Package</span>
+            <span class="pkg-price">Custom</span>
+          </div>
+          <div style="font-size:12px;color:var(--muted);margin-bottom:8px">Build a bespoke sponsorship package tailored to your specific marketing objectives.</div>
+          <div class="pkg-perks">
+            <span class="perk">Fully Customisable</span><span class="perk">Dedicated Account Manager</span><span class="perk">Flexible Budget</span>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- Step 2: Company Info -->
+    <div class="card">
+      <div class="card-title">🏢 Step 2 — Company Information</div>
+      <div class="form-row">
+        <div class="form-group">
+          <label>Company Name *</label>
+          <input type="text" id="companyName" placeholder="e.g. Acme Games Ltd" required>
+        </div>
+        <div class="form-group">
+          <label>Industry / Category *</label>
+          <select id="industry">
+            <option value="">Select category</option>
+            <option>Game Developer</option>
+            <option>Game Publisher</option>
+            <option>Technology Provider</option>
+            <option>Investment / VC</option>
+            <option>Media / Press</option>
+            <option>Service Provider</option>
+            <option>Other</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label>Contact Person *</label>
+          <input type="text" id="contactPerson" placeholder="Full name">
+        </div>
+        <div class="form-group">
+          <label>Job Title *</label>
+          <input type="text" id="jobTitle" placeholder="e.g. Head of Marketing">
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label>Business Email *</label>
+          <input type="email" id="bizEmail" placeholder="you@company.com">
+        </div>
+        <div class="form-group">
+          <label>Phone</label>
+          <input type="tel" id="phone" placeholder="+1 (555) 000-0000">
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label>Company Website</label>
+          <input type="url" id="companyWebsite" placeholder="https://yourcompany.com">
+        </div>
+        <div class="form-group">
+          <label>Country *</label>
+          <select id="country">
+            <option value="">Select country</option>
+            <option>United States</option><option>United Kingdom</option><option>Germany</option>
+            <option>France</option><option>China</option><option>Japan</option><option>South Korea</option>
+            <option>Canada</option><option>Australia</option><option>Other</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-row single">
+        <div class="form-group">
+          <label>Brief Company Description</label>
+          <textarea id="companyDesc" placeholder="Tell us about your company, products, and target audience…"></textarea>
+        </div>
+      </div>
+    </div>
+
+    <!-- Step 3: Goals -->
+    <div class="card">
+      <div class="card-title">🎯 Step 3 — Sponsorship Goals</div>
+      <div class="section-label">What are your primary objectives? (select all that apply)</div>
+      <div class="goals-grid" id="goalsGrid">
+        <div class="goal-chip selected" onclick="toggleGoal(this)">🔍 Brand Awareness</div>
+        <div class="goal-chip" onclick="toggleGoal(this)">🤝 Business Development</div>
+        <div class="goal-chip" onclick="toggleGoal(this)">💼 Talent Recruitment</div>
+        <div class="goal-chip" onclick="toggleGoal(this)">🚀 Product Launch</div>
+        <div class="goal-chip" onclick="toggleGoal(this)">📊 Lead Generation</div>
+        <div class="goal-chip" onclick="toggleGoal(this)">🌐 Market Expansion</div>
+        <div class="goal-chip" onclick="toggleGoal(this)">🎮 Community Engagement</div>
+        <div class="goal-chip" onclick="toggleGoal(this)">📰 Press Coverage</div>
+      </div>
+    </div>
+
+    <!-- Step 4: Additional Notes -->
+    <div class="card">
+      <div class="card-title">💬 Step 4 — Additional Notes</div>
+      <div class="form-row single">
+        <div class="form-group">
+          <label>Special requests or custom requirements</label>
+          <textarea id="notes" placeholder="e.g. We'd like to co-host a workshop, or we need specific logo placement on the main stage backdrop…" style="min-height:100px"></textarea>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- RIGHT: SIDEBAR SUMMARY -->
+  <div class="sidebar">
+    <div class="summary-card">
+      <div class="summary-title">📋 Application Summary</div>
+      <div class="summary-row">
+        <span class="label">Event</span>
+        <span class="value" id="summaryEvent" style="text-align:right;max-width:180px;font-size:12px">—</span>
+      </div>
+      <div class="summary-row">
+        <span class="label">Package</span>
+        <span class="value" id="summaryPkg">💎 Platinum</span>
+      </div>
+      <div class="summary-row">
+        <span class="label">Passes Included</span>
+        <span class="value" id="summaryPasses">10 VIP Passes</span>
+      </div>
+      <div class="summary-row">
+        <span class="label">Booth Size</span>
+        <span class="value" id="summaryBooth">9m²</span>
+      </div>
+      <div class="summary-row">
+        <span class="label">Speaking Slot</span>
+        <span class="value" id="summarySpeaking">✅ 30 min</span>
+      </div>
+      <div class="summary-total">
+        <span class="label">Total Investment</span>
+        <span class="value" id="summaryTotal">€15,000</span>
+      </div>
+      <button class="btn-submit" id="submitBtn" onclick="submitApplication()">Submit Application →</button>
+      <p class="terms">By submitting, you agree to our <a href="#">Sponsorship Terms</a> and <a href="#">Privacy Policy</a>. Our team will contact you within 2 business days.</p>
+    </div>
+  </div>
+</div>
+
+<!-- SUCCESS OVERLAY -->
+<div class="success-overlay" id="successOverlay">
+  <div class="success-card">
+    <div class="success-icon">🎉</div>
+    <div class="success-title">Application Submitted!</div>
+    <div class="success-sub" id="successMsg">Thank you for your interest in sponsoring <strong id="successEvent"></strong>. Our partnerships team will review your application and be in touch within 2 business days.</div>
+    <button class="success-btn" onclick="goToDashboard()">Go to My Dashboard →</button>
+  </div>
+</div>
+
+<script>
+const params = new URLSearchParams(window.location.search);
+const title  = params.get('title')  || 'the event';
+const start  = params.get('start')  || '';
+const end    = params.get('end')    || '';
+const city   = params.get('city')   || '';
+const venue  = params.get('venue')  || '';
+const format = params.get('format') || 'In-Person';
+const cname  = params.get('cname')  || '';
+const cemail = params.get('cemail') || '';
+
+// Populate nav
+document.getElementById('navEventName').textContent = title;
+document.getElementById('summaryEvent').textContent = title;
+document.getElementById('successEvent').textContent = title;
+
+// Back link
+const backParams = new URLSearchParams({ title, start, end, city, venue, format, cname, cemail });
+document.getElementById('backLink').href = 'EventPublicPage_v4_PC.html?' + backParams.toString();
+
+// Package selection
+const pkgData = {
+  platinum: { label: '💎 Platinum', price: 15000, passes: '10 VIP Passes', booth: '9m²', speaking: '✅ 30 min' },
+  gold:     { label: '🥇 Gold',     price: 8000,  passes: '6 VIP Passes',  booth: '6m²', speaking: '✅ Panel' },
+  silver:   { label: '🥈 Silver',   price: 4000,  passes: '4 Passes',      booth: '3m²', speaking: '❌' },
+  custom:   { label: '✨ Custom',   price: 0,     passes: 'TBD',           booth: 'TBD', speaking: 'TBD' }
+};
+
+function selectPkg(el) {
+  document.querySelectorAll('.pkg').forEach(p => { p.classList.remove('selected'); p.querySelector('.pkg-check').textContent = ''; });
+  el.classList.add('selected');
+  el.querySelector('.pkg-check').textContent = '✓';
+  const key = el.dataset.pkg;
+  const d = pkgData[key];
+  document.getElementById('summaryPkg').textContent = d.label;
+  document.getElementById('summaryPasses').textContent = d.passes;
+  document.getElementById('summaryBooth').textContent = d.booth;
+  document.getElementById('summarySpeaking').textContent = d.speaking;
+  document.getElementById('summaryTotal').textContent = d.price > 0 ? '€' + d.price.toLocaleString() : 'Custom Quote';
+}
+
+function toggleGoal(el) {
+  el.classList.toggle('selected');
+}
+
+function submitApplication() {
+  const company = document.getElementById('companyName').value.trim();
+  const contact = document.getElementById('contactPerson').value.trim();
+  const email   = document.getElementById('bizEmail').value.trim();
+  const country = document.getElementById('country').value;
+  const industry = document.getElementById('industry').value;
+  if (!company || !contact || !email || !country || !industry) {
+    alert('Please fill in all required fields (Company Name, Industry, Contact Person, Email, Country).');
+    return;
+  }
+  // Get selected package
+  const selectedPkg = document.querySelector('.pkg.selected');
+  const pkgKey = selectedPkg ? selectedPkg.dataset.pkg : 'platinum';
+  const pkgInfo = pkgData[pkgKey];
+  // Save to localStorage
+  const applications = (() => { try { return JSON.parse(localStorage.getItem('gc_sponsor_applications') || '[]'); } catch(e){ return []; } })();
+  applications.unshift({
+    id: Date.now(),
+    eventTitle: title,
+    company, contact, email, country, industry,
+    package: pkgInfo.label,
+    price: pkgInfo.price,
+    goals: [...document.querySelectorAll('.goal-chip.selected')].map(g => g.textContent.trim()),
+    notes: document.getElementById('notes').value,
+    status: 'Pending Review',
+    submittedAt: new Date().toISOString()
+  });
+  localStorage.setItem('gc_sponsor_applications', JSON.stringify(applications));
+  document.getElementById('successOverlay').classList.add('open');
+}
+
+function goToDashboard() {
+  window.location.href = 'AttendeeDashboard_v2_PC.html';
+}
+</script>
+</body>
+</html>

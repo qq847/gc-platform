@@ -6403,9 +6403,27 @@ For more information, visit: gameconnection.com/awards-2025
               <button id="prev-device-mobile" onclick="switchPreviewDevice('mobile')" style="padding:5px 12px;border:none;border-radius:6px;font-size:12px;font-weight:600;cursor:pointer;background:transparent;color:#6b7280">📱 Mobile</button>
               <button id="prev-device-tablet" onclick="switchPreviewDevice('tablet')" style="padding:5px 12px;border:none;border-radius:6px;font-size:12px;font-weight:600;cursor:pointer;background:transparent;color:#6b7280">📟 Tablet</button>
             </div>
-            <button class="btn-secondary" onclick="showToast('Link copied!')">🔗 Copy Link</button>
-            <button class="btn-primary" onclick="showToast('Opening public page…')">↗ Open Public Page</button>
+            <button class="btn-secondary" id="prev-copy-link-btn" onclick="copyPublicPageLink()">🔗 Copy Link</button>
+            <button class="btn-primary" id="prev-open-page-btn" onclick="openPublicPage()">↗ Open Public Page</button>
           </div>
+        </div>
+
+        <!-- Publish Status Bar -->
+        <div id="prev-publish-bar" style="display:none;margin-bottom:16px;padding:14px 20px;border-radius:10px;background:#f0fdf4;border:1.5px solid #86efac;display:flex;align-items:center;gap:12px">
+          <span style="font-size:18px">✅</span>
+          <div style="flex:1">
+            <div style="font-size:13px;font-weight:700;color:#15803d">Event is Live!</div>
+            <div style="font-size:12px;color:#166534;margin-top:2px">Public page URL: <a id="prev-public-url" href="#" target="_blank" style="color:#2563eb;font-weight:600;word-break:break-all"></a></div>
+          </div>
+          <button onclick="openPublicPage()" style="padding:7px 16px;background:#16a34a;color:#fff;border:none;border-radius:8px;font-size:12px;font-weight:700;cursor:pointer">Open Page ↗</button>
+        </div>
+        <div id="prev-draft-bar" style="margin-bottom:16px;padding:14px 20px;border-radius:10px;background:#fffbeb;border:1.5px solid #fcd34d;display:flex;align-items:center;gap:12px">
+          <span style="font-size:18px">⚠️</span>
+          <div style="flex:1">
+            <div style="font-size:13px;font-weight:700;color:#92400e">Draft — Not Published Yet</div>
+            <div style="font-size:12px;color:#78350f;margin-top:2px">Complete the checklist in Event Editor, then click Publish to make this event live.</div>
+          </div>
+          <button onclick="showEventEditor()" style="padding:7px 16px;background:#d97706;color:#fff;border:none;border-radius:8px;font-size:12px;font-weight:700;cursor:pointer">Go to Editor</button>
         </div>
 
         <!-- Hero banner -->
@@ -8298,7 +8316,37 @@ function publishEvent() {
   currentEvent.status = events[idx].status;
   saveEvents(events);
   updateStatusBar(currentEvent);
-  showToast(isLive ? 'Event unpublished' : '🚀 Event is now live!');
+  // Write to public events store so Calendar and public pages can read it
+  const pubEvents = (() => { try { return JSON.parse(localStorage.getItem('gc_public_events') || '[]'); } catch(e){ return []; } })();
+  const ev = events[idx];
+  const pubIdx = pubEvents.findIndex(p => p.id === ev.id);
+  if (!isLive) {
+    // Publishing: upsert into public store
+    const pubEntry = {
+      id: ev.id,
+      title: ev.name || 'Untitled Event',
+      start_date: ev.startDate || '',
+      end_date: ev.endDate || '',
+      city: ev.city || '',
+      country: ev.country || '',
+      venue_name: ev.venue || '',
+      type: ev.format || 'In-Person',
+      description: ev.description || '',
+      website: ev.website || '',
+      contactEmail: ev.contactEmail || '',
+      modules: ev.modules || [],
+      status: 'live',
+      published_at: new Date().toISOString()
+    };
+    if (pubIdx >= 0) pubEvents[pubIdx] = pubEntry; else pubEvents.unshift(pubEntry);
+    localStorage.setItem('gc_public_events', JSON.stringify(pubEvents));
+  } else {
+    // Unpublishing: remove from public store
+    if (pubIdx >= 0) { pubEvents.splice(pubIdx, 1); localStorage.setItem('gc_public_events', JSON.stringify(pubEvents)); }
+  }
+  // Update Preview panel publish bar
+  updatePreviewPublishBar();
+  showToast(isLive ? 'Event unpublished' : '🚀 Event is now live! Public page is ready.');
 }
 
 // ── Preview ───────────────────────────────────────────────────────────────────
@@ -9022,6 +9070,59 @@ function showPreview() {
       if(el3d && t3.description) el3d.textContent = t3.description;
     }
   } catch(e) { /* use defaults */ }
+  // Update publish bar
+  updatePreviewPublishBar();
+}
+
+function buildPublicPageUrl() {
+  const ev = currentEvent || {};
+  const base = 'EventPublicPage_v4_PC.html';
+  const modules = (ev.modules || []).filter(m => m.enabled).map(m => m.id).join(',');
+  const p = new URLSearchParams({
+    title: ev.name || '',
+    start: ev.startDate || '',
+    end: ev.endDate || '',
+    city: ev.city || '',
+    country: ev.country || '',
+    venue: ev.venue || '',
+    format: ev.format || 'In-Person',
+    desc: (ev.description || '').substring(0, 300),
+    website: ev.website || '',
+    cname: ev.organizerName || '',
+    cemail: ev.contactEmail || '',
+    modules: modules,
+    status: ev.status || 'draft',
+    attendees: ev.attendees || 0
+  });
+  return base + '?' + p.toString();
+}
+
+function updatePreviewPublishBar() {
+  const ev = currentEvent || {};
+  const isLive = ev.status === 'live';
+  const publishBar = document.getElementById('prev-publish-bar');
+  const draftBar = document.getElementById('prev-draft-bar');
+  if (publishBar) publishBar.style.display = isLive ? 'flex' : 'none';
+  if (draftBar) draftBar.style.display = isLive ? 'none' : 'flex';
+  if (isLive) {
+    const url = buildPublicPageUrl();
+    const urlEl = document.getElementById('prev-public-url');
+    if (urlEl) { urlEl.textContent = url; urlEl.href = url; }
+  }
+}
+
+function copyPublicPageLink() {
+  const url = window.location.origin + '/' + buildPublicPageUrl();
+  if (navigator.clipboard) {
+    navigator.clipboard.writeText(url).then(() => showToast('🔗 Public page link copied!'));
+  } else {
+    showToast('🔗 Link: ' + buildPublicPageUrl());
+  }
+}
+
+function openPublicPage() {
+  const url = buildPublicPageUrl();
+  window.open(url, '_blank');
 }
 
 function showPanelSession() {
