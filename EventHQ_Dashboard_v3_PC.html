@@ -7267,23 +7267,28 @@ function renderEventsList() {
     // Mini sparkline SVG (random-ish based on idx)
     const pts = [20,15,18,10,8,5,3].map((v,i) => `${i*20},${v}`).join(' ');
     const miniChart = `<svg viewBox="0 0 120 25" style="width:80px;height:18px" xmlns="http://www.w3.org/2000/svg"><polyline points="${pts}" fill="none" stroke="#2563eb" stroke-width="1.5" stroke-linejoin="round"/></svg>`;
+    const revenue = ev.revenue ? 'EUR ' + ev.revenue.toLocaleString() : 'EUR 0';
+    const modules = ev.modules ? ev.modules.filter(m => m.enabled).length : 0;
     return `<div class="event-row" onclick="openEvent(${idx})">
       ${thumb}
       <div class="event-info">
         <div class="event-name">${ev.name || 'Untitled Event'}</div>
         <div class="event-meta">${meta || 'No date set'}</div>
-        <div style="display:flex;gap:10px;margin-top:4px">
-          <span style="font-size:11px;color:#6b7280">👥 ${attCount} attendees</span>
-          <span style="font-size:11px;color:#6b7280">🎮 ${projCount} projects</span>
+        <div style="display:flex;gap:8px;margin-top:6px;flex-wrap:wrap">
+          <span style="font-size:10px;background:#eff6ff;color:#2563eb;padding:2px 8px;border-radius:10px;font-weight:600">👥 ${attCount} reg</span>
+          <span style="font-size:10px;background:#f0fdf4;color:#166534;padding:2px 8px;border-radius:10px;font-weight:600">💰 ${revenue}</span>
+          <span style="font-size:10px;background:#faf5ff;color:#7c3aed;padding:2px 8px;border-radius:10px;font-weight:600">🧩 ${modules} modules</span>
+          <span style="font-size:10px;background:#fff7ed;color:#c2410c;padding:2px 8px;border-radius:10px;font-weight:600">🎮 ${projCount} projects</span>
         </div>
       </div>
-      <div style="display:flex;align-items:center;gap:8px;margin-right:8px">${miniChart}<span style="font-size:11px;color:#6b7280">Revenue</span></div>
+      <div style="display:flex;align-items:center;gap:8px;margin-right:8px">${miniChart}<span style="font-size:11px;color:#6b7280">Trend</span></div>
       <div class="event-badges">${statusBadge}</div>
       <div class="event-actions" onclick="event.stopPropagation()">
         <button class="action-btn primary" onclick="openEvent(${idx})">Edit</button>
-        <button class="action-btn" onclick="previewEventFromList(${idx})">👁</button>
-        <button class="action-btn" onclick="duplicateEvent(${idx})">📋</button>
-        <button class="action-btn" onclick="deleteEvent(${idx})">🗑</button>
+        <button class="action-btn" onclick="previewEventFromList(${idx})" title="Preview">👁</button>
+        <button class="action-btn" onclick="duplicateEvent(${idx})" title="Duplicate">📋</button>
+        <button class="action-btn" onclick="archiveEvent(${idx})" title="Archive">📦</button>
+        <button class="action-btn" onclick="deleteEvent(${idx})" title="Delete">🗑</button>
       </div>
     </div>`;
   }).join('');
@@ -7335,23 +7340,28 @@ function filterEventsByStatus(status) {
     const projCount = ev.projects || 0;
     const pts = [20,15,18,10,8,5,3].map((v,i) => `${i*20},${v}`).join(' ');
     const miniChart = `<svg viewBox="0 0 120 25" style="width:80px;height:18px" xmlns="http://www.w3.org/2000/svg"><polyline points="${pts}" fill="none" stroke="#2563eb" stroke-width="1.5" stroke-linejoin="round"/></svg>`;
+    const revenue2 = ev.revenue ? 'EUR ' + ev.revenue.toLocaleString() : 'EUR 0';
+    const modules2 = ev.modules ? ev.modules.filter(m => m.enabled).length : 0;
     return `<div class="event-row" onclick="openEvent(${origIdx})">
       ${thumb}
       <div class="event-info">
         <div class="event-name">${ev.name || 'Untitled Event'}</div>
         <div class="event-meta">${meta || 'No date set'}</div>
-        <div style="display:flex;gap:10px;margin-top:4px">
-          <span style="font-size:11px;color:#6b7280">👥 ${attCount} attendees</span>
-          <span style="font-size:11px;color:#6b7280">🎮 ${projCount} projects</span>
+        <div style="display:flex;gap:8px;margin-top:6px;flex-wrap:wrap">
+          <span style="font-size:10px;background:#eff6ff;color:#2563eb;padding:2px 8px;border-radius:10px;font-weight:600">👥 ${attCount} reg</span>
+          <span style="font-size:10px;background:#f0fdf4;color:#166534;padding:2px 8px;border-radius:10px;font-weight:600">💰 ${revenue2}</span>
+          <span style="font-size:10px;background:#faf5ff;color:#7c3aed;padding:2px 8px;border-radius:10px;font-weight:600">🧩 ${modules2} modules</span>
+          <span style="font-size:10px;background:#fff7ed;color:#c2410c;padding:2px 8px;border-radius:10px;font-weight:600">🎮 ${projCount} projects</span>
         </div>
       </div>
-      <div style="display:flex;align-items:center;gap:8px;margin-right:8px">${miniChart}<span style="font-size:11px;color:#6b7280">Revenue</span></div>
+      <div style="display:flex;align-items:center;gap:8px;margin-right:8px">${miniChart}<span style="font-size:11px;color:#6b7280">Trend</span></div>
       <div class="event-badges">${statusBadge}</div>
       <div class="event-actions" onclick="event.stopPropagation()">
         <button class="action-btn primary" onclick="openEvent(${origIdx})">Edit</button>
-        <button class="action-btn" onclick="previewEventFromList(${origIdx})">👁</button>
-        <button class="action-btn" onclick="duplicateEvent(${origIdx})">📋</button>
-        <button class="action-btn" onclick="deleteEvent(${origIdx})">🗑</button>
+        <button class="action-btn" onclick="previewEventFromList(${origIdx})" title="Preview">👁</button>
+        <button class="action-btn" onclick="duplicateEvent(${origIdx})" title="Duplicate">📋</button>
+        <button class="action-btn" onclick="archiveEvent(${origIdx})" title="Archive">📦</button>
+        <button class="action-btn" onclick="deleteEvent(${origIdx})" title="Delete">🗑</button>
       </div>
     </div>`;
   }).join('');
@@ -7400,6 +7410,23 @@ function duplicateEvent(idx) {
   saveEvents(events);
   renderEventsList();
   showToast('Event duplicated');
+}
+function archiveEvent(idx) {
+  const events = loadEvents();
+  if (!events[idx]) return;
+  const name = events[idx].name || 'Untitled';
+  const prevStatus = events[idx].status;
+  if (prevStatus === 'archived') {
+    events[idx].status = 'draft';
+    saveEvents(events);
+    renderEventsList();
+    showToast('"' + name + '" restored from archive');
+  } else {
+    events[idx].status = 'archived';
+    saveEvents(events);
+    renderEventsList();
+    showToast('"' + name + '" archived — click 📦 again to restore');
+  }
 }
 function previewEventFromList(idx) {
   const events = loadEvents();
