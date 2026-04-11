@@ -397,7 +397,7 @@ body.dark-mode .unsaved-bar { background: #1e2533; border-color: #2d3748; }
               <option>This Year</option>
               <option>All Time</option>
             </select>
-            <button class="btn-secondary" style="font-size:12px;padding:6px 12px" onclick="showToast('Report exported')">Export Report</button>
+            <button class="btn-secondary" style="font-size:12px;padding:6px 12px" onclick="exportAnalyticsReport()">Export Report</button>
           </div>
         </div>
         <div style="display:grid;grid-template-columns:repeat(5,1fr);gap:12px;margin-bottom:20px">
@@ -7551,6 +7551,59 @@ function quickAddTag(tag) {
   const inp = document.getElementById('tag-input');
   inp.value = tag;
   addEventTag();
+}
+// ── Analytics Export Report ───────────────────────────────────────────────────────────
+function exportAnalyticsReport() {
+  const reg  = document.getElementById('analytics-kpi-reg')?.textContent || '1,247';
+  const rev  = document.getElementById('analytics-kpi-rev')?.textContent || '163K EUR';
+  const games= document.getElementById('analytics-kpi-games')?.textContent || '89';
+  const meet = document.getElementById('analytics-kpi-meet')?.textContent || '312';
+  const ci   = document.getElementById('analytics-kpi-ci')?.textContent || '62%';
+  const now  = new Date().toLocaleDateString('en-GB', {day:'2-digit',month:'short',year:'numeric'});
+  const html = `<!DOCTYPE html><html><head><meta charset="UTF-8">
+    <title>EventHQ Analytics Report</title>
+    <style>body{font-family:system-ui,sans-serif;max-width:800px;margin:40px auto;padding:0 20px;color:#111}
+      h1{color:#2563eb;border-bottom:2px solid #2563eb;padding-bottom:8px}
+      .kpi-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:16px;margin:24px 0}
+      .kpi{background:#f8f9fa;border-radius:12px;padding:16px;text-align:center}
+      .kpi-val{font-size:22px;font-weight:800;color:#2563eb}
+      .kpi-lbl{font-size:11px;color:#6b7280;text-transform:uppercase;margin-top:4px}
+      table{width:100%;border-collapse:collapse;margin:16px 0}
+      th{background:#f3f4f6;padding:8px 12px;text-align:left;font-size:12px}
+      td{padding:8px 12px;border-bottom:1px solid #e5e7eb;font-size:13px}
+      .footer{margin-top:40px;font-size:11px;color:#9ca3af;text-align:center}
+    </style></head><body>
+    <h1>EventHQ Analytics Report</h1>
+    <p style="color:#6b7280">Generated: ${now}</p>
+    <div class="kpi-grid">
+      <div class="kpi"><div class="kpi-val">${reg}</div><div class="kpi-lbl">Registrations</div></div>
+      <div class="kpi"><div class="kpi-val">${rev}</div><div class="kpi-lbl">Revenue</div></div>
+      <div class="kpi"><div class="kpi-val">${games}</div><div class="kpi-lbl">Games</div></div>
+      <div class="kpi"><div class="kpi-val">${meet}</div><div class="kpi-lbl">Meetings</div></div>
+      <div class="kpi"><div class="kpi-val">${ci}</div><div class="kpi-lbl">Check-in Rate</div></div>
+    </div>
+    <h2>Revenue Breakdown</h2>
+    <table><tr><th>Source</th><th>Amount</th><th>Share</th></tr>
+      <tr><td>Paid Tickets</td><td>EUR 89,400</td><td>55%</td></tr>
+      <tr><td>Booth Sales</td><td>EUR 42,000</td><td>26%</td></tr>
+      <tr><td>Sponsorships</td><td>EUR 25,000</td><td>15%</td></tr>
+      <tr><td>Pod Bookings</td><td>EUR 6,600</td><td>4%</td></tr>
+    </table>
+    <h2>Module Engagement</h2>
+    <table><tr><th>Module</th><th>Registrations</th><th>Engagement</th></tr>
+      <tr><td>Registration</td><td>1,247</td><td>100%</td></tr>
+      <tr><td>Let's Meet</td><td>312 meetings</td><td>78%</td></tr>
+      <tr><td>Game Showcase</td><td>89 games</td><td>65%</td></tr>
+      <tr><td>Paid Booth</td><td>28 booths</td><td>93%</td></tr>
+      <tr><td>Panel/Session</td><td>18 sessions</td><td>82%</td></tr>
+      <tr><td>Award</td><td>47 nominees</td><td>71%</td></tr>
+    </table>
+    <div class="footer">EventHQ Platform — Confidential Report — ${now}</div>
+    </body></html>`;
+  const w = window.open('', '_blank');
+  w.document.write(html);
+  w.document.close();
+  showToast('✅ Report opened in new tab');
 }
 // ── Pod Availability Checker ───────────────────────────────────────────────────────────
 function checkPodAvailability() {
