@@ -6591,6 +6591,71 @@ The {Event Name} Team</textarea>
             </div>
           </div>
 
+          <!-- Email Template Selector + Scheduled Send -->
+          <div class="editor-card" style="margin-bottom:16px">
+            <div style="font-weight:700;font-size:15px;margin-bottom:14px">📨 Email Templates & Scheduled Send</div>
+            <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:16px">
+              <div onclick="loadEmailTemplate('confirmation')" style="border:2px solid #2563eb;border-radius:8px;padding:12px;cursor:pointer;background:#eff6ff">
+                <div style="font-size:16px;margin-bottom:4px">🎉</div>
+                <div style="font-size:12px;font-weight:700;color:#2563eb">Registration Confirmation</div>
+                <div style="font-size:10px;color:#6b7280;margin-top:2px">Sent on registration</div>
+              </div>
+              <div onclick="loadEmailTemplate('reminder')" style="border:1px solid #e5e7eb;border-radius:8px;padding:12px;cursor:pointer">
+                <div style="font-size:16px;margin-bottom:4px">⏰</div>
+                <div style="font-size:12px;font-weight:700">Event Reminder</div>
+                <div style="font-size:10px;color:#6b7280;margin-top:2px">24h before event</div>
+              </div>
+              <div onclick="loadEmailTemplate('checkin')" style="border:1px solid #e5e7eb;border-radius:8px;padding:12px;cursor:pointer">
+                <div style="font-size:16px;margin-bottom:4px">📍</div>
+                <div style="font-size:12px;font-weight:700">Check-in Instructions</div>
+                <div style="font-size:10px;color:#6b7280;margin-top:2px">Day before event</div>
+              </div>
+              <div onclick="loadEmailTemplate('thankyou')" style="border:1px solid #e5e7eb;border-radius:8px;padding:12px;cursor:pointer">
+                <div style="font-size:16px;margin-bottom:4px">💌</div>
+                <div style="font-size:12px;font-weight:700">Thank You</div>
+                <div style="font-size:10px;color:#6b7280;margin-top:2px">After event ends</div>
+              </div>
+              <div onclick="loadEmailTemplate('survey')" style="border:1px solid #e5e7eb;border-radius:8px;padding:12px;cursor:pointer">
+                <div style="font-size:16px;margin-bottom:4px">📋</div>
+                <div style="font-size:12px;font-weight:700">Post-Event Survey</div>
+                <div style="font-size:10px;color:#6b7280;margin-top:2px">2 days after event</div>
+              </div>
+              <div onclick="loadEmailTemplate('custom')" style="border:1px dashed #d1d5db;border-radius:8px;padding:12px;cursor:pointer;text-align:center">
+                <div style="font-size:16px;margin-bottom:4px">✏️</div>
+                <div style="font-size:12px;font-weight:700;color:#6b7280">Custom Template</div>
+                <div style="font-size:10px;color:#9ca3af;margin-top:2px">Start from scratch</div>
+              </div>
+            </div>
+            <!-- Scheduled Send -->
+            <div style="border-top:1px solid #e5e7eb;padding-top:14px">
+              <div style="font-size:13px;font-weight:600;margin-bottom:10px">Scheduled Send</div>
+              <div style="display:flex;gap:10px;align-items:flex-end">
+                <div style="flex:1">
+                  <div style="font-size:12px;color:#6b7280;margin-bottom:4px">Send Date</div>
+                  <input type="date" class="form-input" id="email-sched-date" onchange="markDirty()">
+                </div>
+                <div style="flex:1">
+                  <div style="font-size:12px;color:#6b7280;margin-bottom:4px">Send Time</div>
+                  <input type="time" class="form-input" id="email-sched-time" value="09:00" onchange="markDirty()">
+                </div>
+                <div style="flex:1">
+                  <div style="font-size:12px;color:#6b7280;margin-bottom:4px">Recipients</div>
+                  <select class="form-input" onchange="markDirty()">
+                    <option>All Registered (398)</option>
+                    <option>Confirmed Only (247)</option>
+                    <option>Not Checked In (151)</option>
+                    <option>VIP Group (12)</option>
+                  </select>
+                </div>
+                <div style="display:flex;gap:6px">
+                  <button onclick="showToast('Test email sent to events@game-connection.com')" class="btn-secondary" style="font-size:12px;padding:8px 12px;white-space:nowrap">Send Test</button>
+                  <button onclick="scheduleEmailSend()" class="btn-primary" style="font-size:12px;padding:8px 12px;white-space:nowrap">Schedule</button>
+                </div>
+              </div>
+              <div id="email-sched-status" style="margin-top:8px;font-size:12px;color:#6b7280"></div>
+            </div>
+          </div>
+
         <!-- Tab: Attendees -->
         <div id="reg-tab-attendees" style="display:none">
           <div style="display:flex;gap:12px;margin-bottom:16px">
@@ -8684,6 +8749,32 @@ function removeFreeBooth(id) {
   const row = document.getElementById('fb-assign-' + id);
   if (row) row.style.opacity = '0.4';
   showToast('✕ Booth assignment removed');
+}
+function loadEmailTemplate(type) {
+  const templates = {
+    confirmation: { subject: "You're registered for {Event Name}! 🎉", body: "Hi {Attendee Name},\n\nYou're officially registered for {Event Name}!\n\nDate: {Event Date}\nVenue: {Venue Name}, {City}\nTicket: {Ticket Type}\nRegistration ID: {Registration ID}\n\nWe look forward to seeing you there!\n\nBest regards,\nThe {Event Name} Team" },
+    reminder: { subject: 'Reminder: {Event Name} is tomorrow!', body: "Hi {Attendee Name},\n\nJust a reminder that {Event Name} starts tomorrow!\n\nDate: {Event Date}\nVenue: {Venue Name}, {City}\n\nDon't forget to bring your registration QR code.\n\nSee you there!" },
+    checkin: { subject: 'Check-in info for {Event Name}', body: "Hi {Attendee Name},\n\nHere's everything you need for check-in at {Event Name}:\n\n- Doors open at 8:30 AM\n- Show your QR code at the entrance\n- Badge pickup at Registration Desk\n\nVenue: {Venue Name}, {City}\n\nSee you tomorrow!" },
+    thankyou: { subject: 'Thank you for attending {Event Name}!', body: "Hi {Attendee Name},\n\nThank you for joining us at {Event Name}!\n\nWe hope you had a great experience. Stay tuned for photos, recordings, and next year's dates.\n\nBest regards,\nThe {Event Name} Team" },
+    survey: { subject: 'Share your feedback on {Event Name}', body: "Hi {Attendee Name},\n\nWe'd love to hear your thoughts on {Event Name}!\n\nPlease take 2 minutes to complete our post-event survey:\n[Survey Link]\n\nYour feedback helps us improve future events.\n\nThank you!" },
+    custom: { subject: '', body: '' }
+  };
+  const tpl = templates[type] || templates.custom;
+  const subjectEl = document.getElementById('email-subject');
+  const bodyEl = document.getElementById('email-body');
+  if (subjectEl) subjectEl.value = tpl.subject;
+  if (bodyEl) bodyEl.value = tpl.body;
+  markDirty();
+  showToast('Template loaded: ' + type.charAt(0).toUpperCase() + type.slice(1));
+}
+function scheduleEmailSend() {
+  const date = document.getElementById('email-sched-date')?.value;
+  const time = document.getElementById('email-sched-time')?.value || '09:00';
+  const status = document.getElementById('email-sched-status');
+  if (!date) { showToast('Please select a send date'); return; }
+  const msg = 'Email scheduled for ' + date + ' at ' + time;
+  if (status) { status.innerHTML = '<span style="color:#16a34a;font-weight:600">✅ ' + msg + '</span>'; }
+  showToast(msg);
 }
 function insertEmailVar(variable) {
   const ta = document.getElementById('email-body');
