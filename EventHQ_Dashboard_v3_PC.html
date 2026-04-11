@@ -6734,28 +6734,46 @@ The {Event Name} Team</textarea>
         <div id="publish-checklist" class="editor-card" style="margin-bottom:16px;border-left:3px solid #d97706">
           <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
             <div style="font-weight:700;font-size:14px">📋 Pre-publish Checklist</div>
-            <button class="btn-secondary" style="font-size:11px;padding:4px 10px" onclick="runPublishChecklist()">Run Check</button>
+            <div style="display:flex;gap:6px">
+              <button class="btn-secondary" style="font-size:11px;padding:4px 10px" onclick="autoFixChecklist()">Auto-fix</button>
+              <button class="btn-secondary" style="font-size:11px;padding:4px 10px" onclick="runPublishChecklist()">Run Check</button>
+            </div>
           </div>
           <div id="checklist-items" style="display:flex;flex-direction:column;gap:6px">
-            <div id="chk-name" style="display:flex;align-items:center;gap:8px;font-size:12px">
+            <div id="chk-name" style="display:flex;align-items:center;gap:8px;font-size:12px;padding:6px 8px;border-radius:6px;background:#f9fafb">
               <span id="chk-name-icon" style="font-size:14px">⏳</span>
-              <span>Event name filled in</span>
+              <span style="flex:1">Event name filled in</span>
+              <span id="chk-name-badge" style="font-size:10px;padding:1px 7px;border-radius:10px;background:#e5e7eb;color:#6b7280">Pending</span>
             </div>
-            <div id="chk-date" style="display:flex;align-items:center;gap:8px;font-size:12px">
+            <div id="chk-date" style="display:flex;align-items:center;gap:8px;font-size:12px;padding:6px 8px;border-radius:6px;background:#f9fafb">
               <span id="chk-date-icon" style="font-size:14px">⏳</span>
-              <span>Start date set</span>
+              <span style="flex:1">Start date set</span>
+              <span id="chk-date-badge" style="font-size:10px;padding:1px 7px;border-radius:10px;background:#e5e7eb;color:#6b7280">Pending</span>
             </div>
-            <div id="chk-city" style="display:flex;align-items:center;gap:8px;font-size:12px">
+            <div id="chk-city" style="display:flex;align-items:center;gap:8px;font-size:12px;padding:6px 8px;border-radius:6px;background:#f9fafb">
               <span id="chk-city-icon" style="font-size:14px">⏳</span>
-              <span>City / Location specified</span>
+              <span style="flex:1">City / Location specified</span>
+              <span id="chk-city-badge" style="font-size:10px;padding:1px 7px;border-radius:10px;background:#e5e7eb;color:#6b7280">Pending</span>
             </div>
-            <div id="chk-cover" style="display:flex;align-items:center;gap:8px;font-size:12px">
+            <div id="chk-cover" style="display:flex;align-items:center;gap:8px;font-size:12px;padding:6px 8px;border-radius:6px;background:#f9fafb">
               <span id="chk-cover-icon" style="font-size:14px">⏳</span>
-              <span>Cover image uploaded</span>
+              <span style="flex:1">Cover image uploaded</span>
+              <span id="chk-cover-badge" style="font-size:10px;padding:1px 7px;border-radius:10px;background:#fef3c7;color:#92400e">Warning</span>
             </div>
-            <div id="chk-module" style="display:flex;align-items:center;gap:8px;font-size:12px">
+            <div id="chk-module" style="display:flex;align-items:center;gap:8px;font-size:12px;padding:6px 8px;border-radius:6px;background:#f9fafb">
               <span id="chk-module-icon" style="font-size:14px">⏳</span>
-              <span>At least 1 module enabled</span>
+              <span style="flex:1">At least 1 module enabled</span>
+              <span id="chk-module-badge" style="font-size:10px;padding:1px 7px;border-radius:10px;background:#e5e7eb;color:#6b7280">Pending</span>
+            </div>
+            <div id="chk-desc" style="display:flex;align-items:center;gap:8px;font-size:12px;padding:6px 8px;border-radius:6px;background:#f9fafb">
+              <span id="chk-desc-icon" style="font-size:14px">⏳</span>
+              <span style="flex:1">Event description added</span>
+              <span id="chk-desc-badge" style="font-size:10px;padding:1px 7px;border-radius:10px;background:#e5e7eb;color:#6b7280">Pending</span>
+            </div>
+            <div id="chk-reg" style="display:flex;align-items:center;gap:8px;font-size:12px;padding:6px 8px;border-radius:6px;background:#f9fafb">
+              <span id="chk-reg-icon" style="font-size:14px">⏳</span>
+              <span style="flex:1">Registration module configured</span>
+              <span id="chk-reg-badge" style="font-size:10px;padding:1px 7px;border-radius:10px;background:#e5e7eb;color:#6b7280">Pending</span>
             </div>
           </div>
           <div id="checklist-summary" style="margin-top:10px;font-size:12px;color:#6b7280">Click "Run Check" to validate before publishing.</div>
@@ -9556,20 +9574,43 @@ function renderObStep() {
   document.getElementById('ob-back').style.visibility = _obStep === 1 ? 'hidden' : 'visible';
 }
 // ── Pre-publish Checklist ────────────────────────────────────────────────────────────
+function autoFixChecklist() {
+  // Auto-fill demo data for empty required fields
+  const nameEl = document.getElementById('f-name');
+  const startEl = document.getElementById('f-start');
+  const cityEl = document.getElementById('f-city');
+  const descEl = document.getElementById('f-desc');
+  let fixed = 0;
+  if (nameEl && !nameEl.value.trim()) { nameEl.value = 'Game Connection 2026'; fixed++; }
+  if (startEl && !startEl.value) { startEl.value = '2026-11-10'; fixed++; }
+  if (cityEl && !cityEl.value.trim()) { cityEl.value = 'Lyon, France'; fixed++; }
+  if (descEl && !descEl.value.trim()) { descEl.value = 'The premier B2B gaming industry event connecting developers, publishers, and investors.'; fixed++; }
+  if (fixed > 0) {
+    markDirty();
+    showToast('Auto-fixed ' + fixed + ' field' + (fixed > 1 ? 's' : '') + ' — run check again');
+    runPublishChecklist();
+  } else {
+    showToast('Nothing to auto-fix — run check to see status');
+  }
+}
 function runPublishChecklist() {
   const checks = [
     { id: 'chk-name', pass: !!(document.getElementById('f-name')?.value?.trim()), label: 'Event name filled in' },
     { id: 'chk-date', pass: !!(document.getElementById('f-start')?.value), label: 'Start date set' },
     { id: 'chk-city', pass: !!(document.getElementById('f-city')?.value?.trim()), label: 'City / Location specified' },
     { id: 'chk-cover', pass: document.getElementById('coverPreview')?.style.display !== 'none' && !!document.getElementById('coverPreview')?.src, label: 'Cover image uploaded' },
-    { id: 'chk-module', pass: document.querySelectorAll('#moduleList .module-item input[type=checkbox]:checked').length > 0, label: 'At least 1 module enabled' }
+    { id: 'chk-module', pass: document.querySelectorAll('#moduleList .module-item input[type=checkbox]:checked').length > 0, label: 'At least 1 module enabled' },
+    { id: 'chk-desc', pass: !!(document.getElementById('f-desc')?.value?.trim()), label: 'Event description added' },
+    { id: 'chk-reg', pass: document.querySelectorAll('#moduleList .module-item input[type=checkbox]:checked').length > 0, label: 'Registration module configured' }
   ];
   let passed = 0;
   checks.forEach(c => {
     const icon = document.getElementById(c.id + '-icon');
     const row = document.getElementById(c.id);
+    const badge = document.getElementById(c.id + '-badge');
     if (icon) icon.textContent = c.pass ? '✅' : '❌';
-    if (row) row.style.color = c.pass ? '#16a34a' : '#dc2626';
+    if (row) { row.style.color = c.pass ? '#16a34a' : '#dc2626'; row.style.background = c.pass ? '#f0fdf4' : '#fff5f5'; }
+    if (badge) { badge.textContent = c.pass ? 'Pass' : 'Fix needed'; badge.style.background = c.pass ? '#dcfce7' : '#fee2e2'; badge.style.color = c.pass ? '#166534' : '#dc2626'; }
     if (c.pass) passed++;
   });
   const summary = document.getElementById('checklist-summary');
