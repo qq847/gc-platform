@@ -4972,11 +4972,19 @@ async function _pcProjLoadBatch(reset) {
       moreBtn.style.cssText = 'text-align:center;padding:24px';
       grid.parentElement.appendChild(moreBtn);
     }
-    // Auto top-up: if displayed cards not a multiple of 4 and more data exists, silently load more
-    const _displayedCount = grid.querySelectorAll('.pc-proj-card').length;
-    if (_pcProjOffset < _pcProjTotal && _displayedCount % 4 !== 0) {
-      setTimeout(() => _pcProjLoadBatch(false), 0);
-      return;
+    // Pad last row with invisible placeholders so grid always ends on a full row of 4
+    const _existingPlaceholders = grid.querySelectorAll('.pc-proj-placeholder');
+    _existingPlaceholders.forEach(el => el.remove());
+    const _totalCards = grid.querySelectorAll('.pc-proj-card').length;
+    const _remainder = _totalCards % 4;
+    if (_remainder !== 0) {
+      const _needed = 4 - _remainder;
+      for (let _i = 0; _i < _needed; _i++) {
+        const _ph = document.createElement('div');
+        _ph.className = 'pc-proj-placeholder';
+        _ph.style.cssText = 'visibility:hidden;pointer-events:none';
+        grid.appendChild(_ph);
+      }
     }
     if (_pcProjOffset < _pcProjTotal) {
       moreBtn.innerHTML = `<button style="padding:10px 32px;border-radius:24px;background:#16a34a;color:#fff;border:none;font-size:13px;font-weight:700;cursor:pointer;transition:background .15s" onmouseover="this.style.background='#15803d'" onmouseout="this.style.background='#16a34a'" onclick="_pcProjLoadBatch(false)">Load More (${(_pcProjTotal - _pcProjOffset).toLocaleString()} remaining)</button>`;
