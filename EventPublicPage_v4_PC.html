@@ -704,6 +704,7 @@ img { display: block; max-width: 100%; }
     <button class="nav-tab" onclick="scrollToSection('schedule')">Schedule</button>
     <button class="nav-tab" onclick="scrollToSection('projects')">Projects</button>
     <button class="nav-tab" onclick="scrollToSection('attendees')">Attendees</button>
+    <button class="nav-tab" onclick="scrollToSection('map')">Map</button>
   </div>
   <button class="nav-cta" id="nav-reg-btn">Register Now</button>
 </nav>
@@ -795,6 +796,7 @@ img { display: block; max-width: 100%; }
     <button class="snav-item" onclick="scrollToSection('schedule')">📅 Schedule</button>
     <button class="snav-item" onclick="scrollToSection('projects')">🕹 Projects</button>
     <button class="snav-item" onclick="scrollToSection('attendees')">👥 Attendees</button>
+    <button class="snav-item" onclick="scrollToSection('map')">📍 Map</button>
   </div>
 </div>
 
@@ -931,6 +933,26 @@ img { display: block; max-width: 100%; }
       <button class="show-more" id="attendee-toggle" style="display:none" onclick="toggleSection('attendee')">
         Show more attendees ↓
       </button>
+    </section>
+
+    <!-- ── MAP ─────────────────────────────────────── -->
+    <section class="section" id="map">
+      <div class="section-header">
+        <div class="section-header-left">
+          <div>
+            <div class="section-label">Venue</div>
+            <div class="section-title">Location &amp; Map</div>
+          </div>
+        </div>
+        <span class="section-badge" id="map-badge">Venue info</span>
+      </div>
+      <div id="map-content">
+        <div style="text-align:center;padding:48px 24px;color:#9ca3af;">
+          <div style="font-size:2rem;margin-bottom:12px">📍</div>
+          <div style="font-size:1rem;font-weight:600;color:#6b7280;margin-bottom:6px">Venue Map Coming Soon</div>
+          <div style="font-size:0.875rem">The organizer hasn't added venue map details yet. Check back closer to the event.</div>
+        </div>
+      </div>
     </section>
 
   </div><!-- /main-col -->
@@ -1558,7 +1580,7 @@ if(saveBtn) saveBtn.onclick = ()=>{
 };
 
 // ─── SECTION NAV HIGHLIGHT ────────────────────────────
-const sections = ['about','tickets','sponsor','booths','schedule','projects','attendees'];
+const sections = ['about','tickets','sponsor','booths','schedule','projects','attendees','map'];
 const snavBtns = document.querySelectorAll('.snav-item');
 const navBtns  = document.querySelectorAll('.nav-tab');
 function onScroll(){
@@ -1573,13 +1595,42 @@ function onScroll(){
 window.addEventListener('scroll', onScroll, {passive:true});
 
 // ─── HIDE SPONSOR/BOOTH SIDEBAR IF NOT ENABLED ────────
+// Sidebar buttons: hide if module not enabled
 if(!hasSponsorship && !hasBooth){ const c=$('side-sponsor-card'); if(c)c.style.display='none'; }
 if(!hasSponsorship){ const b=$('side-sponsor-btn'); if(b)b.style.display='none'; }
 if(!hasBooth){       const b=$('side-booth-btn');   if(b)b.style.display='none'; }
+
+// Sections: always show, but inject Coming Soon if no data
+function injectComingSoon(sectionId, label) {
+  const s = document.getElementById(sectionId);
+  if (!s) return;
+  // find the content container (first div after section-header)
+  const header = s.querySelector('.section-header');
+  const grids = s.querySelectorAll('[id$="-grid"],[id$="-days"],[id$="-tabs"]');
+  let hasContent = false;
+  grids.forEach(g => { if (g.children.length > 0) hasContent = true; });
+  if (!hasContent) {
+    const placeholder = document.createElement('div');
+    placeholder.style.cssText = 'text-align:center;padding:48px 24px;color:#9ca3af;';
+    placeholder.innerHTML = `<div style="font-size:2rem;margin-bottom:12px">🚧</div><div style="font-size:1rem;font-weight:600;color:#6b7280;margin-bottom:6px">${label} Coming Soon</div><div style="font-size:0.875rem">The organizer hasn't added ${label.toLowerCase()} details yet. Check back closer to the event.</div>`;
+    if (header) header.insertAdjacentElement('afterend', placeholder);
+    else s.appendChild(placeholder);
+    // Update badge
+    const badge = s.querySelector('.section-badge');
+    if (badge) badge.textContent = 'Coming soon';
+  }
+}
+
+// Sponsor: hide if not enabled
 if(!hasSponsorship){ const s=document.getElementById('sponsor'); if(s)s.style.display='none'; }
-if(!hasBooth){       const s=document.getElementById('booths');  if(s)s.style.display='none'; }
-if(!hasPanel && !hasShowcase){ const s=document.getElementById('schedule'); if(s)s.style.display='none'; }
-if(!hasShowcase){ const s=document.getElementById('projects'); if(s)s.style.display='none'; }
+
+// Always show Booth, Schedule, Projects — inject Coming Soon if empty
+setTimeout(() => {
+  injectComingSoon('booths', 'Booth');
+  injectComingSoon('schedule', 'Schedule');
+  injectComingSoon('projects', 'Projects');
+  injectComingSoon('attendees', 'Attendees');
+}, 100);
 
 // ─── TICKET PROGRESS BARS ──────────────────────────────────────
 // Inject progress bars into each ticket row after render
