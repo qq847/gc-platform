@@ -217,6 +217,88 @@ html,body{min-height:100vh;background:var(--bg);font-family:'DM Sans',sans-serif
 
 ::-webkit-scrollbar{width:4px}
 ::-webkit-scrollbar-thumb{background:#cbd5e1;border-radius:4px}
+
+/* ── Preview Drawer ── */
+.preview-overlay{position:fixed;inset:0;background:rgba(0,0,0,.35);z-index:500;opacity:0;pointer-events:none;transition:opacity .25s}
+.preview-overlay.open{opacity:1;pointer-events:all}
+.preview-drawer{
+  position:fixed;top:0;right:-820px;width:820px;height:100vh;z-index:501;
+  background:#f3f4f6;display:flex;flex-direction:column;
+  box-shadow:-4px 0 32px rgba(0,0,0,.18);transition:right .3s cubic-bezier(.4,0,.2,1);
+}
+.preview-drawer.open{right:0}
+.preview-topbar{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:0 16px;height:50px;background:#fff;
+  border-bottom:1px solid #e2e6ed;flex-shrink:0;gap:12px;
+}
+.preview-topbar-left{display:flex;align-items:center;gap:10px}
+.preview-label{font-size:13px;font-weight:700;color:#0f172a}
+.preview-url{
+  font-size:11px;color:#6b7280;background:#f4f6f9;
+  border:1px solid #e2e6ed;border-radius:6px;
+  padding:4px 10px;flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+  max-width:380px;font-family:monospace;
+}
+.preview-btn-copy{
+  padding:5px 12px;border-radius:6px;font-size:11px;font-weight:700;
+  background:#16a34a;color:#fff;border:none;cursor:pointer;white-space:nowrap;
+  transition:background .12s;
+}
+.preview-btn-copy:hover{background:#15803d}
+.preview-btn-copy.copied{background:#0369a1}
+.preview-btn-close{
+  width:28px;height:28px;border-radius:6px;border:1px solid #e2e6ed;
+  background:#fff;cursor:pointer;display:flex;align-items:center;justify-content:center;
+  font-size:14px;color:#6b7280;transition:background .12s;flex-shrink:0;
+}
+.preview-btn-close:hover{background:#f4f6f9}
+.preview-device-bar{
+  display:flex;align-items:center;justify-content:center;gap:6px;
+  padding:8px 16px;background:#fff;border-bottom:1px solid #e2e6ed;flex-shrink:0;
+}
+.device-btn{
+  padding:4px 12px;border-radius:5px;font-size:11px;font-weight:600;
+  border:1px solid #e2e6ed;background:#fff;color:#6b7280;cursor:pointer;
+  transition:all .12s;
+}
+.device-btn.active{background:#16a34a;color:#fff;border-color:#16a34a}
+.preview-iframe-wrap{
+  flex:1;overflow:hidden;display:flex;align-items:center;justify-content:center;
+  background:#e5e7eb;padding:0;
+  transition:padding .25s;
+}
+.preview-iframe-wrap.mobile{padding:16px}
+.preview-iframe{
+  width:100%;height:100%;border:none;
+  transition:width .25s,height .25s,border-radius .25s;
+}
+.preview-iframe-wrap.mobile .preview-iframe{
+  width:390px;height:844px;border-radius:24px;
+  box-shadow:0 8px 32px rgba(0,0,0,.25);
+}
+.preview-status-bar{
+  padding:6px 16px;background:#fff;border-top:1px solid #e2e6ed;
+  display:flex;align-items:center;gap:8px;flex-shrink:0;
+}
+.preview-status-dot{width:7px;height:7px;border-radius:50%;background:#94a3b8;animation:pulse-dot 2s infinite}
+.preview-status-dot.live{background:#22c55e}
+@keyframes pulse-dot{0%,100%{opacity:1}50%{opacity:.4}}
+.preview-status-text{font-size:11px;color:#6b7280}
+/* pub-bar link area */
+.pub-link-wrap{display:flex;align-items:center;gap:8px;flex:1}
+.pub-link-input{
+  flex:1;font-size:11px;color:#0f172a;background:#f4f6f9;
+  border:1px solid #e2e6ed;border-radius:6px;
+  padding:5px 10px;font-family:monospace;outline:none;
+  max-width:480px;
+}
+.pub-link-copy{
+  padding:5px 12px;border-radius:6px;font-size:11px;font-weight:700;
+  background:#16a34a;color:#fff;border:none;cursor:pointer;transition:background .12s;
+}
+.pub-link-copy:hover{background:#15803d}
+.pub-link-copy.copied{background:#0369a1}
 </style>
 </head>
 <body>
@@ -464,6 +546,33 @@ html,body{min-height:100vh;background:var(--bg);font-family:'DM Sans',sans-serif
 </div>
 
 <div class="toast" id="toast" style="display:none"></div>
+
+<!-- ══ Preview Drawer ══ -->
+<div class="preview-overlay" id="previewOverlay" onclick="closePreview()"></div>
+<div class="preview-drawer" id="previewDrawer">
+  <div class="preview-topbar">
+    <div class="preview-topbar-left">
+      <span class="preview-label">👁 Public Page Preview</span>
+    </div>
+    <input class="preview-url" id="previewUrlDisplay" readonly value="" onclick="this.select()">
+    <button class="preview-btn-copy" id="previewCopyBtn" onclick="copyPreviewUrl()">Copy Link</button>
+    <button class="preview-btn-close" onclick="closePreview()">✕</button>
+  </div>
+  <div class="preview-device-bar">
+    <button class="device-btn active" id="devBtnDesktop" onclick="setDevice('desktop')">&#128444; Desktop</button>
+    <button class="device-btn" id="devBtnMobile" onclick="setDevice('mobile')">&#128241; Mobile</button>
+    <span style="margin-left:12px;font-size:11px;color:#94a3b8">Updates live as you edit</span>
+  </div>
+  <div class="preview-iframe-wrap" id="previewIframeWrap">
+    <iframe class="preview-iframe" id="previewIframe" src="" title="Event Public Page Preview"></iframe>
+  </div>
+  <div class="preview-status-bar">
+    <div class="preview-status-dot" id="previewStatusDot"></div>
+    <span class="preview-status-text" id="previewStatusText">Draft — not publicly visible</span>
+    <span style="flex:1"></span>
+    <button class="preview-btn-copy" style="font-size:11px" onclick="closePreview();publishEvent()">&#128640; Publish from here</button>
+  </div>
+</div>
 
 <script>
 // ── Constants ─────────────────────────────────────────────────────────────────
@@ -751,19 +860,25 @@ function publishEvent() {
   updatePubBar(currentEvent);
   updateCtxStatus(currentEvent);
   if (!wasLive) {
-    showToast('🚀 Event is now live! Opening public page...');
-    setTimeout(() => {
-      window.open(buildPublicPageUrl(currentEvent), '_blank');
-    }, 800);
+    showToast('🚀 Event is now live!');
+    // Show shareable link in pub-bar
+    const pubUrl = buildPublicPageUrl({...currentEvent, status:'live'});
+    const absUrl = location.origin + location.pathname.replace(/[^/]*$/, '') + pubUrl;
+    showPubLink(absUrl);
+    // Also refresh preview drawer if open
+    if (document.getElementById('previewDrawer').classList.contains('open')) {
+      refreshPreviewIframe();
+    }
   } else {
     showToast('Event unpublished');
+    hidePubLink();
   }
 }
 
 function previewEvent() {
+  if (!currentEvent) { showToast('Please open an event first'); return; }
   saveEvent();
-  const url = buildPublicPageUrl({...currentEvent, status: 'preview'});
-  window.open(url, '_blank');
+  openPreviewDrawer();
 }
 
 // ── Module list ───────────────────────────────────────────────────────────────
@@ -989,9 +1104,141 @@ function showToast(msg) {
   t._t = setTimeout(()=>{ t.style.opacity='0'; setTimeout(()=>t.style.display='none',300); },2500);
 }
 
-// ── Init ──────────────────────────────────────────────────────────────────────
-(function(){
-  try {
+// ── Preview Drawer ─────────────────────────────────────────────────────────────────────────────────
+let _previewDebounce = null;
+let _previewDevice = 'desktop';
+
+function buildPreviewUrl() {
+  if (!currentEvent) return '';
+  // Read live form values for real-time preview
+  const ev = {
+    name:         document.getElementById('f-name')?.value || currentEvent.name || '',
+    startDate:    document.getElementById('f-start')?.value || currentEvent.startDate || '',
+    endDate:      document.getElementById('f-end')?.value || currentEvent.endDate || '',
+    city:         document.getElementById('f-city')?.value || currentEvent.city || '',
+    venue:        document.getElementById('f-venue')?.value || currentEvent.venue || '',
+    desc:         document.getElementById('f-desc')?.value || currentEvent.desc || '',
+    website:      document.getElementById('f-website')?.value || currentEvent.website || '',
+    contactName:  document.getElementById('f-cname')?.value || currentEvent.contactName || '',
+    contactEmail: document.getElementById('f-cemail')?.value || currentEvent.contactEmail || '',
+    format:       currentFmt || currentEvent.format || 'in-person',
+    modules:      currentEvent.modules || [],
+    status:       currentEvent.status || 'draft',
+    country:      currentEvent.country || '',
+  };
+  return buildPublicPageUrl(ev);
+}
+
+function openPreviewDrawer() {
+  const url = buildPreviewUrl();
+  const absUrl = location.origin + location.pathname.replace(/[^/]*$/, '') + url;
+  document.getElementById('previewUrlDisplay').value = absUrl;
+  document.getElementById('previewIframe').src = url;
+  updatePreviewStatus();
+  document.getElementById('previewOverlay').classList.add('open');
+  document.getElementById('previewDrawer').classList.add('open');
+  document.body.style.overflow = 'hidden';
+}
+
+function closePreview() {
+  document.getElementById('previewOverlay').classList.remove('open');
+  document.getElementById('previewDrawer').classList.remove('open');
+  document.body.style.overflow = '';
+}
+
+function refreshPreviewIframe() {
+  if (!document.getElementById('previewDrawer').classList.contains('open')) return;
+  const url = buildPreviewUrl();
+  const absUrl = location.origin + location.pathname.replace(/[^/]*$/, '') + url;
+  document.getElementById('previewUrlDisplay').value = absUrl;
+  document.getElementById('previewIframe').src = url;
+  updatePreviewStatus();
+}
+
+function schedulePreviewRefresh() {
+  if (!document.getElementById('previewDrawer').classList.contains('open')) return;
+  clearTimeout(_previewDebounce);
+  _previewDebounce = setTimeout(refreshPreviewIframe, 900);
+}
+
+function updatePreviewStatus() {
+  const live = currentEvent && currentEvent.status === 'live';
+  const dot = document.getElementById('previewStatusDot');
+  const txt = document.getElementById('previewStatusText');
+  if (dot) dot.className = 'preview-status-dot' + (live ? ' live' : '');
+  if (txt) txt.textContent = live ? '🟢 Live — publicly visible' : '⚫ Draft — not publicly visible';
+}
+
+function setDevice(mode) {
+  _previewDevice = mode;
+  const wrap = document.getElementById('previewIframeWrap');
+  document.getElementById('devBtnDesktop').className = 'device-btn' + (mode==='desktop'?' active':'');
+  document.getElementById('devBtnMobile').className  = 'device-btn' + (mode==='mobile'?' active':'');
+  if (mode === 'mobile') wrap.classList.add('mobile');
+  else wrap.classList.remove('mobile');
+}
+
+function copyPreviewUrl() {
+  const val = document.getElementById('previewUrlDisplay').value;
+  if (!val) return;
+  navigator.clipboard.writeText(val).then(()=>{
+    const btn = document.getElementById('previewCopyBtn');
+    const orig = btn.textContent;
+    btn.textContent = '✓ Copied!';
+    btn.classList.add('copied');
+    setTimeout(()=>{ btn.textContent=orig; btn.classList.remove('copied'); }, 2000);
+  });
+}
+
+// Hook form inputs to auto-refresh preview
+document.addEventListener('DOMContentLoaded', () => {
+  ['f-name','f-start','f-end','f-city','f-venue','f-desc','f-website','f-cname','f-cemail'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.addEventListener('input', schedulePreviewRefresh);
+  });
+});
+
+// ── Pub-link in pub-bar ─────────────────────────────────────────────────────────────────────────────────
+function showPubLink(url) {
+  let wrap = document.getElementById('pubLinkWrap');
+  if (!wrap) {
+    const bar = document.querySelector('.pub-bar');
+    if (!bar) return;
+    wrap = document.createElement('div');
+    wrap.id = 'pubLinkWrap';
+    wrap.className = 'pub-link-wrap';
+    wrap.innerHTML = `
+      <span style="font-size:11px;color:var(--text2);white-space:nowrap">🔗 Public link:</span>
+      <input class="pub-link-input" id="pubLinkInput" readonly onclick="this.select()">
+      <button class="pub-link-copy" id="pubLinkCopyBtn" onclick="copyPubLink()">Copy</button>
+      <a class="pub-link-copy" id="pubLinkOpenBtn" style="text-decoration:none" target="_blank">Open ↗</a>
+    `;
+    bar.appendChild(wrap);
+  }
+  wrap.style.display = 'flex';
+  document.getElementById('pubLinkInput').value = url;
+  document.getElementById('pubLinkOpenBtn').href = url;
+}
+
+function hidePubLink() {
+  const wrap = document.getElementById('pubLinkWrap');
+  if (wrap) wrap.style.display = 'none';
+}
+
+function copyPubLink() {
+  const input = document.getElementById('pubLinkInput');
+  if (!input) return;
+  navigator.clipboard.writeText(input.value).then(()=>{
+    const btn = document.getElementById('pubLinkCopyBtn');
+    const orig = btn.textContent;
+    btn.textContent = '✓ Copied!';
+    btn.classList.add('copied');
+    setTimeout(()=>{ btn.textContent=orig; btn.classList.remove('copied'); }, 2000);
+  });
+}
+
+// ── Init ─────────────────────────────────────────────────────────────────────────────────
+(function(){{
     const u = JSON.parse(localStorage.getItem('gc_auth_user')||'{}');
     const w = JSON.parse(localStorage.getItem('gc_wizard')||'{}');
     const n = u.name||w?.profile?.company||w?.profile?.name||'My Organization';
