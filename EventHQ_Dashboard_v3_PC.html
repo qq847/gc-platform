@@ -4394,6 +4394,50 @@ body.dark-mode .unsaved-bar { background: #1e2533; border-color: #2d3748; }
             </div>
           </div>
         </div>
+        <!-- Award Announcement Generator -->
+        <div class="editor-card" style="margin-top:16px">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px">
+            <div style="font-weight:700;font-size:15px">📢 Announcement Generator</div>
+            <div style="display:flex;gap:8px">
+              <button onclick="generateAwardAnnouncement()" class="btn-secondary" style="font-size:12px;padding:6px 12px">Generate</button>
+              <button onclick="copyAnnouncement()" class="btn-primary" style="font-size:12px;padding:6px 12px">Copy Text</button>
+            </div>
+          </div>
+          <!-- Format selector -->
+          <div style="display:flex;gap:6px;margin-bottom:14px">
+            <button id="ann-fmt-press" onclick="switchAnnFormat('press')" style="font-size:11px;padding:4px 12px;border:none;border-radius:10px;cursor:pointer;background:#2563eb;color:#fff;font-weight:600">Press Release</button>
+            <button id="ann-fmt-social" onclick="switchAnnFormat('social')" style="font-size:11px;padding:4px 12px;border:none;border-radius:10px;cursor:pointer;background:#f3f4f6;color:#374151">Social Media</button>
+            <button id="ann-fmt-email" onclick="switchAnnFormat('email')" style="font-size:11px;padding:4px 12px;border:none;border-radius:10px;cursor:pointer;background:#f3f4f6;color:#374151">Email Blast</button>
+          </div>
+          <!-- Generated text area -->
+          <div id="ann-output" style="background:#f8f9fa;border:1px solid #e5e7eb;border-radius:8px;padding:16px;font-size:13px;line-height:1.7;color:#374151;min-height:140px;white-space:pre-wrap;font-family:Georgia,serif">
+FOR IMMEDIATE RELEASE
+
+Game Connection 2025 — Award Winners Announced
+
+Game Connection is proud to announce the winners of this year's prestigious awards:
+
+🏆 Best Art Direction — Neon Abyss 2 (Score: 9.6/10)
+   Developer: Dark Pixel Studios | 5 juror votes
+
+🥇 Best Indie Game — Stellar Drift (Score: 8.4/10)
+   Developer: Orbit Games | 5 juror votes
+
+🥉 Best Narrative — Echo Protocol (Score: 6.2/10)
+   Developer: Hollow Depths Studio | 3 juror votes
+
+Voting for Best Mobile Game is still in progress.
+
+For more information, visit: gameconnection.com/awards-2025
+          </div>
+          <!-- Social share buttons -->
+          <div style="display:flex;gap:8px;margin-top:12px">
+            <button onclick="showToast('Opening Twitter/X share...')" style="flex:1;font-size:12px;padding:7px;background:#000;color:#fff;border:none;border-radius:6px;cursor:pointer;font-weight:600">𝕏 Share on X</button>
+            <button onclick="showToast('Opening LinkedIn share...')" style="flex:1;font-size:12px;padding:7px;background:#0a66c2;color:#fff;border:none;border-radius:6px;cursor:pointer;font-weight:600">in LinkedIn</button>
+            <button onclick="showToast('Opening Facebook share...')" style="flex:1;font-size:12px;padding:7px;background:#1877f2;color:#fff;border:none;border-radius:6px;cursor:pointer;font-weight:600">f Facebook</button>
+            <button onclick="showToast('Press release PDF generated')" style="flex:1;font-size:12px;padding:7px;background:#dc2626;color:#fff;border:none;border-radius:6px;cursor:pointer;font-weight:600">📄 PDF</button>
+          </div>
+        </div>
       </div>
 
       <!-- ══ VIEW: Buyer Invitation ══ -->
@@ -8814,6 +8858,29 @@ function removeFreeBooth(id) {
   const row = document.getElementById('fb-assign-' + id);
   if (row) row.style.opacity = '0.4';
   showToast('✕ Booth assignment removed');
+}
+function generateAwardAnnouncement() {
+  const fmt = document.getElementById('ann-fmt-press')?.style.background === 'rgb(37, 99, 235)' ? 'press' : (document.getElementById('ann-fmt-social')?.style.background === 'rgb(37, 99, 235)' ? 'social' : 'email');
+  const texts = {
+    press: 'FOR IMMEDIATE RELEASE\n\nGame Connection 2025 — Award Winners Announced\n\nGame Connection is proud to announce the winners of this year\'s prestigious awards:\n\n\ud83c\udfc6 Best Art Direction — Neon Abyss 2 (Score: 9.6/10)\n   Developer: Dark Pixel Studios | 5 juror votes\n\n\ud83e\udd47 Best Indie Game — Stellar Drift (Score: 8.4/10)\n   Developer: Orbit Games | 5 juror votes\n\n\ud83e\udd49 Best Narrative — Echo Protocol (Score: 6.2/10)\n   Developer: Hollow Depths Studio | 3 juror votes\n\nVoting for Best Mobile Game is still in progress.\n\nFor more information, visit: gameconnection.com/awards-2025',
+    social: '\ud83c\udfae Game Connection 2025 Award Winners! \ud83c\udfc6\n\n\ud83e\udd47 Best Indie Game: Stellar Drift (8.4/10)\n\ud83c\udfa8 Best Art Direction: Neon Abyss 2 (9.6/10) \u2b50\n\ud83d\udcdd Best Narrative: Echo Protocol (6.2/10)\n\nCongrats to all nominees! See you next year \ud83d\ude80\n\n#GameConnection2025 #IndieGame #GameAwards',
+    email: 'Subject: Game Connection 2025 Award Winners Announced!\n\nDear Attendees,\n\nThank you for joining Game Connection 2025! We are delighted to announce this year\'s award winners:\n\n\u2022 Best Art Direction: Neon Abyss 2 (9.6/10)\n\u2022 Best Indie Game: Stellar Drift (8.4/10)\n\u2022 Best Narrative: Echo Protocol (6.2/10)\n\nFull results and photos available at gameconnection.com/awards-2025\n\nSee you next year!\nThe Game Connection Team'
+  };
+  const out = document.getElementById('ann-output');
+  if (out) out.textContent = texts[fmt] || texts.press;
+  showToast('Announcement generated');
+}
+function switchAnnFormat(fmt) {
+  ['press','social','email'].forEach(f => {
+    const btn = document.getElementById('ann-fmt-' + f);
+    if (btn) { btn.style.background = f === fmt ? '#2563eb' : '#f3f4f6'; btn.style.color = f === fmt ? '#fff' : '#374151'; }
+  });
+  generateAwardAnnouncement();
+}
+function copyAnnouncement() {
+  const out = document.getElementById('ann-output');
+  if (!out) return;
+  navigator.clipboard.writeText(out.textContent).then(() => showToast('Copied to clipboard!')).catch(() => showToast('Copy: select text manually'));
 }
 function runConflictCheck() {
   const results = document.getElementById('conflict-results');
