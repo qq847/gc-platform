@@ -9043,7 +9043,7 @@ function showPreview() {
   const regs = (() => { try { return JSON.parse(localStorage.getItem('gc_registrations') || '[]'); } catch(e){ return []; } })();
   document.getElementById('prev-attendees').textContent = regs.filter(r => r.eventTitle === name).length || 0;
   // Active modules
-  document.getElementById('prev-modules').textContent = (ev.modules || []).filter(m => m.enabled).length || 0;
+  document.getElementById('prev-modules').textContent = (ev.modules || []).filter(m => typeof m === 'string' ? true : m.enabled).length || 0;
   // Days to event
   if (start) {
     const diff = Math.ceil((new Date(start) - new Date()) / 86400000);
@@ -10878,6 +10878,47 @@ function showToast(msg, type) {
     document.getElementById('orgName').textContent = name;
     document.getElementById('orgAvatar').textContent = name.charAt(0).toUpperCase();
   } catch(e) {}
+  // Seed demo data if no events exist
+  if (!localStorage.getItem('gc_events') || JSON.parse(localStorage.getItem('gc_events') || '[]').length === 0) {
+    const demoEvents = [{
+      id: 'ev-demo-001',
+      name: 'Game Connection Europe 2027',
+      status: 'live',
+      startDate: '2027-03-17',
+      endDate: '2027-03-21',
+      city: 'Lyon',
+      country: 'France',
+      venue: 'Cité Internationale de Lyon',
+      format: 'In-Person',
+      description: 'Game Connection is the premier B2B matchmaking event for the global games industry. Meet developers, publishers, investors and service providers for five days of curated business meetings, panels, pitches and networking. Over 2,000 attendees from 60+ countries gather to forge partnerships, discover new projects and drive the future of interactive entertainment.',
+      website: 'game-connection.com',
+      organizerName: 'Game Connection Team',
+      contactEmail: 'contact@game-connection.com',
+      modules: ['free-reg','paid-ticket','sponsorship','paid-booth','panel','showcase','award','buyer-inv','lets-meet'],
+      attendees: 847,
+      projects: 124,
+      coverImage: ''
+    }, {
+      id: 'ev-demo-002',
+      name: 'Indie Dev Summit 2027',
+      status: 'live',
+      startDate: '2027-06-10',
+      endDate: '2027-06-12',
+      city: 'Berlin',
+      country: 'Germany',
+      venue: 'Station Berlin',
+      format: 'In-Person',
+      description: 'A three-day summit dedicated to independent game developers. Featuring workshops, publisher speed-dating, a game showcase floor and an awards ceremony celebrating the best in indie gaming.',
+      website: 'indiedevsummit.com',
+      organizerName: 'Indie Dev Summit Team',
+      contactEmail: 'hello@indiedevsummit.com',
+      modules: ['free-reg','paid-ticket','showcase','award','panel'],
+      attendees: 312,
+      projects: 58,
+      coverImage: ''
+    }];
+    localStorage.setItem('gc_events', JSON.stringify(demoEvents));
+  }
   renderEventsList();
 })();
 </script>
