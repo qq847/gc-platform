@@ -1,0 +1,507 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>GC Platform — Person Profile Wireframe</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'Segoe UI', sans-serif; background: #f0f2f5; color: #333; padding-bottom: 64px; }
+
+  /* TOP NAV - MOBILE */
+  .nav {
+    background: #1a1a2e;
+    height: 52px;
+    display: flex;
+    align-items: center;
+    padding: 0 16px;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+  }
+  .nav-logo { color: #fff; font-weight: 700; font-size: 16px; letter-spacing: 1px; flex: 1; }
+  .nav-logo span { color: #e94560; }
+  .nav-right { display: flex; align-items: center; gap: 14px; }
+  .nav-avatar { width: 30px; height: 30px; border-radius: 50%; background: #555; }
+  .nav-notif { color: #aaa; font-size: 18px; }
+  .nav-hamburger { color: #aaa; font-size: 22px; cursor: pointer; background: none; border: none; padding: 0; line-height: 1; }
+
+  /* BOTTOM TAB BAR */
+  .bottom-nav {
+    position: fixed;
+    bottom: 0; left: 0; right: 0;
+    height: 56px;
+    background: #1a1a2e;
+    display: flex;
+    align-items: stretch;
+    z-index: 100;
+    border-top: 1px solid rgba(255,255,255,0.08);
+  }
+  .bottom-nav-item {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    color: #666;
+    font-size: 10px;
+    gap: 3px;
+    text-decoration: none;
+    cursor: pointer;
+  }
+  .bottom-nav-item.active { color: #e94560; }
+  .bottom-nav-item .tab-icon { font-size: 18px; line-height: 1; }
+
+  /* LAYOUT - SINGLE COLUMN */
+  .container { max-width: 480px; margin: 0 auto; padding: 12px 12px; display: flex; flex-direction: column; gap: 12px; }
+
+  /* CARDS */
+  .card { background: #fff; border-radius: 10px; overflow: hidden; }
+
+  /* HERO */
+  .hero-banner { height: 110px; background: linear-gradient(135deg, #1a1a2e 0%, #16213e 60%, #0f3460 100%); position: relative; }
+  .hero-banner-label { position: absolute; bottom: 8px; right: 12px; color: rgba(255,255,255,0.3); font-size: 10px; }
+  .hero-body { padding: 0 16px 16px; }
+  .hero-avatar-wrap { position: relative; margin-top: -36px; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: flex-end; }
+  .hero-avatar { width: 72px; height: 72px; border-radius: 50%; background: #c0c0c0; border: 3px solid #fff; display: flex; align-items: center; justify-content: center; color: #999; font-size: 10px; flex-shrink: 0; }
+  .hero-actions { display: flex; gap: 8px; align-items: center; padding-bottom: 4px; }
+  .hero-name { font-size: 18px; font-weight: 700; }
+  .hero-title { color: #555; font-size: 13px; margin-top: 3px; }
+  .hero-title span { color: #e94560; font-weight: 600; }
+  .hero-meta { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 8px; color: #777; font-size: 12px; }
+  .hero-tags { display: flex; gap: 6px; margin-top: 10px; flex-wrap: wrap; }
+  .tag { padding: 4px 10px; border-radius: 20px; font-size: 11px; font-weight: 500; }
+  .tag-role { background: #e8f0fe; color: #1a73e8; }
+  .tag-looking { background: #fce8f1; color: #e94560; border: 1px dashed #e94560; }
+  .tag-open { background: #e6f4ea; color: #188038; }
+  .btn { padding: 9px 16px; border-radius: 6px; font-size: 13px; font-weight: 600; cursor: pointer; border: none; min-height: 40px; }
+  .btn-primary { background: #e94560; color: #fff; }
+  .btn-secondary { background: #fff; color: #333; border: 1.5px solid #ccc; }
+  .btn-icon { width: 40px; height: 40px; border-radius: 6px; border: 1.5px solid #ccc; display: flex; align-items: center; justify-content: center; background: #fff; font-size: 16px; cursor: pointer; flex-shrink: 0; }
+
+  /* STATS BAR - SCROLLABLE ON MOBILE */
+  .stats-bar { display: flex; border-top: 1px solid #f0f0f0; overflow-x: auto; -webkit-overflow-scrolling: touch; }
+  .stats-bar::-webkit-scrollbar { display: none; }
+  .stat { flex: 0 0 auto; min-width: 80px; text-align: center; padding: 12px 8px; border-right: 1px solid #f0f0f0; }
+  .stat:last-child { border-right: none; }
+  .stat-num { font-size: 18px; font-weight: 700; color: #1a1a2e; }
+  .stat-label { font-size: 10px; color: #888; margin-top: 2px; }
+
+  /* SECTION */
+  .section { padding: 16px; border-top: 1px solid #f5f5f5; }
+  .section:first-child { border-top: none; }
+  .section-title { font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.8px; color: #888; margin-bottom: 12px; }
+
+  /* ABOUT */
+  .about-text .placeholder { background: #f0f0f0; height: 12px; border-radius: 4px; margin-bottom: 8px; }
+  .about-text .placeholder.w80 { width: 80%; }
+  .about-text .placeholder.w95 { width: 95%; }
+  .about-text .placeholder.w60 { width: 60%; }
+
+  /* LOOKING FOR */
+  .looking-grid { display: flex; gap: 8px; flex-wrap: wrap; }
+  .looking-item { display: flex; align-items: center; gap: 6px; padding: 9px 12px; border: 1.5px solid #e94560; border-radius: 8px; font-size: 12px; color: #e94560; background: #fff8f9; flex: 1 1 calc(50% - 4px); min-width: 120px; }
+  .looking-icon { font-size: 16px; }
+
+  /* PROJECTS GRID - 2 COLUMNS ON MOBILE */
+  .projects-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; }
+  .project-card { border-radius: 8px; overflow: hidden; border: 1px solid #eee; }
+  .project-thumb { height: 72px; background: #e0e0e0; display: flex; align-items: center; justify-content: center; color: #bbb; font-size: 10px; position: relative; }
+  .project-thumb.c1 { background: #d0d8f0; }
+  .project-thumb.c2 { background: #f0d8d0; }
+  .project-thumb.c3 { background: #d0f0d8; }
+  .project-thumb.c4 { background: #f0ebd0; }
+  .project-thumb.c5 { background: #e8d0f0; }
+  .project-thumb.c6 { background: #d0eef0; }
+  .project-role-badge { position: absolute; bottom: 5px; right: 5px; background: rgba(0,0,0,0.55); color: #fff; font-size: 9px; padding: 2px 5px; border-radius: 3px; }
+  .project-info { padding: 7px 9px; }
+  .project-name { font-size: 12px; font-weight: 600; }
+  .project-genre { font-size: 10px; color: #888; margin-top: 2px; }
+
+  /* ORG */
+  .org-card { display: flex; align-items: center; gap: 12px; padding: 12px; border: 1px solid #eee; border-radius: 8px; }
+  .org-logo { width: 44px; height: 44px; border-radius: 8px; background: #e0e0e0; flex-shrink: 0; display: flex; align-items: center; justify-content: center; color: #aaa; font-size: 9px; }
+  .org-info .org-name { font-size: 14px; font-weight: 600; }
+  .org-info .org-type { font-size: 12px; color: #888; }
+  .org-info .org-size { font-size: 11px; color: #888; }
+
+  /* EXPERIENCE */
+  .exp-list { display: flex; flex-direction: column; gap: 14px; }
+  .exp-item { display: flex; gap: 12px; }
+  .exp-logo { width: 38px; height: 38px; border-radius: 6px; background: #e8e8e8; flex-shrink: 0; }
+  .exp-body { flex: 1; }
+  .exp-title { font-size: 13px; font-weight: 600; }
+  .exp-company { font-size: 12px; color: #555; }
+  .exp-period { font-size: 11px; color: #aaa; margin-top: 2px; }
+
+  /* SKILLS */
+  .skills-list { display: flex; flex-wrap: wrap; gap: 7px; }
+  .skill-tag { padding: 5px 11px; border-radius: 20px; background: #f0f2f5; font-size: 12px; color: #444; border: 1px solid #e0e0e0; }
+  .skill-tag.highlight { background: #1a1a2e; color: #fff; border-color: #1a1a2e; }
+
+  /* EVENTS */
+  .events-list { display: flex; flex-direction: column; gap: 9px; }
+  .event-item { display: flex; align-items: center; gap: 10px; padding: 10px; background: #f9f9f9; border-radius: 8px; }
+  .event-badge { width: 34px; height: 34px; border-radius: 6px; background: #1a1a2e; color: #fff; font-size: 9px; font-weight: 700; display: flex; align-items: center; justify-content: center; text-align: center; flex-shrink: 0; line-height: 1.2; }
+  .event-name { font-size: 12px; font-weight: 600; }
+  .event-year { font-size: 11px; color: #888; }
+
+  /* SIDEBAR CARDS — stacked below on mobile */
+  .sidebar-card { background: #fff; border-radius: 10px; padding: 16px; }
+  .sidebar-title { font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.8px; color: #888; margin-bottom: 12px; }
+  .contact-row { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; font-size: 13px; color: #444; }
+  .contact-icon { width: 30px; height: 30px; border-radius: 6px; background: #f0f0f0; display: flex; align-items: center; justify-content: center; font-size: 15px; flex-shrink: 0; }
+
+  /* PEOPLE YOU MAY KNOW */
+  .people-list { display: flex; flex-direction: column; gap: 12px; }
+  .person-row { display: flex; align-items: center; gap: 10px; }
+  .person-mini-avatar { width: 38px; height: 38px; border-radius: 50%; flex-shrink: 0; }
+  .pa1 { background: #c0d0f0; }
+  .pa2 { background: #f0c0d0; }
+  .pa3 { background: #c0f0d0; }
+  .person-mini-name { font-size: 13px; font-weight: 600; }
+  .person-mini-role { font-size: 11px; color: #888; }
+  .person-mini-btn { margin-left: auto; padding: 6px 12px; border-radius: 4px; border: 1px solid #ccc; background: #fff; font-size: 12px; cursor: pointer; min-height: 34px; }
+
+  /* MARKET ACTIVITY */
+  .market-item { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; font-size: 13px; }
+  .market-label { color: #555; }
+  .market-dot { width: 8px; height: 8px; border-radius: 50%; margin-right: 6px; display: inline-block; }
+  .dot-green { background: #34a853; }
+  .dot-orange { background: #fa7b17; }
+  .dot-blue { background: #1a73e8; }
+
+  /* WIREFRAME ANNOTATION */
+  .annotation { display: inline-block; background: #fffde7; border: 1px dashed #f9a825; color: #e65100; font-size: 9px; padding: 2px 5px; border-radius: 3px; margin-left: 6px; vertical-align: middle; }
+</style>
+</head>
+<body>
+
+<!-- TOP NAV (MOBILE) -->
+<div class="nav">
+  <div class="nav-logo">GAME<span>CONNECTION</span></div>
+  <div class="nav-right">
+    <div class="nav-notif">🔔</div>
+    <div class="nav-avatar"></div>
+    <button class="nav-hamburger">☰</button>
+  </div>
+</div>
+
+<!-- MAIN LAYOUT - SINGLE COLUMN -->
+<div class="container">
+
+  <!-- HERO CARD -->
+  <div class="card">
+    <div class="hero-banner">
+      <div class="hero-banner-label">Banner Image</div>
+    </div>
+    <div class="hero-body">
+      <div class="hero-avatar-wrap">
+        <div class="hero-avatar">Photo</div>
+        <div class="hero-actions">
+          <button class="btn btn-primary">+ Connect</button>
+          <button class="btn btn-secondary">Message</button>
+          <button class="btn-icon">⋯</button>
+        </div>
+      </div>
+      <div class="hero-name">Sarah Chen</div>
+      <div class="hero-title">Senior Game Designer · <span>Tencent Games</span></div>
+      <div class="hero-meta">
+        <span>📍 Shanghai, China</span>
+        <span>🌐 English · Chinese</span>
+      </div>
+      <div class="hero-tags">
+        <span class="tag tag-role">Developer</span>
+        <span class="tag tag-role">Game Designer</span>
+        <span class="tag tag-open">Open to opportunities</span>
+        <span class="tag tag-looking">🔍 Looking for Publisher</span>
+      </div>
+    </div>
+
+    <!-- STATS BAR -->
+    <div class="stats-bar">
+      <div class="stat">
+        <div class="stat-num">12</div>
+        <div class="stat-label">Games</div>
+      </div>
+      <div class="stat">
+        <div class="stat-num">340</div>
+        <div class="stat-label">Connections</div>
+      </div>
+      <div class="stat">
+        <div class="stat-num">8</div>
+        <div class="stat-label">Events</div>
+      </div>
+      <div class="stat">
+        <div class="stat-num">3</div>
+        <div class="stat-label">Listings</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ABOUT -->
+  <div class="card">
+    <div class="section">
+      <div class="section-title">About <span class="annotation">自我介绍，非必填</span></div>
+      <div class="about-text">
+        <div class="placeholder w95"></div>
+        <div class="placeholder w80"></div>
+        <div class="placeholder w95"></div>
+        <div class="placeholder w60"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- LOOKING FOR -->
+  <div class="card">
+    <div class="section">
+      <div class="section-title">Looking For <span class="annotation">核心差异化——LinkedIn没有</span></div>
+      <div class="looking-grid">
+        <div class="looking-item"><span class="looking-icon">🤝</span> Publishing Deal</div>
+        <div class="looking-item"><span class="looking-icon">💰</span> Investment</div>
+        <div class="looking-item"><span class="looking-icon">👥</span> Co-development</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- PROJECTS / GAMES -->
+  <div class="card">
+    <div class="section">
+      <div class="section-title">Games & Projects <span class="annotation">最核心 — 做过什么游戏</span></div>
+      <div class="projects-grid">
+        <div class="project-card">
+          <div class="project-thumb c1">Game Art<div class="project-role-badge">Lead Designer</div></div>
+          <div class="project-info">
+            <div class="project-name">Project Aurora</div>
+            <div class="project-genre">RPG · PC / Console</div>
+          </div>
+        </div>
+        <div class="project-card">
+          <div class="project-thumb c2">Game Art<div class="project-role-badge">Game Designer</div></div>
+          <div class="project-info">
+            <div class="project-name">Neon Runners</div>
+            <div class="project-genre">Action · Mobile</div>
+          </div>
+        </div>
+        <div class="project-card">
+          <div class="project-thumb c3">Game Art<div class="project-role-badge">Consultant</div></div>
+          <div class="project-info">
+            <div class="project-name">Shadow Keep</div>
+            <div class="project-genre">Strategy · PC</div>
+          </div>
+        </div>
+        <div class="project-card">
+          <div class="project-thumb c4">Game Art<div class="project-role-badge">Designer</div></div>
+          <div class="project-info">
+            <div class="project-name">Void Protocol</div>
+            <div class="project-genre">Puzzle · Mobile</div>
+          </div>
+        </div>
+        <div class="project-card">
+          <div class="project-thumb c5">Game Art<div class="project-role-badge">Intern</div></div>
+          <div class="project-info">
+            <div class="project-name">Starfall</div>
+            <div class="project-genre">Casual · Mobile</div>
+          </div>
+        </div>
+        <div class="project-card" style="display:flex;align-items:center;justify-content:center;min-height:100px;border:1.5px dashed #ddd;background:#fafafa;border-radius:8px;color:#aaa;font-size:13px;">
+          + See all 12
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- CURRENT ORG -->
+  <div class="card">
+    <div class="section">
+      <div class="section-title">Organization <span class="annotation">当前所属公司/工作室</span></div>
+      <div class="org-card">
+        <div class="org-logo">Logo</div>
+        <div class="org-info">
+          <div class="org-name">Tencent Games</div>
+          <div class="org-type">Publisher · Developer</div>
+          <div class="org-size">10,000+ employees · Shenzhen, China</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- EXPERIENCE -->
+  <div class="card">
+    <div class="section">
+      <div class="section-title">Experience</div>
+      <div class="exp-list">
+        <div class="exp-item">
+          <div class="exp-logo"></div>
+          <div class="exp-body">
+            <div class="exp-title">Senior Game Designer</div>
+            <div class="exp-company">Tencent Games</div>
+            <div class="exp-period">2021 – Present · 3 yrs</div>
+          </div>
+        </div>
+        <div class="exp-item">
+          <div class="exp-logo"></div>
+          <div class="exp-body">
+            <div class="exp-title">Game Designer</div>
+            <div class="exp-company">miHoYo</div>
+            <div class="exp-period">2018 – 2021 · 3 yrs</div>
+          </div>
+        </div>
+        <div class="exp-item">
+          <div class="exp-logo"></div>
+          <div class="exp-body">
+            <div class="exp-title">Junior Designer</div>
+            <div class="exp-company">Lilith Games</div>
+            <div class="exp-period">2016 – 2018 · 2 yrs</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SKILLS -->
+  <div class="card">
+    <div class="section">
+      <div class="section-title">Skills</div>
+      <div class="skills-list">
+        <span class="skill-tag highlight">Game Design</span>
+        <span class="skill-tag highlight">Level Design</span>
+        <span class="skill-tag">Unity</span>
+        <span class="skill-tag">Unreal Engine</span>
+        <span class="skill-tag">Monetization</span>
+        <span class="skill-tag">Live Ops</span>
+        <span class="skill-tag">Narrative Design</span>
+        <span class="skill-tag">UX/UI</span>
+        <span class="skill-tag">Localization</span>
+        <span class="skill-tag">Prototyping</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- EVENTS ATTENDED -->
+  <div class="card">
+    <div class="section">
+      <div class="section-title">Events Attended <span class="annotation">也是核心差异化</span></div>
+      <div class="events-list">
+        <div class="event-item">
+          <div class="event-badge">GDC<br>2026</div>
+          <div>
+            <div class="event-name">Game Developers Conference 2026</div>
+            <div class="event-year">San Francisco · March 2026</div>
+          </div>
+        </div>
+        <div class="event-item">
+          <div class="event-badge">GC<br>WEST</div>
+          <div>
+            <div class="event-name">Game Connection West 2025</div>
+            <div class="event-year">San Francisco · March 2025</div>
+          </div>
+        </div>
+        <div class="event-item">
+          <div class="event-badge">TGS<br>2024</div>
+          <div>
+            <div class="event-name">Tokyo Game Show 2024</div>
+            <div class="event-year">Tokyo · September 2024</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SIDEBAR CARDS — stacked below on mobile -->
+
+  <!-- CONTACT / LINKS -->
+  <div class="sidebar-card">
+    <div class="sidebar-title">Contact & Links</div>
+    <div class="contact-row"><div class="contact-icon">🔗</div> linkedin.com/in/sarahchen</div>
+    <div class="contact-row"><div class="contact-icon">🐦</div> @sarahchen_dev</div>
+    <div class="contact-row"><div class="contact-icon">🌐</div> sarahchen.dev</div>
+    <div class="contact-row"><div class="contact-icon">📧</div> Visible to connections</div>
+  </div>
+
+  <!-- MARKET SIGNALS -->
+  <div class="sidebar-card">
+    <div class="sidebar-title">Market Activity <span class="annotation">有无在找合作信号</span></div>
+    <div class="market-item">
+      <div class="market-label"><span class="market-dot dot-green"></span>Open to publishing</div>
+      <div style="font-size:11px;color:#34a853;">Active</div>
+    </div>
+    <div class="market-item">
+      <div class="market-label"><span class="market-dot dot-orange"></span>Co-dev inquiry</div>
+      <div style="font-size:11px;color:#fa7b17;">Passive</div>
+    </div>
+    <div class="market-item">
+      <div class="market-label"><span class="market-dot dot-blue"></span>Speaking / Panels</div>
+      <div style="font-size:11px;color:#1a73e8;">Available</div>
+    </div>
+  </div>
+
+  <!-- PEOPLE YOU MAY KNOW -->
+  <div class="sidebar-card">
+    <div class="sidebar-title">People You May Know</div>
+    <div class="people-list">
+      <div class="person-row">
+        <div class="person-mini-avatar pa1"></div>
+        <div>
+          <div class="person-mini-name">Jake Liu</div>
+          <div class="person-mini-role">Producer · NetEase</div>
+        </div>
+        <button class="person-mini-btn">+ Connect</button>
+      </div>
+      <div class="person-row">
+        <div class="person-mini-avatar pa2"></div>
+        <div>
+          <div class="person-mini-name">Emma Park</div>
+          <div class="person-mini-role">Publisher · Devolver</div>
+        </div>
+        <button class="person-mini-btn">+ Connect</button>
+      </div>
+      <div class="person-row">
+        <div class="person-mini-avatar pa3"></div>
+        <div>
+          <div class="person-mini-name">Tom Reeves</div>
+          <div class="person-mini-role">Investor · Bitkraft</div>
+        </div>
+        <button class="person-mini-btn">+ Connect</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MUTUAL EVENTS -->
+  <div class="sidebar-card">
+    <div class="sidebar-title">Mutual Events</div>
+    <div style="font-size:13px;color:#555;">You both attended:</div>
+    <div style="margin-top:10px;display:flex;gap:8px;flex-wrap:wrap;">
+      <span class="tag tag-role">GDC 2026</span>
+      <span class="tag tag-role">GC West 2025</span>
+    </div>
+  </div>
+
+</div><!-- /container -->
+
+<!-- BOTTOM TAB BAR -->
+<div class="bottom-nav">
+  <div class="bottom-nav-item">
+    <span class="tab-icon">🏠</span>
+    <span>Feed</span>
+  </div>
+  <div class="bottom-nav-item active">
+    <span class="tab-icon">👤</span>
+    <span>People</span>
+  </div>
+  <div class="bottom-nav-item">
+    <span class="tab-icon">🎮</span>
+    <span>Projects</span>
+  </div>
+  <div class="bottom-nav-item">
+    <span class="tab-icon">🏢</span>
+    <span>Orgs</span>
+  </div>
+  <div class="bottom-nav-item">
+    <span class="tab-icon">📅</span>
+    <span>Events</span>
+  </div>
+</div>
+
+</body>
+</html>

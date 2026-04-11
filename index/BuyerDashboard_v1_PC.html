@@ -1,0 +1,806 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Sponsor Dashboard — Game Connection Commerce</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: #e8e4da;
+    color: #1c1a17;
+    min-height: 100vh;
+  }
+
+  /* ── NAV ── */
+  nav {
+    position: sticky; top: 0; z-index: 100;
+    background: #fff;
+    border-bottom: 1px solid #e0dbd2;
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 0 32px; height: 60px;
+    box-shadow: 0 1px 4px rgba(0,0,0,.06);
+  }
+  .nav-logo { font-weight: 700; font-size: 15px; letter-spacing: .4px; color: #1c1a17; }
+  .nav-logo span { color: #d95f2b; }
+  .nav-links { display: flex; gap: 4px; }
+  .nav-links a {
+    text-decoration: none; color: #6b6660; font-size: 14px; font-weight: 500;
+    padding: 6px 14px; border-radius: 8px; transition: background .15s, color .15s;
+  }
+  .nav-links a:hover { background: #f0ede6; color: #1c1a17; }
+  .nav-links a.active { color: #d95f2b; background: #fef3ed; }
+  .nav-right { display: flex; align-items: center; gap: 16px; }
+  .nav-bell {
+    width: 36px; height: 36px; border-radius: 50%; background: #f0ede6;
+    display: flex; align-items: center; justify-content: center; cursor: pointer;
+    font-size: 16px; position: relative; transition: background .15s;
+  }
+  .nav-bell:hover { background: #e0dbd2; }
+  .nav-bell .badge {
+    position: absolute; top: 4px; right: 4px;
+    width: 8px; height: 8px; border-radius: 50%; background: #d95f2b;
+    border: 2px solid #fff;
+  }
+  .nav-user { display: flex; align-items: center; gap: 10px; cursor: pointer; }
+  .nav-avatar {
+    width: 34px; height: 34px; border-radius: 50%;
+    background: linear-gradient(135deg, #0a7fa8, #0d9b72);
+    display: flex; align-items: center; justify-content: center;
+    color: #fff; font-weight: 700; font-size: 13px;
+  }
+  .nav-company { font-size: 14px; font-weight: 600; color: #1c1a17; }
+
+  /* ── LAYOUT ── */
+  .app-shell {
+    display: flex; min-height: calc(100vh - 60px);
+  }
+
+  /* ── SIDEBAR ── */
+  .sidebar {
+    width: 220px; flex-shrink: 0;
+    background: #fff;
+    border-right: 1px solid #e0dbd2;
+    display: flex; flex-direction: column;
+    padding: 20px 0;
+    position: sticky; top: 60px;
+    height: calc(100vh - 60px);
+    overflow-y: auto;
+  }
+  .sidebar-account {
+    margin: 0 14px 20px;
+    background: #f8f6f2;
+    border-radius: 10px; padding: 14px 12px;
+  }
+  .sa-top { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }
+  .sa-avatar {
+    width: 38px; height: 38px; border-radius: 50%;
+    background: linear-gradient(135deg, #0a7fa8, #0d9b72);
+    display: flex; align-items: center; justify-content: center;
+    color: #fff; font-weight: 700; font-size: 14px; flex-shrink: 0;
+  }
+  .sa-name { font-size: 13px; font-weight: 700; color: #1c1a17; }
+  .sa-badge {
+    font-size: 10px; font-weight: 700; color: #d95f2b;
+    background: #fef3ed; border-radius: 20px; padding: 2px 7px;
+    display: inline-block; margin-top: 2px; border: 1px solid #fde0cc;
+  }
+  .sa-stats { font-size: 11px; color: #6b6660; }
+  .sa-stats strong { color: #1c1a17; }
+
+  .sidebar-nav { flex: 1; }
+  .sidebar-item {
+    display: flex; align-items: center; gap: 10px;
+    padding: 10px 20px;
+    font-size: 13px; font-weight: 500; color: #6b6660;
+    cursor: pointer; transition: background .15s, color .15s;
+    border-left: 3px solid transparent;
+  }
+  .sidebar-item:hover { background: #f0ede6; color: #1c1a17; }
+  .sidebar-item.active {
+    background: #fef3ed; color: #d95f2b;
+    border-left-color: #d95f2b;
+    font-weight: 600;
+  }
+  .sidebar-item .icon { font-size: 16px; }
+
+  /* ── MAIN ── */
+  .main-content {
+    flex: 1; min-width: 0;
+    padding: 28px 28px 60px;
+  }
+
+  /* ── WELCOME ── */
+  .welcome-row {
+    display: flex; align-items: center; justify-content: space-between;
+    margin-bottom: 20px;
+  }
+  .welcome-title { font-size: 22px; font-weight: 700; color: #1c1a17; }
+  .welcome-sub { font-size: 13px; color: #6b6660; margin-top: 2px; }
+  .date-chip {
+    font-size: 12px; color: #a09890; background: #fff;
+    border-radius: 20px; padding: 6px 14px;
+    border: 1px solid #e0dbd2;
+  }
+
+  /* ── STAT CARDS ── */
+  .stat-row {
+    display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px;
+    margin-bottom: 24px;
+  }
+  .stat-card {
+    background: #fff; border-radius: 12px;
+    border: 1px solid #e8e4da;
+    padding: 16px 18px;
+  }
+  .stat-icon { font-size: 22px; margin-bottom: 8px; }
+  .stat-value { font-size: 22px; font-weight: 700; color: #1c1a17; }
+  .stat-label { font-size: 12px; color: #6b6660; margin-top: 2px; }
+  .stat-card.warn .stat-value { color: #c08000; }
+  .stat-card.orange .stat-value { color: #d95f2b; }
+
+  /* ── TWO-COL ── */
+  .two-col { display: flex; gap: 20px; align-items: flex-start; }
+  .left-col { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 20px; }
+  .right-col { width: 300px; flex-shrink: 0; display: flex; flex-direction: column; gap: 16px; }
+
+  /* ── CARD ── */
+  .card {
+    background: #fff; border-radius: 12px;
+    border: 1px solid #e8e4da; overflow: hidden;
+  }
+  .card-header {
+    padding: 16px 20px 12px;
+    border-bottom: 1px solid #f0ede6;
+    display: flex; align-items: center; justify-content: space-between;
+  }
+  .card-header h2 { font-size: 14px; font-weight: 600; color: #1c1a17; display: flex; align-items: center; gap: 7px; }
+  .card-body { padding: 16px 20px; }
+  .section-label {
+    font-size: 11px; font-weight: 700; color: #a09890;
+    text-transform: uppercase; letter-spacing: .5px;
+    margin-bottom: 12px;
+  }
+
+  /* ── SPONSORSHIP CARDS ── */
+  .sponsor-card {
+    border: 1px solid #e8e4da; border-radius: 10px;
+    overflow: hidden; margin-bottom: 12px;
+    background: #fff;
+    transition: border-color .15s;
+  }
+  .sponsor-card:last-child { margin-bottom: 0; }
+  .sponsor-card-head {
+    padding: 14px 16px;
+    display: flex; align-items: flex-start; gap: 12px;
+  }
+  .sc-icon {
+    width: 40px; height: 40px; border-radius: 10px;
+    background: linear-gradient(135deg, #e8e4da, #d8d3c8);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 20px; flex-shrink: 0;
+  }
+  .sc-info { flex: 1; }
+  .sc-name { font-size: 14px; font-weight: 700; color: #1c1a17; }
+  .sc-meta { font-size: 12px; color: #6b6660; margin-top: 1px; }
+  .sc-right { display: flex; flex-direction: column; align-items: flex-end; gap: 6px; }
+  .status-badge {
+    font-size: 11px; font-weight: 600; border-radius: 20px; padding: 3px 10px;
+  }
+  .status-upcoming { background: #e8f4fb; color: #0a7fa8; }
+  .status-active { background: #e8f8f1; color: #0d9b72; }
+  .status-completed { background: #f0ede6; color: #6b6660; }
+  .btn-manage {
+    background: #f0ede6; border: none; border-radius: 7px;
+    padding: 6px 14px; font-size: 12px; font-weight: 600;
+    cursor: pointer; color: #1c1a17; font-family: 'DM Sans', sans-serif;
+    transition: background .15s;
+  }
+  .btn-manage:hover { background: #e0dbd2; }
+
+  .sc-tags { display: flex; flex-wrap: wrap; gap: 5px; margin: 0 16px 10px; }
+  .sc-tag {
+    font-size: 11px; color: #6b6660;
+    background: #f0ede6; border-radius: 20px; padding: 3px 9px;
+  }
+
+  .sc-progress { padding: 0 16px 14px; }
+  .progress-label { font-size: 12px; color: #6b6660; margin-bottom: 5px; display: flex; justify-content: space-between; }
+  .progress-bar { height: 5px; background: #f0ede6; border-radius: 10px; overflow: hidden; }
+  .progress-fill { height: 100%; border-radius: 10px; background: #0d9b72; transition: width .4s; }
+  .progress-fill.warn { background: #f5c842; }
+
+  /* ── EXPANDED CARD (Indie Game Fest) ── */
+  .sponsor-card.expanded { border-color: #0a7fa8; }
+  .expanded-body {
+    border-top: 1px solid #e8e4da;
+    padding: 16px;
+    background: #fafaf8;
+  }
+  .exp-section { margin-bottom: 16px; }
+  .exp-section:last-child { margin-bottom: 0; }
+  .exp-label {
+    font-size: 11px; font-weight: 700; color: #a09890;
+    text-transform: uppercase; letter-spacing: .5px; margin-bottom: 10px;
+  }
+  .asset-row {
+    display: flex; align-items: center; gap: 10px;
+    padding: 8px 10px; border-radius: 8px;
+    background: #fff; border: 1px solid #e8e4da;
+    margin-bottom: 6px;
+  }
+  .asset-row:last-child { margin-bottom: 0; }
+  .asset-icon { font-size: 14px; flex-shrink: 0; }
+  .asset-name { flex: 1; font-size: 13px; color: #1c1a17; }
+  .asset-status-ok { font-size: 12px; color: #0d9b72; font-weight: 600; }
+  .asset-status-pending { font-size: 12px; color: #c08000; font-weight: 600; }
+  .btn-upload-sm {
+    background: #0a7fa8; color: #fff; border: none; border-radius: 6px;
+    padding: 5px 12px; font-size: 11px; font-weight: 600;
+    cursor: pointer; font-family: 'DM Sans', sans-serif; transition: background .15s;
+  }
+  .btn-upload-sm:hover { background: #086a8e; }
+
+  .countdown-chip {
+    display: inline-flex; align-items: center; gap: 5px;
+    background: #fef3ed; border: 1px solid #fde0cc;
+    color: #d95f2b; border-radius: 20px; padding: 4px 12px;
+    font-size: 12px; font-weight: 600;
+  }
+  .contact-row { display: flex; align-items: center; gap: 10px; }
+  .contact-mini-avatar {
+    width: 32px; height: 32px; border-radius: 50%;
+    background: linear-gradient(135deg, #0a7fa8, #0d9b72);
+    display: flex; align-items: center; justify-content: center;
+    color: #fff; font-size: 11px; font-weight: 700;
+  }
+  .contact-mini-name { font-size: 12px; font-weight: 600; color: #1c1a17; }
+  .contact-mini-email { font-size: 11px; color: #0a7fa8; }
+
+  /* ── PERFORMANCE REPORT ── */
+  .perf-header {
+    display: flex; align-items: center; justify-content: space-between;
+    margin-bottom: 14px;
+  }
+  .perf-event-name { font-size: 14px; font-weight: 700; color: #1c1a17; }
+  .perf-event-meta { font-size: 12px; color: #6b6660; }
+  .perf-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 12px; }
+  .perf-stat {
+    background: #f8f6f2; border-radius: 8px; padding: 12px;
+    text-align: center;
+  }
+  .perf-stat-val { font-size: 18px; font-weight: 700; color: #1c1a17; }
+  .perf-stat-label { font-size: 11px; color: #6b6660; margin-top: 2px; }
+  .perf-highlight {
+    display: flex; align-items: center; gap: 8px;
+    background: #e8f8f1; border-radius: 8px; padding: 10px 12px;
+    font-size: 12px; color: #0d9b72; font-weight: 600;
+    margin-bottom: 10px;
+  }
+  .btn-report {
+    background: #0d9b72; color: #fff; border: none; border-radius: 8px;
+    padding: 9px 18px; font-size: 13px; font-weight: 600;
+    cursor: pointer; font-family: 'DM Sans', sans-serif; transition: background .15s;
+  }
+  .btn-report:hover { background: #0a8060; }
+
+  /* ── CIRCLE PROGRESS ── */
+  .circle-wrap { display: flex; justify-content: center; padding: 20px 0 12px; }
+  .circle-progress {
+    position: relative; width: 90px; height: 90px;
+  }
+  .circle-progress svg { transform: rotate(-90deg); }
+  .circle-progress .track { fill: none; stroke: #f0ede6; stroke-width: 8; }
+  .circle-progress .fill { fill: none; stroke: #0a7fa8; stroke-width: 8; stroke-linecap: round;
+    stroke-dasharray: 226; stroke-dashoffset: 181; /* 20% = 226*0.8 */ }
+  .circle-text {
+    position: absolute; top: 50%; left: 50%; transform: translate(-50%,-50%);
+    text-align: center;
+  }
+  .circle-pct { font-size: 18px; font-weight: 700; color: #1c1a17; }
+  .circle-sub { font-size: 10px; color: #6b6660; }
+
+  /* ── DEADLINE ── */
+  .deadline-item {
+    display: flex; align-items: center; gap: 10px;
+    padding: 10px 0; border-bottom: 1px solid #f0ede6;
+  }
+  .deadline-item:last-child { border-bottom: none; }
+  .deadline-dot {
+    width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0;
+  }
+  .deadline-dot.soon { background: #d95f2b; }
+  .deadline-dot.ok { background: #0d9b72; }
+  .deadline-info { flex: 1; }
+  .deadline-date { font-size: 12px; font-weight: 600; color: #1c1a17; }
+  .deadline-name { font-size: 11px; color: #6b6660; }
+  .deadline-days { font-size: 11px; color: #a09890; }
+
+  /* ── UPLOAD TRACKER LIST ── */
+  .tracker-item {
+    display: flex; align-items: center; gap: 10px;
+    padding: 8px 0; border-bottom: 1px solid #f0ede6;
+  }
+  .tracker-item:last-child { border-bottom: none; }
+  .tracker-item-name { flex: 1; font-size: 12px; color: #1c1a17; }
+  .tracker-item-event { font-size: 10px; color: #a09890; }
+
+  /* ── ACCOUNT MANAGER ── */
+  .am-person { display: flex; align-items: center; gap: 10px; margin-bottom: 12px; }
+  .am-avatar {
+    width: 44px; height: 44px; border-radius: 50%;
+    background: linear-gradient(135deg, #d95f2b, #e8813a);
+    display: flex; align-items: center; justify-content: center;
+    color: #fff; font-weight: 700; font-size: 16px;
+  }
+  .am-name { font-size: 14px; font-weight: 600; color: #1c1a17; }
+  .am-email { font-size: 12px; color: #0a7fa8; }
+  .btn-call {
+    width: 100%; background: #0a7fa8; color: #fff; border: none;
+    border-radius: 8px; padding: 9px; font-size: 13px; font-weight: 600;
+    cursor: pointer; font-family: 'DM Sans', sans-serif; transition: background .15s;
+  }
+  .btn-call:hover { background: #086a8e; }
+
+  /* ── RECOMMENDED ── */
+  .rec-card {
+    border: 1px solid #e8e4da; border-radius: 10px; padding: 14px;
+    margin-bottom: 10px; background: #fafaf8;
+  }
+  .rec-card:last-child { margin-bottom: 0; }
+  .rec-name { font-size: 13px; font-weight: 600; color: #1c1a17; margin-bottom: 2px; }
+  .rec-meta { font-size: 11px; color: #6b6660; margin-bottom: 10px; }
+  .rec-tags { display: flex; flex-wrap: wrap; gap: 5px; margin-bottom: 10px; }
+  .rec-tag { font-size: 10px; background: #f0ede6; border-radius: 20px; padding: 2px 8px; color: #6b6660; }
+  .btn-add-cart {
+    background: #d95f2b; color: #fff; border: none; border-radius: 7px;
+    padding: 7px 16px; font-size: 12px; font-weight: 600;
+    cursor: pointer; font-family: 'DM Sans', sans-serif; transition: background .15s; width: 100%;
+  }
+  .btn-add-cart:hover { background: #bc4f22; }
+</style>
+</head>
+<body>
+
+<!-- ── SPLASH SCREEN ── -->
+<div id="gc-splash" style="
+  position:fixed;inset:0;z-index:99999;
+  background:#f3f2ef;
+  display:flex;flex-direction:column;
+  align-items:center;justify-content:center;
+  gap:32px;
+  transition:opacity .35s ease;
+">
+  <img src="assets/gc-logo.png" alt="Game Connection" style="height:52px;width:auto;display:block">
+  <div style="width:220px;height:3px;background:rgba(0,0,0,0.12);border-radius:2px;overflow:hidden">
+    <div id="gc-splash-bar" style="
+      height:100%;width:0%;background:#16a34a;
+      border-radius:2px;
+      transition:width .08s linear;
+    "></div>
+  </div>
+</div>
+<script>
+(function(){
+  var splash = document.getElementById('gc-splash');
+  var bar = document.getElementById('gc-splash-bar');
+  var pct = 0;
+  var fast = setInterval(function(){
+    pct += (pct < 70 ? 3 : 0.8);
+    if(pct >= 92){ clearInterval(fast); }
+    bar.style.width = Math.min(pct,92) + '%';
+  }, 40);
+  function finish(){
+    clearInterval(fast);
+    bar.style.transition = 'width .25s ease';
+    bar.style.width = '100%';
+    setTimeout(function(){
+      splash.style.opacity = '0';
+      setTimeout(function(){ splash.style.display='none'; }, 360);
+    }, 260);
+  }
+  if(document.readyState === 'complete'){
+    finish();
+  } else {
+    window.addEventListener('load', finish);
+    setTimeout(finish, 4000);
+  }
+})();
+</script>
+
+
+<!-- NAV -->
+<nav>
+  <div class="nav-logo">GAME CONNECTION <span>·</span> Commerce</div>
+  <div class="nav-links">
+    <a href="#">Explore</a>
+    <a href="#" class="active">My Sponsorships</a>
+    <a href="#">Orders</a>
+    <a href="#">Analytics</a>
+  </div>
+  <div class="nav-right">
+    <div class="nav-bell">🔔<span class="badge"></span></div>
+    <div class="nav-user">
+      <div class="nav-avatar">X</div>
+      <span class="nav-company">Xsolla</span>
+    </div>
+  </div>
+</nav>
+
+<div class="app-shell">
+
+  <!-- SIDEBAR -->
+  <aside class="sidebar">
+    <!-- Account Card -->
+    <div class="sidebar-account">
+      <div class="sa-top">
+        <div class="sa-avatar">X</div>
+        <div>
+          <div class="sa-name">Xsolla</div>
+          <div class="sa-badge">⭐ Premium Sponsor</div>
+        </div>
+      </div>
+      <div class="sa-stats">
+        Sponsored this year: <strong>$7,700</strong><br>
+        <strong>3</strong> active events
+      </div>
+    </div>
+
+    <!-- Nav -->
+    <nav class="sidebar-nav">
+      <div class="sidebar-item active"><span class="icon">📊</span> Overview</div>
+      <div class="sidebar-item"><span class="icon">🎪</span> My Sponsorships</div>
+      <div class="sidebar-item"><span class="icon">📁</span> Brand Assets</div>
+      <div class="sidebar-item"><span class="icon">📄</span> Contracts & Invoices</div>
+      <div class="sidebar-item"><span class="icon">📈</span> Performance Reports</div>
+      <div class="sidebar-item"><span class="icon">⚙️</span> Account Settings</div>
+    </nav>
+  </aside>
+
+  <!-- MAIN -->
+  <main class="main-content">
+
+    <!-- WELCOME -->
+    <div class="welcome-row">
+      <div>
+        <div class="welcome-title">Welcome back, Xsolla 👋</div>
+        <div class="welcome-sub">Here's your sponsorship overview for 2026</div>
+      </div>
+      <div class="date-chip">📅 March 22, 2026</div>
+    </div>
+
+    <!-- STAT CARDS -->
+    <div class="stat-row">
+      <div class="stat-card">
+        <div class="stat-icon">🎪</div>
+        <div class="stat-value">3</div>
+        <div class="stat-label">Active Sponsorships<br><span style="font-size:11px;color:#a09890">across 3 events</span></div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon">👁</div>
+        <div class="stat-value">2,500+</div>
+        <div class="stat-label">Total Reach This Year<br><span style="font-size:11px;color:#a09890">estimated attendees</span></div>
+      </div>
+      <div class="stat-card warn">
+        <div class="stat-icon">⚠️</div>
+        <div class="stat-value">4</div>
+        <div class="stat-label">Assets Pending<br><span style="font-size:11px;color:#a09890">upload required</span></div>
+      </div>
+      <div class="stat-card orange">
+        <div class="stat-icon">📅</div>
+        <div class="stat-value">24 days</div>
+        <div class="stat-label">Next Event<br><span style="font-size:11px;color:#a09890">Indie Game Fest · Berlin</span></div>
+      </div>
+    </div>
+
+    <!-- TWO-COL -->
+    <div class="two-col">
+
+      <!-- LEFT COL -->
+      <div class="left-col">
+
+        <!-- MY ACTIVE SPONSORSHIPS -->
+        <div class="card">
+          <div class="card-header">
+            <h2>🎪 My Active Sponsorships</h2>
+            <button style="background:none;border:none;font-size:12px;color:#0a7fa8;cursor:pointer;font-weight:600">View All →</button>
+          </div>
+          <div class="card-body">
+
+            <!-- Indie Game Fest — EXPANDED -->
+            <div class="sponsor-card expanded">
+              <div class="sponsor-card-head">
+                <div class="sc-icon">🎪</div>
+                <div class="sc-info">
+                  <div class="sc-name">Indie Game Fest 2026</div>
+                  <div class="sc-meta">🇩🇪 Berlin · Apr 15–17, 2026</div>
+                </div>
+                <div class="sc-right">
+                  <span class="status-badge status-upcoming">Upcoming</span>
+                  <button class="btn-manage">Manage →</button>
+                </div>
+              </div>
+              <div class="sc-tags">
+                <span class="sc-tag">Logo on Website</span>
+                <span class="sc-tag">Award Category Naming</span>
+                <span class="sc-tag">Newsletter Feature</span>
+              </div>
+              <div class="sc-progress">
+                <div class="progress-label">
+                  <span>Assets uploaded</span><span>1/3 items</span>
+                </div>
+                <div class="progress-bar"><div class="progress-fill warn" style="width:33%"></div></div>
+              </div>
+
+              <!-- EXPANDED BODY -->
+              <div class="expanded-body">
+                <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;">
+                  <span class="exp-label" style="margin-bottom:0">Asset Status</span>
+                  <span class="countdown-chip">⏰ 24 days until event</span>
+                </div>
+
+                <div class="exp-section">
+                  <div class="asset-row">
+                    <span class="asset-icon">🖼️</span>
+                    <span class="asset-name">Logo on Event Website</span>
+                    <span class="asset-status-ok">✅ Uploaded</span>
+                  </div>
+                  <div class="asset-row">
+                    <span class="asset-icon">🏆</span>
+                    <span class="asset-name">Award Category Naming</span>
+                    <span class="asset-status-pending">⚠️ Pending</span>
+                    <button class="btn-upload-sm">Upload</button>
+                  </div>
+                  <div class="asset-row">
+                    <span class="asset-icon">📧</span>
+                    <span class="asset-name">Newsletter Feature</span>
+                    <span class="asset-status-pending">⚠️ Pending</span>
+                    <button class="btn-upload-sm">Upload</button>
+                  </div>
+                </div>
+
+                <div class="exp-section">
+                  <div class="exp-label">Event Contact</div>
+                  <div class="contact-row">
+                    <div class="contact-mini-avatar">MK</div>
+                    <div>
+                      <div class="contact-mini-name">Marcus Klein — Event Director</div>
+                      <div class="contact-mini-email">marcus@indiegamefest.de</div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Tokyo -->
+            <div class="sponsor-card">
+              <div class="sponsor-card-head">
+                <div class="sc-icon">🗼</div>
+                <div class="sc-info">
+                  <div class="sc-name">Tokyo Indies Showcase</div>
+                  <div class="sc-meta">🇯🇵 Tokyo · May 8–9, 2026</div>
+                </div>
+                <div class="sc-right">
+                  <span class="status-badge status-upcoming">Upcoming</span>
+                  <button class="btn-manage">Manage →</button>
+                </div>
+              </div>
+              <div class="sc-tags">
+                <span class="sc-tag">Logo on Website</span>
+                <span class="sc-tag">Speaking Slot</span>
+              </div>
+              <div class="sc-progress">
+                <div class="progress-label"><span>Assets uploaded</span><span>0/2 items</span></div>
+                <div class="progress-bar"><div class="progress-fill warn" style="width:0%"></div></div>
+              </div>
+            </div>
+
+            <!-- Seoul -->
+            <div class="sponsor-card">
+              <div class="sponsor-card-head">
+                <div class="sc-icon">🏙️</div>
+                <div class="sc-info">
+                  <div class="sc-name">Seoul Dev Conference</div>
+                  <div class="sc-meta">🇰🇷 Seoul · Apr 28–30, 2026</div>
+                </div>
+                <div class="sc-right">
+                  <span class="status-badge status-upcoming">Upcoming</span>
+                  <button class="btn-manage">Manage →</button>
+                </div>
+              </div>
+              <div class="sc-tags">
+                <span class="sc-tag">Standard Exhibition Booth</span>
+                <span class="sc-tag">Logo on Website</span>
+              </div>
+              <div class="sc-progress">
+                <div class="progress-label"><span>Assets uploaded</span><span>0/2 items</span></div>
+                <div class="progress-bar"><div class="progress-fill warn" style="width:0%"></div></div>
+              </div>
+            </div>
+
+          </div>
+        </div>
+
+        <!-- PERFORMANCE REPORT -->
+        <div class="card">
+          <div class="card-header">
+            <h2>📈 Performance Reports</h2>
+          </div>
+          <div class="card-body">
+            <div style="background:#f8f6f2;border-radius:10px;padding:16px;">
+              <div class="perf-header">
+                <div>
+                  <div class="perf-event-name">Seoul Dev Conference 2025</div>
+                  <div class="perf-event-meta">🇰🇷 Seoul · Nov 10–12, 2025 · <span class="status-badge status-completed" style="display:inline">Completed</span></div>
+                </div>
+              </div>
+              <div class="perf-grid">
+                <div class="perf-stat">
+                  <div class="perf-stat-val">12,400</div>
+                  <div class="perf-stat-label">Logo Impressions</div>
+                </div>
+                <div class="perf-stat">
+                  <div class="perf-stat-val">34%</div>
+                  <div class="perf-stat-label">Newsletter Open Rate</div>
+                </div>
+                <div class="perf-stat">
+                  <div class="perf-stat-val">287</div>
+                  <div class="perf-stat-label">Booth Visitors</div>
+                </div>
+                <div class="perf-stat">
+                  <div class="perf-stat-val">43</div>
+                  <div class="perf-stat-label">Leads (Card Scans)</div>
+                </div>
+                <div class="perf-stat">
+                  <div class="perf-stat-val">4.8/5</div>
+                  <div class="perf-stat-label">Satisfaction Score</div>
+                </div>
+                <div class="perf-stat" style="background:#e8f8f1;">
+                  <div class="perf-stat-val" style="color:#0d9b72">+55%</div>
+                  <div class="perf-stat-label">vs. Industry Avg</div>
+                </div>
+              </div>
+              <div class="perf-highlight">
+                📧 Newsletter open rate: 34% vs industry avg 22% — top 10% performance
+              </div>
+              <button class="btn-report">📥 Download Full Report</button>
+            </div>
+          </div>
+        </div>
+
+      </div><!-- /left-col -->
+
+      <!-- RIGHT COL -->
+      <div class="right-col">
+
+        <!-- ASSET UPLOAD TRACKER -->
+        <div class="card">
+          <div class="card-header">
+            <h2>📁 Asset Upload Tracker</h2>
+          </div>
+          <div class="card-body" style="padding-top:0">
+            <div class="circle-wrap">
+              <div class="circle-progress">
+                <svg width="90" height="90" viewBox="0 0 90 90">
+                  <circle class="track" cx="45" cy="45" r="36"/>
+                  <circle class="fill" cx="45" cy="45" r="36"/>
+                </svg>
+                <div class="circle-text">
+                  <div class="circle-pct">20%</div>
+                  <div class="circle-sub">1/5 items</div>
+                </div>
+              </div>
+            </div>
+
+            <div class="tracker-item">
+              <span style="font-size:14px">✅</span>
+              <div class="tracker-item-name">Logo on Website<div class="tracker-item-event">Indie Game Fest</div></div>
+            </div>
+            <div class="tracker-item">
+              <span style="font-size:14px">⚠️</span>
+              <div class="tracker-item-name">Award Category Naming<div class="tracker-item-event">Indie Game Fest</div></div>
+              <button class="btn-upload-sm">Upload</button>
+            </div>
+            <div class="tracker-item">
+              <span style="font-size:14px">⚠️</span>
+              <div class="tracker-item-name">Newsletter Feature<div class="tracker-item-event">Indie Game Fest</div></div>
+              <button class="btn-upload-sm">Upload</button>
+            </div>
+            <div class="tracker-item">
+              <span style="font-size:14px">⚠️</span>
+              <div class="tracker-item-name">Speaking Slot<div class="tracker-item-event">Tokyo Indies</div></div>
+              <button class="btn-upload-sm">Upload</button>
+            </div>
+            <div class="tracker-item">
+              <span style="font-size:14px">⚠️</span>
+              <div class="tracker-item-name">Exhibition Booth<div class="tracker-item-event">Seoul Dev Conf.</div></div>
+              <button class="btn-upload-sm">Upload</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- UPCOMING DEADLINES -->
+        <div class="card">
+          <div class="card-header">
+            <h2>📅 Upcoming Deadlines</h2>
+          </div>
+          <div class="card-body" style="padding:12px 20px">
+            <div class="deadline-item">
+              <div class="deadline-dot soon"></div>
+              <div class="deadline-info">
+                <div class="deadline-date">Apr 1 · Indie Game Fest assets due</div>
+                <div class="deadline-days">24 days away</div>
+              </div>
+            </div>
+            <div class="deadline-item">
+              <div class="deadline-dot ok"></div>
+              <div class="deadline-info">
+                <div class="deadline-date">Apr 14 · Tokyo Indies assets due</div>
+                <div class="deadline-days">37 days away</div>
+              </div>
+            </div>
+            <div class="deadline-item">
+              <div class="deadline-dot ok"></div>
+              <div class="deadline-info">
+                <div class="deadline-date">Apr 14 · Seoul Dev assets due</div>
+                <div class="deadline-days">37 days away</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ACCOUNT MANAGER -->
+        <div class="card">
+          <div class="card-body">
+            <div class="section-label">Account Manager</div>
+            <div class="am-person">
+              <div class="am-avatar">JW</div>
+              <div>
+                <div class="am-name">Jessica Wang</div>
+                <div class="am-email">jessica.wang@gameconnection.com</div>
+              </div>
+            </div>
+            <button class="btn-call">📞 Schedule Call</button>
+          </div>
+        </div>
+
+        <!-- RECOMMENDED -->
+        <div class="card">
+          <div class="card-header">
+            <h2>⭐ Recommended Events</h2>
+          </div>
+          <div class="card-body">
+            <div class="rec-card">
+              <div class="rec-name">Gamescom Indie Arena 2026</div>
+              <div class="rec-meta">🇩🇪 Cologne · Aug 21–25, 2026 · ~8,000 attendees</div>
+              <div class="rec-tags">
+                <span class="rec-tag">Title Sponsorship</span>
+                <span class="rec-tag">Booth</span>
+                <span class="rec-tag">Speaking</span>
+              </div>
+              <button class="btn-add-cart">🛒 Add to Cart</button>
+            </div>
+            <div class="rec-card">
+              <div class="rec-name">Nordic Game Conference 2026</div>
+              <div class="rec-meta">🇸🇪 Malmö · May 27–29, 2026 · ~3,200 attendees</div>
+              <div class="rec-tags">
+                <span class="rec-tag">Logo Placement</span>
+                <span class="rec-tag">Newsletter</span>
+              </div>
+              <button class="btn-add-cart">🛒 Add to Cart</button>
+            </div>
+          </div>
+        </div>
+
+      </div><!-- /right-col -->
+
+    </div><!-- /two-col -->
+
+  </main>
+</div>
+
+</body>
+</html>

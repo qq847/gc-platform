@@ -1,0 +1,511 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Event HQ — Game Connection</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#f5f4f0;
+  --white:#fff;
+  --orange:#d95f2b;
+  --orange-hover:#c2521f;
+  --orange-light:#fff3ee;
+  --green:#0d9b72;
+  --green-light:#e6f7f1;
+  --teal:#0a7fa8;
+  --border:#e2dfd8;
+  --text1:#1e1c18;
+  --text2:#5c5850;
+  --text3:#9e9890;
+  --sidebar-w:220px;
+  --topbar-h:56px;
+  --radius:12px;
+  --shadow:0 2px 12px rgba(0,0,0,0.07);
+}
+html,body{min-height:100vh;background:var(--bg);font-family:'DM Sans',sans-serif;color:var(--text1);font-size:15px;line-height:1.6}
+
+/* ── Top Bar ── */
+.topbar{position:sticky;top:0;z-index:100;height:var(--topbar-h);background:var(--white);border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;padding:0 24px}
+.topbar-left{display:flex;align-items:center;gap:12px}
+.logo-icon{width:30px;height:30px;background:var(--orange);border-radius:7px;display:flex;align-items:center;justify-content:center;color:#fff;font-weight:700;font-size:12px;flex-shrink:0}
+.logo-text{font-size:14px;font-weight:700;color:var(--text1)}
+.topbar-sep{width:1px;height:20px;background:var(--border)}
+.topbar-subtitle{font-size:13px;color:var(--text2);font-weight:500}
+.topbar-right{display:flex;align-items:center;gap:12px}
+.topbar-org{font-size:13px;color:var(--text2);font-weight:500}
+.avatar{width:30px;height:30px;border-radius:50%;background:linear-gradient(135deg,var(--orange),#f07040);color:#fff;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;cursor:pointer}
+
+/* ── Layout ── */
+.app-body{display:flex;min-height:calc(100vh - var(--topbar-h))}
+
+/* ── Sidebar ── */
+.sidebar{width:var(--sidebar-w);background:var(--white);border-right:1px solid var(--border);padding:20px 0;display:flex;flex-direction:column;flex-shrink:0;position:sticky;top:var(--topbar-h);height:calc(100vh - var(--topbar-h));overflow-y:auto}
+.sidebar-section{padding:0 12px;margin-bottom:8px}
+.sidebar-label{font-size:11px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.06em;padding:0 8px;margin-bottom:4px}
+.nav-item{display:flex;align-items:center;gap:10px;padding:9px 10px;border-radius:8px;font-size:13px;font-weight:500;color:var(--text2);cursor:pointer;text-decoration:none;transition:background .12s;user-select:none}
+.nav-item:hover{background:var(--bg)}
+.nav-item.active{background:var(--orange-light);color:var(--orange);font-weight:700}
+.nav-item .icon{font-size:15px;width:20px;text-align:center;flex-shrink:0}
+.nav-item-dim{opacity:.45}
+.nav-item-dim .mod-badge{font-size:10px;padding:1px 6px;border-radius:4px;background:var(--bg);color:var(--text3);margin-left:auto}
+.sidebar-bottom{margin-top:auto;padding:12px 12px 0;border-top:1px solid var(--border)}
+
+/* ── Main ── */
+.main{flex:1;padding:32px 36px;min-width:0}
+
+/* ── Dashboard header ── */
+.dash-header{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:28px;gap:16px;flex-wrap:wrap}
+.dash-title{font-size:22px;font-weight:700;color:var(--text1)}
+.dash-sub{font-size:14px;color:var(--text2);margin-top:2px}
+.btn-new{background:var(--orange);color:#fff;border:none;border-radius:9px;padding:11px 22px;font-size:14px;font-weight:700;cursor:pointer;font-family:inherit;display:flex;align-items:center;gap:8px;transition:background .15s;text-decoration:none;white-space:nowrap}
+.btn-new:hover{background:var(--orange-hover)}
+
+/* ── Stats Row ── */
+.stats-row{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-bottom:28px}
+.stat-card{background:var(--white);border-radius:var(--radius);border:1px solid var(--border);padding:18px 20px}
+.stat-label{font-size:12px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:.04em;margin-bottom:6px}
+.stat-value{font-size:26px;font-weight:700;color:var(--text1)}
+.stat-sub{font-size:12px;color:var(--text2);margin-top:2px}
+
+/* ── Event Cards ── */
+.events-section-title{font-size:14px;font-weight:700;color:var(--text1);margin-bottom:14px}
+.event-cards{display:flex;flex-direction:column;gap:14px}
+.event-card{background:var(--white);border-radius:var(--radius);border:1px solid var(--border);padding:20px 22px;display:flex;align-items:center;gap:18px;cursor:pointer;transition:box-shadow .15s,border-color .15s;text-decoration:none;color:inherit}
+.event-card:hover{box-shadow:var(--shadow);border-color:var(--orange)}
+.event-card-color{width:48px;height:48px;border-radius:10px;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:22px}
+.event-card-info{flex:1;min-width:0}
+.event-card-name{font-size:15px;font-weight:700;color:var(--text1)}
+.event-card-meta{font-size:12px;color:var(--text2);margin-top:2px}
+.event-card-badges{display:flex;gap:6px;margin-top:8px;flex-wrap:wrap}
+.badge{padding:3px 9px;border-radius:20px;font-size:11px;font-weight:700}
+.badge-live{background:#e6f7f1;color:#0d9b72}
+.badge-draft{background:#f5f4f0;color:#9e9890}
+.badge-upcoming{background:#fff3ee;color:#d95f2b}
+.event-card-arrow{font-size:18px;color:var(--text3);flex-shrink:0}
+
+/* ── Empty State ── */
+.empty-state{text-align:center;padding:60px 20px;background:var(--white);border-radius:var(--radius);border:1px solid var(--border)}
+.empty-icon{font-size:48px;margin-bottom:12px}
+.empty-title{font-size:17px;font-weight:700;color:var(--text1);margin-bottom:6px}
+.empty-sub{font-size:13px;color:var(--text2);margin-bottom:24px}
+
+/* ── Single Event View ── */
+.event-view{display:none}
+.event-view-header{display:flex;align-items:center;gap:14px;margin-bottom:28px;flex-wrap:wrap}
+.back-btn{background:none;border:1px solid var(--border);border-radius:8px;padding:8px 16px;font-size:13px;font-weight:600;color:var(--text2);cursor:pointer;font-family:inherit;transition:background .15s}
+.back-btn:hover{background:var(--bg)}
+.event-view-name{font-size:20px;font-weight:700;color:var(--text1)}
+.event-view-meta{font-size:13px;color:var(--text2);margin-left:4px}
+
+/* ── Module Grid ── */
+.module-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:14px;margin-top:20px}
+.module-card{background:var(--white);border-radius:var(--radius);border:1px solid var(--border);padding:18px;cursor:pointer;transition:all .15s;position:relative}
+.module-card:hover{box-shadow:var(--shadow);border-color:var(--orange)}
+.module-card.active-mod{border-color:var(--green);background:var(--green-light)}
+.module-card.inactive-mod{opacity:.5}
+.module-card.inactive-mod:hover{opacity:.8}
+.module-card-icon{font-size:22px;margin-bottom:8px}
+.module-card-name{font-size:13px;font-weight:700;color:var(--text1)}
+.module-card-hint{font-size:11px;color:var(--text2);margin-top:3px}
+.module-card-status{position:absolute;top:10px;right:10px;font-size:10px;font-weight:700;padding:2px 7px;border-radius:4px}
+.status-on{background:var(--green);color:#fff}
+.status-off{background:var(--border);color:var(--text3)}
+
+/* ── Iframe ── */
+.iframe-wrap{display:none;flex-direction:column;flex:1}
+.iframe-topbar{display:flex;align-items:center;gap:12px;padding:12px 20px;background:var(--white);border-bottom:1px solid var(--border)}
+.iframe-title{font-size:14px;font-weight:700;color:var(--text1)}
+.iframe-newwin{font-size:12px;color:var(--teal);text-decoration:none;margin-left:auto}
+.iframe-newwin:hover{text-decoration:underline}
+#hq-iframe{flex:1;border:none;width:100%;height:calc(100vh - var(--topbar-h) - 49px)}
+
+/* ── Toast ── */
+.toast{position:fixed;bottom:28px;left:50%;transform:translateX(-50%);background:#1a1a1a;color:#fff;padding:10px 20px;border-radius:8px;font-size:13px;font-weight:600;z-index:9999;transition:opacity .3s}
+
+/* ── Responsive ── */
+@media(max-width:768px){
+  .sidebar{display:none}
+  .main{padding:20px 16px}
+  .stats-row{grid-template-columns:1fr 1fr}
+  .module-grid{grid-template-columns:1fr 1fr}
+}
+</style>
+</head>
+<body>
+
+<!-- Top Bar -->
+<div class="topbar">
+  <div class="topbar-left">
+    <div class="logo-icon">GC</div>
+    <div class="logo-text">Game Connection</div>
+    <div class="topbar-sep"></div>
+    <div class="topbar-subtitle">Event HQ</div>
+  </div>
+  <div class="topbar-right">
+    <span class="topbar-org" id="orgName">My Organization</span>
+    <div class="avatar" id="orgAvatar">O</div>
+  </div>
+</div>
+
+<div class="app-body">
+
+  <!-- Sidebar -->
+  <nav class="sidebar" id="sidebar">
+    <div class="sidebar-section">
+      <div class="sidebar-label">Overview</div>
+      <a class="nav-item active" id="nav-my-events" onclick="showDashboard()">
+        <span class="icon">🏠</span> My Events
+      </a>
+    </div>
+    <div class="sidebar-section" id="event-nav-section" style="display:none">
+      <div class="sidebar-label" id="event-nav-label">Current Event</div>
+      <!-- injected by JS when event selected -->
+    </div>
+    <div class="sidebar-bottom">
+      <a class="nav-item" href="index.html">
+        <span class="icon">←</span> Back to Hub
+      </a>
+    </div>
+  </nav>
+
+  <!-- Main: Dashboard -->
+  <main class="main" id="mainDashboard">
+    <div class="dash-header">
+      <div>
+        <div class="dash-title" id="dashTitle">My Events</div>
+        <div class="dash-sub" id="dashSub">Manage all your events from one place</div>
+      </div>
+      <a class="btn-new" href="EventSetupWizard_v4_PC.html">＋ New Event</a>
+    </div>
+
+    <!-- Stats -->
+    <div class="stats-row">
+      <div class="stat-card">
+        <div class="stat-label">Total Events</div>
+        <div class="stat-value" id="statTotal">0</div>
+        <div class="stat-sub">All time</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Live Now</div>
+        <div class="stat-value" id="statLive">0</div>
+        <div class="stat-sub">Currently running</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Upcoming</div>
+        <div class="stat-value" id="statUpcoming">0</div>
+        <div class="stat-sub">Scheduled</div>
+      </div>
+    </div>
+
+    <!-- Event List -->
+    <div class="events-section-title">Your Events</div>
+    <div class="event-cards" id="eventCards">
+      <!-- injected by JS -->
+    </div>
+  </main>
+
+  <!-- Main: Single Event View -->
+  <main class="main event-view" id="mainEventView">
+    <div class="event-view-header">
+      <button class="back-btn" onclick="showDashboard()">← All Events</button>
+      <div>
+        <div class="event-view-name" id="evViewName">Event Name</div>
+        <div class="event-view-meta" id="evViewMeta"></div>
+      </div>
+      <a class="btn-new" id="evViewEdit" href="#" style="margin-left:auto;font-size:13px;padding:9px 18px">✏️ Edit Event</a>
+    </div>
+
+    <!-- Module Grid -->
+    <div style="font-size:14px;font-weight:700;color:var(--text1);margin-bottom:4px">Active Modules</div>
+    <div style="font-size:13px;color:var(--text2);margin-bottom:0">Click any inactive module to enable it.</div>
+    <div class="module-grid" id="moduleGrid">
+      <!-- injected by JS -->
+    </div>
+  </main>
+
+  <!-- Iframe for sub-pages -->
+  <div class="iframe-wrap" id="iframeWrap">
+    <div class="iframe-topbar">
+      <button class="back-btn" onclick="closeIframe()">← Back</button>
+      <span class="iframe-title" id="iframeTitle">Loading…</span>
+      <a class="iframe-newwin" id="iframeNewwin" href="#" target="_blank">Open in new tab ↗</a>
+    </div>
+    <iframe id="hq-iframe" src=""></iframe>
+  </div>
+
+</div><!-- /app-body -->
+
+<script>
+// ── Module definitions (same as wizard) ──
+const ALL_MODULES = [
+  { id:'free-reg',    name:'Free Registration',            icon:'🎟️', hint:'Free attendee registration' },
+  { id:'paid-reg',    name:'Paid Ticketing',               icon:'💳', hint:'Sell tickets with Stripe' },
+  { id:'free-pod',    name:'Free Pod',                     icon:'🟢', hint:'Free demo pod assignment' },
+  { id:'paid-pod',    name:'Paid Pod',                     icon:'📦', hint:'Paid pod placements' },
+  { id:'free-booth',  name:'Free Booth',                   icon:'🏪', hint:'Free booth space' },
+  { id:'paid-booth',  name:'Paid Booth',                   icon:'🏬', hint:'Sell booth packages' },
+  { id:'sponsorship', name:'Sponsorship',                  icon:'🤝', hint:'Sponsorship packages' },
+  { id:'panel',       name:'Panel / Session',              icon:'🎤', hint:'Panels, talks, workshops' },
+  { id:'award',       name:'Award',                        icon:'🏆', hint:'Nominations and voting' },
+  { id:'buyer-inv',   name:'Buyer Invitation',             icon:'📧', hint:'Invite publishers & investors' },
+  { id:'lets-meet',   name:"Let's Meet",                   icon:'🤝', hint:'1-on-1 meeting scheduling' },
+  { id:'showcase',    name:'Game Showcase',                icon:'🎮', hint:'Investor / publisher pitches' },
+  { id:'map',         name:'Map',                          icon:'🗺️', hint:'Interactive venue map' },
+  { id:'live',        name:'Live',                         icon:'📡', hint:'Live streaming' },
+];
+
+// ── Demo seed events (shown when localStorage is empty) ──
+const DEMO_EVENTS = [
+  {
+    id:'evt_demo1',
+    name:'Indie Game Fest 2026',
+    start:'2026-06-15',
+    end:'2026-06-17',
+    city:'San Francisco',
+    venue:'Moscone Center',
+    format:'in-person',
+    contactName:'Felix Müller',
+    contactEmail:'felix@indiegamefest.com',
+    website:'https://indiegamefest.com',
+    modules:['free-reg','paid-reg','paid-booth','sponsorship','panel','award','buyer-inv','lets-meet','showcase'],
+    publishedAt:'2026-03-01T00:00:00Z',
+  },
+  {
+    id:'evt_demo2',
+    name:'GC Online Summit',
+    start:'2026-09-10',
+    end:'2026-09-11',
+    city:'Online',
+    venue:'',
+    format:'online',
+    contactName:'Felix Müller',
+    contactEmail:'felix@indiegamefest.com',
+    website:'',
+    modules:['free-reg','panel','live'],
+    publishedAt:'2026-04-01T00:00:00Z',
+  },
+];
+
+// ── Load events ──
+function loadEvents(){
+  try {
+    const raw = localStorage.getItem('gc_events');
+    if(raw){
+      const arr = JSON.parse(raw);
+      if(arr && arr.length) return arr;
+    }
+  } catch(e){}
+  return DEMO_EVENTS;
+}
+
+function eventStatus(ev){
+  const now = new Date();
+  const start = ev.start ? new Date(ev.start) : null;
+  const end   = ev.end   ? new Date(ev.end)   : null;
+  if(start && end && now >= start && now <= end) return 'live';
+  if(start && now < start) return 'upcoming';
+  return 'draft';
+}
+
+function formatDate(d){
+  if(!d) return '—';
+  const dt = new Date(d);
+  return dt.toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'});
+}
+
+const EVENT_COLORS = ['#d95f2b','#0d9b72','#0a7fa8','#7c3aed','#b45309'];
+const EVENT_EMOJIS = ['🎮','🏆','🎤','🌐','🎯'];
+
+function renderDashboard(){
+  const events = loadEvents();
+  const statTotal    = document.getElementById('statTotal');
+  const statLive     = document.getElementById('statLive');
+  const statUpcoming = document.getElementById('statUpcoming');
+  const cardsEl      = document.getElementById('eventCards');
+
+  statTotal.textContent    = events.length;
+  statLive.textContent     = events.filter(e=>eventStatus(e)==='live').length;
+  statUpcoming.textContent = events.filter(e=>eventStatus(e)==='upcoming').length;
+
+  if(!events.length){
+    cardsEl.innerHTML = `
+      <div class="empty-state">
+        <div class="empty-icon">🎪</div>
+        <div class="empty-title">No events yet</div>
+        <div class="empty-sub">Create your first event to get started.</div>
+        <a class="btn-new" href="EventSetupWizard_v4_PC.html">＋ New Event</a>
+      </div>`;
+    return;
+  }
+
+  cardsEl.innerHTML = '';
+  events.forEach((ev, i) => {
+    const status = eventStatus(ev);
+    const color  = EVENT_COLORS[i % EVENT_COLORS.length];
+    const emoji  = EVENT_EMOJIS[i % EVENT_EMOJIS.length];
+    const badgeHtml = {
+      live:     '<span class="badge badge-live">● Live</span>',
+      upcoming: '<span class="badge badge-upcoming">Upcoming</span>',
+      draft:    '<span class="badge badge-draft">Draft</span>',
+    }[status];
+    const modCount = (ev.modules||[]).length;
+    const dateStr  = ev.start ? `${formatDate(ev.start)} – ${formatDate(ev.end)}` : 'Date TBD';
+    const loc      = ev.city || '—';
+
+    const card = document.createElement('div');
+    card.className = 'event-card';
+    card.innerHTML = `
+      <div class="event-card-color" style="background:${color}20">${emoji}</div>
+      <div class="event-card-info">
+        <div class="event-card-name">${ev.name}</div>
+        <div class="event-card-meta">${dateStr} · ${loc}</div>
+        <div class="event-card-badges">
+          ${badgeHtml}
+          <span class="badge" style="background:var(--bg);color:var(--text2)">${modCount} module${modCount!==1?'s':''}</span>
+        </div>
+      </div>
+      <div class="event-card-arrow">›</div>`;
+    card.onclick = () => openEvent(ev);
+    cardsEl.appendChild(card);
+  });
+}
+
+// ── Open single event ──
+function openEvent(ev){
+  document.getElementById('mainDashboard').style.display = 'none';
+  document.getElementById('mainEventView').style.display = 'block';
+  document.getElementById('iframeWrap').style.display    = 'none';
+
+  document.getElementById('evViewName').textContent = ev.name;
+  document.getElementById('evViewMeta').textContent =
+    (ev.start ? formatDate(ev.start)+' – '+formatDate(ev.end) : '') +
+    (ev.city  ? ' · '+ev.city : '') +
+    (ev.format ? ' · '+({'in-person':'In-Person','online':'Online','hybrid':'Hybrid'}[ev.format]||ev.format) : '');
+  document.getElementById('evViewEdit').href = 'EventSetupWizard_v4_PC.html';
+
+  // Sidebar
+  const section = document.getElementById('event-nav-section');
+  const label   = document.getElementById('event-nav-label');
+  label.textContent = ev.name.length > 20 ? ev.name.slice(0,18)+'…' : ev.name;
+  section.style.display = 'block';
+  section.innerHTML = `<div class="sidebar-label">${label.textContent}</div>` +
+    buildEventNav(ev);
+
+  // Module grid
+  renderModuleGrid(ev);
+
+  // Sidebar active
+  document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
+}
+
+function buildEventNav(ev){
+  const active = new Set(ev.modules||[]);
+  const navItems = [
+    { label:'Overview',  icon:'📊', action:`openEvent(${JSON.stringify(ev).replace(/"/g,"'")})` },
+    { label:'Attendees', icon:'👥', page:'Attendees_v1_PC.html', modId:'free-reg' },
+    { label:'Projects',  icon:'🎮', page:'GameShowcase_v1_PC.html', modId:'showcase' },
+    { label:'Conference',icon:'🗓️', page:'Conference_v1_PC.html', modId:'panel' },
+    { label:"Let's Meet",icon:'🤝', page:'LetsMeet_Setup_v1_PC.html', modId:'lets-meet' },
+    { label:'Awards',    icon:'🏆', page:'Awards_v2_PC.html', modId:'award' },
+    { label:'Settings',  icon:'⚙️', page:'Settings_v1_PC.html' },
+  ];
+  return navItems.map(item => {
+    const dim = item.modId && !active.has(item.modId) ? ' nav-item-dim' : '';
+    const onclick = item.page
+      ? `loadIframe('${item.page}','${item.label}')`
+      : (item.action || '');
+    return `<a class="nav-item${dim}" onclick="${onclick}">
+      <span class="icon">${item.icon}</span> ${item.label}
+      ${dim ? '<span class="mod-badge">Off</span>' : ''}
+    </a>`;
+  }).join('');
+}
+
+function renderModuleGrid(ev){
+  const active = new Set(ev.modules||[]);
+  const grid = document.getElementById('moduleGrid');
+  grid.innerHTML = '';
+  ALL_MODULES.forEach(m => {
+    const isActive = active.has(m.id);
+    const card = document.createElement('div');
+    card.className = 'module-card ' + (isActive ? 'active-mod' : 'inactive-mod');
+    card.innerHTML = `
+      <div class="module-card-icon">${m.icon}</div>
+      <div class="module-card-name">${m.name}</div>
+      <div class="module-card-hint">${m.hint}</div>
+      <span class="module-card-status ${isActive?'status-on':'status-off'}">${isActive?'ON':'OFF'}</span>`;
+    if(!isActive){
+      card.onclick = () => {
+        card.classList.remove('inactive-mod');
+        card.classList.add('active-mod');
+        card.querySelector('.module-card-status').className = 'module-card-status status-on';
+        card.querySelector('.module-card-status').textContent = 'ON';
+        card.onclick = null;
+        // Sync to localStorage
+        try {
+          const events = loadEvents();
+          const idx = events.findIndex(e => e.id === ev.id);
+          if(idx >= 0){
+            if(!events[idx].modules) events[idx].modules = [];
+            if(!events[idx].modules.includes(m.id)) events[idx].modules.push(m.id);
+            localStorage.setItem('gc_events', JSON.stringify(events));
+            ev.modules = events[idx].modules;
+          }
+        } catch(e){}
+        showToast('\u2705 '+m.name+' enabled!');
+      };
+    }
+    grid.appendChild(card);
+  });
+}
+
+// ── Navigation ──
+function showDashboard(){
+  document.getElementById('mainDashboard').style.display = 'block';
+  document.getElementById('mainEventView').style.display = 'none';
+  document.getElementById('iframeWrap').style.display    = 'none';
+  document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
+  document.getElementById('nav-my-events').classList.add('active');
+  document.getElementById('event-nav-section').style.display = 'none';
+}
+
+function loadIframe(page, title){
+  document.getElementById('mainDashboard').style.display  = 'none';
+  document.getElementById('mainEventView').style.display  = 'none';
+  document.getElementById('iframeWrap').style.display     = 'flex';
+  document.getElementById('iframeTitle').textContent      = title;
+  document.getElementById('iframeNewwin').href            = page;
+  document.getElementById('hq-iframe').src               = page + (page.includes('?')?'&':'?') + 'embed=1';
+}
+
+function closeIframe(){
+  document.getElementById('iframeWrap').style.display    = 'none';
+  document.getElementById('mainEventView').style.display = 'block';
+  document.getElementById('hq-iframe').src = '';
+}
+
+function showToast(msg){
+  const t = document.createElement('div');
+  t.className = 'toast';
+  t.textContent = msg;
+  document.body.appendChild(t);
+  setTimeout(()=>{ t.style.opacity='0'; setTimeout(()=>t.remove(),300); }, 2500);
+}
+
+// ── Init ──
+(function init(){
+  // Load org name from localStorage
+  try {
+    const wiz = JSON.parse(localStorage.getItem('gc_wizard')||'{}');
+    const name = wiz?.profile?.company || wiz?.profile?.name || 'My Organization';
+    document.getElementById('orgName').textContent = name;
+    document.getElementById('orgAvatar').textContent = name.charAt(0).toUpperCase();
+  } catch(e){}
+  renderDashboard();
+})();
+</script>
+</body>
+</html>
