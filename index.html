@@ -4934,12 +4934,20 @@ async function _pcProjLoadBatch(reset) {
       const _lfArr = Array.isArray(p.looking_for) ? p.looking_for.map(s=>s.replace(/;+/g,'').trim()).filter(Boolean) : [(p.looking_for||'').replace(/;+/g,'').trim()].filter(Boolean);
       const seekingBadge = _lfArr.length ? `<span style="position:absolute;top:10px;right:10px;background:rgba(0,0,0,0.55);color:#fff;font-size:10px;font-weight:600;padding:3px 8px;border-radius:5px;backdrop-filter:blur(4px)">${_lfArr[0].length > 20 ? _lfArr[0].slice(0,18)+'…' : _lfArr[0]}</span>` : '';
       const _pcBannerId = 'pcpb-' + (p.id || Math.random().toString(36).slice(2));
-      const _pcHasCover = p.cover_image_url && p.cover_image_url.startsWith('http');
-      const _pcBannerBg = _pcHasCover ? `url('${p.cover_image_url}')` : '';
-      const _pcBannerStyle = _pcHasCover
-        ? `background-image:url('${p.cover_image_url}');background-size:cover;background-position:center;`
-        : `background:${grad};`;
-      if (!_pcHasCover) setTimeout(() => _fetchIgdbImg(p.title, _pcBannerId), 0);
+      const _SB_COVER_URL = p.id ? `https://gucqyrorgtsukqgnfjor.supabase.co/storage/v1/object/public/game-covers/${p.id}.jpg` : null;
+      const _pcBannerStyle = `background:${grad};`;
+      setTimeout(() => {
+        const el = document.getElementById(_pcBannerId);
+        if (!el) return;
+        if (_SB_COVER_URL) {
+          const img = new Image();
+          img.onload = () => { el.style.backgroundImage = `url('${_SB_COVER_URL}')`; el.style.backgroundSize = 'cover'; el.style.backgroundPosition = 'center'; };
+          img.onerror = () => _fetchIgdbImg(p.title, _pcBannerId);
+          img.src = _SB_COVER_URL;
+        } else {
+          _fetchIgdbImg(p.title, _pcBannerId);
+        }
+      }, 0);
       return `<div class="pc-proj-card">
         <div id="${_pcBannerId}" class="pc-proj-card-img" style="${_pcBannerStyle}position:relative;display:flex;align-items:center;justify-content:center">
           <div style="font-size:56px;opacity:0.25;position:absolute;top:50%;left:50%;transform:translate(-50%,-50%)">${genreIcon}</div>
