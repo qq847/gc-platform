@@ -89,6 +89,9 @@ html,body{min-height:100vh;background:var(--bg);font-family:'DM Sans',sans-serif
 .btn-primary:hover{background:var(--blue-hover)}
 .btn-secondary{background:var(--white);color:var(--text1);border:1px solid var(--border);border-radius:8px;padding:9px 16px;font-size:13px;font-weight:500;cursor:pointer;font-family:inherit;display:inline-flex;align-items:center;gap:6px;transition:background .12s;text-decoration:none;white-space:nowrap}
 .btn-secondary:hover{background:var(--bg)}
+.buyer-tag{border:1px solid #e5e7eb;background:#fff;color:#374151;border-radius:20px;padding:4px 12px;font-size:12px;font-weight:500;cursor:pointer;font-family:inherit;transition:all .12s;white-space:nowrap}
+.buyer-tag:hover{border-color:#6366f1;color:#6366f1}
+.buyer-tag.active{background:#6366f1;border-color:#6366f1;color:#fff;font-weight:600}
 .btn-danger{background:#fff;color:#dc2626;border:1px solid #fecaca;border-radius:8px;padding:9px 16px;font-size:13px;font-weight:500;cursor:pointer;font-family:inherit;display:inline-flex;align-items:center;gap:6px;transition:background .12s}
 .btn-danger:hover{background:#fef2f2}
 
@@ -3006,401 +3009,48 @@ For more information, visit: gameconnection.com/awards-2025
             <span style="font-size:14px;font-weight:700;color:var(--text1)">Buyer Invitation</span>
           </div>
           <div class="editor-topbar-right">
-            <button class="btn-secondary" onclick="openBuyerBulkInvite()">📧 Send Invitations</button>
-            <button class="btn-primary" onclick="clearDirty()">Save Changes</button>
+            <button class="btn-primary" id="buyer-send-btn" onclick="sendBuyerInvitations()" disabled style="opacity:.5;cursor:not-allowed">Send Invitation</button>
           </div>
         </div>
 
-        <!-- Stats -->
-        <div style="display:flex;gap:12px;margin-bottom:16px">
-          <div class="editor-card" style="flex:1;text-align:center;padding:16px">
-            <div style="font-size:24px;font-weight:700;color:#2563eb">85</div>
-            <div style="font-size:12px;color:#6b7280">Invited</div>
-          </div>
-          <div class="editor-card" style="flex:1;text-align:center;padding:16px">
-            <div style="font-size:24px;font-weight:700;color:#16a34a">52</div>
-            <div style="font-size:12px;color:#6b7280">Accepted</div>
-          </div>
-          <div class="editor-card" style="flex:1;text-align:center;padding:16px">
-            <div style="font-size:24px;font-weight:700;color:#d97706">21</div>
-            <div style="font-size:12px;color:#6b7280">Pending</div>
-          </div>
-          <div class="editor-card" style="flex:1;text-align:center;padding:16px">
-            <div style="font-size:24px;font-weight:700;color:#dc2626">12</div>
-            <div style="font-size:12px;color:#6b7280">Declined</div>
-          </div>
-        </div>
-
-        <!-- Qualification Criteria -->
+        <!-- Tag Filters -->
         <div class="editor-card" style="margin-bottom:16px">
-          <div style="font-weight:700;font-size:15px;margin-bottom:14px">🎯 Buyer Qualification Criteria</div>
-          <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:12px">
-            <div>
-              <div style="font-size:11px;color:#6b7280;margin-bottom:4px">Minimum Annual Budget</div>
-              <select style="width:100%;border:1px solid #e5e7eb;border-radius:6px;padding:7px 10px;font-size:13px;color:var(--text1);background:#fff">
-                <option selected>€500K+</option>
-                <option>€1M+</option>
-                <option>€5M+</option>
-              </select>
-            </div>
-            <div>
-              <div style="font-size:11px;color:#6b7280;margin-bottom:4px">Company Type</div>
-              <select style="width:100%;border:1px solid #e5e7eb;border-radius:6px;padding:7px 10px;font-size:13px;color:var(--text1);background:#fff">
-                <option selected>Publisher / Distributor</option>
-                <option>Investor / VC</option>
-                <option>Platform Holder</option>
-              </select>
-            </div>
-            <div>
-              <div style="font-size:11px;color:#6b7280;margin-bottom:4px">Min. Titles Published</div>
-              <input type="number" value="3" min="0" style="width:100%;border:1px solid #e5e7eb;border-radius:6px;padding:7px 10px;font-size:13px;color:var(--text1)">
-            </div>
-            <div>
-              <div style="font-size:11px;color:#6b7280;margin-bottom:4px">Region</div>
-              <select style="width:100%;border:1px solid #e5e7eb;border-radius:6px;padding:7px 10px;font-size:13px;color:var(--text1);background:#fff">
-                <option selected>Global</option>
-                <option>Europe</option>
-                <option>North America</option>
-                <option>Asia Pacific</option>
-              </select>
-            </div>
+          <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:10px">
+            <span style="font-size:11px;font-weight:700;color:#9ca3af;text-transform:uppercase;letter-spacing:.5px;white-space:nowrap">Type</span>
+            <button class="buyer-tag active" data-dim="type" data-val="all" onclick="toggleBuyerTag(this)">All</button>
+            <button class="buyer-tag" data-dim="type" data-val="Publisher" onclick="toggleBuyerTag(this)">Publisher</button>
+            <button class="buyer-tag" data-dim="type" data-val="Investor" onclick="toggleBuyerTag(this)">Investor</button>
+            <button class="buyer-tag" data-dim="type" data-val="Distributor" onclick="toggleBuyerTag(this)">Distributor</button>
+            <button class="buyer-tag" data-dim="type" data-val="Media" onclick="toggleBuyerTag(this)">Media</button>
+            <button class="buyer-tag" data-dim="type" data-val="Developer" onclick="toggleBuyerTag(this)">Developer</button>
+            <button class="buyer-tag" data-dim="type" data-val="Platform" onclick="toggleBuyerTag(this)">Platform Holder</button>
+            <button class="buyer-tag" data-dim="type" data-val="VC" onclick="toggleBuyerTag(this)">VC / Fund</button>
+          </div>
+          <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
+            <span style="font-size:11px;font-weight:700;color:#9ca3af;text-transform:uppercase;letter-spacing:.5px;white-space:nowrap">Region</span>
+            <button class="buyer-tag active" data-dim="region" data-val="all" onclick="toggleBuyerTag(this)">All</button>
+            <button class="buyer-tag" data-dim="region" data-val="Europe" onclick="toggleBuyerTag(this)">Europe</button>
+            <button class="buyer-tag" data-dim="region" data-val="North America" onclick="toggleBuyerTag(this)">North America</button>
+            <button class="buyer-tag" data-dim="region" data-val="Asia" onclick="toggleBuyerTag(this)">Asia</button>
+            <button class="buyer-tag" data-dim="region" data-val="MENA" onclick="toggleBuyerTag(this)">MENA</button>
+            <button class="buyer-tag" data-dim="region" data-val="LATAM" onclick="toggleBuyerTag(this)">LATAM</button>
+            <button class="buyer-tag" data-dim="region" data-val="Oceania" onclick="toggleBuyerTag(this)">Oceania</button>
           </div>
         </div>
 
-        <!-- Benefits -->
-        <div class="editor-card" style="margin-bottom:16px">
-          <div style="font-weight:700;font-size:15px;margin-bottom:12px">🎁 Hosted Buyer Benefits</div>
-          <div style="display:flex;flex-direction:column;gap:8px">
-            <label style="display:flex;align-items:center;gap:8px;cursor:pointer">
-              <input type="checkbox" checked style="width:15px;height:15px;accent-color:#16a34a">
-              <span style="font-size:13px">Complimentary event pass (all days)</span>
-            </label>
-            <label style="display:flex;align-items:center;gap:8px;cursor:pointer">
-              <input type="checkbox" checked style="width:15px;height:15px;accent-color:#16a34a">
-              <span style="font-size:13px">Priority meeting scheduling (Let’s Meet)</span>
-            </label>
-            <label style="display:flex;align-items:center;gap:8px;cursor:pointer">
-              <input type="checkbox" checked style="width:15px;height:15px;accent-color:#16a34a">
-              <span style="font-size:13px">Dedicated buyer lounge access</span>
-            </label>
-            <label style="display:flex;align-items:center;gap:8px;cursor:pointer">
-              <input type="checkbox" style="width:15px;height:15px;accent-color:#16a34a">
-              <span style="font-size:13px">Hotel accommodation (up to 3 nights)</span>
-            </label>
-          </div>
-        </div>
-
-        <!-- Buyers List -->
-        <div class="editor-card" style="margin-bottom:16px">
-          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
-            <div style="display:flex;align-items:center;gap:10px">
-              <div style="font-weight:700;font-size:15px">Buyers <span style="background:#d97706;color:#fff;border-radius:10px;padding:1px 8px;font-size:11px;margin-left:4px">21 pending</span></div>
-              <!-- Filter tabs -->
-              <div style="display:flex;gap:4px;background:#f3f4f6;border-radius:6px;padding:3px">
-                <button onclick="filterBuyers('all',this)" style="font-size:11px;padding:4px 10px;border:none;border-radius:4px;cursor:pointer;background:#fff;font-weight:600;color:#374151">All</button>
-                <button onclick="filterBuyers('accepted',this)" style="font-size:11px;padding:4px 10px;border:none;border-radius:4px;cursor:pointer;background:transparent;color:#6b7280">Accepted</button>
-                <button onclick="filterBuyers('pending',this)" style="font-size:11px;padding:4px 10px;border:none;border-radius:4px;cursor:pointer;background:transparent;color:#6b7280">Pending</button>
-                <button onclick="filterBuyers('declined',this)" style="font-size:11px;padding:4px 10px;border:none;border-radius:4px;cursor:pointer;background:transparent;color:#6b7280">Declined</button>
-              </div>
-            </div>
-            <div style="display:flex;gap:8px">
-              <button class="btn-secondary" style="font-size:12px;padding:6px 12px" onclick="exportGenericCSV(this)">Export CSV</button>
-              <button class="btn-primary" style="font-size:12px;padding:6px 12px" onclick="showToast('Buyer invitation form coming in v4')">+ Invite Buyer</button>
-            </div>
-          </div>
-          <table style="width:100%;border-collapse:collapse" id="buyer-table">
-            <thead><tr style="border-bottom:1px solid #e5e7eb">
-              <th style="text-align:left;padding:8px 0;font-size:11px;color:#9ca3af;font-weight:600;text-transform:uppercase;letter-spacing:.5px">Buyer</th>
-              <th style="text-align:left;padding:8px 0;font-size:11px;color:#9ca3af;font-weight:600;text-transform:uppercase;letter-spacing:.5px">Company</th>
-              <th style="text-align:left;padding:8px 0;font-size:11px;color:#9ca3af;font-weight:600;text-transform:uppercase;letter-spacing:.5px">Budget</th>
-              <th style="text-align:left;padding:8px 0;font-size:11px;color:#9ca3af;font-weight:600;text-transform:uppercase;letter-spacing:.5px">Meetings</th>
-              <th style="text-align:left;padding:8px 0;font-size:11px;color:#9ca3af;font-weight:600;text-transform:uppercase;letter-spacing:.5px">Qual. Score</th>
-              <th style="text-align:left;padding:8px 0;font-size:11px;color:#9ca3af;font-weight:600;text-transform:uppercase;letter-spacing:.5px">Status</th>
-              <th></th>
-            </tr></thead>
-            <tbody id="buyer-tbody">
-              <tr data-status="accepted" style="border-bottom:1px solid #f3f4f6">
-                <td style="padding:10px 0"><div style="font-size:13px;font-weight:600">Marcus Weber</div><div style="font-size:11px;color:#9ca3af">m.weber@ea.com</div></td>
-                <td style="padding:10px 0"><div style="font-size:13px">EA Games</div><div style="font-size:11px;color:#9ca3af">VP Acquisitions</div></td>
-                <td style="padding:10px 0;font-size:13px;color:#16a34a;font-weight:600">&euro;5M+</td>
-                <td style="padding:10px 0">
-                  <div style="font-size:13px;font-weight:600">7 / 8</div>
-                  <div style="width:60px;height:4px;background:#e5e7eb;border-radius:2px;margin-top:3px"><div style="width:87%;height:100%;background:#16a34a;border-radius:2px"></div></div>
-                </td>
-                <td style="padding:10px 0">
-                  <div style="display:flex;align-items:center;gap:6px">
-                    <div style="width:50px;height:6px;background:#e5e7eb;border-radius:3px"><div style="width:92%;height:100%;background:#2563eb;border-radius:3px"></div></div>
-                    <span style="font-size:12px;font-weight:700;color:#2563eb">92</span>
-                  </div>
-                </td>
-                <td style="padding:10px 0"><span style="font-size:11px;background:#dcfce7;color:#16a34a;padding:2px 8px;border-radius:4px;font-weight:600">Accepted</span></td>
-                <td style="padding:10px 0;text-align:right"><button style="border:none;background:none;cursor:pointer;color:#9ca3af;font-size:13px" onclick="openBuyerDrawer('Marcus Weber','EA Games','VP Acquisitions','m.weber@ea.com','EUR5M+','Accepted',92,'AAA publishing, distribution deals, IP licensing')">&#128065;</button></td>
-              </tr>
-              <tr data-status="accepted" style="border-bottom:1px solid #f3f4f6">
-                <td style="padding:10px 0"><div style="font-size:13px;font-weight:600">Yuki Tanaka</div><div style="font-size:11px;color:#9ca3af">y.tanaka@bandainamco.jp</div></td>
-                <td style="padding:10px 0"><div style="font-size:13px">Bandai Namco</div><div style="font-size:11px;color:#9ca3af">Head of Publishing</div></td>
-                <td style="padding:10px 0;font-size:13px;color:#16a34a;font-weight:600">&euro;10M+</td>
-                <td style="padding:10px 0">
-                  <div style="font-size:13px;font-weight:600">6 / 8</div>
-                  <div style="width:60px;height:4px;background:#e5e7eb;border-radius:2px;margin-top:3px"><div style="width:75%;height:100%;background:#16a34a;border-radius:2px"></div></div>
-                </td>
-                <td style="padding:10px 0">
-                  <div style="display:flex;align-items:center;gap:6px">
-                    <div style="width:50px;height:6px;background:#e5e7eb;border-radius:3px"><div style="width:88%;height:100%;background:#2563eb;border-radius:3px"></div></div>
-                    <span style="font-size:12px;font-weight:700;color:#2563eb">88</span>
-                  </div>
-                </td>
-                <td style="padding:10px 0"><span style="font-size:11px;background:#dcfce7;color:#16a34a;padding:2px 8px;border-radius:4px;font-weight:600">Accepted</span></td>
-                <td style="padding:10px 0;text-align:right"><button style="border:none;background:none;cursor:pointer;color:#9ca3af;font-size:13px" onclick="openBuyerDrawer('Yuki Tanaka','Bandai Namco','Head of Publishing','y.tanaka@bandainamco.jp','EUR10M+','Accepted',88,'JRPG, action-adventure, Asia-Pacific')">&#128065;</button></td>
-              </tr>
-              <tr data-status="pending" style="border-bottom:1px solid #f3f4f6">
-                <td style="padding:10px 0"><div style="font-size:13px;font-weight:600">Priya Sharma</div><div style="font-size:11px;color:#9ca3af">p.sharma@ubisoft.com</div></td>
-                <td style="padding:10px 0"><div style="font-size:13px">Ubisoft</div><div style="font-size:11px;color:#9ca3af">Director, Partnerships</div></td>
-                <td style="padding:10px 0;font-size:13px;color:#d97706;font-weight:600">&euro;2M+</td>
-                <td style="padding:10px 0">
-                  <div style="font-size:13px;font-weight:600">0 / 8</div>
-                  <div style="width:60px;height:4px;background:#e5e7eb;border-radius:2px;margin-top:3px"><div style="width:0%;height:100%;background:#d97706;border-radius:2px"></div></div>
-                </td>
-                <td style="padding:10px 0">
-                  <div style="display:flex;align-items:center;gap:6px">
-                    <div style="width:50px;height:6px;background:#e5e7eb;border-radius:3px"><div style="width:74%;height:100%;background:#d97706;border-radius:3px"></div></div>
-                    <span style="font-size:12px;font-weight:700;color:#d97706">74</span>
-                  </div>
-                </td>
-                <td style="padding:10px 0"><span style="font-size:11px;background:#fef3c7;color:#d97706;padding:2px 8px;border-radius:4px;font-weight:600">Pending</span></td>
-                <td style="padding:10px 0;text-align:right"><button style="border:none;background:none;cursor:pointer;color:#9ca3af;font-size:13px" onclick="openBuyerDrawer('Priya Sharma','Ubisoft','Director Partnerships','p.sharma@ubisoft.com','EUR2M+','Pending',74,'Co-development, indie publishing')">&#128065;</button></td>
-              </tr>
-              <tr data-status="declined" style="border-bottom:1px solid #f3f4f6">
-                <td style="padding:10px 0"><div style="font-size:13px;font-weight:600">Lars Eriksson</div><div style="font-size:11px;color:#9ca3af">l.eriksson@paradox.com</div></td>
-                <td style="padding:10px 0"><div style="font-size:13px">Paradox Interactive</div><div style="font-size:11px;color:#9ca3af">Business Dev</div></td>
-                <td style="padding:10px 0;font-size:13px;color:#6b7280;font-weight:600">&euro;1M+</td>
-                <td style="padding:10px 0">
-                  <div style="font-size:13px;font-weight:600">0 / 8</div>
-                  <div style="width:60px;height:4px;background:#e5e7eb;border-radius:2px;margin-top:3px"><div style="width:0%;height:100%;background:#dc2626;border-radius:2px"></div></div>
-                </td>
-                <td style="padding:10px 0">
-                  <div style="display:flex;align-items:center;gap:6px">
-                    <div style="width:50px;height:6px;background:#e5e7eb;border-radius:3px"><div style="width:65%;height:100%;background:#9ca3af;border-radius:3px"></div></div>
-                    <span style="font-size:12px;font-weight:700;color:#6b7280">65</span>
-                  </div>
-                </td>
-                <td style="padding:10px 0"><span style="font-size:11px;background:#fee2e2;color:#dc2626;padding:2px 8px;border-radius:4px;font-weight:600">Declined</span></td>
-                <td style="padding:10px 0;text-align:right"><button style="border:none;background:none;cursor:pointer;color:#9ca3af;font-size:13px" onclick="openBuyerDrawer('Lars Eriksson','Paradox Interactive','Business Dev','l.eriksson@paradox.com','EUR1M+','Declined',65,'Strategy games, PC-first titles')">&#128065;</button></td>
-              </tr>
-              <tr data-status="pending">
-                <td style="padding:10px 0"><div style="font-size:13px;font-weight:600">Chen Wei</div><div style="font-size:11px;color:#9ca3af">c.wei@tencent.com</div></td>
-                <td style="padding:10px 0"><div style="font-size:13px">Tencent Games</div><div style="font-size:11px;color:#9ca3af">Investment Director</div></td>
-                <td style="padding:10px 0;font-size:13px;color:#16a34a;font-weight:600">&euro;50M+</td>
-                <td style="padding:10px 0">
-                  <div style="font-size:13px;font-weight:600">0 / 8</div>
-                  <div style="width:60px;height:4px;background:#e5e7eb;border-radius:2px;margin-top:3px"><div style="width:0%;height:100%;background:#d97706;border-radius:2px"></div></div>
-                </td>
-                <td style="padding:10px 0">
-                  <div style="display:flex;align-items:center;gap:6px">
-                    <div style="width:50px;height:6px;background:#e5e7eb;border-radius:3px"><div style="width:96%;height:100%;background:#2563eb;border-radius:3px"></div></div>
-                    <span style="font-size:12px;font-weight:700;color:#2563eb">96</span>
-                  </div>
-                </td>
-                <td style="padding:10px 0"><span style="font-size:11px;background:#fef3c7;color:#d97706;padding:2px 8px;border-radius:4px;font-weight:600">Pending</span></td>
-                <td style="padding:10px 0;text-align:right"><button style="border:none;background:none;cursor:pointer;color:#9ca3af;font-size:13px" onclick="openBuyerDrawer('Chen Wei','Tencent Games','Investment Director','c.wei@tencent.com','EUR50M+','Pending',96,'Mobile, PC, global investment')">&#128065;</button></td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
-
-        <!-- Meeting Slots Configuration -->
+        <!-- Buyer List -->
         <div class="editor-card">
-          <div style="font-weight:700;font-size:15px;margin-bottom:14px">🗓️ Meeting Slot Configuration</div>
-          <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:14px">
-            <div>
-              <div style="font-size:11px;color:#6b7280;margin-bottom:4px">Slots per Buyer</div>
-              <input type="number" value="8" min="1" max="20" style="width:100%;border:1px solid #e5e7eb;border-radius:6px;padding:7px 10px;font-size:13px;color:var(--text1)">
-            </div>
-            <div>
-              <div style="font-size:11px;color:#6b7280;margin-bottom:4px">Slot Duration</div>
-              <select style="width:100%;border:1px solid #e5e7eb;border-radius:6px;padding:7px 10px;font-size:13px;color:var(--text1);background:#fff">
-                <option>20 min</option>
-                <option selected>30 min</option>
-                <option>45 min</option>
-              </select>
-            </div>
-            <div>
-              <div style="font-size:11px;color:#6b7280;margin-bottom:4px">Buffer Between Slots</div>
-              <select style="width:100%;border:1px solid #e5e7eb;border-radius:6px;padding:7px 10px;font-size:13px;color:var(--text1);background:#fff">
-                <option>0 min</option>
-                <option selected>5 min</option>
-                <option>10 min</option>
-              </select>
-            </div>
-          </div>
-          <div style="background:#f0fdf4;border:1px solid #bbf7d0;border-radius:8px;padding:12px">
-            <div style="font-size:12px;font-weight:600;color:#166534;margin-bottom:6px">✅ Capacity Summary</div>
-            <div style="display:flex;gap:24px">
-              <div><span style="font-size:13px;font-weight:700;color:#16a34a">52</span> <span style="font-size:12px;color:#6b7280">buyers confirmed</span></div>
-              <div><span style="font-size:13px;font-weight:700;color:#2563eb">416</span> <span style="font-size:12px;color:#6b7280">total meeting slots</span></div>
-              <div><span style="font-size:13px;font-weight:700;color:#9333ea">248</span> <span style="font-size:12px;color:#6b7280">slots booked (59.6%)</span></div>
-            </div>
-          </div>
-        </div>
-
-        <!-- Pairing Matrix -->
-        <div class="editor-card" style="margin-top:16px">
-          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px">
-            <div style="font-weight:700;font-size:15px">🔀 Buyer × Exhibitor Pairing Matrix</div>
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+            <div style="font-size:13px;color:#6b7280">Showing <strong id="buyer-showing">20</strong> / <strong>20</strong> buyers</div>
             <div style="display:flex;gap:8px">
-              <button class="btn-secondary" style="font-size:12px;padding:6px 12px" onclick="showToast('Auto-match running...')">Auto-Match</button>
-              <button class="btn-secondary" style="font-size:12px;padding:6px 12px" onclick="showToast('Meeting matrix exported to CSV')">Export</button>
+              <button class="btn-secondary" style="font-size:12px;padding:5px 12px" onclick="selectAllBuyers()">Select All</button>
+              <button class="btn-secondary" style="font-size:12px;padding:5px 12px" onclick="deselectAllBuyers()">Deselect All</button>
             </div>
           </div>
-          <div style="font-size:12px;color:#6b7280;margin-bottom:12px">Each cell shows the number of meetings scheduled between a buyer and an exhibitor. Green = confirmed, yellow = pending, empty = not matched.</div>
-          <div style="overflow-x:auto">
-            <table style="width:100%;border-collapse:collapse;min-width:500px">
-              <thead>
-                <tr style="border-bottom:2px solid #e5e7eb">
-                  <th style="text-align:left;padding:8px;font-size:11px;color:#9ca3af;font-weight:600;min-width:120px">Buyer \ Exhibitor</th>
-                  <th style="text-align:center;padding:8px;font-size:11px;color:#9ca3af;font-weight:600">Bandai Namco</th>
-                  <th style="text-align:center;padding:8px;font-size:11px;color:#9ca3af;font-weight:600">Focus Ent.</th>
-                  <th style="text-align:center;padding:8px;font-size:11px;color:#9ca3af;font-weight:600">Wargaming</th>
-                  <th style="text-align:center;padding:8px;font-size:11px;color:#9ca3af;font-weight:600">Ubisoft</th>
-                  <th style="text-align:center;padding:8px;font-size:11px;color:#9ca3af;font-weight:600">EA Games</th>
-                  <th style="text-align:center;padding:8px;font-size:11px;color:#9ca3af;font-weight:600">Total</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr style="border-bottom:1px solid #f3f4f6">
-                  <td style="padding:8px;font-size:12px;font-weight:600">Nordic Games Fund</td>
-                  <td style="text-align:center;padding:8px"><span style="font-size:12px;background:#dcfce7;color:#16a34a;padding:2px 8px;border-radius:4px;font-weight:600">2</span></td>
-                  <td style="text-align:center;padding:8px"><span style="font-size:12px;background:#fef3c7;color:#d97706;padding:2px 8px;border-radius:4px;font-weight:600">1</span></td>
-                  <td style="text-align:center;padding:8px"><span style="font-size:12px;color:#d1d5db">-</span></td>
-                  <td style="text-align:center;padding:8px"><span style="font-size:12px;background:#dcfce7;color:#16a34a;padding:2px 8px;border-radius:4px;font-weight:600">3</span></td>
-                  <td style="text-align:center;padding:8px"><span style="font-size:12px;color:#d1d5db">-</span></td>
-                  <td style="text-align:center;padding:8px;font-weight:700;color:#374151">6</td>
-                </tr>
-                <tr style="border-bottom:1px solid #f3f4f6">
-                  <td style="padding:8px;font-size:12px;font-weight:600">Tencent Invest.</td>
-                  <td style="text-align:center;padding:8px"><span style="font-size:12px;background:#dcfce7;color:#16a34a;padding:2px 8px;border-radius:4px;font-weight:600">1</span></td>
-                  <td style="text-align:center;padding:8px"><span style="font-size:12px;color:#d1d5db">-</span></td>
-                  <td style="text-align:center;padding:8px"><span style="font-size:12px;background:#dcfce7;color:#16a34a;padding:2px 8px;border-radius:4px;font-weight:600">2</span></td>
-                  <td style="text-align:center;padding:8px"><span style="font-size:12px;background:#fef3c7;color:#d97706;padding:2px 8px;border-radius:4px;font-weight:600">1</span></td>
-                  <td style="text-align:center;padding:8px"><span style="font-size:12px;background:#dcfce7;color:#16a34a;padding:2px 8px;border-radius:4px;font-weight:600">2</span></td>
-                  <td style="text-align:center;padding:8px;font-weight:700;color:#374151">6</td>
-                </tr>
-                <tr style="border-bottom:1px solid #f3f4f6">
-                  <td style="padding:8px;font-size:12px;font-weight:600">Devolver Digital</td>
-                  <td style="text-align:center;padding:8px"><span style="font-size:12px;color:#d1d5db">-</span></td>
-                  <td style="text-align:center;padding:8px"><span style="font-size:12px;background:#dcfce7;color:#16a34a;padding:2px 8px;border-radius:4px;font-weight:600">2</span></td>
-                  <td style="text-align:center;padding:8px"><span style="font-size:12px;background:#fef3c7;color:#d97706;padding:2px 8px;border-radius:4px;font-weight:600">1</span></td>
-                  <td style="text-align:center;padding:8px"><span style="font-size:12px;background:#dcfce7;color:#16a34a;padding:2px 8px;border-radius:4px;font-weight:600">1</span></td>
-                  <td style="text-align:center;padding:8px"><span style="font-size:12px;background:#dcfce7;color:#16a34a;padding:2px 8px;border-radius:4px;font-weight:600">3</span></td>
-                  <td style="text-align:center;padding:8px;font-weight:700;color:#374151">7</td>
-                </tr>
-                <tr>
-                  <td style="padding:8px;font-size:12px;font-weight:600">Andreessen Horowitz</td>
-                  <td style="text-align:center;padding:8px"><span style="font-size:12px;background:#fef3c7;color:#d97706;padding:2px 8px;border-radius:4px;font-weight:600">1</span></td>
-                  <td style="text-align:center;padding:8px"><span style="font-size:12px;background:#dcfce7;color:#16a34a;padding:2px 8px;border-radius:4px;font-weight:600">2</span></td>
-                  <td style="text-align:center;padding:8px"><span style="font-size:12px;color:#d1d5db">-</span></td>
-                  <td style="text-align:center;padding:8px"><span style="font-size:12px;background:#dcfce7;color:#16a34a;padding:2px 8px;border-radius:4px;font-weight:600">2</span></td>
-                  <td style="text-align:center;padding:8px"><span style="font-size:12px;background:#fef3c7;color:#d97706;padding:2px 8px;border-radius:4px;font-weight:600">1</span></td>
-                  <td style="text-align:center;padding:8px;font-weight:700;color:#374151">6</td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
-          <div style="display:flex;gap:16px;margin-top:12px">
-            <div style="display:flex;align-items:center;gap:5px"><div style="width:12px;height:12px;background:#dcfce7;border-radius:2px"></div><span style="font-size:11px;color:#6b7280">Confirmed</span></div>
-            <div style="display:flex;align-items:center;gap:5px"><div style="width:12px;height:12px;background:#fef3c7;border-radius:2px"></div><span style="font-size:11px;color:#6b7280">Pending</span></div>
-            <div style="display:flex;align-items:center;gap:5px"><div style="width:12px;height:12px;background:#f3f4f6;border-radius:2px"></div><span style="font-size:11px;color:#6b7280">Not matched</span></div>
-          </div>
-        </div>
-        <!-- AI Buyer Recommendations -->
-        <div class="editor-card" style="margin-top:16px">
-          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px">
-            <div>
-              <div style="font-weight:700;font-size:15px">🤖 AI Buyer Recommendations</div>
-              <div style="font-size:12px;color:#6b7280;margin-top:2px">Based on your exhibitor profile, genre tags, and budget range</div>
-            </div>
-            <button class="btn-secondary" style="font-size:11px;padding:5px 12px" onclick="showToast('🤖 Re-running AI match analysis...')">Refresh Matches</button>
-          </div>
-          <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px">
-            <!-- Match 1 -->
-            <div style="border:1px solid #e5e7eb;border-radius:12px;padding:14px;background:#fff;position:relative">
-              <div style="position:absolute;top:10px;right:10px;background:#dcfce7;color:#16a34a;font-size:10px;font-weight:700;padding:2px 7px;border-radius:10px">96% Match</div>
-              <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px">
-                <div style="width:40px;height:40px;border-radius:50%;background:linear-gradient(135deg,#1e3a8a,#2563eb);display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:700;color:#fff;flex-shrink:0">CW</div>
-                <div>
-                  <div style="font-size:13px;font-weight:700">Chen Wei</div>
-                  <div style="font-size:11px;color:#6b7280">Tencent Games · Investment Director</div>
-                </div>
-              </div>
-              <div style="margin-bottom:8px">
-                <div style="font-size:11px;color:#9ca3af;margin-bottom:4px">Budget Range</div>
-                <div style="font-size:13px;font-weight:600;color:#16a34a">€50M+</div>
-              </div>
-              <div style="margin-bottom:10px">
-                <div style="font-size:11px;color:#9ca3af;margin-bottom:4px">Shared Interests</div>
-                <div style="display:flex;gap:4px;flex-wrap:wrap">
-                  <span style="font-size:10px;background:#dbeafe;color:#1e40af;padding:1px 6px;border-radius:3px">Mobile</span>
-                  <span style="font-size:10px;background:#dbeafe;color:#1e40af;padding:1px 6px;border-radius:3px">PC</span>
-                  <span style="font-size:10px;background:#f3e8ff;color:#7e22ce;padding:1px 6px;border-radius:3px">Global Invest.</span>
-                </div>
-              </div>
-              <div style="font-size:11px;color:#374151;background:#f0fdf4;border-radius:6px;padding:8px;margin-bottom:10px">
-                💡 <em>"Strong alignment with your Action RPG portfolio. Tencent has invested in 3 similar titles this year."</em>
-              </div>
-              <button style="width:100%;font-size:12px;background:#2563eb;color:#fff;border:none;border-radius:6px;padding:7px;cursor:pointer;font-weight:600" onclick="showToast('📧 Invitation sent to Chen Wei at Tencent Games')">Send Invitation</button>
-            </div>
-            <!-- Match 2 -->
-            <div style="border:1px solid #e5e7eb;border-radius:12px;padding:14px;background:#fff;position:relative">
-              <div style="position:absolute;top:10px;right:10px;background:#dcfce7;color:#16a34a;font-size:10px;font-weight:700;padding:2px 7px;border-radius:10px">92% Match</div>
-              <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px">
-                <div style="width:40px;height:40px;border-radius:50%;background:linear-gradient(135deg,#7e22ce,#9333ea);display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:700;color:#fff;flex-shrink:0">MW</div>
-                <div>
-                  <div style="font-size:13px;font-weight:700">Marcus Weber</div>
-                  <div style="font-size:11px;color:#6b7280">EA Games · VP Acquisitions</div>
-                </div>
-              </div>
-              <div style="margin-bottom:8px">
-                <div style="font-size:11px;color:#9ca3af;margin-bottom:4px">Budget Range</div>
-                <div style="font-size:13px;font-weight:600;color:#16a34a">€5M+</div>
-              </div>
-              <div style="margin-bottom:10px">
-                <div style="font-size:11px;color:#9ca3af;margin-bottom:4px">Shared Interests</div>
-                <div style="display:flex;gap:4px;flex-wrap:wrap">
-                  <span style="font-size:10px;background:#dbeafe;color:#1e40af;padding:1px 6px;border-radius:3px">AAA Publishing</span>
-                  <span style="font-size:10px;background:#dcfce7;color:#166534;padding:1px 6px;border-radius:3px">IP Licensing</span>
-                </div>
-              </div>
-              <div style="font-size:11px;color:#374151;background:#f0fdf4;border-radius:6px;padding:8px;margin-bottom:10px">
-                💡 <em>"EA is actively acquiring Action RPG IPs. Your game's mechanics match their 2027 slate."</em>
-              </div>
-              <button style="width:100%;font-size:12px;background:#2563eb;color:#fff;border:none;border-radius:6px;padding:7px;cursor:pointer;font-weight:600" onclick="showToast('📧 Invitation sent to Marcus Weber at EA Games')">Send Invitation</button>
-            </div>
-            <!-- Match 3 -->
-            <div style="border:1px solid #e5e7eb;border-radius:12px;padding:14px;background:#fff;position:relative">
-              <div style="position:absolute;top:10px;right:10px;background:#fef3c7;color:#d97706;font-size:10px;font-weight:700;padding:2px 7px;border-radius:10px">78% Match</div>
-              <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px">
-                <div style="width:40px;height:40px;border-radius:50%;background:linear-gradient(135deg,#166534,#16a34a);display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:700;color:#fff;flex-shrink:0">YT</div>
-                <div>
-                  <div style="font-size:13px;font-weight:700">Yuki Tanaka</div>
-                  <div style="font-size:11px;color:#6b7280">Bandai Namco · Head of Publishing</div>
-                </div>
-              </div>
-              <div style="margin-bottom:8px">
-                <div style="font-size:11px;color:#9ca3af;margin-bottom:4px">Budget Range</div>
-                <div style="font-size:13px;font-weight:600;color:#16a34a">€10M+</div>
-              </div>
-              <div style="margin-bottom:10px">
-                <div style="font-size:11px;color:#9ca3af;margin-bottom:4px">Shared Interests</div>
-                <div style="display:flex;gap:4px;flex-wrap:wrap">
-                  <span style="font-size:10px;background:#f3e8ff;color:#7e22ce;padding:1px 6px;border-radius:3px">JRPG</span>
-                  <span style="font-size:10px;background:#dbeafe;color:#1e40af;padding:1px 6px;border-radius:3px">Asia-Pacific</span>
-                </div>
-              </div>
-              <div style="font-size:11px;color:#374151;background:#fef3c7;border-radius:6px;padding:8px;margin-bottom:10px">
-                💡 <em>"Partial match — Bandai Namco focuses on JRPG. Consider highlighting narrative elements."</em>
-              </div>
-              <button style="width:100%;font-size:12px;background:#2563eb;color:#fff;border:none;border-radius:6px;padding:7px;cursor:pointer;font-weight:600" onclick="showToast('📧 Invitation sent to Yuki Tanaka at Bandai Namco')">Send Invitation</button>
-            </div>
+          <div id="buyer-list" style="display:flex;flex-direction:column;gap:0"></div>
+          <div style="margin-top:14px;padding-top:14px;border-top:1px solid #f3f4f6;display:flex;align-items:center;justify-content:space-between">
+            <div style="font-size:13px;color:#6b7280"><strong id="buyer-selected-count">0</strong> selected</div>
+            <button class="btn-primary" id="buyer-send-btn2" onclick="sendBuyerInvitations()" disabled style="opacity:.5;cursor:not-allowed;font-size:13px;padding:7px 20px">Send Invitation</button>
           </div>
         </div>
       </div>
@@ -5039,9 +4689,9 @@ const SIDEBAR_NAV = [
   { label:'Free Booth',   icon:'🏪', modId:null, fn:'showFreeBooth' },
   { label:'Paid Booth',   icon:'🏬', modId:null, fn:'showPaidBooth' },
   { label:'Sponsorship',  icon:'🤝', modId:null, fn:'showSponsorship' },
+  { label:'Buyer Invitation', icon:'🛒', modId:null, fn:'showBuyerInvitation' },
   { label:'Panel / Session', icon:'🎤️', modId:null, fn:'showPanelSession' },
   { label:'Award',        icon:'🏆', modId:null, fn:'showAward' },
-  { label:'Buyer Invitation', icon:'🛒', modId:null, fn:'showBuyerInvitation' },
   { label:"Let's Meet",   icon:'📅', modId:null, fn:'showLetsMeet' },
   { label:'Game Showcase',icon:'🎮', modId:null, fn:'showGameShowcase' },
   { label:'Map',          icon:'🗺️', modId:null, fn:'showMap' },
@@ -7212,6 +6862,126 @@ function addSponsorPackage() {
   card.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
 }
 // ── Sponsor Detail Toggle ────────────────────────────────────────────────────────────
+// ── Buyer Invitation ─────────────────────────────────────────────────────────
+const BUYERS_DATA = [
+  { name:'Yuki Tanaka',      company:'Bandai Namco',      type:'Publisher',    region:'Asia' },
+  { name:'Marco Rossi',      company:'505 Games',          type:'Publisher',    region:'Europe' },
+  { name:'Sarah Chen',       company:'Tencent Games',      type:'Publisher',    region:'Asia' },
+  { name:'Ahmed Al-Farsi',   company:'MENA Games',         type:'Distributor',  region:'MENA' },
+  { name:'Emily Brooks',     company:'GamesBeat',          type:'Media',        region:'Europe' },
+  { name:'Lucas Müller',     company:'Embracer Group',     type:'Publisher',    region:'Europe' },
+  { name:'Priya Nair',       company:'Sequoia India',      type:'VC',           region:'Asia' },
+  { name:'James O\'Brien',   company:'Curve Games',        type:'Publisher',    region:'Europe' },
+  { name:'Sofia Andersen',   company:'Nordisk Film',       type:'Distributor',  region:'Europe' },
+  { name:'Carlos Mendez',    company:'Lemon Sky',          type:'Developer',    region:'LATAM' },
+  { name:'Mei Ling',         company:'NetEase Games',      type:'Publisher',    region:'Asia' },
+  { name:'Tom Richardson',   company:'Take-Two Interactive',type:'Publisher',   region:'North America' },
+  { name:'Aisha Okonkwo',    company:'Maliyo Games',       type:'Developer',    region:'MENA' },
+  { name:'Pierre Dupont',    company:'Ubisoft',            type:'Publisher',    region:'Europe' },
+  { name:'Rachel Kim',       company:'Kakao Games',        type:'Publisher',    region:'Asia' },
+  { name:'David Okafor',     company:'Konvoy Ventures',    type:'VC',           region:'North America' },
+  { name:'Anna Kowalski',    company:'CD Projekt',         type:'Developer',    region:'Europe' },
+  { name:'Jake Morrison',    company:'Xbox Game Studios',  type:'Platform',     region:'North America' },
+  { name:'Lena Fischer',     company:'Gameforge',          type:'Publisher',    region:'Europe' },
+  { name:'Ravi Sharma',      company:'Nazara Technologies',type:'Publisher',    region:'Asia' },
+];
+
+let buyerFilters = { type: 'all', region: 'all' };
+let buyerSelected = new Set();
+
+function renderBuyerList() {
+  const list = document.getElementById('buyer-list');
+  if (!list) return;
+  const filtered = BUYERS_DATA.filter(b => {
+    const typeOk = buyerFilters.type === 'all' || b.type === buyerFilters.type;
+    const regionOk = buyerFilters.region === 'all' || b.region === buyerFilters.region;
+    return typeOk && regionOk;
+  });
+  const showEl = document.getElementById('buyer-showing');
+  if (showEl) showEl.textContent = filtered.length;
+  list.innerHTML = filtered.map((b, i) => {
+    const id = 'buyer-' + BUYERS_DATA.indexOf(b);
+    const checked = buyerSelected.has(id);
+    return `<div style="display:flex;align-items:center;gap:12px;padding:10px 0;border-bottom:1px solid #f3f4f6">
+      <input type="checkbox" id="${id}" ${checked ? 'checked' : ''} onchange="toggleBuyerSelect('${id}', this.checked)" style="width:16px;height:16px;cursor:pointer;accent-color:#6366f1">
+      <div style="flex:1">
+        <span style="font-size:13px;font-weight:600;color:#111827">${b.name}</span>
+        <span style="font-size:12px;color:#9ca3af;margin-left:6px">${b.company}</span>
+      </div>
+      <span style="font-size:11px;background:#ede9fe;color:#7c3aed;padding:2px 8px;border-radius:4px;font-weight:500">${b.type}</span>
+      <span style="font-size:11px;background:#e0f2fe;color:#0369a1;padding:2px 8px;border-radius:4px;font-weight:500">${b.region}</span>
+    </div>`;
+  }).join('');
+  updateBuyerSendBtn();
+}
+
+function toggleBuyerTag(btn) {
+  const dim = btn.dataset.dim;
+  const val = btn.dataset.val;
+  // deactivate siblings in same dim
+  document.querySelectorAll(`.buyer-tag[data-dim="${dim}"]`).forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  buyerFilters[dim] = val;
+  // clear selection when filter changes
+  buyerSelected.clear();
+  renderBuyerList();
+}
+
+function toggleBuyerSelect(id, checked) {
+  if (checked) buyerSelected.add(id);
+  else buyerSelected.delete(id);
+  updateBuyerSendBtn();
+}
+
+function selectAllBuyers() {
+  document.querySelectorAll('#buyer-list input[type=checkbox]').forEach(cb => {
+    cb.checked = true;
+    buyerSelected.add(cb.id);
+  });
+  updateBuyerSendBtn();
+}
+
+function deselectAllBuyers() {
+  document.querySelectorAll('#buyer-list input[type=checkbox]').forEach(cb => {
+    cb.checked = false;
+  });
+  buyerSelected.clear();
+  updateBuyerSendBtn();
+}
+
+function updateBuyerSendBtn() {
+  const count = buyerSelected.size;
+  const label = document.getElementById('buyer-selected-count');
+  if (label) label.textContent = count;
+  ['buyer-send-btn','buyer-send-btn2'].forEach(id => {
+    const btn = document.getElementById(id);
+    if (!btn) return;
+    if (count > 0) {
+      btn.disabled = false;
+      btn.style.opacity = '1';
+      btn.style.cursor = 'pointer';
+    } else {
+      btn.disabled = true;
+      btn.style.opacity = '.5';
+      btn.style.cursor = 'not-allowed';
+    }
+  });
+}
+
+function sendBuyerInvitations() {
+  const count = buyerSelected.size;
+  if (count === 0) return;
+  showToast(`Invitations sent to ${count} buyer${count > 1 ? 's' : ''}`);
+  buyerSelected.clear();
+  renderBuyerList();
+}
+
+function showBuyerInvitation() {
+  document.querySelectorAll('[id^="view"]').forEach(el => el.style.display = 'none');
+  document.getElementById('viewBuyerInvitation').style.display = 'block';
+  renderBuyerList();
+}
+
 function toggleSponsorDetail(id) {
   const row = document.getElementById(id);
   const arrow = document.getElementById(id + '-arrow');
