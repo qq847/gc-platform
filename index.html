@@ -1255,6 +1255,15 @@ body{background:#f3f2ef}
 </style>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
 <script>
+// ── Global Error Guard ──────────────────────────────────────────────────────
+window.onerror = function(msg, src, line, col, err) {
+  console.warn('[GC Error]', msg, 'at', src + ':' + line, err);
+  return false;
+};
+window.addEventListener('unhandledrejection', function(e) {
+  console.warn('[GC UnhandledRejection]', e.reason);
+  e.preventDefault();
+});
 // ── Supabase Auth Client ──────────────────────────────────────────────────────
 const _gcSupabase = window.supabase.createClient(
   'https://gucqyrorgtsukqgnfjor.supabase.co',
@@ -3286,7 +3295,7 @@ function selectConf(card) {
   if (!kw) return;
   if (window._calState) {
     window._calState.searchKeyword = kw;
-    calLoadEvents(true).then(function(){ setTimeout(function(){ calHighlightFirst(kw); }, 100); });
+    calLoadEvents(true).then(function(){ setTimeout(function(){ calHighlightFirst(kw); }, 100); }).catch(function(e){ console.warn('calLoadEvents error', e); });
   }
 }
 function calHighlightFirst(kw) {
@@ -3333,7 +3342,7 @@ function calJumpToEvent(title) {
     window._calState.searchKeyword = title;
     calLoadEvents(true).then(function(){
       setTimeout(function(){ calHighlightFirst(kwLow); }, 100);
-    });
+    }).catch(function(e){ console.warn('calLoadEvents error', e); });
   }
 }
 
@@ -3533,7 +3542,7 @@ async function loadHomeUpcoming() {
       _SB_URL+'/rest/v1/events?select=title,city,country,start_date,type&status=neq.ended&start_date=gte.'+today+'&order=start_date.asc&limit=6',
       {headers: _SB_H}
     );
-    const data = await r.json();
+    const data = (await r.json().catch(()=>[])) || [];
     const el = document.getElementById('home-upcoming-list');
     if (!el) return;
     if (!data || !data.length) { el.innerHTML = '<div style="text-align:center;padding:16px;color:#aaa;font-size:12px">No upcoming events</div>'; return; }
@@ -3989,7 +3998,7 @@ function redoMatching(){
 function signOutUser(){
   gcSignOut().then(() => {
     window.location.reload();
-  });
+  }).catch(function(e){ console.warn('signOut error', e); window.location.reload(); });
 }
 
 // ── Populate Profile Drawer from wizard data ──
@@ -4258,7 +4267,7 @@ async function loadProfileGames(showSendKey) {
   try {
     // Load recent public projects from Supabase
     const r = await fetch(_SB_URL + '/rest/v1/game_projects?select=id,title,tagline,genre,status,platforms&is_public=eq.true&order=created_at.desc&limit=6', {headers: _SB_H});
-    const data = await r.json();
+    const data = (await r.json().catch(()=>[])) || [];
     if (!data || !data.length) {
       grid.innerHTML = '<div style="border-radius:10px;border:1.5px dashed #ddd;background:#fafafa;display:flex;align-items:center;justify-content:center;min-height:110px;color:#aaa;font-size:12px;cursor:pointer" onclick="switchMode(\'projects\')">+ Browse Projects</div>';
       return;
@@ -4872,8 +4881,8 @@ async function _pcProjLoadBatch(reset) {
     const r = await fetch(url, {headers:{..._SB_H,'Prefer':'count=exact'}});
     const cr = r.headers.get('content-range');
     _pcProjTotal = cr ? parseInt(cr.split('/')[1])||0 : 0;
-    const data = await r.json();
-    _pcProjOffset += (data||[]).length;
+    const data = (await r.json().catch(()=>[])) || [];
+    _pcProjOffset += data.length;
     const sub = document.getElementById('pc-proj-subtitle');
     if (sub) sub.textContent = _pcProjTotal.toLocaleString() + ' projects from worldwide studios';
     const grid = document.getElementById('pc-proj-cards');
@@ -5073,7 +5082,7 @@ async function _cpLoadBatch(reset) {
     const r = await fetch(url, {headers:{..._SB_H,'Prefer':'count=exact'}});
     const cr = r.headers.get('content-range');
     _cpTotal = cr ? parseInt(cr.split('/')[1])||0 : 0;
-    const rawData = await r.json();
+    const rawData = (await r.json().catch(()=>[])) || [];
     // Deduplicate by name using global set (cross-batch dedup)
     const data = (rawData||[]).filter(c => {
       const key = (c.name||'').toLowerCase().trim();
@@ -6568,7 +6577,7 @@ async function testKeySearchPub() {
   if (!q || q.length < 2) { res.innerHTML = ''; return; }
   try {
     const r = await fetch(_SB_URL + '/rest/v1/companies?select=id,name,type,primary_email,country&name=ilike.*' + encodeURIComponent(q) + '*&type=in.(publisher,investor,distributor)&limit=8', {headers: _SB_H});
-    const data = await r.json();
+    const data = (await r.json().catch(()=>[])) || [];
     if (!data || !data.length) { res.innerHTML = '<div style="font-size:12px;color:var(--text3);padding:8px">No publishers found</div>'; return; }
     res.innerHTML = data.map(c => {
       const enc = encodeURIComponent(JSON.stringify(c));
