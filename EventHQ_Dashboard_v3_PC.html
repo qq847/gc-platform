@@ -1122,725 +1122,37 @@ body.dark-mode .unsaved-bar { background: #1e2533; border-color: #2d3748; }
 
             <!-- ══ VIEW: Attendees ══ -->
       <div id="viewAttendees" style="display:none">
-        <div class="editor-topbar">
-          <div class="editor-topbar-left">
-            <button class="back-link" onclick="showEventEditor()">← Event Info</button>
-            <span style="font-size:14px;font-weight:700;color:var(--text1)" id="attEventTitle">Attendees</span>
-          </div>
-          <div class="editor-topbar-right">
-            <button class="btn-secondary" onclick="importAttendeesCSV()">⬆ Import CSV</button>
-            <button class="btn-secondary" onclick="exportAttendeesCSV()">⬇ Export CSV</button>
-            <button class="btn-primary" onclick="showToast('Invite sent!')">+ Invite</button>
-          </div>
+        <!-- Search bar -->
+        <div style="display:flex;align-items:center;gap:12px;margin-bottom:20px">
+          <input id="att-search" class="form-input" type="text" placeholder="Search by name or company…" style="flex:1;max-width:400px" oninput="filterAttendees()">
+          <span id="att-count" style="font-size:13px;color:#6b7280"></span>
         </div>
 
-        <!-- Stats row -->
-        <div style="display:flex;gap:12px;margin-bottom:20px">
-          <div class="editor-card" style="flex:1;text-align:center;padding:16px">
-            <div style="font-size:26px;font-weight:800;color:#2563eb" id="att-stat-total">0</div>
-            <div style="font-size:11px;color:#6b7280;text-transform:uppercase;letter-spacing:.5px">Registered</div>
-          </div>
-          <div class="editor-card" style="flex:1;text-align:center;padding:16px">
-            <div style="font-size:26px;font-weight:800;color:#16a34a" id="att-stat-checkedin">0</div>
-            <div style="font-size:11px;color:#6b7280;text-transform:uppercase;letter-spacing:.5px">Checked In</div>
-          </div>
-          <div class="editor-card" style="flex:1;text-align:center;padding:16px">
-            <div style="font-size:26px;font-weight:800;color:#d97706" id="att-stat-pending">0</div>
-            <div style="font-size:11px;color:#6b7280;text-transform:uppercase;letter-spacing:.5px">Not Yet</div>
-          </div>
-          <div class="editor-card" style="flex:1;padding:16px">
-            <div style="font-size:11px;color:#6b7280;text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px">Check-in Rate</div>
-            <div style="height:8px;background:#e5e7eb;border-radius:4px;overflow:hidden">
-              <div id="att-checkin-bar" style="height:100%;background:#16a34a;border-radius:4px;transition:width .4s;width:0%"></div>
-            </div>
-            <div style="font-size:13px;font-weight:700;color:#16a34a;margin-top:4px" id="att-checkin-pct">0%</div>
-          </div>
-        </div>
-
-        <!-- Filter tabs + search -->
-        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;gap:12px;flex-wrap:wrap">
-          <div style="display:flex;gap:4px;background:#f3f4f6;border-radius:8px;padding:3px">
-            <button id="att-tab-all" onclick="filterAttendeesByTab('all')" style="padding:6px 14px;border-radius:6px;border:none;font-size:12px;font-weight:600;cursor:pointer;background:#fff;color:#111827;box-shadow:0 1px 3px rgba(0,0,0,.1)">All</button>
-            <button id="att-tab-in" onclick="filterAttendeesByTab('in')" style="padding:6px 14px;border-radius:6px;border:none;font-size:12px;font-weight:600;cursor:pointer;background:transparent;color:#6b7280">Checked In</button>
-            <button id="att-tab-out" onclick="filterAttendeesByTab('out')" style="padding:6px 14px;border-radius:6px;border:none;font-size:12px;font-weight:600;cursor:pointer;background:transparent;color:#6b7280">Pending</button>
-          </div>
-          <input id="att-search" class="form-input" type="text" placeholder="Search name, company, role…" style="max-width:280px" oninput="filterAttendees()">
-        </div>
-
-        <!-- Bulk actions toolbar -->
-        <div id="att-bulk-bar" style="display:none;background:#eff6ff;border:1px solid #bfdbfe;border-radius:8px;padding:10px 16px;margin-bottom:12px;display:flex;align-items:center;gap:12px">
-          <span id="att-selected-count" style="font-size:13px;font-weight:600;color:#1e40af">0 selected</span>
-          <div style="flex:1"></div>
-          <button class="btn-secondary" style="font-size:12px;padding:5px 12px" onclick="openBulkEmailModal()">✉️ Send Email</button>
-          <button class="btn-secondary" style="font-size:12px;padding:5px 12px" onclick="showToast('Exporting selected…')">⬇ Export Selected</button>
-          <button class="btn-secondary" style="font-size:12px;padding:5px 12px;color:#dc2626" onclick="showToast('Check-in toggled')">✓ Toggle Check-in</button>
-          <button style="border:none;background:none;cursor:pointer;font-size:18px;color:#9ca3af" onclick="clearAttSelection()">×</button>
-        </div>
-
+        <!-- Attendee list -->
         <div class="editor-card" style="padding:0;overflow:hidden">
-          <table style="width:100%;border-collapse:collapse">
-            <thead>
-              <tr style="background:#f8f9fa;border-bottom:2px solid #e5e7eb">
-                <th style="padding:11px 16px;width:36px"><input type="checkbox" id="att-select-all" onchange="toggleSelectAllAttendees(this.checked)" style="width:14px;height:14px;accent-color:#2563eb"></th>
-                <th style="padding:11px 16px;text-align:left;font-size:11px;font-weight:700;color:#6b7280;text-transform:uppercase;letter-spacing:.5px">Name</th>
-                <th style="padding:11px 16px;text-align:left;font-size:11px;font-weight:700;color:#6b7280;text-transform:uppercase;letter-spacing:.5px">Company</th>
-                <th style="padding:11px 16px;text-align:left;font-size:11px;font-weight:700;color:#6b7280;text-transform:uppercase;letter-spacing:.5px">Role</th>
-                <th style="padding:11px 16px;text-align:left;font-size:11px;font-weight:700;color:#6b7280;text-transform:uppercase;letter-spacing:.5px">Registered</th>
-                <th style="padding:11px 16px;text-align:left;font-size:11px;font-weight:700;color:#6b7280;text-transform:uppercase;letter-spacing:.5px">Check-in</th>
-                <th style="padding:11px 16px;width:40px"></th>
-              </tr>
-            </thead>
-            <tbody id="att-tbody"></tbody>
-          </table>
+          <div id="att-list"></div>
           <div id="att-empty" style="display:none;padding:56px;text-align:center;color:#9ca3af">
             <div style="font-size:40px;margin-bottom:10px">👥</div>
             <div style="font-weight:600;font-size:15px;color:#374151">No attendees yet</div>
             <div style="font-size:13px;margin-top:4px">Registrations will appear here once people sign up.</div>
           </div>
         </div>
-        <div id="att-footer" style="margin-top:10px;font-size:12px;color:#9ca3af"></div>
-
-        <!-- QR Check-in Simulator -->
-        <div class="editor-card" style="margin-top:16px">
-          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px">
-            <div style="font-weight:700;font-size:15px">📱 QR Check-in Simulator</div>
-            <button class="btn-secondary" style="font-size:12px;padding:6px 12px" onclick="showToast('QR scanner app launched')">Open Scanner App</button>
-          </div>
-          <div style="display:flex;gap:16px;align-items:flex-start">
-            <div style="flex:0 0 120px;text-align:center">
-              <svg viewBox="0 0 100 100" style="width:100px;height:100px;border:2px solid #e5e7eb;border-radius:8px;padding:6px" xmlns="http://www.w3.org/2000/svg">
-                <!-- QR code pattern -->
-                <rect x="5" y="5" width="30" height="30" rx="2" fill="none" stroke="#111" stroke-width="3"/>
-                <rect x="12" y="12" width="16" height="16" rx="1" fill="#111"/>
-                <rect x="65" y="5" width="30" height="30" rx="2" fill="none" stroke="#111" stroke-width="3"/>
-                <rect x="72" y="12" width="16" height="16" rx="1" fill="#111"/>
-                <rect x="5" y="65" width="30" height="30" rx="2" fill="none" stroke="#111" stroke-width="3"/>
-                <rect x="12" y="72" width="16" height="16" rx="1" fill="#111"/>
-                <rect x="42" y="5" width="6" height="6" fill="#111"/>
-                <rect x="52" y="5" width="6" height="6" fill="#111"/>
-                <rect x="42" y="15" width="6" height="6" fill="#111"/>
-                <rect x="52" y="25" width="6" height="6" fill="#111"/>
-                <rect x="42" y="42" width="6" height="6" fill="#111"/>
-                <rect x="52" y="42" width="6" height="6" fill="#111"/>
-                <rect x="62" y="42" width="6" height="6" fill="#111"/>
-                <rect x="72" y="42" width="6" height="6" fill="#111"/>
-                <rect x="82" y="42" width="6" height="6" fill="#111"/>
-                <rect x="42" y="52" width="6" height="6" fill="#111"/>
-                <rect x="62" y="52" width="6" height="6" fill="#111"/>
-                <rect x="82" y="52" width="6" height="6" fill="#111"/>
-                <rect x="42" y="62" width="6" height="6" fill="#111"/>
-                <rect x="52" y="62" width="6" height="6" fill="#111"/>
-                <rect x="72" y="62" width="6" height="6" fill="#111"/>
-                <rect x="42" y="72" width="6" height="6" fill="#111"/>
-                <rect x="62" y="72" width="6" height="6" fill="#111"/>
-                <rect x="82" y="72" width="6" height="6" fill="#111"/>
-                <rect x="42" y="82" width="6" height="6" fill="#111"/>
-                <rect x="52" y="82" width="6" height="6" fill="#111"/>
-                <rect x="72" y="82" width="6" height="6" fill="#111"/>
-              </svg>
-              <div style="font-size:10px;color:#9ca3af;margin-top:4px">Event Check-in QR</div>
-            </div>
-            <div style="flex:1">
-              <div style="font-size:13px;font-weight:600;margin-bottom:8px">Simulate Check-in</div>
-              <div style="display:flex;gap:8px;margin-bottom:10px">
-                <input type="text" id="qr-sim-input" class="form-input" placeholder="Enter attendee name or email" style="flex:1">
-                <button class="btn-primary" style="font-size:12px;padding:8px 14px" onclick="simulateCheckin()">Check In</button>
-              </div>
-              <div id="qr-sim-result" style="font-size:13px;color:#6b7280;min-height:22px">Scan or type to check in an attendee</div>
-              <!-- Live counter -->
-              <div style="display:flex;gap:12px;margin-top:12px">
-                <div style="flex:1;background:#f0fdf4;border:1px solid #bbf7d0;border-radius:8px;padding:10px;text-align:center">
-                  <div id="ci-counter" style="font-size:22px;font-weight:800;color:#16a34a">247</div>
-                  <div style="font-size:11px;color:#166534">Checked In</div>
-                </div>
-                <div style="flex:1;background:#fff7ed;border:1px solid #fed7aa;border-radius:8px;padding:10px;text-align:center">
-                  <div id="ci-pending" style="font-size:22px;font-weight:800;color:#d97706">151</div>
-                  <div style="font-size:11px;color:#92400e">Pending</div>
-                </div>
-                <div style="flex:1;background:#eff6ff;border:1px solid #bfdbfe;border-radius:8px;padding:10px;text-align:center">
-                  <div id="ci-rate" style="font-size:22px;font-weight:800;color:#2563eb">62%</div>
-                  <div style="font-size:11px;color:#1e40af">Rate</div>
-                </div>
-              </div>
-              <!-- Batch check-in -->
-              <div style="margin-top:12px;display:flex;gap:8px">
-                <button onclick="batchCheckin('vip')" class="btn-secondary" style="font-size:11px;padding:5px 12px">Check-in VIPs (12)</button>
-                <button onclick="batchCheckin('press')" class="btn-secondary" style="font-size:11px;padding:5px 12px">Check-in Press (8)</button>
-                <button onclick="batchCheckin('all')" style="font-size:11px;padding:5px 12px;background:#16a34a;color:#fff;border:none;border-radius:6px;cursor:pointer;font-weight:600">Batch All Pending</button>
-              </div>
-              <div style="margin-top:10px;padding:10px;background:#f0fdf4;border-radius:8px;border:1px solid #bbf7d0">
-                <div style="font-size:12px;color:#166534">✅ <strong>Live check-in:</strong> In production, this connects to the mobile scanner app. Attendees scan their QR badge at entry gates for instant check-in.</div>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <!-- Attendance Breakdown Chart -->
-        <div class="editor-card" style="margin-top:16px">
-          <div style="font-weight:700;font-size:15px;margin-bottom:14px">📊 Attendance Breakdown</div>
-          <div style="display:flex;gap:20px;align-items:center">
-            <svg viewBox="0 0 120 120" style="width:110px;height:110px;flex-shrink:0" xmlns="http://www.w3.org/2000/svg">
-              <!-- Donut chart: 62% checked in, 28% not yet, 10% cancelled -->
-              <circle cx="60" cy="60" r="45" fill="none" stroke="#e5e7eb" stroke-width="18"/>
-              <circle cx="60" cy="60" r="45" fill="none" stroke="#16a34a" stroke-width="18" stroke-dasharray="175 108" stroke-dashoffset="0" transform="rotate(-90 60 60)"/>
-              <circle cx="60" cy="60" r="45" fill="none" stroke="#d97706" stroke-width="18" stroke-dasharray="79 204" stroke-dashoffset="-175" transform="rotate(-90 60 60)"/>
-              <circle cx="60" cy="60" r="45" fill="none" stroke="#e5e7eb" stroke-width="18" stroke-dasharray="29 254" stroke-dashoffset="-254" transform="rotate(-90 60 60)"/>
-              <text x="60" y="56" text-anchor="middle" font-size="16" font-weight="800" fill="#111">62%</text>
-              <text x="60" y="70" text-anchor="middle" font-size="9" fill="#6b7280">checked in</text>
-            </svg>
-            <div style="flex:1;display:flex;flex-direction:column;gap:8px">
-              <div style="display:flex;align-items:center;gap:8px">
-                <div style="width:10px;height:10px;background:#16a34a;border-radius:50%;flex-shrink:0"></div>
-                <span style="font-size:13px;flex:1">Checked In</span>
-                <span style="font-size:13px;font-weight:700">62%</span>
-              </div>
-              <div style="display:flex;align-items:center;gap:8px">
-                <div style="width:10px;height:10px;background:#d97706;border-radius:50%;flex-shrink:0"></div>
-                <span style="font-size:13px;flex:1">Not Yet Arrived</span>
-                <span style="font-size:13px;font-weight:700">28%</span>
-              </div>
-              <div style="display:flex;align-items:center;gap:8px">
-                <div style="width:10px;height:10px;background:#e5e7eb;border-radius:50%;flex-shrink:0"></div>
-                <span style="font-size:13px;flex:1">Cancelled</span>
-                <span style="font-size:13px;font-weight:700">10%</span>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <!-- Attendee Groups -->
-        <div class="editor-card" style="margin-top:16px">
-          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px">
-            <div style="font-weight:700;font-size:15px">&#128101; Attendee Groups</div>
-            <button class="btn-primary" style="font-size:12px;padding:6px 14px" onclick="addAttGroup()">+ New Group</button>
-          </div>
-          <div id="att-groups-list" style="display:flex;flex-direction:column;gap:10px">
-            <div class="att-group-row" style="display:flex;align-items:center;gap:12px;padding:12px;background:#f8f9fa;border-radius:8px;border:1px solid #e5e7eb">
-              <div style="width:32px;height:32px;background:#dbeafe;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:14px">&#128081;</div>
-              <div style="flex:1">
-                <div style="font-size:13px;font-weight:700">VIP Guests</div>
-                <div style="font-size:11px;color:#6b7280">12 members &nbsp;&middot;&nbsp; Press, Investors, Speakers</div>
-              </div>
-              <span style="font-size:11px;background:#dbeafe;color:#1e40af;padding:2px 10px;border-radius:10px;font-weight:600">12</span>
-              <button style="font-size:11px;background:#f3f4f6;color:#374151;border:none;border-radius:6px;padding:4px 10px;cursor:pointer" onclick="showToast('Group editor opening in v4')">Manage</button>
-            </div>
-            <div class="att-group-row" style="display:flex;align-items:center;gap:12px;padding:12px;background:#f8f9fa;border-radius:8px;border:1px solid #e5e7eb">
-              <div style="width:32px;height:32px;background:#dcfce7;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:14px">&#127897;</div>
-              <div style="flex:1">
-                <div style="font-size:13px;font-weight:700">Press &amp; Media</div>
-                <div style="font-size:11px;color:#6b7280">8 members &nbsp;&middot;&nbsp; Journalists, Bloggers</div>
-              </div>
-              <span style="font-size:11px;background:#dcfce7;color:#166534;padding:2px 10px;border-radius:10px;font-weight:600">8</span>
-              <button style="font-size:11px;background:#f3f4f6;color:#374151;border:none;border-radius:6px;padding:4px 10px;cursor:pointer" onclick="showToast('Group editor opening in v4')">Manage</button>
-            </div>
-            <div class="att-group-row" style="display:flex;align-items:center;gap:12px;padding:12px;background:#f8f9fa;border-radius:8px;border:1px solid #e5e7eb">
-              <div style="width:32px;height:32px;background:#f3e8ff;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:14px">&#128188;</div>
-              <div style="flex:1">
-                <div style="font-size:13px;font-weight:700">Exhibitors</div>
-                <div style="font-size:11px;color:#6b7280">24 members &nbsp;&middot;&nbsp; Booth holders</div>
-              </div>
-              <span style="font-size:11px;background:#f3e8ff;color:#7e22ce;padding:2px 10px;border-radius:10px;font-weight:600">24</span>
-              <button style="font-size:11px;background:#f3f4f6;color:#374151;border:none;border-radius:6px;padding:4px 10px;cursor:pointer" onclick="showToast('Group editor opening in v4')">Manage</button>
-            </div>
-            <div class="att-group-row" style="display:flex;align-items:center;gap:12px;padding:12px;background:#f8f9fa;border-radius:8px;border:1px solid #e5e7eb">
-              <div style="width:32px;height:32px;background:#fef3c7;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:14px">&#127891;</div>
-              <div style="flex:1">
-                <div style="font-size:13px;font-weight:700">Students &amp; Indie Devs</div>
-                <div style="font-size:11px;color:#6b7280">63 members &nbsp;&middot;&nbsp; Discounted tickets</div>
-              </div>
-              <span style="font-size:11px;background:#fef3c7;color:#92400e;padding:2px 10px;border-radius:10px;font-weight:600">63</span>
-              <button style="font-size:11px;background:#f3f4f6;color:#374151;border:none;border-radius:6px;padding:4px 10px;cursor:pointer" onclick="showToast('Group editor opening in v4')">Manage</button>
-            </div>
-          </div>
-          <div style="margin-top:12px;padding:10px;background:#f0f9ff;border-radius:8px;border:1px solid #bae6fd;font-size:12px;color:#0369a1">
-            &#128161; Groups let you send targeted emails, apply bulk check-in, and filter the attendee table by segment.
-          </div>
-        </div>
-        <!-- Attendee Quick-View Drawer -->
-        <div class="editor-card" style="margin-top:16px">
-          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px">
-            <div style="font-weight:700;font-size:15px">👤 Attendee Quick View</div>
-            <span style="font-size:12px;color:#9ca3af">Click any attendee row to see details</span>
-          </div>
-          <div style="display:flex;gap:12px">
-            <!-- Mini attendee list -->
-            <div style="flex:1;display:flex;flex-direction:column;gap:6px">
-              <div style="display:flex;align-items:center;gap:10px;padding:10px;border:1px solid #e5e7eb;border-radius:8px;cursor:pointer;background:#eff6ff" onclick="openAttendeeDrawer(0)">
-                <div style="width:36px;height:36px;border-radius:50%;background:#dbeafe;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:700;color:#1e40af;flex-shrink:0">AJ</div>
-                <div style="flex:1">
-                  <div style="font-size:13px;font-weight:600">Alice Johnson</div>
-                  <div style="font-size:11px;color:#6b7280">Sony Interactive · Publisher</div>
-                </div>
-                <span style="font-size:10px;background:#dcfce7;color:#16a34a;padding:2px 7px;border-radius:4px;font-weight:600">✓ In</span>
-              </div>
-              <div style="display:flex;align-items:center;gap:10px;padding:10px;border:1px solid #e5e7eb;border-radius:8px;cursor:pointer" onclick="openAttendeeDrawer(1)">
-                <div style="width:36px;height:36px;border-radius:50%;background:#f3e8ff;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:700;color:#7e22ce;flex-shrink:0">BL</div>
-                <div style="flex:1">
-                  <div style="font-size:13px;font-weight:600">Bob Lee</div>
-                  <div style="font-size:11px;color:#6b7280">Tencent Games · Investor</div>
-                </div>
-                <span style="font-size:10px;background:#fef3c7;color:#d97706;padding:2px 7px;border-radius:4px;font-weight:600">Pending</span>
-              </div>
-              <div style="display:flex;align-items:center;gap:10px;padding:10px;border:1px solid #e5e7eb;border-radius:8px;cursor:pointer" onclick="openAttendeeDrawer(2)">
-                <div style="width:36px;height:36px;border-radius:50%;background:#dcfce7;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:700;color:#166534;flex-shrink:0">CW</div>
-                <div style="flex:1">
-                  <div style="font-size:13px;font-weight:600">Carol Wang</div>
-                  <div style="font-size:11px;color:#6b7280">Ubisoft · Developer</div>
-                </div>
-                <span style="font-size:10px;background:#dcfce7;color:#16a34a;padding:2px 7px;border-radius:4px;font-weight:600">✓ In</span>
-              </div>
-            </div>
-            <!-- Detail panel -->
-            <div id="att-drawer" style="width:280px;flex-shrink:0;border:1px solid #e5e7eb;border-radius:10px;padding:16px;background:#f8f9fa">
-              <div style="text-align:center;margin-bottom:12px">
-                <div id="att-drawer-avatar" style="width:56px;height:56px;border-radius:50%;background:#dbeafe;display:flex;align-items:center;justify-content:center;font-size:20px;font-weight:700;color:#1e40af;margin:0 auto 8px">AJ</div>
-                <div id="att-drawer-name" style="font-size:15px;font-weight:700">Alice Johnson</div>
-                <div id="att-drawer-role" style="font-size:12px;color:#6b7280">Sony Interactive · Publisher</div>
-              </div>
-              <div style="display:flex;flex-direction:column;gap:8px;font-size:12px">
-                <div style="display:flex;justify-content:space-between">
-                  <span style="color:#9ca3af">Check-in</span>
-                  <span id="att-drawer-checkin" style="font-weight:600;color:#16a34a">✓ 09:14 AM</span>
-                </div>
-                <div style="display:flex;justify-content:space-between">
-                  <span style="color:#9ca3af">Ticket Type</span>
-                  <span id="att-drawer-ticket" style="font-weight:600">VIP Pass</span>
-                </div>
-                <div style="display:flex;justify-content:space-between">
-                  <span style="color:#9ca3af">Meetings</span>
-                  <span id="att-drawer-meetings" style="font-weight:600">3 scheduled</span>
-                </div>
-                <div style="display:flex;justify-content:space-between">
-                  <span style="color:#9ca3af">Sessions</span>
-                  <span id="att-drawer-sessions" style="font-weight:600">2 attended</span>
-                </div>
-              </div>
-              <div style="margin-top:10px;padding-top:10px;border-top:1px solid #e5e7eb">
-                <div style="font-size:11px;color:#9ca3af;margin-bottom:6px">Tags</div>
-                <div id="att-drawer-tags" style="display:flex;gap:4px;flex-wrap:wrap">
-                  <span style="font-size:10px;background:#dbeafe;color:#1e40af;padding:2px 7px;border-radius:4px">VIP</span>
-                  <span style="font-size:10px;background:#dcfce7;color:#166534;padding:2px 7px;border-radius:4px">Publisher</span>
-                  <span style="font-size:10px;background:#fef3c7;color:#d97706;padding:2px 7px;border-radius:4px">Hot Lead</span>
-                </div>
-              </div>
-              <div style="margin-top:12px;display:flex;gap:6px">
-                <button style="flex:1;font-size:11px;background:#eff6ff;color:#2563eb;border:none;border-radius:6px;padding:6px;cursor:pointer;font-weight:600" onclick="showToast('📧 Email sent to Alice Johnson')">Email</button>
-                <button style="flex:1;font-size:11px;background:#f0fdf4;color:#16a34a;border:none;border-radius:6px;padding:6px;cursor:pointer;font-weight:600" onclick="showToast('📅 Meeting request sent')">Meet</button>
-              </div>
-            </div>
-          </div>
-        </div>
-        <!-- Attendee Import / Export -->
-        <div class="editor-card" style="margin-top:16px">
-          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px">
-            <div style="font-weight:700;font-size:15px">📂 Import / Export Attendees</div>
-          </div>
-          <!-- Export section -->
-          <div style="margin-bottom:16px">
-            <div style="font-size:13px;font-weight:600;margin-bottom:8px">Export</div>
-            <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:8px">
-              <div style="flex:1;min-width:130px">
-                <div style="font-size:11px;color:#6b7280;margin-bottom:3px">Filter by Ticket Type</div>
-                <select style="width:100%;border:1px solid #e5e7eb;border-radius:6px;padding:6px 8px;font-size:12px;background:#fff">
-                  <option selected>All Tickets</option>
-                  <option>VIP Pass</option>
-                  <option>Standard</option>
-                  <option>Press</option>
-                </select>
-              </div>
-              <div style="flex:1;min-width:130px">
-                <div style="font-size:11px;color:#6b7280;margin-bottom:3px">Filter by Check-in</div>
-                <select style="width:100%;border:1px solid #e5e7eb;border-radius:6px;padding:6px 8px;font-size:12px;background:#fff">
-                  <option selected>All Attendees</option>
-                  <option>Checked In</option>
-                  <option>Not Checked In</option>
-                </select>
-              </div>
-              <div style="flex:1;min-width:130px">
-                <div style="font-size:11px;color:#6b7280;margin-bottom:3px">Format</div>
-                <select style="width:100%;border:1px solid #e5e7eb;border-radius:6px;padding:6px 8px;font-size:12px;background:#fff">
-                  <option selected>CSV</option>
-                  <option>Excel (.xlsx)</option>
-                  <option>JSON</option>
-                </select>
-              </div>
-            </div>
-            <button onclick="exportAttendeesCSV()" class="btn-primary" style="font-size:12px;padding:7px 16px">⬇ Export Now</button>
-          </div>
-          <hr style="border:none;border-top:1px solid #e5e7eb;margin-bottom:16px">
-          <!-- Import section -->
-          <div>
-            <div style="font-size:13px;font-weight:600;margin-bottom:8px">Import</div>
-            <div style="border:2px dashed #d1d5db;border-radius:8px;padding:20px;text-align:center;background:#f9fafb;margin-bottom:10px" id="att-drop-zone">
-              <div style="font-size:24px;margin-bottom:6px">📄</div>
-              <div style="font-size:13px;font-weight:600;color:#374151;margin-bottom:2px">Drop CSV file here</div>
-              <div style="font-size:11px;color:#9ca3af;margin-bottom:10px">or click to browse — max 5MB</div>
-              <button onclick="simulateAttendeeImport()" class="btn-secondary" style="font-size:12px;padding:6px 14px">Browse File</button>
-            </div>
-            <!-- Import validation result -->
-            <div id="att-import-result" style="display:none">
-              <div style="background:#f0fdf4;border:1px solid #bbf7d0;border-radius:8px;padding:12px;margin-bottom:8px">
-                <div style="font-size:13px;font-weight:700;color:#16a34a;margin-bottom:6px">✓ File validated — ready to import</div>
-                <div style="display:flex;gap:16px;font-size:12px;color:#374151">
-                  <span>📊 <strong>247</strong> rows detected</span>
-                  <span>✅ <strong>241</strong> valid</span>
-                  <span>⚠️ <strong>6</strong> warnings</span>
-                  <span>❌ <strong>0</strong> errors</span>
-                </div>
-              </div>
-              <div style="background:#fffbeb;border:1px solid #fde68a;border-radius:8px;padding:10px;margin-bottom:10px">
-                <div style="font-size:12px;font-weight:600;color:#d97706;margin-bottom:4px">⚠️ 6 Warnings (rows will be imported with defaults)</div>
-                <div style="font-size:11px;color:#6b7280">Row 34: Missing phone number — will use blank<br>Row 89: Duplicate email (john.doe@example.com) — will skip<br>Row 112: Invalid ticket type "VVIP" — defaulting to Standard<br>Row 156, 178, 203: Missing company name — will use blank</div>
-              </div>
-              <div style="display:flex;gap:8px">
-                <button onclick="confirmAttendeeImport()" class="btn-primary" style="font-size:12px;padding:7px 14px">Import 241 Attendees</button>
-                <button onclick="document.getElementById('att-import-result').style.display='none'" class="btn-secondary" style="font-size:12px;padding:7px 14px">Cancel</button>
-              </div>
-            </div>
-          </div>
-        </div>
       </div>
       <!-- ══ VIEW: Projects ══ -->
       <div id="viewProjects" style="display:none">
-        <div class="editor-topbar">
-          <div class="editor-topbar-left">
-            <button class="back-link" onclick="showEventEditor()">← Event Info</button>
-            <span style="font-size:14px;font-weight:700;color:var(--text1)" id="projEventTitle">Projects</span>
-          </div>
-          <div class="editor-topbar-right">
-            <button class="btn-secondary" onclick="exportProjectsCSV()">⬇ Export CSV</button>
-            <button class="btn-primary" onclick="showToast('Submit a project via the registration form')">+ Add Project</button>
-          </div>
+        <!-- Search bar -->
+        <div style="display:flex;align-items:center;gap:12px;margin-bottom:20px">
+          <input id="proj-search" class="form-input" type="text" placeholder="Search by project name or studio…" style="flex:1;max-width:400px" oninput="filterProjects()">
+          <span id="proj-count" style="font-size:13px;color:#6b7280"></span>
         </div>
 
-        <!-- Stats -->
-        <div style="display:flex;gap:12px;margin-bottom:20px">
-          <div class="editor-card" style="flex:1;text-align:center;padding:16px">
-            <div style="font-size:26px;font-weight:800;color:#2563eb" id="proj-stat-total">0</div>
-            <div style="font-size:11px;color:#6b7280;text-transform:uppercase;letter-spacing:.5px">Submitted</div>
-          </div>
-          <div class="editor-card" style="flex:1;text-align:center;padding:16px">
-            <div style="font-size:26px;font-weight:800;color:#16a34a" id="proj-stat-approved">0</div>
-            <div style="font-size:11px;color:#6b7280;text-transform:uppercase;letter-spacing:.5px">Approved</div>
-          </div>
-          <div class="editor-card" style="flex:1;text-align:center;padding:16px">
-            <div style="font-size:26px;font-weight:800;color:#d97706" id="proj-stat-pending">0</div>
-            <div style="font-size:11px;color:#6b7280;text-transform:uppercase;letter-spacing:.5px">Pending Review</div>
-          </div>
-          <div class="editor-card" style="flex:1;text-align:center;padding:16px">
-            <div style="font-size:26px;font-weight:800;color:#dc2626" id="proj-stat-rejected">0</div>
-            <div style="font-size:11px;color:#6b7280;text-transform:uppercase;letter-spacing:.5px">Rejected</div>
-          </div>
-        </div>
-
-        <!-- Submission settings -->
-        <div class="editor-card" style="margin-bottom:16px">
-          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
-            <div style="font-weight:700;font-size:15px">🎮 Submission Settings</div>
-          </div>
-          <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px">
-            <div>
-              <div style="font-size:11px;color:#6b7280;margin-bottom:4px">Submission Deadline</div>
-              <input type="date" class="form-input" value="2027-01-15">
-            </div>
-            <div>
-              <div style="font-size:11px;color:#6b7280;margin-bottom:4px">Max Projects per Company</div>
-              <input type="number" value="3" min="1" class="form-input">
-            </div>
-            <div>
-              <div style="font-size:11px;color:#6b7280;margin-bottom:4px">Open for Submissions</div>
-              <label style="display:flex;align-items:center;gap:8px;cursor:pointer;margin-top:8px">
-                <input type="checkbox" checked style="width:16px;height:16px;accent-color:#16a34a">
-                <span style="font-size:13px;font-weight:500">Accepting submissions</span>
-              </label>
-            </div>
-          </div>
-        </div>
-
-        <!-- View toggle + Search -->
-        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;gap:12px;flex-wrap:wrap">
-          <input id="proj-search" class="form-input" type="text" placeholder="Search by project name or company…" style="max-width:280px" oninput="filterProjects()">
-          <div style="display:flex;gap:4px;background:#f3f4f6;border-radius:6px;padding:3px">
-            <button id="proj-view-table" onclick="switchProjView('table',this)" style="font-size:12px;padding:5px 12px;border:none;border-radius:4px;cursor:pointer;background:#fff;font-weight:600;color:#374151">📋 Table</button>
-            <button id="proj-view-kanban" onclick="switchProjView('kanban',this)" style="font-size:12px;padding:5px 12px;border:none;border-radius:4px;cursor:pointer;background:transparent;color:#6b7280">📦 Kanban</button>
-          </div>
-        </div>
+        <!-- Project list -->
         <div class="editor-card" style="padding:0;overflow:hidden">
-          <table style="width:100%;border-collapse:collapse">
-            <thead>
-              <tr style="background:#f8f9fa;border-bottom:2px solid #e5e7eb">
-                <th style="padding:11px 16px;text-align:left;font-size:11px;font-weight:700;color:#6b7280;text-transform:uppercase;letter-spacing:.5px">Project</th>
-                <th style="padding:11px 16px;text-align:left;font-size:11px;font-weight:700;color:#6b7280;text-transform:uppercase;letter-spacing:.5px">Company</th>
-                <th style="padding:11px 16px;text-align:left;font-size:11px;font-weight:700;color:#6b7280;text-transform:uppercase;letter-spacing:.5px">Genre</th>
-                <th style="padding:11px 16px;text-align:left;font-size:11px;font-weight:700;color:#6b7280;text-transform:uppercase;letter-spacing:.5px">Platform</th>
-                <th style="padding:11px 16px;text-align:left;font-size:11px;font-weight:700;color:#6b7280;text-transform:uppercase;letter-spacing:.5px">Status</th>
-                <th style="padding:11px 16px;width:80px"></th>
-              </tr>
-            </thead>
-            <tbody id="proj-tbody"></tbody>
-          </table>
+          <div id="proj-list"></div>
           <div id="proj-empty" style="display:none;padding:56px;text-align:center;color:#9ca3af">
             <div style="font-size:40px;margin-bottom:10px">🎮</div>
             <div style="font-weight:600;font-size:15px;color:#374151">No projects submitted yet</div>
             <div style="font-size:13px;margin-top:4px">Projects will appear here once developers submit them.</div>
-          </div>
-        </div>
-        <div id="proj-footer" style="margin-top:10px;font-size:12px;color:#9ca3af"></div>
-
-        <!-- Kanban Board -->
-        <div id="proj-kanban" style="display:none;margin-top:4px">
-          <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px">
-            <!-- Submitted -->
-            <div id="kancol-submitted" style="background:#f8f9fa;border-radius:10px;padding:12px" ondragover="event.preventDefault();this.style.outline='2px dashed #2563eb'" ondragleave="this.style.outline=''" ondrop="kanbanDrop(event,'submitted')">
-              <div style="font-size:12px;font-weight:700;color:#374151;text-transform:uppercase;letter-spacing:.5px;margin-bottom:10px;display:flex;align-items:center;gap:6px">
-                <span style="width:8px;height:8px;background:#6b7280;border-radius:50%;display:inline-block"></span>Submitted
-                <span style="margin-left:auto;font-size:11px;background:#e5e7eb;color:#6b7280;border-radius:10px;padding:1px 7px">3</span>
-              </div>
-              <div style="display:flex;flex-direction:column;gap:8px">
-                <div draggable="true" ondragstart="kanbanDragStart(event,'neon-drift')" id="kcard-neon-drift" style="background:#fff;border-radius:8px;padding:12px;border:1px solid #e5e7eb;cursor:grab" onclick="showToast('Neon Drift details')">
-                  <div style="font-size:13px;font-weight:600;margin-bottom:4px">Neon Drift</div>
-                  <div style="font-size:11px;color:#6b7280">Indie Studio X · Racing</div>
-                  <div style="display:flex;gap:4px;margin-top:6px"><span style="font-size:10px;background:#dbeafe;color:#1e40af;padding:1px 6px;border-radius:3px">PC</span><span style="font-size:10px;background:#f3e8ff;color:#7e22ce;padding:1px 6px;border-radius:3px">Console</span></div>
-                </div>
-                <div draggable="true" ondragstart="kanbanDragStart(event,'pixel-quest')" id="kcard-pixel-quest" style="background:#fff;border-radius:8px;padding:12px;border:1px solid #e5e7eb;cursor:grab" onclick="showToast('Pixel Quest details')">
-                  <div style="font-size:13px;font-weight:600;margin-bottom:4px">Pixel Quest</div>
-                  <div style="font-size:11px;color:#6b7280">RetroWave · Platformer</div>
-                  <div style="display:flex;gap:4px;margin-top:6px"><span style="font-size:10px;background:#dcfce7;color:#166534;padding:1px 6px;border-radius:3px">Mobile</span></div>
-                </div>
-              </div>
-            </div>
-            <!-- Under Review -->
-            <div id="kancol-review" style="background:#fffbeb;border-radius:10px;padding:12px" ondragover="event.preventDefault();this.style.outline='2px dashed #d97706'" ondragleave="this.style.outline=''" ondrop="kanbanDrop(event,'review')">
-              <div style="font-size:12px;font-weight:700;color:#374151;text-transform:uppercase;letter-spacing:.5px;margin-bottom:10px;display:flex;align-items:center;gap:6px">
-                <span style="width:8px;height:8px;background:#d97706;border-radius:50%;display:inline-block"></span>Under Review
-                <span style="margin-left:auto;font-size:11px;background:#fde68a;color:#92400e;border-radius:10px;padding:1px 7px">4</span>
-              </div>
-              <div style="display:flex;flex-direction:column;gap:8px">
-                <div draggable="true" ondragstart="kanbanDragStart(event,'shadow-protocol')" id="kcard-shadow-protocol" style="background:#fff;border-radius:8px;padding:12px;border:1px solid #fde68a;cursor:grab" onclick="showToast('Shadow Protocol details')">
-                  <div style="font-size:13px;font-weight:600;margin-bottom:4px">Shadow Protocol</div>
-                  <div style="font-size:11px;color:#6b7280">DarkByte · Stealth RPG</div>
-                  <div style="display:flex;gap:4px;margin-top:6px"><span style="font-size:10px;background:#dbeafe;color:#1e40af;padding:1px 6px;border-radius:3px">PC</span></div>
-                </div>
-                <div draggable="true" ondragstart="kanbanDragStart(event,'crystal-realms')" id="kcard-crystal-realms" style="background:#fff;border-radius:8px;padding:12px;border:1px solid #fde68a;cursor:grab" onclick="showToast('Crystal Realms details')">
-                  <div style="font-size:13px;font-weight:600;margin-bottom:4px">Crystal Realms</div>
-                  <div style="font-size:11px;color:#6b7280">Gemstone Games · MMORPG</div>
-                  <div style="display:flex;gap:4px;margin-top:6px"><span style="font-size:10px;background:#dbeafe;color:#1e40af;padding:1px 6px;border-radius:3px">PC</span><span style="font-size:10px;background:#f3e8ff;color:#7e22ce;padding:1px 6px;border-radius:3px">Console</span></div>
-                </div>
-              </div>
-            </div>
-            <!-- Approved -->
-            <div id="kancol-approved" style="background:#f0fdf4;border-radius:10px;padding:12px" ondragover="event.preventDefault();this.style.outline='2px dashed #16a34a'" ondragleave="this.style.outline=''" ondrop="kanbanDrop(event,'approved')">
-              <div style="font-size:12px;font-weight:700;color:#374151;text-transform:uppercase;letter-spacing:.5px;margin-bottom:10px;display:flex;align-items:center;gap:6px">
-                <span style="width:8px;height:8px;background:#16a34a;border-radius:50%;display:inline-block"></span>Approved
-                <span style="margin-left:auto;font-size:11px;background:#bbf7d0;color:#166534;border-radius:10px;padding:1px 7px">5</span>
-              </div>
-              <div style="display:flex;flex-direction:column;gap:8px">
-                <div style="background:#fff;border-radius:8px;padding:12px;border:1px solid #bbf7d0;cursor:pointer" onclick="showToast('Click the ⋯ button in the table for project details')">
-                  <div style="font-size:13px;font-weight:600;margin-bottom:4px">Cyber Odyssey</div>
-                  <div style="font-size:11px;color:#6b7280">FutureLab · Action RPG</div>
-                  <div style="display:flex;gap:4px;margin-top:6px"><span style="font-size:10px;background:#dbeafe;color:#1e40af;padding:1px 6px;border-radius:3px">PC</span><span style="font-size:10px;background:#f3e8ff;color:#7e22ce;padding:1px 6px;border-radius:3px">Console</span><span style="font-size:10px;background:#dcfce7;color:#166534;padding:1px 6px;border-radius:3px">Mobile</span></div>
-                </div>
-                <div style="background:#fff;border-radius:8px;padding:12px;border:1px solid #bbf7d0;cursor:pointer" onclick="showToast('Click the ⋯ button in the table for project details')">
-                  <div style="font-size:13px;font-weight:600;margin-bottom:4px">Starfall Arena</div>
-                  <div style="font-size:11px;color:#6b7280">Nova Games · Battle Royale</div>
-                  <div style="display:flex;gap:4px;margin-top:6px"><span style="font-size:10px;background:#dbeafe;color:#1e40af;padding:1px 6px;border-radius:3px">PC</span></div>
-                </div>
-              </div>
-            </div>
-            <!-- Rejected -->
-            <div id="kancol-rejected" style="background:#fff5f5;border-radius:10px;padding:12px" ondragover="event.preventDefault();this.style.outline='2px dashed #dc2626'" ondragleave="this.style.outline=''" ondrop="kanbanDrop(event,'rejected')">
-              <div style="font-size:12px;font-weight:700;color:#374151;text-transform:uppercase;letter-spacing:.5px;margin-bottom:10px;display:flex;align-items:center;gap:6px">
-                <span style="width:8px;height:8px;background:#dc2626;border-radius:50%;display:inline-block"></span>Rejected
-                <span style="margin-left:auto;font-size:11px;background:#fecaca;color:#991b1b;border-radius:10px;padding:1px 7px">2</span>
-              </div>
-              <div style="display:flex;flex-direction:column;gap:8px">
-                <div style="background:#fff;border-radius:8px;padding:12px;border:1px solid #fecaca;cursor:pointer" onclick="showToast('Click the ⋯ button in the table for project details')">
-                  <div style="font-size:13px;font-weight:600;margin-bottom:4px">Dark Harvest</div>
-                  <div style="font-size:11px;color:#6b7280">Midnight Dev · Horror</div>
-                  <div style="font-size:10px;color:#dc2626;margin-top:4px">Reason: Content policy</div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-        <!-- Featured Projects Showcase -->
-        <div class="editor-card" style="margin-top:16px">
-          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px">
-            <div style="font-weight:700;font-size:15px">⭐ Featured Projects</div>
-            <button class="btn-secondary" style="font-size:11px;padding:4px 12px" onclick="showToast('Feature settings coming in v4')">Manage Featured</button>
-          </div>
-          <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px">
-            <!-- Project Card 1 -->
-            <div style="border:1px solid #e5e7eb;border-radius:12px;overflow:hidden;background:#fff">
-              <div style="background:linear-gradient(135deg,#1e3a8a,#2563eb);height:70px;display:flex;align-items:center;justify-content:center;font-size:28px">🚀</div>
-              <div style="padding:12px">
-                <div style="font-size:14px;font-weight:700;margin-bottom:2px">Cyber Odyssey</div>
-                <div style="font-size:11px;color:#6b7280;margin-bottom:8px">FutureLab · Action RPG</div>
-                <div style="display:flex;gap:4px;flex-wrap:wrap;margin-bottom:8px">
-                  <span style="font-size:10px;background:#dbeafe;color:#1e40af;padding:1px 6px;border-radius:3px">PC</span>
-                  <span style="font-size:10px;background:#f3e8ff;color:#7e22ce;padding:1px 6px;border-radius:3px">Console</span>
-                  <span style="font-size:10px;background:#fef3c7;color:#d97706;padding:1px 6px;border-radius:3px">#Seeking Investment</span>
-                </div>
-                <div style="font-size:11px;color:#374151;margin-bottom:10px">Open-world action RPG set in a dystopian megacity. Seeking $2M seed funding for global launch.</div>
-                <div style="display:flex;align-items:center;gap:6px;margin-bottom:8px">
-                  <div style="display:flex">
-                    <div style="width:20px;height:20px;border-radius:50%;background:#dbeafe;border:2px solid #fff;display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:700;color:#1e40af">JL</div>
-                    <div style="width:20px;height:20px;border-radius:50%;background:#dcfce7;border:2px solid #fff;margin-left:-6px;display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:700;color:#166534">MK</div>
-                    <div style="width:20px;height:20px;border-radius:50%;background:#f3e8ff;border:2px solid #fff;margin-left:-6px;display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:700;color:#7e22ce">+3</div>
-                  </div>
-                  <span style="font-size:11px;color:#9ca3af">5 team members</span>
-                </div>
-                <div style="display:flex;gap:6px">
-                  <button style="flex:1;font-size:11px;background:#eff6ff;color:#2563eb;border:none;border-radius:6px;padding:5px;cursor:pointer;font-weight:600" onclick="showToast('🎥 Opening demo video...')">&#127909; Demo</button>
-                  <button style="flex:1;font-size:11px;background:#f0fdf4;color:#16a34a;border:none;border-radius:6px;padding:5px;cursor:pointer;font-weight:600" onclick="showToast('📧 Meeting request sent to FutureLab')">Meet</button>
-                </div>
-              </div>
-            </div>
-            <!-- Project Card 2 -->
-            <div style="border:1px solid #e5e7eb;border-radius:12px;overflow:hidden;background:#fff">
-              <div style="background:linear-gradient(135deg,#7e22ce,#9333ea);height:70px;display:flex;align-items:center;justify-content:center;font-size:28px">⭐</div>
-              <div style="padding:12px">
-                <div style="font-size:14px;font-weight:700;margin-bottom:2px">Starfall Arena</div>
-                <div style="font-size:11px;color:#6b7280;margin-bottom:8px">Nova Games · Battle Royale</div>
-                <div style="display:flex;gap:4px;flex-wrap:wrap;margin-bottom:8px">
-                  <span style="font-size:10px;background:#dbeafe;color:#1e40af;padding:1px 6px;border-radius:3px">PC</span>
-                  <span style="font-size:10px;background:#dcfce7;color:#166534;padding:1px 6px;border-radius:3px">#Publishing Deal</span>
-                </div>
-                <div style="font-size:11px;color:#374151;margin-bottom:10px">Competitive battle royale with unique gravity mechanics. Looking for publishing partner in Asia-Pacific.</div>
-                <div style="display:flex;align-items:center;gap:6px;margin-bottom:8px">
-                  <div style="display:flex">
-                    <div style="width:20px;height:20px;border-radius:50%;background:#fef3c7;border:2px solid #fff;display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:700;color:#92400e">RN</div>
-                    <div style="width:20px;height:20px;border-radius:50%;background:#fee2e2;border:2px solid #fff;margin-left:-6px;display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:700;color:#991b1b">+2</div>
-                  </div>
-                  <span style="font-size:11px;color:#9ca3af">3 team members</span>
-                </div>
-                <div style="display:flex;gap:6px">
-                  <button style="flex:1;font-size:11px;background:#eff6ff;color:#2563eb;border:none;border-radius:6px;padding:5px;cursor:pointer;font-weight:600" onclick="showToast('🎥 Opening demo video...')">&#127909; Demo</button>
-                  <button style="flex:1;font-size:11px;background:#f0fdf4;color:#16a34a;border:none;border-radius:6px;padding:5px;cursor:pointer;font-weight:600" onclick="showToast('📧 Meeting request sent to Nova Games')">Meet</button>
-                </div>
-              </div>
-            </div>
-            <!-- Project Card 3 -->
-            <div style="border:1px solid #e5e7eb;border-radius:12px;overflow:hidden;background:#fff">
-              <div style="background:linear-gradient(135deg,#166534,#16a34a);height:70px;display:flex;align-items:center;justify-content:center;font-size:28px">🎮</div>
-              <div style="padding:12px">
-                <div style="font-size:14px;font-weight:700;margin-bottom:2px">Crystal Realms</div>
-                <div style="font-size:11px;color:#6b7280;margin-bottom:8px">Gemstone Games · MMORPG</div>
-                <div style="display:flex;gap:4px;flex-wrap:wrap;margin-bottom:8px">
-                  <span style="font-size:10px;background:#dbeafe;color:#1e40af;padding:1px 6px;border-radius:3px">PC</span>
-                  <span style="font-size:10px;background:#f3e8ff;color:#7e22ce;padding:1px 6px;border-radius:3px">Console</span>
-                  <span style="font-size:10px;background:#fce7f3;color:#be185d;padding:1px 6px;border-radius:3px">#Co-Dev Partner</span>
-                </div>
-                <div style="font-size:11px;color:#374151;margin-bottom:10px">Fantasy MMORPG with player-driven economy. Seeking co-development studio with server infrastructure expertise.</div>
-                <div style="display:flex;align-items:center;gap:6px;margin-bottom:8px">
-                  <div style="display:flex">
-                    <div style="width:20px;height:20px;border-radius:50%;background:#dcfce7;border:2px solid #fff;display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:700;color:#166534">AP</div>
-                    <div style="width:20px;height:20px;border-radius:50%;background:#dbeafe;border:2px solid #fff;margin-left:-6px;display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:700;color:#1e40af">+4</div>
-                  </div>
-                  <span style="font-size:11px;color:#9ca3af">5 team members</span>
-                </div>
-                <div style="display:flex;gap:6px">
-                  <button style="flex:1;font-size:11px;background:#eff6ff;color:#2563eb;border:none;border-radius:6px;padding:5px;cursor:pointer;font-weight:600" onclick="showToast('🎥 Opening demo video...')">&#127909; Demo</button>
-                  <button style="flex:1;font-size:11px;background:#f0fdf4;color:#16a34a;border:none;border-radius:6px;padding:5px;cursor:pointer;font-weight:600" onclick="showToast('📧 Meeting request sent to Gemstone Games')">Meet</button>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-        <!-- Project Scoring Leaderboard -->
-        <div class="editor-card" style="margin-top:16px">
-          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px">
-            <div style="font-weight:700;font-size:15px">🏅 Project Scoring & Leaderboard</div>
-            <button onclick="recalcProjectRanks()" class="btn-secondary" style="font-size:12px;padding:6px 12px">↻ Recalculate</button>
-          </div>
-          <!-- Scoring criteria weights -->
-          <div style="display:flex;gap:8px;margin-bottom:14px;flex-wrap:wrap">
-            <div style="flex:1;min-width:120px;background:#f8f9fa;border-radius:8px;padding:8px;text-align:center">
-              <div style="font-size:11px;color:#6b7280;margin-bottom:2px">Innovation</div>
-              <div style="font-size:16px;font-weight:700;color:#2563eb">40%</div>
-            </div>
-            <div style="flex:1;min-width:120px;background:#f8f9fa;border-radius:8px;padding:8px;text-align:center">
-              <div style="font-size:11px;color:#6b7280;margin-bottom:2px">Market Potential</div>
-              <div style="font-size:16px;font-weight:700;color:#9333ea">35%</div>
-            </div>
-            <div style="flex:1;min-width:120px;background:#f8f9fa;border-radius:8px;padding:8px;text-align:center">
-              <div style="font-size:11px;color:#6b7280;margin-bottom:2px">Team Quality</div>
-              <div style="font-size:16px;font-weight:700;color:#16a34a">25%</div>
-            </div>
-          </div>
-          <!-- Leaderboard table -->
-          <table style="width:100%;border-collapse:collapse">
-            <thead>
-              <tr style="border-bottom:2px solid #e5e7eb">
-                <th style="text-align:left;padding:8px 0;font-size:11px;color:#9ca3af;font-weight:600;text-transform:uppercase;width:30px">#</th>
-                <th style="text-align:left;padding:8px 0;font-size:11px;color:#9ca3af;font-weight:600;text-transform:uppercase">Project</th>
-                <th style="text-align:center;padding:8px 0;font-size:11px;color:#9ca3af;font-weight:600;text-transform:uppercase">Innovation</th>
-                <th style="text-align:center;padding:8px 0;font-size:11px;color:#9ca3af;font-weight:600;text-transform:uppercase">Market</th>
-                <th style="text-align:center;padding:8px 0;font-size:11px;color:#9ca3af;font-weight:600;text-transform:uppercase">Team</th>
-                <th style="text-align:center;padding:8px 0;font-size:11px;color:#9ca3af;font-weight:600;text-transform:uppercase">Total</th>
-                <th style="padding:8px 0;width:80px"></th>
-              </tr>
-            </thead>
-            <tbody id="proj-score-tbody">
-              <tr style="border-bottom:1px solid #f3f4f6;background:#fef9c3">
-                <td style="padding:10px 0;font-size:13px;font-weight:700;color:#d97706">🥇</td>
-                <td style="padding:10px 0">
-                  <div style="font-size:13px;font-weight:700">Stellar Drift</div>
-                  <div style="font-size:11px;color:#6b7280">Orbit Games</div>
-                </td>
-                <td style="padding:10px 0;text-align:center">
-                  <input type="number" min="1" max="10" value="9" style="width:44px;border:1px solid #e5e7eb;border-radius:4px;padding:3px;font-size:12px;text-align:center" onchange="recalcProjectRanks()">
-                </td>
-                <td style="padding:10px 0;text-align:center">
-                  <input type="number" min="1" max="10" value="8" style="width:44px;border:1px solid #e5e7eb;border-radius:4px;padding:3px;font-size:12px;text-align:center" onchange="recalcProjectRanks()">
-                </td>
-                <td style="padding:10px 0;text-align:center">
-                  <input type="number" min="1" max="10" value="9" style="width:44px;border:1px solid #e5e7eb;border-radius:4px;padding:3px;font-size:12px;text-align:center" onchange="recalcProjectRanks()">
-                </td>
-                <td style="padding:10px 0;text-align:center;font-size:14px;font-weight:700;color:#2563eb" id="proj-total-1">8.65</td>
-                <td style="padding:10px 0;text-align:right"><button onclick="showToast('Detailed score report for Stellar Drift')" style="font-size:11px;border:none;background:#eff6ff;color:#2563eb;border-radius:4px;padding:3px 8px;cursor:pointer">Details</button></td>
-              </tr>
-              <tr style="border-bottom:1px solid #f3f4f6">
-                <td style="padding:10px 0;font-size:13px;font-weight:700;color:#6b7280">🥈</td>
-                <td style="padding:10px 0">
-                  <div style="font-size:13px;font-weight:700">Echo Protocol</div>
-                  <div style="font-size:11px;color:#6b7280">Hollow Depths Studio</div>
-                </td>
-                <td style="padding:10px 0;text-align:center">
-                  <input type="number" min="1" max="10" value="8" style="width:44px;border:1px solid #e5e7eb;border-radius:4px;padding:3px;font-size:12px;text-align:center" onchange="recalcProjectRanks()">
-                </td>
-                <td style="padding:10px 0;text-align:center">
-                  <input type="number" min="1" max="10" value="7" style="width:44px;border:1px solid #e5e7eb;border-radius:4px;padding:3px;font-size:12px;text-align:center" onchange="recalcProjectRanks()">
-                </td>
-                <td style="padding:10px 0;text-align:center">
-                  <input type="number" min="1" max="10" value="8" style="width:44px;border:1px solid #e5e7eb;border-radius:4px;padding:3px;font-size:12px;text-align:center" onchange="recalcProjectRanks()">
-                </td>
-                <td style="padding:10px 0;text-align:center;font-size:14px;font-weight:700;color:#2563eb" id="proj-total-2">7.65</td>
-                <td style="padding:10px 0;text-align:right"><button onclick="showToast('Detailed score report for Echo Protocol')" style="font-size:11px;border:none;background:#eff6ff;color:#2563eb;border-radius:4px;padding:3px 8px;cursor:pointer">Details</button></td>
-              </tr>
-              <tr>
-                <td style="padding:10px 0;font-size:13px;font-weight:700;color:#92400e">🥉</td>
-                <td style="padding:10px 0">
-                  <div style="font-size:13px;font-weight:700">Crystal Realms</div>
-                  <div style="font-size:11px;color:#6b7280">Gemstone Games</div>
-                </td>
-                <td style="padding:10px 0;text-align:center">
-                  <input type="number" min="1" max="10" value="7" style="width:44px;border:1px solid #e5e7eb;border-radius:4px;padding:3px;font-size:12px;text-align:center" onchange="recalcProjectRanks()">
-                </td>
-                <td style="padding:10px 0;text-align:center">
-                  <input type="number" min="1" max="10" value="9" style="width:44px;border:1px solid #e5e7eb;border-radius:4px;padding:3px;font-size:12px;text-align:center" onchange="recalcProjectRanks()">
-                </td>
-                <td style="padding:10px 0;text-align:center">
-                  <input type="number" min="1" max="10" value="7" style="width:44px;border:1px solid #e5e7eb;border-radius:4px;padding:3px;font-size:12px;text-align:center" onchange="recalcProjectRanks()">
-                </td>
-                <td style="padding:10px 0;text-align:center;font-size:14px;font-weight:700;color:#2563eb" id="proj-total-3">7.70</td>
-                <td style="padding:10px 0;text-align:right"><button onclick="showToast('Detailed score report for Crystal Realms')" style="font-size:11px;border:none;background:#eff6ff;color:#2563eb;border-radius:4px;padding:3px 8px;cursor:pointer">Details</button></td>
-              </tr>
-            </tbody>
-          </table>
-          <div style="margin-top:10px;display:flex;gap:8px">
-            <button onclick="showToast('Score sheet exported to Excel')" class="btn-secondary" style="font-size:12px;padding:7px 14px">Export Scores</button>
-            <button onclick="showToast('Winners announced to all projects')" class="btn-primary" style="font-size:12px;padding:7px 14px">Announce Winners</button>
           </div>
         </div>
       </div>
@@ -7843,55 +7155,56 @@ function showAttendees() {
   hideAllViews();
   document.getElementById('viewAttendees').style.display = 'block';
 
-  const title = currentEvent ? (currentEvent.name || 'Untitled Event') : '';
-  document.getElementById('attEventTitle').textContent = title || 'Attendees';
+  const ev = currentEvent;
+  let regs = [];
+  try { regs = JSON.parse(localStorage.getItem('gc_registrations') || '[]'); } catch(e) {}
+  if (ev) regs = regs.filter(r => r.eventTitle === (ev.name || ''));
 
-  const regs = (() => { try { return JSON.parse(localStorage.getItem('gc_registrations') || '[]'); } catch(e){ return []; } })();
-  let data = title ? regs.filter(r => r.eventTitle === title) : regs;
-
-  if (!data.length) {
-    data = [
-      {name:'Ray Zhang',  company:'Game Connection', jobTitle:'CEO',              checkedIn:true,  registeredAt:'2026-03-01'},
-      {name:'Alex Chen',  company:'Ubisoft',          jobTitle:'Producer',         checkedIn:true,  registeredAt:'2026-03-02'},
-      {name:'Sarah Kim',  company:'EA Games',         jobTitle:'Art Director',     checkedIn:false, registeredAt:'2026-03-03'},
-      {name:'Tom Wu',     company:'Tencent',          jobTitle:'Director',         checkedIn:true,  registeredAt:'2026-03-04'},
-      {name:'Lisa Park',  company:'Sony Interactive', jobTitle:'Dev Manager',      checkedIn:false, registeredAt:'2026-03-05'},
-      {name:'Yuki Tanaka',company:'Bandai Namco',     jobTitle:'Business Dev',     checkedIn:true,  registeredAt:'2026-03-06'},
-      {name:'Priya Sharma',company:'Ubisoft',         jobTitle:'Producer',         checkedIn:false, registeredAt:'2026-03-07'},
+  // Fallback demo data
+  if (!regs.length) {
+    regs = [
+      { name:'Ray Zhang',    company:'Game Connection', jobTitle:'CEO',          id:'u001' },
+      { name:'Alex Chen',    company:'Ubisoft',          jobTitle:'Producer',     id:'u002' },
+      { name:'Sarah Kim',    company:'EA Games',         jobTitle:'Art Director', id:'u003' },
+      { name:'Tom Wu',       company:'Tencent',          jobTitle:'Director',     id:'u004' },
+      { name:'Lisa Park',    company:'Sony Interactive', jobTitle:'Dev Manager',  id:'u005' },
+      { name:'Yuki Tanaka',  company:'Bandai Namco',     jobTitle:'Business Dev', id:'u006' },
+      { name:'Priya Sharma', company:'Ubisoft',          jobTitle:'Producer',     id:'u007' },
     ];
-  } else {
-    data = data.map((r, i) => ({...r, checkedIn: i % 3 !== 2}));
   }
-
-  _attAll = data;
-  _attTab = 'all';
-  document.getElementById('att-search').value = '';
-
-  // Update stats
-  const total = data.length;
-  const ci = data.filter(r => r.checkedIn).length;
-  const pct = total ? Math.round(ci/total*100) : 0;
-  document.getElementById('att-stat-total').textContent = total;
-  document.getElementById('att-stat-checkedin').textContent = ci;
-  document.getElementById('att-stat-pending').textContent = total - ci;
-  document.getElementById('att-checkin-bar').style.width = pct + '%';
-  document.getElementById('att-checkin-pct').textContent = pct + '%';
-
-  filterAttendeesByTab('all');
+  _attAll = regs;
+  const searchEl = document.getElementById('att-search');
+  if (searchEl) searchEl.value = '';
+  renderAttendeeList(_attAll);
 }
 
-function filterAttendeesByTab(tab) {
-  _attTab = tab;
-  ['all','in','out'].forEach(t => {
-    const btn = document.getElementById('att-tab-'+t);
-    if (btn) {
-      btn.style.background = t === tab ? '#fff' : 'transparent';
-      btn.style.color = t === tab ? '#111827' : '#6b7280';
-      btn.style.boxShadow = t === tab ? '0 1px 3px rgba(0,0,0,.1)' : 'none';
-    }
-  });
-  filterAttendees();
+
+
+function renderAttendeeList(rows) {
+  const list = document.getElementById('att-list');
+  const empty = document.getElementById('att-empty');
+  const countEl = document.getElementById('att-count');
+  if (countEl) countEl.textContent = rows.length + ' attendee' + (rows.length !== 1 ? 's' : '');
+  if (!rows.length) {
+    list.innerHTML = '';
+    if (empty) empty.style.display = 'block';
+    return;
+  }
+  if (empty) empty.style.display = 'none';
+  list.innerHTML = rows.map((r, i) => {
+    const initials = (r.name || '?').split(' ').map(w => w[0]).join('').toUpperCase().slice(0, 2);
+    const profileUrl = 'Profile_v2_PC.html?id=' + (r.id || i);
+    return `<div onclick="window.open('${profileUrl}','_blank')" style="display:flex;align-items:center;gap:14px;padding:14px 20px;border-bottom:1px solid #f3f4f6;cursor:pointer" onmouseover="this.style.background='#f9fafb'" onmouseout="this.style.background=''">
+      <div style="width:38px;height:38px;border-radius:50%;background:linear-gradient(135deg,#1e3a8a,#2563eb);display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;color:#fff;flex-shrink:0">${initials}</div>
+      <div style="flex:1;min-width:0">
+        <div style="font-weight:600;font-size:14px;color:#111827">${r.name || '—'}</div>
+        <div style="font-size:12px;color:#6b7280;margin-top:2px">${r.jobTitle || r.role || ''} ${r.company ? '· ' + r.company : ''}</div>
+      </div>
+      <div style="font-size:18px;color:#d1d5db">›</div>
+    </div>`;
+  }).join('');
 }
+
 
 function simulateCheckin() {
   const input = document.getElementById('qr-sim-input');
@@ -8252,77 +7565,62 @@ function showProjects() {
   document.getElementById('viewProjects').style.display = 'block';
 
   const ev = currentEvent;
-  document.getElementById('projEventTitle').textContent = ev ? ev.name || 'Projects' : 'Projects';
-
   let projects = [];
   try { projects = JSON.parse(localStorage.getItem('gc_projects') || '[]'); } catch(e) {}
   if (ev) projects = projects.filter(p => p.eventId === ev.id);
 
+  // Fallback demo data
   if (!projects.length) {
     projects = [
-      { name:'Stellar Drift',  company:'Indie Forge',       genre:'Action RPG',  platform:'PC / Console', status:'Approved' },
-      { name:'Neon Abyss 2',   company:'Veewo Games',       genre:'Roguelite',   platform:'PC / Switch',  status:'Pending' },
-      { name:'Echo Protocol',  company:'Tarsier Studios',   genre:'Puzzle',      platform:'PC',           status:'Approved' },
-      { name:'Void Hunters',   company:'Funcom',            genre:'Survival',    platform:'PC / Console', status:'Rejected' },
-      { name:'Pixel Odyssey',  company:'Devolver Digital',  genre:'Platformer',  platform:'All',          status:'Pending' },
-      { name:'Arcane Depths',  company:'Raw Fury',          genre:'Dungeon RPG', platform:'PC',           status:'Approved' },
+      { name:'Stellar Drift',  company:'Indie Forge',      genre:'Action RPG',  platform:'PC / Console', id:'p001' },
+      { name:'Neon Abyss 2',   company:'Veewo Games',      genre:'Roguelite',   platform:'PC / Switch',  id:'p002' },
+      { name:'Echo Protocol',  company:'Tarsier Studios',  genre:'Puzzle',      platform:'PC',           id:'p003' },
+      { name:'Void Hunters',   company:'Funcom',           genre:'Survival',    platform:'PC / Console', id:'p004' },
+      { name:'Pixel Odyssey',  company:'Devolver Digital', genre:'Platformer',  platform:'All',          id:'p005' },
+      { name:'Arcane Depths',  company:'Raw Fury',         genre:'Dungeon RPG', platform:'PC',           id:'p006' },
     ];
   }
   _projAll = projects;
-
-  // Stats
-  const total    = projects.length;
-  const approved = projects.filter(p => p.status==='Approved').length;
-  const pending  = projects.filter(p => p.status==='Pending').length;
-  const rejected = projects.filter(p => p.status==='Rejected').length;
-  document.getElementById('proj-stat-total').textContent    = total;
-  document.getElementById('proj-stat-approved').textContent = approved;
-  document.getElementById('proj-stat-pending').textContent  = pending;
-  document.getElementById('proj-stat-rejected').textContent = rejected;
-
-  renderProjectsTable(_projAll);
+  const searchEl = document.getElementById('proj-search');
+  if (searchEl) searchEl.value = '';
+  renderProjectList(_projAll);
 }
+
 
 function filterProjects() {
-  const q = document.getElementById('proj-search').value.toLowerCase();
-  renderProjectsTable(q ? _projAll.filter(p => (p.name||'').toLowerCase().includes(q) || (p.company||'').toLowerCase().includes(q)) : _projAll);
+  const q = (document.getElementById('proj-search').value || '').toLowerCase().trim();
+  const rows = q ? _projAll.filter(p =>
+    (p.name||'').toLowerCase().includes(q) ||
+    (p.company||'').toLowerCase().includes(q) ||
+    (p.genre||'').toLowerCase().includes(q)
+  ) : _projAll;
+  renderProjectList(rows);
 }
 
-function renderProjectsTable(rows) {
-  const tbody = document.getElementById('proj-tbody');
+function renderProjectList(rows) {
+  const list = document.getElementById('proj-list');
   const empty = document.getElementById('proj-empty');
-  const footer = document.getElementById('proj-footer');
-  const badge = document.getElementById('proj-count-badge');
-  if (badge) badge.textContent = rows.length + ' submitted';
+  const countEl = document.getElementById('proj-count');
+  if (countEl) countEl.textContent = rows.length + ' project' + (rows.length !== 1 ? 's' : '');
   if (!rows.length) {
-    tbody.innerHTML = '';
-    empty.style.display = 'block';
-    footer.textContent = '';
+    list.innerHTML = '';
+    if (empty) empty.style.display = 'block';
     return;
   }
-  empty.style.display = 'none';
-  const statusStyle = {
-    Approved: 'background:#dcfce7;color:#16a34a',
-    Pending:  'background:#fef3c7;color:#d97706',
-    Rejected: 'background:#fee2e2;color:#dc2626'
-  };
-  tbody.innerHTML = rows.map(p => `
-    <tr style="border-bottom:1px solid #f3f4f6" onmouseover="this.style.background='#f9fafb'" onmouseout="this.style.background=''">
-      <td style="padding:12px 16px;font-size:14px;font-weight:600;color:var(--text1)">${p.name||'-'}</td>
-      <td style="padding:12px 16px;font-size:13px;color:#374151">${p.company||'-'}</td>
-      <td style="padding:12px 16px;font-size:13px;color:#6b7280">${p.genre||'-'}</td>
-      <td style="padding:12px 16px;font-size:13px;color:#6b7280">${p.platform||'-'}</td>
-      <td style="padding:12px 16px">
-        <span style="font-size:11px;font-weight:600;padding:3px 10px;border-radius:20px;${statusStyle[p.status]||'background:#f3f4f6;color:#6b7280'}">${p.status||'-'}</span>
-      </td>
-      <td style="padding:12px 16px;text-align:right">
-        <button style="border:none;background:none;cursor:pointer;color:#9ca3af;font-size:13px;padding:4px 8px;border-radius:4px" onmouseover="this.style.background='#f3f4f6'" onmouseout="this.style.background='none'" onclick="openProjectDrawer(${JSON.stringify(p)})">&#8943;</button>
-      </td>
-    </tr>`).join('');
-  const approved = rows.filter(r => r.status==='Approved').length;
-  const pending  = rows.filter(r => r.status==='Pending').length;
-  footer.textContent = `Showing ${rows.length} projects · ${approved} approved · ${pending} pending`;
+  if (empty) empty.style.display = 'none';
+  list.innerHTML = rows.map((p, i) => {
+    const projectUrl = 'ProjectPage_v1_PC.html?id=' + (p.id || i);
+    return `<div onclick="window.open('${projectUrl}','_blank')" style="display:flex;align-items:center;gap:14px;padding:14px 20px;border-bottom:1px solid #f3f4f6;cursor:pointer" onmouseover="this.style.background='#f9fafb'" onmouseout="this.style.background=''">
+      <div style="width:38px;height:38px;border-radius:10px;background:linear-gradient(135deg,#064e3b,#059669);display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0">🎮</div>
+      <div style="flex:1;min-width:0">
+        <div style="font-weight:600;font-size:14px;color:#111827">${p.name || '—'}</div>
+        <div style="font-size:12px;color:#6b7280;margin-top:2px">${p.genre || ''} ${p.company ? '· ' + p.company : ''} ${p.platform ? '· ' + p.platform : ''}</div>
+      </div>
+      <div style="font-size:18px;color:#d1d5db">›</div>
+    </div>`;
+  }).join('');
 }
+
 
 function exportProjectsCSV() {
   if (!_projAll.length) return;
