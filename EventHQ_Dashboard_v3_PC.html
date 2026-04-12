@@ -1158,199 +1158,60 @@ body.dark-mode .unsaved-bar { background: #1e2533; border-color: #2d3748; }
       </div>
       <!-- ══ VIEW: Free Ticket ══ -->
       <div id="viewFreeTicket" style="display:none">
-        <div class="editor-topbar">
-          <div class="editor-topbar-left">
-            <button class="back-link" onclick="showEventEditor()">← Event Info</button>
-            <span style="font-size:14px;font-weight:700;color:var(--text1)">Free Ticket</span>
+
+
+        <!-- General Admission card -->
+        <div class="editor-card" style="margin-bottom:16px;border-left:4px solid #16a34a">
+          <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:12px">
+            <div>
+              <input type="text" id="ft-name" value="General Admission" class="form-input" style="font-size:16px;font-weight:700;border:none;padding:0;background:transparent;color:var(--text1);width:260px" placeholder="Ticket name">
+              <input type="text" id="ft-desc" value="Standard free entry for all attendees" class="form-input" style="font-size:12px;border:none;padding:0;background:transparent;color:#6b7280;margin-top:4px;width:320px" placeholder="Short description">
+            </div>
+            <span style="font-size:11px;background:#dcfce7;color:#16a34a;padding:3px 9px;border-radius:20px;font-weight:600">Active</span>
           </div>
-          <div class="editor-topbar-right">
-            <button class="btn-secondary" onclick="showPreview()">👁 Preview Form</button>
-            <button class="btn-primary" onclick="clearDirty()">Save Changes</button>
+          <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:12px">
+            <div>
+              <div style="font-size:10px;color:#9ca3af;text-transform:uppercase;letter-spacing:.5px">Claimed</div>
+              <div style="font-weight:700;font-size:22px;color:#16a34a" id="ft-claimed">347</div>
+            </div>
+            <div>
+              <div style="font-size:10px;color:#9ca3af;text-transform:uppercase;letter-spacing:.5px">Remaining</div>
+              <div style="font-weight:700;font-size:22px" id="ft-remaining">153</div>
+            </div>
+            <div>
+              <div style="font-size:10px;color:#9ca3af;text-transform:uppercase;letter-spacing:.5px">Capacity</div>
+              <input type="number" id="ft-total" value="500" class="form-input" style="font-size:18px;font-weight:700;border:none;padding:0;background:transparent;width:80px">
+            </div>
+            <div>
+              <div style="font-size:10px;color:#9ca3af;text-transform:uppercase;letter-spacing:.5px">Deadline</div>
+              <input type="date" id="ft-deadline" class="form-input" style="font-size:13px;border:none;padding:0;background:transparent">
+            </div>
           </div>
+          <div style="height:6px;background:#e5e7eb;border-radius:3px">
+            <div id="ft-bar" style="width:69%;height:100%;background:#16a34a;border-radius:3px;transition:width .3s"></div>
+          </div>
+          <div style="font-size:11px;color:#6b7280;margin-top:4px" id="ft-pct">69% claimed</div>
         </div>
 
-
-
-        <!-- Status toggle -->
+        <!-- Access Code Import -->
         <div class="editor-card" style="margin-bottom:16px">
-          <div style="display:flex;justify-content:space-between;align-items:center">
-            <div>
-              <div style="font-weight:700;font-size:15px;margin-bottom:2px">🎫 Accept Free Registrations</div>
-              <div style="font-size:12px;color:#6b7280">When enabled, attendees can claim a free ticket</div>
-            </div>
-            <label style="position:relative;display:inline-block;width:44px;height:24px;flex-shrink:0">
-              <input type="checkbox" checked style="opacity:0;width:0;height:0">
-              <span style="position:absolute;cursor:pointer;top:0;left:0;right:0;bottom:0;background:#16a34a;border-radius:24px;transition:.3s" onclick="this.previousElementSibling.click()"></span>
-            </label>
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
+            <div style="font-weight:700;font-size:15px">Free Access Codes</div>
           </div>
+          <textarea id="ft-emails" class="form-input" rows="4" placeholder="Paste emails here, one per line or comma-separated" style="resize:vertical;font-size:13px;width:100%;box-sizing:border-box"></textarea>
+          <div style="display:flex;justify-content:flex-end;margin-top:8px">
+            <button class="btn-primary" style="font-size:13px" onclick="importFTEmails()">Import &#8594;</button>
+          </div>
+          <div id="ft-sent-list" style="margin-top:10px"></div>
         </div>
 
-        <!-- Ticket types -->
-        <div class="editor-card" style="margin-bottom:16px">
-          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px">
-            <div style="font-weight:700;font-size:15px">Ticket Types</div>
-            <button class="btn-secondary" style="font-size:12px;padding:6px 12px" onclick="showToast('Click + to add a new type')">+ Add Type</button>
-          </div>
-          <div style="display:flex;flex-direction:column;gap:8px">
-            <div style="border:1px solid #e5e7eb;border-radius:10px;padding:14px;display:flex;align-items:center;gap:14px">
-              <span style="font-size:22px">🎫</span>
-              <div style="flex:1">
-                <div style="font-size:14px;font-weight:700">General Admission</div>
-                <div style="font-size:12px;color:#6b7280;margin-top:2px">Standard free entry · Max 1 per person · Unlimited capacity</div>
-                <div style="height:5px;background:#e5e7eb;border-radius:3px;margin-top:8px;max-width:200px"><div style="width:69%;height:100%;background:#2563eb;border-radius:3px"></div></div>
-              </div>
-              <div style="text-align:right">
-                <span style="font-size:11px;background:#dcfce7;color:#16a34a;padding:3px 9px;border-radius:20px;font-weight:600">Active</span>
-                <div style="font-size:12px;color:#6b7280;margin-top:6px">347 / 500</div>
-              </div>
-              <button style="border:none;background:none;cursor:pointer;color:#9ca3af;font-size:14px" onclick="showToast('Double-click to edit inline')">&#9999;&#65039;</button>
-              <button style="border:none;background:none;cursor:pointer;color:#9ca3af;font-size:13px;padding:4px" title="Clone ticket type" onclick="cloneTicketType('General Admission')">&#128203;</button>
-            </div>
-            <div style="border:1px solid #e5e7eb;border-radius:10px;padding:14px;display:flex;align-items:center;gap:14px">
-              <span style="font-size:22px">⭐</span>
-              <div style="flex:1">
-                <div style="font-size:14px;font-weight:700">Speaker Pass</div>
-                <div style="font-size:12px;color:#6b7280;margin-top:2px">Speakers &amp; panelists · Invite only · Includes backstage access</div>
-                <div style="height:5px;background:#e5e7eb;border-radius:3px;margin-top:8px;max-width:200px"><div style="width:76%;height:100%;background:#1d4ed8;border-radius:3px"></div></div>
-              </div>
-              <div style="text-align:right">
-                <span style="font-size:11px;background:#dbeafe;color:#1e40af;padding:3px 9px;border-radius:20px;font-weight:600">Invite Only</span>
-                <div style="font-size:12px;color:#6b7280;margin-top:6px">38 / 50</div>
-              </div>
-              <button style="border:none;background:none;cursor:pointer;color:#9ca3af;font-size:14px" onclick="showToast('Double-click to edit inline')">&#9999;&#65039;</button>
-              <button style="border:none;background:none;cursor:pointer;color:#9ca3af;font-size:13px;padding:4px" title="Clone ticket type" onclick="cloneTicketType('Speaker Pass')">&#128203;</button>
-            </div>
-            <div style="border:1px solid #e5e7eb;border-radius:10px;padding:14px;display:flex;align-items:center;gap:14px">
-              <span style="font-size:22px">🏢</span>
-              <div style="flex:1">
-                <div style="font-size:14px;font-weight:700">Press Pass</div>
-                <div style="font-size:12px;color:#6b7280;margin-top:2px">Media &amp; journalists · Application required · Includes press room</div>
-                <div style="height:5px;background:#e5e7eb;border-radius:3px;margin-top:8px;max-width:200px"><div style="width:40%;height:100%;background:#d97706;border-radius:3px"></div></div>
-              </div>
-              <div style="text-align:right">
-                <span style="font-size:11px;background:#fef3c7;color:#d97706;padding:3px 9px;border-radius:20px;font-weight:600">Application</span>
-                <div style="font-size:12px;color:#6b7280;margin-top:6px">12 / 30</div>
-              </div>
-              <button style="border:none;background:none;cursor:pointer;color:#9ca3af;font-size:14px" onclick="showToast('Double-click to edit inline')">&#9999;&#65039;</button>
-              <button style="border:none;background:none;cursor:pointer;color:#9ca3af;font-size:13px;padding:4px" title="Clone ticket type" onclick="cloneTicketType('Press Pass')">&#128203;</button>
-            </div>
-          </div>
-          <div id="cloned-tickets" style="display:flex;flex-direction:column;gap:8px;margin-top:8px"></div>
-        </div>
-
-        <!-- Capacity & deadline -->
-        <div class="editor-card" style="margin-bottom:16px">
-          <div style="font-weight:700;font-size:15px;margin-bottom:14px">🎯 Capacity &amp; Deadline</div>
-          <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px">
-            <div>
-              <div style="font-size:11px;color:#6b7280;margin-bottom:4px">Total Capacity</div>
-              <input type="number" value="500" class="form-input">
-            </div>
-            <div>
-              <div style="font-size:11px;color:#6b7280;margin-bottom:4px">Claim Deadline</div>
-              <input type="date" class="form-input">
-            </div>
-            <div>
-              <div style="font-size:11px;color:#6b7280;margin-bottom:4px">Waitlist</div>
-              <label style="display:flex;align-items:center;gap:8px;cursor:pointer;margin-top:8px">
-                <input type="checkbox" style="width:16px;height:16px;accent-color:#16a34a">
-                <span style="font-size:13px">Enable waitlist</span>
-              </label>
-            </div>
-          </div>
-        </div>
-
-        <!-- Access Codes -->
+        <!-- Ticket Holders -->
         <div class="editor-card">
-          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px">
-            <div style="font-weight:700;font-size:15px">🔑 Access Codes</div>
-            <button class="btn-secondary" style="font-size:12px;padding:6px 12px" onclick="showToast('Code generated!')">+ Generate Code</button>
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+            <div style="font-weight:700;font-size:15px">Ticket Holders</div>
+            <input type="text" placeholder="Search&#8230;" oninput="filterFTHolders(this.value)" class="form-input" style="width:180px;font-size:13px">
           </div>
-          <table style="width:100%;border-collapse:collapse">
-            <thead><tr style="border-bottom:1px solid #e5e7eb">
-              <th style="text-align:left;padding:8px 0;font-size:11px;color:#9ca3af;font-weight:600;text-transform:uppercase;letter-spacing:.5px">Code</th>
-              <th style="text-align:left;padding:8px 0;font-size:11px;color:#9ca3af;font-weight:600;text-transform:uppercase;letter-spacing:.5px">Type</th>
-              <th style="text-align:left;padding:8px 0;font-size:11px;color:#9ca3af;font-weight:600;text-transform:uppercase;letter-spacing:.5px">Used</th>
-              <th style="text-align:left;padding:8px 0;font-size:11px;color:#9ca3af;font-weight:600;text-transform:uppercase;letter-spacing:.5px">Limit</th>
-              <th style="text-align:left;padding:8px 0;font-size:11px;color:#9ca3af;font-weight:600;text-transform:uppercase;letter-spacing:.5px">Status</th>
-              <th></th>
-            </tr></thead>
-            <tbody>
-              <tr style="border-bottom:1px solid #f3f4f6">
-                <td style="padding:10px 0;font-size:13px;font-weight:700;font-family:monospace;color:#2563eb">PRESS2026</td>
-                <td style="padding:10px 0;font-size:13px;color:#6b7280">Press Pass</td>
-                <td style="padding:10px 0;font-size:13px">12</td>
-                <td style="padding:10px 0;font-size:13px">50</td>
-                <td style="padding:10px 0"><span style="font-size:11px;background:#dcfce7;color:#16a34a;padding:2px 8px;border-radius:4px;font-weight:600">Active</span></td>
-                <td style="padding:10px 0;text-align:right"><button style="border:none;background:none;cursor:pointer;color:#9ca3af" onclick="showToast('Copied!')">&#128203;</button></td>
-              </tr>
-              <tr style="border-bottom:1px solid #f3f4f6">
-                <td style="padding:10px 0;font-size:13px;font-weight:700;font-family:monospace;color:#9333ea">VIP-SPEAKER</td>
-                <td style="padding:10px 0;font-size:13px;color:#6b7280">Speaker Pass</td>
-                <td style="padding:10px 0;font-size:13px">38</td>
-                <td style="padding:10px 0;font-size:13px">40</td>
-                <td style="padding:10px 0"><span style="font-size:11px;background:#f3e8ff;color:#9333ea;padding:2px 8px;border-radius:4px;font-weight:600">Active</span></td>
-                <td style="padding:10px 0;text-align:right"><button style="border:none;background:none;cursor:pointer;color:#9ca3af" onclick="showToast('Copied!')">&#128203;</button></td>
-              </tr>
-              <tr>
-                <td style="padding:10px 0;font-size:13px;font-weight:700;font-family:monospace;color:#9ca3af">EARLYBIRD</td>
-                <td style="padding:10px 0;font-size:13px;color:#6b7280">General</td>
-                <td style="padding:10px 0;font-size:13px">100</td>
-                <td style="padding:10px 0;font-size:13px">100</td>
-                <td style="padding:10px 0"><span style="font-size:11px;background:#f3f4f6;color:#9ca3af;padding:2px 8px;border-radius:4px;font-weight:600">Expired</span></td>
-                <td style="padding:10px 0;text-align:right"><button style="border:none;background:none;cursor:pointer;color:#9ca3af" onclick="showToast('Copied!')">&#128203;</button></td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
-
-        <!-- Registration Source Tracking -->
-        <div class="editor-card" style="margin-top:16px">
-          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px">
-            <div style="font-weight:700;font-size:15px">📊 Registration Source Tracking</div>
-            <span style="font-size:11px;color:#9ca3af">Last 30 days</span>
-          </div>
-          <div style="display:flex;flex-direction:column;gap:10px">
-            <div style="display:flex;align-items:center;gap:10px">
-              <span style="font-size:12px;color:#374151;width:100px">Direct Link</span>
-              <div style="flex:1;background:#e5e7eb;border-radius:4px;height:10px">
-                <div style="width:42%;background:#2563eb;border-radius:4px;height:10px"></div>
-              </div>
-              <span style="font-size:12px;font-weight:600;color:#374151;width:50px">42% (84)</span>
-            </div>
-            <div style="display:flex;align-items:center;gap:10px">
-              <span style="font-size:12px;color:#374151;width:100px">Email Campaign</span>
-              <div style="flex:1;background:#e5e7eb;border-radius:4px;height:10px">
-                <div style="width:28%;background:#16a34a;border-radius:4px;height:10px"></div>
-              </div>
-              <span style="font-size:12px;font-weight:600;color:#374151;width:50px">28% (56)</span>
-            </div>
-            <div style="display:flex;align-items:center;gap:10px">
-              <span style="font-size:12px;color:#374151;width:100px">Twitter/X</span>
-              <div style="flex:1;background:#e5e7eb;border-radius:4px;height:10px">
-                <div style="width:15%;background:#0ea5e9;border-radius:4px;height:10px"></div>
-              </div>
-              <span style="font-size:12px;font-weight:600;color:#374151;width:50px">15% (30)</span>
-            </div>
-            <div style="display:flex;align-items:center;gap:10px">
-              <span style="font-size:12px;color:#374151;width:100px">LinkedIn</span>
-              <div style="flex:1;background:#e5e7eb;border-radius:4px;height:10px">
-                <div style="width:10%;background:#0077b5;border-radius:4px;height:10px"></div>
-              </div>
-              <span style="font-size:12px;font-weight:600;color:#374151;width:50px">10% (20)</span>
-            </div>
-            <div style="display:flex;align-items:center;gap:10px">
-              <span style="font-size:12px;color:#374151;width:100px">Partner Sites</span>
-              <div style="flex:1;background:#e5e7eb;border-radius:4px;height:10px">
-                <div style="width:5%;background:#d97706;border-radius:4px;height:10px"></div>
-              </div>
-              <span style="font-size:12px;font-weight:600;color:#374151;width:50px">5% (10)</span>
-            </div>
-          </div>
-          <div style="margin-top:12px;padding-top:12px;border-top:1px solid #f3f4f6;display:flex;justify-content:space-between;font-size:12px;color:#6b7280">
-            <span>Total tracked: <strong style="color:#374151">200 registrations</strong></span>
-            <button class="btn-secondary" style="font-size:11px;padding:4px 10px" onclick="showToast('UTM report exported')">Export UTM Report</button>
-          </div>
+          <div id="ft-holders"><div style="text-align:center;padding:24px;color:#9ca3af;font-size:13px">No ticket holders yet</div></div>
         </div>
       </div>
       <!-- ══ VIEW: Paid Ticket ══ -->
