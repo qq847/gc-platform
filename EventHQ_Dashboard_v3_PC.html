@@ -105,6 +105,10 @@ html,body{min-height:100vh;background:var(--bg);font-family:'DM Sans',sans-serif
 .section-title{font-size:14px;font-weight:700;color:var(--text1)}
 .events-list{display:flex;flex-direction:column;gap:10px}
 .event-row{background:var(--white);border-radius:var(--radius);border:1px solid var(--border);padding:16px 20px;display:flex;align-items:center;gap:16px;cursor:pointer;transition:box-shadow .15s,border-color .15s}
+.event-date-block{width:52px;flex-shrink:0;display:flex;flex-direction:column;align-items:center;justify-content:center;background:#f0fdf4;border-radius:8px;padding:6px 4px;border:1px solid #bbf7d0;min-height:52px}
+.event-date-month{font-size:10px;font-weight:700;color:#16a34a;text-transform:uppercase;letter-spacing:.5px}
+.event-date-day{font-size:22px;font-weight:800;color:#15803d;line-height:1}
+.badge-ended{background:#fef3c7;color:#92400e}
 .event-row:hover{box-shadow:var(--shadow);border-color:var(--blue-mid)}
 .event-thumb{width:44px;height:44px;border-radius:8px;flex-shrink:0;object-fit:cover;background:linear-gradient(135deg,#1a3a6e,#1a6ef5);display:flex;align-items:center;justify-content:center;font-size:20px;color:#fff}
 .event-info{flex:1;min-width:0}
@@ -7873,12 +7877,23 @@ function renderEventsList() {
     return;
   }
   list.innerHTML = events.map((ev, idx) => {
-    const meta = [ev.startDate, ev.city].filter(Boolean).join(' · ');
+    const meta = [ev.city, ev.country].filter(Boolean).join(', ');
+    const dateStr = ev.startDate || '';
+    const month = dateStr ? new Date(dateStr).toLocaleString('en',{month:'short'}).toUpperCase() : '';
+    const day = dateStr ? new Date(dateStr).getDate() : '';
+    const dateBlock = dateStr
+      ? `<div class="event-date-block"><div class="event-date-month">${month}</div><div class="event-date-day">${day}</div></div>`
+      : `<div class="event-date-block" style="background:#f3f4f6;border-color:#e5e7eb"><div style="font-size:20px">🗓️</div></div>`;
+    const st = ev.status || 'draft';
+    const badgeCls = st==='live'||st==='published' ? 'badge-live' : st==='ended' ? 'badge-ended' : 'badge-draft';
+    const badgeLabel = st==='live'||st==='published' ? 'Live' : st==='ended' ? 'Ended' : 'Draft';
     return `<div class="event-row" onclick="openEvent(${idx})">
+      ${dateBlock}
       <div class="event-info">
         <div class="event-name">${ev.name || 'Untitled Event'}</div>
-        <div class="event-meta">${meta || 'No date set'}</div>
+        <div class="event-meta">${meta ? '📍 '+meta : (ev.startDate ? ev.startDate : 'No date set')}</div>
       </div>
+      <div class="event-badges"><span class="badge ${badgeCls}">${badgeLabel}</span></div>
       <div class="event-actions" onclick="event.stopPropagation()">
         <button class="action-btn primary" onclick="openEvent(${idx})">Manage</button>
       </div>
@@ -7915,12 +7930,23 @@ function filterEventsByStatus(status) {
   }
   list.innerHTML = filtered.map((ev) => {
     const origIdx = events.indexOf(ev);
-    const meta = [ev.startDate, ev.city].filter(Boolean).join(' · ');
+    const meta = [ev.city, ev.country].filter(Boolean).join(', ');
+    const dateStr = ev.startDate || '';
+    const month = dateStr ? new Date(dateStr).toLocaleString('en',{month:'short'}).toUpperCase() : '';
+    const day = dateStr ? new Date(dateStr).getDate() : '';
+    const dateBlock = dateStr
+      ? `<div class="event-date-block"><div class="event-date-month">${month}</div><div class="event-date-day">${day}</div></div>`
+      : `<div class="event-date-block" style="background:#f3f4f6;border-color:#e5e7eb"><div style="font-size:20px">🗓️</div></div>`;
+    const st = ev.status || 'draft';
+    const badgeCls = st==='live'||st==='published' ? 'badge-live' : st==='ended' ? 'badge-ended' : 'badge-draft';
+    const badgeLabel = st==='live'||st==='published' ? 'Live' : st==='ended' ? 'Ended' : 'Draft';
     return `<div class="event-row" onclick="openEvent(${origIdx})">
+      ${dateBlock}
       <div class="event-info">
         <div class="event-name">${ev.name || 'Untitled Event'}</div>
-        <div class="event-meta">${meta || 'No date set'}</div>
+        <div class="event-meta">${meta ? '📍 '+meta : (ev.startDate ? ev.startDate : 'No date set')}</div>
       </div>
+      <div class="event-badges"><span class="badge ${badgeCls}">${badgeLabel}</span></div>
       <div class="event-actions" onclick="event.stopPropagation()">
         <button class="action-btn primary" onclick="openEvent(${origIdx})">Manage</button>
       </div>
