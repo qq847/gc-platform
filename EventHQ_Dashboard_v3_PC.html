@@ -6333,25 +6333,25 @@ For more information, visit: gameconnection.com/awards-2025
             <!-- ══ VIEW: Preview ══ -->
       <div id="viewPreview" style="display:none">
 
-        <!-- Publish / Unpublish actions -->
-        <div style="display:flex;gap:12px;margin-bottom:20px">
-          <button class="btn-primary" onclick="publishEvent()" id="prev-publish-btn" style="padding:10px 28px;font-size:14px;font-weight:700">Publish</button>
-          <button class="btn-secondary" onclick="publishEvent()" id="prev-unpublish-btn" style="padding:10px 28px;font-size:14px;font-weight:700">Unpublish</button>
+        <!-- Publish toggle bar -->
+        <div style="display:flex;align-items:center;gap:16px;padding:14px 0 18px 0;border-bottom:1px solid #e5e7eb;margin-bottom:0">
+          <!-- Toggle switch -->
+          <div style="display:flex;align-items:center;gap:10px">
+            <span id="prev-label-unpub" style="font-size:13px;font-weight:600;color:#6b7280">Unpublished</span>
+            <label style="position:relative;display:inline-block;width:48px;height:26px;cursor:pointer">
+              <input type="checkbox" id="prev-toggle-input" onchange="togglePublish(this.checked)" style="opacity:0;width:0;height:0">
+              <span id="prev-toggle-track" style="position:absolute;inset:0;border-radius:13px;background:#d1d5db;transition:background 0.2s">
+                <span id="prev-toggle-thumb" style="position:absolute;top:3px;left:3px;width:20px;height:20px;border-radius:50%;background:#fff;box-shadow:0 1px 3px rgba(0,0,0,0.2);transition:transform 0.2s"></span>
+              </span>
+            </label>
+            <span id="prev-label-pub" style="font-size:13px;font-weight:600;color:#16a34a">Published</span>
+          </div>
+          <!-- Copy link button (only visible when published) -->
+          <button id="prev-copy-link-btn" onclick="copyPublicPageLink()" style="display:none;padding:6px 14px;background:#f0fdf4;color:#16a34a;border:1px solid #bbf7d0;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer">🔗 Copy Link</button>
         </div>
 
-        <!-- Real Public Page iframe -->
-        <div id="prev-iframe-wrap" style="border-radius:12px;overflow:hidden;border:1px solid #e2e6ed;box-shadow:0 2px 12px rgba(0,0,0,0.08);margin-bottom:20px;background:#fff">
-          <div style="display:flex;align-items:center;gap:8px;padding:10px 16px;background:#f8f9fa;border-bottom:1px solid #e2e6ed">
-            <div style="display:flex;gap:5px">
-              <div style="width:12px;height:12px;border-radius:50%;background:#ff5f57"></div>
-              <div style="width:12px;height:12px;border-radius:50%;background:#febc2e"></div>
-              <div style="width:12px;height:12px;border-radius:50%;background:#28c840"></div>
-            </div>
-            <div id="prev-url-bar" style="flex:1;background:#fff;border:1px solid #e2e6ed;border-radius:6px;padding:4px 10px;font-size:12px;color:#6b7280;overflow:hidden;white-space:nowrap;text-overflow:ellipsis">EventPublicPage_v4_PC.html?...</div>
-            <button onclick="openPublicPage()" style="padding:4px 10px;background:#16a34a;color:#fff;border:none;border-radius:6px;font-size:11px;font-weight:700;cursor:pointer;white-space:nowrap">↗ Open</button>
-          </div>
-          <iframe id="prev-iframe" src="" style="width:100%;height:700px;border:none;display:block" title="Event Public Page Preview"></iframe>
-        </div>
+        <!-- Full-bleed iframe — no border, no address bar -->
+        <iframe id="prev-iframe" src="" style="width:100%;height:calc(100vh - 130px);border:none;display:block;margin-top:0" title="Event Public Page Preview"></iframe>
 
       </div>
 <!-- ══ VIEW: Registration ══ -->
@@ -8338,13 +8338,11 @@ function showPreview() {
   const el = document.getElementById('viewPreview');
   if (!el) return;
   el.style.display = 'block';
-  // Load real public page in iframe
+  // Load public page in iframe
   const iframeUrl = buildPublicPageUrl();
   const iframe = document.getElementById('prev-iframe');
   if (iframe) iframe.src = iframeUrl;
-  const urlBar = document.getElementById('prev-url-bar');
-  if (urlBar) urlBar.textContent = iframeUrl;
-  // Update publish/unpublish button states
+  // Sync toggle state
   updatePreviewPublishButtons();
 }
 
@@ -8377,10 +8375,41 @@ function updatePreviewPublishBar() { updatePreviewPublishButtons(); }
 function updatePreviewPublishButtons() {
   const ev = currentEvent || {};
   const isLive = ev.status === 'live' || ev.status === 'published';
-  const pubBtn = document.getElementById('prev-publish-btn');
-  const unpubBtn = document.getElementById('prev-unpublish-btn');
-  if (pubBtn) pubBtn.style.display = isLive ? 'none' : 'inline-block';
-  if (unpubBtn) unpubBtn.style.display = isLive ? 'inline-block' : 'none';
+  // Toggle input
+  const tog = document.getElementById('prev-toggle-input');
+  if (tog) tog.checked = isLive;
+  // Toggle track color
+  const track = document.getElementById('prev-toggle-track');
+  if (track) track.style.background = isLive ? '#16a34a' : '#d1d5db';
+  // Toggle thumb position
+  const thumb = document.getElementById('prev-toggle-thumb');
+  if (thumb) thumb.style.transform = isLive ? 'translateX(22px)' : 'translateX(0)';
+  // Label colors
+  const labelPub = document.getElementById('prev-label-pub');
+  const labelUnpub = document.getElementById('prev-label-unpub');
+  if (labelPub) labelPub.style.color = isLive ? '#16a34a' : '#9ca3af';
+  if (labelUnpub) labelUnpub.style.color = isLive ? '#9ca3af' : '#6b7280';
+  // Copy link button
+  const copyBtn = document.getElementById('prev-copy-link-btn');
+  if (copyBtn) copyBtn.style.display = isLive ? 'inline-block' : 'none';
+}
+
+function togglePublish(checked) {
+  // Sync visual immediately
+  const track = document.getElementById('prev-toggle-track');
+  const thumb = document.getElementById('prev-toggle-thumb');
+  if (track) track.style.background = checked ? '#16a34a' : '#d1d5db';
+  if (thumb) thumb.style.transform = checked ? 'translateX(22px)' : 'translateX(0)';
+  const labelPub = document.getElementById('prev-label-pub');
+  const labelUnpub = document.getElementById('prev-label-unpub');
+  if (labelPub) labelPub.style.color = checked ? '#16a34a' : '#9ca3af';
+  if (labelUnpub) labelUnpub.style.color = checked ? '#9ca3af' : '#6b7280';
+  const copyBtn = document.getElementById('prev-copy-link-btn');
+  if (copyBtn) copyBtn.style.display = checked ? 'inline-block' : 'none';
+  // Only call publishEvent if state actually needs to change
+  const ev = currentEvent || {};
+  const isLive = ev.status === 'live' || ev.status === 'published';
+  if (checked !== isLive) publishEvent();
 }
 
 function copyPublicPageLink() {
