@@ -3091,15 +3091,25 @@ For more information, visit: gameconnection.com/awards-2025
         <!-- Meeting Schedule -->
         <div class="editor-card" style="margin-bottom:16px">
           <div style="font-weight:700;font-size:15px;margin-bottom:14px">Meeting Schedule</div>
-          <div style="display:flex;align-items:center;gap:12px;margin-bottom:16px">
-            <div style="font-size:13px;color:#374151;font-weight:600;white-space:nowrap">Slot Duration</div>
-            <select id="lmSlotDuration" onchange="updateLmPreview()" style="border:1px solid #e5e7eb;border-radius:6px;padding:7px 10px;font-size:13px;color:var(--text1);background:#fff">
-              <option value="15">15 min</option>
-              <option value="20">20 min</option>
-              <option value="30" selected>30 min</option>
-              <option value="45">45 min</option>
-              <option value="60">60 min</option>
-            </select>
+          <div style="display:flex;align-items:center;gap:20px;margin-bottom:16px;flex-wrap:wrap">
+            <div style="display:flex;align-items:center;gap:8px">
+              <div style="font-size:13px;color:#374151;font-weight:600;white-space:nowrap">Slot Duration</div>
+              <select id="lmSlotDuration" onchange="updateLmPreview();renderLmSchedule(lmCurrentDay)" style="border:1px solid #e5e7eb;border-radius:6px;padding:7px 10px;font-size:13px;color:var(--text1);background:#fff">
+                <option value="15">15 min</option>
+                <option value="20">20 min</option>
+                <option value="30" selected>30 min</option>
+                <option value="45">45 min</option>
+                <option value="60">60 min</option>
+              </select>
+            </div>
+            <div style="display:flex;align-items:center;gap:8px">
+              <div style="font-size:13px;color:#374151;font-weight:600;white-space:nowrap">Meeting Points</div>
+              <input id="lmMpTotal" type="number" value="20" min="1" max="200" onchange="renderLmSchedule(lmCurrentDay)" style="width:70px;border:1px solid #e5e7eb;border-radius:6px;padding:7px 10px;font-size:13px;color:var(--text1)" placeholder="20">
+            </div>
+            <div style="display:flex;align-items:center;gap:8px">
+              <div style="font-size:13px;color:#374151;font-weight:600;white-space:nowrap">Prefix</div>
+              <input id="lmMpPrefix" type="text" value="MP" maxlength="6" onchange="renderLmSchedule(lmCurrentDay)" style="width:70px;border:1px solid #e5e7eb;border-radius:6px;padding:7px 10px;font-size:13px;color:var(--text1)" placeholder="MP">
+            </div>
           </div>
           <div id="lmDaysList" style="display:flex;flex-direction:column;gap:8px;margin-bottom:12px"></div>
           <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
@@ -3108,15 +3118,6 @@ For more information, visit: gameconnection.com/awards-2025
           </div>
         </div>
 
-        <!-- Meeting Locations -->
-        <div class="editor-card" style="margin-bottom:16px">
-          <div style="font-weight:700;font-size:15px;margin-bottom:12px">Meeting Locations</div>
-          <div id="lmLocationsList" style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:10px"></div>
-          <div style="display:flex;gap:8px;align-items:center">
-            <input id="lmNewLocation" type="text" placeholder="Add location..." style="border:1px solid #e5e7eb;border-radius:6px;padding:7px 10px;font-size:13px;color:var(--text1);width:200px">
-            <button onclick="addLmLocation()" class="btn-secondary" style="font-size:12px;padding:7px 14px">+ Add</button>
-          </div>
-        </div>
 
         <!-- Participants -->
         <div class="editor-card">
@@ -3173,6 +3174,15 @@ For more information, visit: gameconnection.com/awards-2025
               </tr>
             </tbody>
           </table>
+        </div>
+
+        <!-- Schedule View -->
+        <div class="editor-card" style="margin-top:16px">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px">
+            <div style="font-weight:700;font-size:15px">&#128197; Schedule View</div>
+            <div style="display:flex;gap:6px" id="lmDayTabs"></div>
+          </div>
+          <div id="lmScheduleGrid" style="overflow-x:auto"></div>
         </div>
       </div>
 
@@ -6453,6 +6463,125 @@ function initLmTab() {
   renderLmDays();
   renderLmLocations();
   updateLmPreview();
+  renderLmSchedule(0);
+}
+
+// ── Schedule View ─────────────────────────────────────────
+var lmCurrentDay = 0;
+
+// Sample booked meetings per day: { dayIndex: { 'Room:Time': { name, company } } }
+var lmBookings = {
+  0: {
+    'Main Hall:09:00':      { name: 'Yuki Tanaka', company: 'Bandai Namco' },
+    'Main Hall:09:30':      { name: 'Marco Rossi',  company: '505 Games' },
+    'Meeting Room A:09:00': { name: 'Sarah Chen',   company: 'Tencent' },
+    'Meeting Room A:10:30': { name: 'James O\'Brien', company: 'Ubisoft' },
+    'Meeting Room B:11:00': { name: 'Priya Nair',   company: 'Nazara' },
+    'Main Hall:11:30':      { name: 'Kenji Ito',    company: 'Square Enix' },
+    'Meeting Room A:13:00': { name: 'Lena Müller',  company: 'Astragon' },
+    'Meeting Room B:14:00': { name: 'Carlos Vega',  company: 'Milestone' },
+  },
+  1: {
+    'Main Hall:09:30':      { name: 'Priya Nair',   company: 'Nazara' },
+    'Meeting Room A:10:00': { name: 'Marco Rossi',  company: '505 Games' },
+    'Meeting Room B:09:00': { name: 'Yuki Tanaka',  company: 'Bandai Namco' },
+    'Meeting Room B:11:00': { name: 'Sarah Chen',   company: 'Tencent' },
+  },
+  2: {
+    'Main Hall:10:00':      { name: 'Kenji Ito',    company: 'Square Enix' },
+    'Meeting Room A:10:30': { name: 'Carlos Vega',  company: 'Milestone' },
+  }
+};
+
+function renderLmSchedule(dayIdx) {
+  lmCurrentDay = dayIdx;
+
+  // Render day tabs
+  var tabsEl = document.getElementById('lmDayTabs');
+  if (tabsEl) {
+    tabsEl.innerHTML = '';
+    lmDays.forEach(function(d, i) {
+      var btn = document.createElement('button');
+      btn.textContent = 'Day ' + (i + 1);
+      btn.onclick = (function(idx){ return function(){ renderLmSchedule(idx); }; })(i);
+      btn.style.cssText = 'padding:6px 16px;border-radius:20px;font-size:12px;font-weight:600;cursor:pointer;border:1px solid ' +
+        (i === dayIdx ? '#2563eb' : '#e5e7eb') + ';background:' +
+        (i === dayIdx ? '#2563eb' : '#fff') + ';color:' +
+        (i === dayIdx ? '#fff' : '#374151');
+      tabsEl.appendChild(btn);
+    });
+  }
+
+  var grid = document.getElementById('lmScheduleGrid');
+  if (!grid) return;
+
+  var day = lmDays[dayIdx];
+  if (!day) { grid.innerHTML = '<div style="color:#9ca3af;font-size:13px;padding:16px">No day configured.</div>'; return; }
+
+  // Get MP settings
+  var mpTotal  = parseInt((document.getElementById('lmMpTotal')  || {value:'20'}).value) || 20;
+  var mpPrefix = ((document.getElementById('lmMpPrefix') || {value:'MP'}).value || 'MP').trim();
+
+  // Generate MP labels: MP-01, MP-02 ...
+  var mps = [];
+  for (var m = 1; m <= mpTotal; m++) {
+    mps.push(mpPrefix + '-' + String(m).padStart(2, '0'));
+  }
+
+  // Generate time slots
+  var dur = parseInt((document.getElementById('lmSlotDuration') || {value:'30'}).value) || 30;
+  var slots = [];
+  var f = day.from.split(':'); var t = day.to.split(':');
+  var cur = parseInt(f[0]) * 60 + parseInt(f[1]);
+  var end = parseInt(t[0]) * 60 + parseInt(t[1]);
+  while (cur < end) {
+    var hh = String(Math.floor(cur / 60)).padStart(2, '0');
+    var mm = String(cur % 60).padStart(2, '0');
+    slots.push(hh + ':' + mm);
+    cur += dur;
+  }
+
+  var bookings = lmBookings[dayIdx] || {};
+
+  // Fixed narrow column for many MPs
+  var colW = 90;
+  var html = '<table style="border-collapse:collapse;table-layout:fixed">';
+
+  // Header: time col + one col per MP
+  html += '<thead><tr>';
+  html += '<th style="width:56px;min-width:56px;padding:8px 6px;background:#f9fafb;border-bottom:2px solid #e5e7eb;position:sticky;left:0;z-index:2"></th>';
+  mps.forEach(function(mp) {
+    html += '<th style="width:' + colW + 'px;min-width:' + colW + 'px;padding:8px 4px;background:#f9fafb;border-bottom:2px solid #e5e7eb;border-left:1px solid #e5e7eb;text-align:center;font-size:11px;font-weight:700;color:#374151;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">' + mp + '</th>';
+  });
+  html += '</tr></thead><tbody>';
+
+  // Time rows
+  slots.forEach(function(slot) {
+    html += '<tr>';
+    html += '<td style="width:56px;padding:8px 6px;font-size:11px;color:#9ca3af;font-weight:600;white-space:nowrap;border-bottom:1px solid #f3f4f6;background:#fafafa;position:sticky;left:0;z-index:1">' + slot + '</td>';
+    mps.forEach(function(mp) {
+      var key = mp + ':' + slot;
+      var booked = bookings[key];
+      if (booked) {
+        // Show initials + company abbr
+        var parts = booked.name.split(' ');
+        var initials = parts.map(function(p){ return p[0]; }).join('');
+        html += '<td style="width:' + colW + 'px;padding:3px 4px;border-bottom:1px solid #f3f4f6;border-left:1px solid #f3f4f6;vertical-align:middle" title="' + booked.name + ' · ' + booked.company + '">' +
+          '<div style="background:#dbeafe;border-radius:5px;padding:4px 5px;text-align:center;cursor:default">' +
+          '<div style="font-size:11px;font-weight:700;color:#1e40af;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">' + initials + '</div>' +
+          '<div style="font-size:10px;color:#3b82f6;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">' + booked.company.substring(0,8) + '</div>' +
+          '</div></td>';
+      } else {
+        html += '<td style="width:' + colW + 'px;padding:3px 4px;border-bottom:1px solid #f3f4f6;border-left:1px solid #f3f4f6">' +
+          '<div style="border:1px dashed #e5e7eb;border-radius:5px;height:36px"></div>' +
+          '</td>';
+      }
+    });
+    html += '</tr>';
+  });
+
+  html += '</tbody></table>';
+  grid.innerHTML = html;
 }
 // ─────────────────────────────────────────────────────────
 
