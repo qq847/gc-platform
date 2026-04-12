@@ -7333,25 +7333,12 @@ The {Event Name} Team</textarea>
 
       <!-- ══ VIEW: Event Editor ══ -->
       <div id="viewEventEditor">
-        <!-- Top action bar -->
-        <div class="editor-topbar">
-          <div class="editor-topbar-left">
-            <span style="font-size:14px;font-weight:700;color:var(--text1)" id="editorEventTitle">Untitled Event</span>
-          </div>
-          <div class="editor-topbar-right">
-            <button class="btn-secondary" onclick="previewEvent()">👁 Preview</button>
-            <button class="btn-primary" id="btnPublish" onclick="publishEvent()">🚀 Publish Event</button>
-          </div>
-        </div>
-
-        <!-- Publish status bar -->
-        <div class="publish-bar">
-          <div class="publish-status">
-            <div class="status-dot draft" id="statusDot"></div>
-            <span id="statusLabel">Draft</span>
-          </div>
-          <div style="font-size:12px;color:var(--text3)" id="statusHint">Fill in required fields to publish</div>
-        </div>
+        <!-- Hidden elements kept for JS compatibility -->
+        <span id="editorEventTitle" style="display:none"></span>
+        <button id="btnPublish" style="display:none" onclick="publishEvent()"></button>
+        <div id="statusDot" style="display:none"></div>
+        <span id="statusLabel" style="display:none"></span>
+        <div id="statusHint" style="display:none"></div>
 
 
         <!-- Two-column layout -->
@@ -7972,6 +7959,8 @@ function openEvent(idx) {
   // Active state — highlight Overview
   document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
   document.querySelectorAll('.nav-item').forEach(n => { if (n.querySelector('.ni-label') && n.querySelector('.ni-label').textContent.trim() === 'Overview') n.classList.add('active'); });
+  // Persist state in URL hash
+  history.replaceState(null, '', '#event/' + idx + '/overview');
 }
 
 // ── Show Event Editor (alias used by back-link buttons) ────────────────────────────────────────────────────────────
@@ -8666,6 +8655,17 @@ function clearDirty() {
 }
 // Attach markDirty to all form inputs inside editor panels
 document.addEventListener('DOMContentLoaded', () => {
+  // Restore state from URL hash (e.g. #event/0/overview)
+  const hash = window.location.hash;
+  const hashMatch = hash.match(/^#event\/([0-9]+)/);
+  if (hashMatch) {
+    const idx = parseInt(hashMatch[1], 10);
+    const events = loadEvents();
+    if (events && events[idx]) {
+      openEvent(idx);
+    }
+  }
+
   document.querySelectorAll('.editor-card input, .editor-card select, .editor-card textarea').forEach(el => {
     el.addEventListener('change', markDirty);
     el.addEventListener('input', markDirty);
@@ -10573,6 +10573,8 @@ function showMyEvents() {
   document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
   currentEvent = null;
   renderEventsList();
+  // Clear URL hash
+  history.replaceState(null, '', window.location.pathname);
 }
 
 // ── Toast ─────────────────────────────────────────────────────────────────────
