@@ -364,8 +364,9 @@ body.dark-mode .unsaved-bar { background: #1e2533; border-color: #2d3748; }
   <nav class="sidebar" id="sidebar">
     <!-- Per-event nav (shown when inside an event) -->
     <div id="event-nav-wrap">
-      <div class="sidebar-label">Current Event</div>
-      <div class="sidebar-event-name" id="event-nav-name">—</div>
+      <div style="padding:10px 10px 6px">
+        <button class="back-link" onclick="showMyEvents()" style="font-size:12px;width:100%;justify-content:flex-start">← My Events</button>
+      </div>
       <div class="sidebar-section" id="event-nav-items"></div>
     </div>
   </nav>
@@ -7335,7 +7336,6 @@ The {Event Name} Team</textarea>
         <!-- Top action bar -->
         <div class="editor-topbar">
           <div class="editor-topbar-left">
-            <button class="back-link" onclick="showMyEvents()">← My Events</button>
             <span style="font-size:14px;font-weight:700;color:var(--text1)" id="editorEventTitle">Untitled Event</span>
           </div>
           <div class="editor-topbar-right">
@@ -7733,6 +7733,7 @@ const ALL_MODULES = [
 ];
 
 const SIDEBAR_NAV = [
+  { label:'Overview',     icon:'📋', modId:null, fn:'showEventEditor' },
   { label:'Preview',      icon:'👁', modId:null, fn:'showPreview' },
   { label:'Attendees',    icon:'👥', modId:null, fn:'showAttendees' },
   { label:'Projects',     icon:'🎮', modId:null, fn:'showProjects' },
@@ -8015,11 +8016,10 @@ function openEvent(idx) {
   // Show sidebar with event nav
   const sidebarEl = document.getElementById('sidebar');
   if (sidebarEl) sidebarEl.classList.add('visible');
-  const nameEl = document.getElementById('event-nav-name');
-  if (nameEl) nameEl.textContent = currentEvent.name || 'Untitled Event';
   renderEventSidebarNav(currentEvent);
-  // Active state
+  // Active state — highlight Overview
   document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n => { if (n.querySelector('.ni-label') && n.querySelector('.ni-label').textContent.trim() === 'Overview') n.classList.add('active'); });
 }
 
 // ── Show Event Editor (alias used by back-link buttons) ────────────────────────────────────────────────────────────
@@ -8032,6 +8032,7 @@ function showEventEditor() {
   moduleViews.forEach(id => { const el = document.getElementById(id); if(el) el.style.display = 'none'; });
   document.getElementById('viewEventEditor').style.display = 'block';
   document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n => { if (n.querySelector('.ni-label') && n.querySelector('.ni-label').textContent.trim() === 'Overview') n.classList.add('active'); });
 }
 // ── Populate Editor ────────────────────────────────────────────────────────────
 function populateEditor(ev) {  document.getElementById('editorEventTitle').textContent = ev.name || 'Untitled Event';
@@ -8073,16 +8074,16 @@ function updateStatusBar(ev) {
   document.getElementById('statusHint').textContent = isLive
     ? 'Your event is publicly visible'
     : 'Fill in name, start date and city to publish';
-  document.getElementById('btnPublish').textContent = isLive ? '✓ Published' : '🚀 Publish Event';
-  document.getElementById('btnPublish').style.background = isLive ? '#16a34a' : '';
+  document.getElementById('btnPublish').textContent = isLive ? 'Unpublish' : '🚀 Publish Event';
+  document.getElementById('btnPublish').style.background = isLive ? '#6b7280' : '';
+  document.getElementById('btnPublish').style.borderColor = isLive ? '#6b7280' : '';
 }
 
 // ── Field Change ──────────────────────────────────────────────────────────────
 function onFieldChange() {
   const name = document.getElementById('f-name').value.trim();
   document.getElementById('editorEventTitle').textContent = name || 'Untitled Event';
-  const _enn = document.getElementById('event-nav-name');
-  if (_enn) _enn.textContent = name || 'Untitled Event';
+  // event-nav-name removed
 }
 
 // ── Format ────────────────────────────────────────────────────────────────────
@@ -8143,8 +8144,7 @@ function saveEvent() {
   currentEvent = { ...events[idx], _idx: idx };
   saveEvents(events);
   document.getElementById('editorEventTitle').textContent = events[idx].name || 'Untitled Event';
-  const _enn2 = document.getElementById('event-nav-name');
-  if (_enn2) _enn2.textContent = events[idx].name || 'Untitled Event';
+  // event-nav-name removed
   showToast('✅ Saved');
 }
 
