@@ -4373,6 +4373,270 @@ function openPublicPage() {
   window.open(url, '_blank');
 }
 
+// ── Schedule (Panel/Session) state ───────────────────────────────────────────
+let _psDays = [];       // [{label:'Day 1', date:''}]
+let _psRooms = [];      // [{label:'Main Stage'}]
+let _psSessions = [];   // [{id, title, day, room, start, slots, speaker, desc}]
+let _psMode = 'schedule'; // 'schedule' | 'list'
+let _psCurrentDay = 0;
+let _psCurrentRoom = 0;
+let _psEditId = null;   // null = new session
+
+function initSchedule() {
+  // Seed demo data if empty
+  if (!_psDays.length) {
+    const ev = currentEvent;
+    const base = ev && ev.startDate ? new Date(ev.startDate) : new Date();
+    _psDays = [
+      { label: 'Day 1', date: base.toISOString().slice(0,10) },
+      { label: 'Day 2', date: '' },
+    ];
+  }
+  if (!_psRooms.length) {
+    _psRooms = [{ label: 'Main Stage' }, { label: 'Room A' }];
+  }
+  if (!_psSessions.length) {
+    _psSessions = [
+      { id:'s1', title:'Opening Keynote',    day:0, room:0, start:'09:00', slots:2, speaker:'Alex Chen',    desc:'' },
+      { id:'s2', title:'Indie Dev Panel',    day:0, room:1, start:'10:00', slots:2, speaker:'Sarah Kim',    desc:'' },
+      { id:'s3', title:'Publisher Roundtable', day:0, room:0, start:'14:00', slots:3, speaker:'Marco Rossi', desc:'' },
+      { id:'s4', title:'Closing Ceremony',   day:1, room:0, start:'17:00', slots:2, speaker:'All Speakers', desc:'' },
+    ];
+  }
+  _psCurrentDay  = 0;
+  _psCurrentRoom = 0;
+  renderPsDaysList();
+  renderPsRoomsList();
+  renderPsDayDots();
+  renderPsRoomDots();
+  renderPsSchedule();
+}
+
+function renderPsDaysList() {
+  const el = document.getElementById('psDaysList');
+  if (!el) return;
+  el.innerHTML = _psDays.map((d, i) => `
+    <div style="display:flex;align-items:center;gap:8px;background:#f9fafb;border:1px solid #e5e7eb;border-radius:8px;padding:8px 12px">
+      <input type="text" value="${d.label}" oninput="_psDays[${i}].label=this.value;renderPsDayDots()" style="flex:1;border:none;background:transparent;font-size:13px;font-weight:600;color:#374151;outline:none">
+      <input type="date" value="${d.date}" oninput="_psDays[${i}].date=this.value" style="border:1px solid #e5e7eb;border-radius:5px;padding:4px 8px;font-size:12px;color:#6b7280">
+      <button onclick="removePsDay(${i})" style="border:none;background:none;cursor:pointer;color:#9ca3af;font-size:15px;padding:2px 6px">×</button>
+    </div>`).join('');
+}
+
+function renderPsRoomsList() {
+  const el = document.getElementById('psRoomsList');
+  if (!el) return;
+  el.innerHTML = _psRooms.map((r, i) => `
+    <div style="display:flex;align-items:center;gap:8px;background:#f9fafb;border:1px solid #e5e7eb;border-radius:8px;padding:8px 12px">
+      <input type="text" value="${r.label}" oninput="_psRooms[${i}].label=this.value;renderPsRoomDots();renderPsSchedule()" style="flex:1;border:none;background:transparent;font-size:13px;font-weight:600;color:#374151;outline:none">
+      <button onclick="removePsRoom(${i})" style="border:none;background:none;cursor:pointer;color:#9ca3af;font-size:15px;padding:2px 6px">×</button>
+    </div>`).join('');
+}
+
+function addPsDay() {
+  _psDays.push({ label: 'Day ' + (_psDays.length + 1), date: '' });
+  renderPsDaysList();
+  renderPsDayDots();
+  renderPsSchedule();
+}
+
+function removePsDay(i) {
+  _psDays.splice(i, 1);
+  if (_psCurrentDay >= _psDays.length) _psCurrentDay = Math.max(0, _psDays.length - 1);
+  renderPsDaysList();
+  renderPsDayDots();
+  renderPsSchedule();
+}
+
+function addPsRoom() {
+  _psRooms.push({ label: 'Room ' + String.fromCharCode(65 + _psRooms.length) });
+  renderPsRoomsList();
+  renderPsRoomDots();
+  renderPsSchedule();
+}
+
+function removePsRoom(i) {
+  _psRooms.splice(i, 1);
+  if (_psCurrentRoom >= _psRooms.length) _psCurrentRoom = Math.max(0, _psRooms.length - 1);
+  renderPsRoomsList();
+  renderPsRoomDots();
+  renderPsSchedule();
+}
+
+function renderPsDayDots() {
+  const el = document.getElementById('psDayDots');
+  const lbl = document.getElementById('psDayLabel');
+  if (!el) return;
+  el.innerHTML = _psDays.map((d, i) => `<span onclick="setPsDay(${i})" title="${d.label}" style="width:12px;height:12px;border-radius:50%;background:${i===_psCurrentDay?'#2563eb':'#d1d5db'};display:inline-block;cursor:pointer;transition:all .15s"></span>`).join('');
+  if (lbl) lbl.textContent = _psDays[_psCurrentDay]?.label || '';
+}
+
+function renderPsRoomDots() {
+  const el = document.getElementById('psRoomDots');
+  const lbl = document.getElementById('psRoomLabel');
+  if (!el) return;
+  el.innerHTML = _psRooms.map((r, i) => `<span onclick="setPsRoom(${i})" title="${r.label}" style="width:12px;height:12px;border-radius:50%;background:${i===_psCurrentRoom?'#7c3aed':'#d1d5db'};display:inline-block;cursor:pointer;transition:all .15s"></span>`).join('');
+  if (lbl) lbl.textContent = _psRooms[_psCurrentRoom]?.label || '';
+}
+
+function setPsDay(i) {
+  _psCurrentDay = i;
+  renderPsDayDots();
+  renderPsSchedule();
+}
+
+function setPsRoom(i) {
+  _psCurrentRoom = i;
+  renderPsRoomDots();
+  renderPsSchedule();
+}
+
+function setPsMode(mode) {
+  _psMode = mode;
+  const schedDot = document.getElementById('psModeSchedDot');
+  const listDot  = document.getElementById('psModeListDot');
+  const label    = document.getElementById('psModeLabel');
+  const schedView = document.getElementById('psScheduleView');
+  const listView  = document.getElementById('psListView');
+  if (schedDot) schedDot.style.background = mode==='schedule' ? '#2563eb' : '#d1d5db';
+  if (listDot)  listDot.style.background  = mode==='list'     ? '#2563eb' : '#d1d5db';
+  if (label)    label.textContent = mode==='schedule' ? 'Schedule View' : 'List View';
+  if (schedView) schedView.style.display = mode==='schedule' ? 'block' : 'none';
+  if (listView)  listView.style.display  = mode==='list'     ? 'block' : 'none';
+  renderPsSchedule();
+}
+
+function renderPsSchedule() {
+  if (_psMode === 'list') { renderPsListView(); return; }
+  const grid = document.getElementById('psScheduleGrid');
+  if (!grid) return;
+  const slotMin = parseInt(document.getElementById('psSlotDuration')?.value || '30');
+  const startH = 9, endH = 19;
+  const totalSlots = ((endH - startH) * 60) / slotMin;
+  const sessions = _psSessions.filter(s => s.day === _psCurrentDay && s.room === _psCurrentRoom);
+  const roomLabel = _psRooms[_psCurrentRoom]?.label || 'Room';
+  const dayLabel  = _psDays[_psCurrentDay]?.label   || 'Day';
+
+  let html = `<div style="font-size:12px;color:#6b7280;margin-bottom:10px;font-weight:600">${dayLabel} · ${roomLabel}</div>`;
+  html += `<div style="display:grid;grid-template-columns:64px 1fr;gap:0;border:1px solid #e5e7eb;border-radius:8px;overflow:hidden">`;
+
+  for (let s = 0; s < totalSlots; s++) {
+    const totalMin = startH * 60 + s * slotMin;
+    const hh = String(Math.floor(totalMin / 60)).padStart(2,'0');
+    const mm = String(totalMin % 60).padStart(2,'0');
+    const timeStr = hh + ':' + mm;
+    const sess = sessions.find(x => x.start === timeStr);
+    const bg = s % 2 === 0 ? '#fff' : '#f9fafb';
+    html += `<div style="padding:6px 8px;font-size:11px;color:#9ca3af;border-bottom:1px solid #f3f4f6;background:${bg};white-space:nowrap">${timeStr}</div>`;
+    if (sess) {
+      const spanRows = sess.slots || 1;
+      html += `<div style="padding:8px 10px;background:#eff6ff;border-left:3px solid #2563eb;border-bottom:1px solid #e5e7eb;cursor:pointer" onclick="openPsSessionModal('${sess.id}')">
+        <div style="font-weight:600;font-size:12px;color:#1e40af">${sess.title}</div>
+        ${sess.speaker ? `<div style="font-size:11px;color:#6b7280;margin-top:2px">${sess.speaker}</div>` : ''}
+        <div style="font-size:10px;color:#9ca3af;margin-top:2px">${timeStr} · ${sess.slots * slotMin} min</div>
+      </div>`;
+      s += spanRows - 1;
+    } else {
+      html += `<div style="padding:6px 10px;border-bottom:1px solid #f3f4f6;background:${bg};font-size:11px;color:#d1d5db;cursor:pointer" onclick="openPsSessionModal(null,'${timeStr}')">+ Add</div>`;
+    }
+  }
+  html += '</div>';
+  grid.innerHTML = html;
+}
+
+function renderPsListView() {
+  const el = document.getElementById('psSessionList');
+  if (!el) return;
+  const sessions = [..._psSessions].sort((a,b) => a.day - b.day || a.start.localeCompare(b.start));
+  if (!sessions.length) { el.innerHTML = '<div style="padding:32px;text-align:center;color:#9ca3af">No sessions yet. Click + Add Session to get started.</div>'; return; }
+  el.innerHTML = sessions.map(s => {
+    const slotMin = parseInt(document.getElementById('psSlotDuration')?.value || '30');
+    const dayLabel  = _psDays[s.day]?.label  || 'Day ' + (s.day+1);
+    const roomLabel = _psRooms[s.room]?.label || 'Room ' + (s.room+1);
+    return `<div style="display:flex;align-items:flex-start;gap:12px;padding:12px 0;border-bottom:1px solid #f3f4f6;cursor:pointer" onclick="openPsSessionModal('${s.id}')">
+      <div style="min-width:48px;text-align:right;font-size:12px;color:#6b7280;padding-top:2px">${s.start}</div>
+      <div style="flex:1">
+        <div style="font-weight:600;font-size:13px;color:#111827">${s.title}</div>
+        <div style="font-size:11px;color:#6b7280;margin-top:2px">${dayLabel} · ${roomLabel} · ${s.slots * slotMin} min${s.speaker ? ' · ' + s.speaker : ''}</div>
+      </div>
+      <button onclick="event.stopPropagation();removePsSession('${s.id}')" style="border:none;background:none;cursor:pointer;color:#9ca3af;font-size:16px;padding:2px 6px">×</button>
+    </div>`;
+  }).join('');
+}
+
+function openPsSessionModal(id, prefillTime) {
+  _psEditId = id || null;
+  const modal = document.getElementById('psSessionModal');
+  if (!modal) return;
+  modal.style.display = 'flex';
+  // Populate day/room selects
+  const daySelect  = document.getElementById('psModalDay');
+  const roomSelect = document.getElementById('psModalRoom');
+  if (daySelect)  daySelect.innerHTML  = _psDays.map((d,i)  => `<option value="${i}">${d.label}</option>`).join('');
+  if (roomSelect) roomSelect.innerHTML = _psRooms.map((r,i) => `<option value="${i}">${r.label}</option>`).join('');
+  // Fill fields
+  const titleEl   = document.getElementById('psModalTitleInput');
+  const startEl   = document.getElementById('psModalStart');
+  const slotsEl   = document.getElementById('psModalSlots');
+  const speakerEl = document.getElementById('psModalSpeaker');
+  const descEl    = document.getElementById('psModalDesc');
+  const titleHdr  = document.getElementById('psModalTitle');
+  if (id) {
+    const sess = _psSessions.find(s => s.id === id);
+    if (sess) {
+      if (titleEl)   titleEl.value   = sess.title   || '';
+      if (startEl)   startEl.value   = sess.start   || '09:00';
+      if (slotsEl)   slotsEl.value   = sess.slots   || 1;
+      if (speakerEl) speakerEl.value = sess.speaker  || '';
+      if (descEl)    descEl.value    = sess.desc     || '';
+      if (daySelect)  daySelect.value  = sess.day;
+      if (roomSelect) roomSelect.value = sess.room;
+      if (titleHdr)   titleHdr.textContent = 'Edit Session';
+    }
+  } else {
+    if (titleEl)   titleEl.value   = '';
+    if (startEl)   startEl.value   = prefillTime || '09:00';
+    if (slotsEl)   slotsEl.value   = 1;
+    if (speakerEl) speakerEl.value = '';
+    if (descEl)    descEl.value    = '';
+    if (daySelect)  daySelect.value  = _psCurrentDay;
+    if (roomSelect) roomSelect.value = _psCurrentRoom;
+    if (titleHdr)   titleHdr.textContent = 'Add Session';
+  }
+}
+
+function closePsSessionModal() {
+  const modal = document.getElementById('psSessionModal');
+  if (modal) modal.style.display = 'none';
+  _psEditId = null;
+}
+
+function savePsSession() {
+  const title   = document.getElementById('psModalTitleInput')?.value.trim();
+  const day     = parseInt(document.getElementById('psModalDay')?.value || '0');
+  const room    = parseInt(document.getElementById('psModalRoom')?.value || '0');
+  const start   = document.getElementById('psModalStart')?.value || '09:00';
+  const slots   = parseInt(document.getElementById('psModalSlots')?.value || '1');
+  const speaker = document.getElementById('psModalSpeaker')?.value.trim() || '';
+  const desc    = document.getElementById('psModalDesc')?.value.trim() || '';
+  if (!title) { showToast('Please enter a session title'); return; }
+  if (_psEditId) {
+    const idx = _psSessions.findIndex(s => s.id === _psEditId);
+    if (idx >= 0) _psSessions[idx] = { id: _psEditId, title, day, room, start, slots, speaker, desc };
+  } else {
+    _psSessions.push({ id: 's' + Date.now(), title, day, room, start, slots, speaker, desc });
+  }
+  closePsSessionModal();
+  renderPsSchedule();
+  showToast('Session saved');
+}
+
+function removePsSession(id) {
+  _psSessions = _psSessions.filter(s => s.id !== id);
+  renderPsSchedule();
+  showToast('Session removed');
+}
+
 function showSchedule() {
   hideAllViews();
   document.getElementById('viewSchedule').style.display = 'block';
@@ -4479,9 +4743,134 @@ function showLetsMeet() {
   document.getElementById('viewLetsMeet').style.display = 'block';
   initLmTab();
 }
+// ── Game Showcase state ───────────────────────────────────────────────────────
+let _gsAll = [];
+let _gsStatusFilter = 'all';
+
 function showGameShowcase() {
   hideAllViews();
   document.getElementById('viewGameShowcase').style.display = 'block';
+  initGS();
+}
+
+function initGS() {
+  const ev = currentEvent;
+  let games = [];
+  try { games = JSON.parse(localStorage.getItem('gc_projects') || '[]'); } catch(e) {}
+  if (ev) games = games.filter(g => g.eventId === ev.id);
+  // Fallback demo data
+  if (!games.length) {
+    games = [
+      { id:'g1', name:'Stellar Drift',    company:'Indie Forge',      genre:'Action RPG',  platform:'PC / Console', status:'approved',  inShowcase:true,  colors:['#1e3a5f','#2563eb'] },
+      { id:'g2', name:'Neon Abyss 2',     company:'Veewo Games',      genre:'Roguelite',   platform:'PC / Switch',  status:'pending',   inShowcase:false, colors:['#0f172a','#0ea5e9'] },
+      { id:'g3', name:'Echo Protocol',    company:'Tarsier Studios',  genre:'Puzzle',      platform:'PC',           status:'pending',   inShowcase:false, colors:['#3b1f5e','#9333ea'] },
+      { id:'g4', name:'Void Hunters',     company:'Funcom',           genre:'Survival',    platform:'PC / Console', status:'approved',  inShowcase:true,  colors:['#1a3a2a','#16a34a'] },
+      { id:'g5', name:'Pixel Odyssey',    company:'Devolver Digital', genre:'Platformer',  platform:'All',          status:'approved',  inShowcase:true,  colors:['#7c2d12','#ea580c'] },
+      { id:'g6', name:'Arcane Depths',    company:'Raw Fury',         genre:'Dungeon RPG', platform:'PC',           status:'rejected',  inShowcase:false, colors:['#1e1b4b','#6366f1'] },
+      { id:'g7', name:'Chrono Shards',    company:'Motion Twin',      genre:'Roguelite',   platform:'PC / Console', status:'approved',  inShowcase:true,  colors:['#292524','#78716c'] },
+      { id:'g8', name:'Deep Signal',      company:'Playdead',         genre:'Narrative',   platform:'PC',           status:'pending',   inShowcase:false, colors:['#0c1a2e','#0284c7'] },
+    ];
+  }
+  _gsAll = games;
+  _gsStatusFilter = 'all';
+  const searchEl = document.getElementById('gs-search');
+  if (searchEl) searchEl.value = '';
+  renderGsGrid(_gsAll);
+}
+
+function filterGS(status, btn) {
+  _gsStatusFilter = status;
+  if (btn) {
+    btn.closest('div').querySelectorAll('button').forEach(b => {
+      b.style.background = 'transparent'; b.style.color = '#6b7280'; b.style.fontWeight = '400';
+    });
+    btn.style.background = '#fff'; btn.style.color = '#374151'; btn.style.fontWeight = '600';
+  }
+  filterGameShowcase();
+}
+
+function filterGameShowcase() {
+  const q = (document.getElementById('gs-search')?.value || '').toLowerCase().trim();
+  let rows = _gsAll;
+  if (_gsStatusFilter !== 'all') rows = rows.filter(g => (g.status||'pending') === _gsStatusFilter);
+  if (q) rows = rows.filter(g =>
+    (g.name||'').toLowerCase().includes(q) ||
+    (g.company||'').toLowerCase().includes(q) ||
+    (g.genre||'').toLowerCase().includes(q)
+  );
+  renderGsGrid(rows);
+}
+
+function renderGsGrid(rows) {
+  const grid  = document.getElementById('gs-grid');
+  const empty = document.getElementById('gs-empty');
+  const count = document.getElementById('gs-count');
+  if (count) count.textContent = rows.length + ' game' + (rows.length !== 1 ? 's' : '');
+  if (!rows.length) {
+    if (grid)  grid.innerHTML = '';
+    if (empty) empty.style.display = 'block';
+    return;
+  }
+  if (empty) empty.style.display = 'none';
+  const colors = [
+    ['#1e3a5f','#2563eb'], ['#3b1f5e','#9333ea'], ['#1a3a2a','#16a34a'],
+    ['#7c2d12','#ea580c'], ['#1e1b4b','#6366f1'], ['#0f172a','#0ea5e9'],
+    ['#292524','#78716c'], ['#0c1a2e','#0284c7']
+  ];
+  grid.innerHTML = rows.map((g, i) => {
+    const c = g.colors || colors[i % colors.length];
+    const st = g.status || 'pending';
+    const statusColor = st==='approved' ? '#16a34a' : st==='rejected' ? '#dc2626' : '#d97706';
+    const statusBg    = st==='approved' ? '#dcfce7' : st==='rejected' ? '#fee2e2' : '#fef3c7';
+    const statusLabel = st.charAt(0).toUpperCase() + st.slice(1);
+    const inShow = !!g.inShowcase;
+    return `<div style="border-radius:12px;overflow:hidden;background:#fff;box-shadow:0 1px 4px rgba(0,0,0,.08);border:1px solid #e5e7eb">
+      <div style="height:140px;background:linear-gradient(135deg,${c[0]},${c[1]});display:flex;align-items:center;justify-content:center;position:relative">
+        <span style="font-size:40px">🎮</span>
+        ${inShow ? '<span style="position:absolute;top:8px;right:8px;background:#16a34a;color:#fff;font-size:10px;font-weight:700;padding:2px 8px;border-radius:10px">In Showcase</span>' : ''}
+      </div>
+      <div style="padding:12px">
+        <div style="font-weight:700;font-size:14px;color:#111827;margin-bottom:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${g.name||'—'}</div>
+        <div style="font-size:12px;color:#6b7280;margin-bottom:8px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${g.company||''}</div>
+        <div style="display:flex;gap:4px;flex-wrap:wrap;margin-bottom:10px">
+          ${g.genre    ? `<span style="font-size:10px;background:#f3f4f6;color:#374151;padding:2px 7px;border-radius:4px">${g.genre}</span>`    : ''}
+          ${g.platform ? `<span style="font-size:10px;background:#f3f4f6;color:#374151;padding:2px 7px;border-radius:4px">${g.platform}</span>` : ''}
+        </div>
+        <div style="display:flex;align-items:center;justify-content:space-between">
+          <span style="font-size:11px;background:${statusBg};color:${statusColor};padding:2px 8px;border-radius:4px;font-weight:600">${statusLabel}</span>
+          <div style="display:flex;gap:4px">
+            <button onclick="gsToggleShowcase('${g.id}')" style="font-size:11px;padding:3px 8px;border:none;border-radius:4px;cursor:pointer;background:${inShow?'#dcfce7':'#f3f4f6'};color:${inShow?'#16a34a':'#6b7280'};font-weight:600">${inShow?'✓ Showcased':'+ Showcase'}</button>
+            ${st!=='approved' ? `<button onclick="gsApprove('${g.id}')" style="font-size:11px;padding:3px 8px;border:none;border-radius:4px;cursor:pointer;background:#dcfce7;color:#16a34a;font-weight:600">Approve</button>` : ''}
+            ${st!=='rejected' ? `<button onclick="gsReject('${g.id}')"  style="font-size:11px;padding:3px 8px;border:none;border-radius:4px;cursor:pointer;background:#fee2e2;color:#dc2626;font-weight:600">Reject</button>`  : ''}
+          </div>
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function gsToggleShowcase(id) {
+  const g = _gsAll.find(x => x.id === id);
+  if (!g) return;
+  g.inShowcase = !g.inShowcase;
+  filterGameShowcase();
+  showToast(g.inShowcase ? g.name + ' added to Showcase' : g.name + ' removed from Showcase');
+}
+
+function gsApprove(id) {
+  const g = _gsAll.find(x => x.id === id);
+  if (!g) return;
+  g.status = 'approved';
+  filterGameShowcase();
+  showToast('Approved: ' + g.name);
+}
+
+function gsReject(id) {
+  const g = _gsAll.find(x => x.id === id);
+  if (!g) return;
+  g.status = 'rejected';
+  filterGameShowcase();
+  showToast('Rejected: ' + g.name);
 }
 function showMap() {
   hideAllViews();
