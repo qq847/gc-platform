@@ -1143,20 +1143,24 @@ body.dark-mode .unsaved-bar { background: #1e2533; border-color: #2d3748; }
       </div>
       <!-- ══ VIEW: Projects ══ -->
       <div id="viewProjects" style="display:none">
-        <!-- Search bar -->
-        <div style="display:flex;align-items:center;gap:12px;margin-bottom:20px">
-          <input id="proj-search" class="form-input" type="text" placeholder="Search by project name or studio…" style="flex:1;max-width:400px" oninput="filterProjects()">
-          <span id="proj-count" style="font-size:13px;color:#6b7280"></span>
-        </div>
-
-        <!-- Project list -->
-        <div class="editor-card" style="padding:0;overflow:hidden">
-          <div id="proj-list"></div>
-          <div id="proj-empty" style="display:none;padding:56px;text-align:center;color:#9ca3af">
-            <div style="font-size:40px;margin-bottom:10px">🎮</div>
-            <div style="font-weight:600;font-size:15px;color:#374151">No projects submitted yet</div>
-            <div style="font-size:13px;margin-top:4px">Projects will appear here once developers submit them.</div>
+        <!-- Search + Filter bar -->
+        <div style="display:flex;align-items:center;gap:12px;margin-bottom:16px;flex-wrap:wrap">
+          <input id="proj-search" class="form-input" type="text" placeholder="Search by project name or studio…"
+            style="flex:1;max-width:360px;font-size:13px" oninput="filterProjects()">
+          <div style="display:flex;gap:4px;background:#f3f4f6;border-radius:6px;padding:3px">
+            <button onclick="filterProjStatus('all',this)" style="font-size:11px;padding:4px 12px;border:none;border-radius:4px;cursor:pointer;background:#fff;font-weight:600;color:#374151">All</button>
+            <button onclick="filterProjStatus('pending',this)" style="font-size:11px;padding:4px 12px;border:none;border-radius:4px;cursor:pointer;background:transparent;color:#6b7280">Pending</button>
+            <button onclick="filterProjStatus('approved',this)" style="font-size:11px;padding:4px 12px;border:none;border-radius:4px;cursor:pointer;background:transparent;color:#6b7280">Approved</button>
+            <button onclick="filterProjStatus('rejected',this)" style="font-size:11px;padding:4px 12px;border:none;border-radius:4px;cursor:pointer;background:transparent;color:#6b7280">Rejected</button>
           </div>
+          <span id="proj-count" style="font-size:13px;color:#6b7280;margin-left:auto"></span>
+        </div>
+        <!-- Card grid -->
+        <div id="proj-grid" style="display:grid;grid-template-columns:repeat(4,1fr);gap:16px"></div>
+        <div id="proj-empty" style="display:none;padding:56px;text-align:center;color:#9ca3af">
+          <div style="font-size:40px;margin-bottom:10px">🎮</div>
+          <div style="font-weight:600;font-size:15px;color:#374151">No projects found</div>
+          <div style="font-size:13px;margin-top:4px">Projects will appear here once developers submit them.</div>
         </div>
       </div>
       <!-- ══ VIEW: Free Ticket ══ -->
@@ -2964,308 +2968,30 @@ For more information, visit: gameconnection.com/awards-2025
       <!-- ══ VIEW: Game Showcase ══ -->
       <div id="viewGameShowcase" style="display:none">
         <div class="editor-topbar">
-          <div class="editor-topbar-left">
-            <button class="back-link" onclick="showEventEditor()">← Event Info</button>
-            <span style="font-size:14px;font-weight:700;color:var(--text1)">Game Showcase</span>
-          </div>
+          <div class="editor-topbar-left"></div>
           <div class="editor-topbar-right">
-            <button class="btn-secondary" onclick="showPreview()">👁 Public Page</button>
             <button class="btn-primary" onclick="clearDirty()">Save Changes</button>
           </div>
         </div>
-        <!-- Stats -->
-        <div style="display:flex;gap:12px;margin-bottom:16px">
-          <div class="editor-card" style="flex:1;text-align:center;padding:16px">
-            <div style="font-size:24px;font-weight:700;color:#2563eb">64</div>
-            <div style="font-size:12px;color:#6b7280">Games Submitted</div>
+
+        <!-- Search + Filter bar -->
+        <div style="display:flex;align-items:center;gap:12px;margin-bottom:16px;flex-wrap:wrap">
+          <input id="gs-search" class="form-input" type="text" placeholder="Search by game or studio…"
+            style="flex:1;max-width:360px;font-size:13px" oninput="filterGameShowcase()">
+          <div style="display:flex;gap:4px;background:#f3f4f6;border-radius:6px;padding:3px">
+            <button onclick="filterGS('all',this)" style="font-size:11px;padding:4px 12px;border:none;border-radius:4px;cursor:pointer;background:#fff;font-weight:600;color:#374151">All</button>
+            <button onclick="filterGS('pending',this)" style="font-size:11px;padding:4px 12px;border:none;border-radius:4px;cursor:pointer;background:transparent;color:#6b7280">Pending</button>
+            <button onclick="filterGS('approved',this)" style="font-size:11px;padding:4px 12px;border:none;border-radius:4px;cursor:pointer;background:transparent;color:#6b7280">Approved</button>
+            <button onclick="filterGS('rejected',this)" style="font-size:11px;padding:4px 12px;border:none;border-radius:4px;cursor:pointer;background:transparent;color:#6b7280">Rejected</button>
           </div>
-          <div class="editor-card" style="flex:1;text-align:center;padding:16px">
-            <div style="font-size:24px;font-weight:700;color:#16a34a">51</div>
-            <div style="font-size:12px;color:#6b7280">Approved</div>
-          </div>
-          <div class="editor-card" style="flex:1;text-align:center;padding:16px">
-            <div style="font-size:24px;font-weight:700;color:#d97706">9</div>
-            <div style="font-size:12px;color:#6b7280">Pending Review</div>
-          </div>
-          <div class="editor-card" style="flex:1;text-align:center;padding:16px">
-            <div style="font-size:24px;font-weight:700;color:#9333ea">4</div>
-            <div style="font-size:12px;color:#6b7280">Rejected</div>
-          </div>
-        </div>
-        <!-- Showcase Settings -->
-        <div class="editor-card" style="margin-bottom:16px">
-          <div style="display:flex;justify-content:space-between;align-items:center">
-            <div>
-              <div style="font-weight:700;font-size:15px;margin-bottom:2px">🎮 Open for Submissions</div>
-              <div style="font-size:12px;color:#6b7280">Allow developers to submit their games for showcase</div>
-            </div>
-            <label style="position:relative;display:inline-block;width:44px;height:24px;flex-shrink:0">
-              <input type="checkbox" checked style="opacity:0;width:0;height:0">
-              <span style="position:absolute;cursor:pointer;top:0;left:0;right:0;bottom:0;background:#16a34a;border-radius:24px;transition:.3s" onclick="this.previousElementSibling.click()"></span>
-            </label>
-          </div>
-          <div style="margin-top:12px;display:flex;gap:12px">
-            <div style="flex:1">
-              <div style="font-size:11px;color:#6b7280;margin-bottom:4px">Submission Deadline</div>
-              <input type="date" value="2027-01-15" style="width:100%;border:1px solid #e5e7eb;border-radius:6px;padding:7px 10px;font-size:13px;color:var(--text1)">
-            </div>
-            <div style="flex:1">
-              <div style="font-size:11px;color:#6b7280;margin-bottom:4px">Max Games per Developer</div>
-              <input type="number" value="3" min="1" max="10" style="width:100%;border:1px solid #e5e7eb;border-radius:6px;padding:7px 10px;font-size:13px;color:var(--text1)">
-            </div>
-            <div style="flex:1">
-              <div style="font-size:11px;color:#6b7280;margin-bottom:4px">Display Mode</div>
-              <select style="width:100%;border:1px solid #e5e7eb;border-radius:6px;padding:7px 10px;font-size:13px;color:var(--text1);background:#fff">
-                <option selected>Grid</option>
-                <option>List</option>
-                <option>Featured + Grid</option>
-              </select>
-            </div>
-          </div>
-        </div>
-        <!-- Games List -->
-        <div class="editor-card">
-          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
-            <div style="display:flex;align-items:center;gap:10px">
-              <div style="font-weight:700;font-size:15px">Submitted Games <span style="background:#d97706;color:#fff;border-radius:10px;padding:1px 8px;font-size:11px;margin-left:4px">9 pending</span></div>
-              <!-- Status filter -->
-              <div style="display:flex;gap:4px;background:#f3f4f6;border-radius:6px;padding:3px">
-                <button onclick="filterGames('all',this)" style="font-size:11px;padding:4px 10px;border:none;border-radius:4px;cursor:pointer;background:#fff;font-weight:600;color:#374151">All</button>
-                <button onclick="filterGames('approved',this)" style="font-size:11px;padding:4px 10px;border:none;border-radius:4px;cursor:pointer;background:transparent;color:#6b7280">Approved</button>
-                <button onclick="filterGames('pending',this)" style="font-size:11px;padding:4px 10px;border:none;border-radius:4px;cursor:pointer;background:transparent;color:#6b7280">Pending</button>
-                <button onclick="filterGames('rejected',this)" style="font-size:11px;padding:4px 10px;border:none;border-radius:4px;cursor:pointer;background:transparent;color:#6b7280">Rejected</button>
-              </div>
-            </div>
-            <div style="display:flex;gap:8px">
-              <button class="btn-secondary" style="font-size:12px;padding:6px 12px" onclick="exportGenericCSV(this)">Export CSV</button>
-              <button class="btn-primary" style="font-size:12px;padding:6px 12px" onclick="showToast('Game submission form coming in v4')">+ Add Game</button>
-            </div>
-          </div>
-          <table style="width:100%;border-collapse:collapse">
-            <thead><tr style="border-bottom:1px solid #e5e7eb">
-              <th style="text-align:left;padding:8px 0;font-size:11px;color:#9ca3af;font-weight:600;text-transform:uppercase;letter-spacing:.5px">Game</th>
-              <th style="text-align:left;padding:8px 0;font-size:11px;color:#9ca3af;font-weight:600;text-transform:uppercase;letter-spacing:.5px">Studio</th>
-              <th style="text-align:left;padding:8px 0;font-size:11px;color:#9ca3af;font-weight:600;text-transform:uppercase;letter-spacing:.5px">Genre</th>
-              <th style="text-align:left;padding:8px 0;font-size:11px;color:#9ca3af;font-weight:600;text-transform:uppercase;letter-spacing:.5px">Platform</th>
-              <th style="text-align:left;padding:8px 0;font-size:11px;color:#9ca3af;font-weight:600;text-transform:uppercase;letter-spacing:.5px">Status</th>
-              <th></th>
-            </tr></thead>
-            <tbody>
-              <tr data-gstatus="approved" style="border-bottom:1px solid #f3f4f6;cursor:pointer" onclick="toggleGameDetail('gd1')">
-                <td style="padding:10px 0"><div style="font-size:13px;font-weight:600">Stellar Drift</div><div style="font-size:11px;color:#9ca3af">Action RPG · 2027</div></td>
-                <td style="padding:10px 0;font-size:13px">Indie Forge</td>
-                <td style="padding:10px 0;font-size:13px;color:#6b7280">Action RPG</td>
-                <td style="padding:10px 0;font-size:13px;color:#6b7280">PC / Console</td>
-                <td style="padding:10px 0"><span style="font-size:11px;background:#dcfce7;color:#16a34a;padding:2px 8px;border-radius:4px;font-weight:600">Approved</span></td>
-                <td style="padding:10px 0;text-align:right;font-size:12px;color:#9ca3af" id="gd1-arrow">▼</td>
-              </tr>
-              <tr id="gd1" style="display:none;background:#f8f9fa">
-                <td colspan="6" style="padding:12px 16px">
-                  <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:10px">
-                    <div><div style="font-size:11px;color:#9ca3af;margin-bottom:2px">ENGINE</div><div style="font-size:13px;font-weight:500">Unreal Engine 5</div></div>
-                    <div><div style="font-size:11px;color:#9ca3af;margin-bottom:2px">PLAYERS</div><div style="font-size:13px;font-weight:500">1-4 Co-op</div></div>
-                    <div><div style="font-size:11px;color:#9ca3af;margin-bottom:2px">DEMO SLOT</div><div style="font-size:13px;font-weight:500">Day 1 · Hall A · Booth 12</div></div>
-                    <div><div style="font-size:11px;color:#9ca3af;margin-bottom:2px">TRAILER</div><a href="#" style="font-size:13px;color:#2563eb;font-weight:500" onclick="showToast('Trailer link will open in new tab');return false">🎥 Watch Trailer</a></div>
-                  </div>
-                  <div style="font-size:12px;color:#6b7280">A fast-paced space roguelite where you pilot a drifting starship through procedurally generated asteroid fields. Collect power cores, upgrade your ship, and survive increasingly hostile sectors.</div>
-                </td>
-              </tr>
-              <tr data-gstatus="pending" style="border-bottom:1px solid #f3f4f6;cursor:pointer" onclick="toggleGameDetail('gd2')">
-                <td style="padding:10px 0"><div style="font-size:13px;font-weight:600">Echo Protocol</div><div style="font-size:11px;color:#9ca3af">Narrative · 2027</div></td>
-                <td style="padding:10px 0;font-size:13px">Tarsier Studios</td>
-                <td style="padding:10px 0;font-size:13px;color:#6b7280">Puzzle / Story</td>
-                <td style="padding:10px 0;font-size:13px;color:#6b7280">PC / Mobile</td>
-                <td style="padding:10px 0"><span style="font-size:11px;background:#fef3c7;color:#d97706;padding:2px 8px;border-radius:4px;font-weight:600">Pending</span></td>
-                <td style="padding:10px 0;text-align:right;font-size:12px;color:#9ca3af" id="gd2-arrow">▼</td>
-              </tr>
-              <tr id="gd2" style="display:none;background:#f8f9fa">
-                <td colspan="6" style="padding:12px 16px">
-                  <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:10px">
-                    <div><div style="font-size:11px;color:#9ca3af;margin-bottom:2px">ENGINE</div><div style="font-size:13px;font-weight:500">Unity 2024</div></div>
-                    <div><div style="font-size:11px;color:#9ca3af;margin-bottom:2px">PLAYERS</div><div style="font-size:13px;font-weight:500">Single Player</div></div>
-                    <div><div style="font-size:11px;color:#9ca3af;margin-bottom:2px">DEMO SLOT</div><div style="font-size:13px;font-weight:500">TBD (Pending Review)</div></div>
-                    <div><div style="font-size:11px;color:#9ca3af;margin-bottom:2px">TRAILER</div><a href="#" style="font-size:13px;color:#2563eb;font-weight:500" onclick="showToast('Trailer link will open in new tab');return false">🎥 Watch Trailer</a></div>
-                  </div>
-                  <div style="font-size:12px;color:#6b7280;margin-bottom:12px">A narrative puzzle game set inside a decommissioned AI research facility. Players uncover the truth behind Project ECHO by solving environmental puzzles and piecing together fragmented audio logs.</div>
-                  <!-- Reviewer Panel -->
-                  <div style="background:#fff;border:1px solid #e5e7eb;border-radius:8px;padding:12px">
-                    <div style="font-size:12px;font-weight:600;color:#374151;margin-bottom:8px">📝 Reviewer Notes</div>
-                    <textarea id="gd2-notes" placeholder="Add review notes, feedback, or conditions for approval…" style="width:100%;border:1px solid #e5e7eb;border-radius:6px;padding:8px;font-size:12px;color:var(--text1);resize:vertical;min-height:60px;box-sizing:border-box" oninput="markDirty()"></textarea>
-                    <div style="display:flex;gap:8px;margin-top:8px;justify-content:flex-end">
-                      <button style="font-size:12px;background:#fee2e2;color:#dc2626;border:none;border-radius:6px;padding:6px 16px;cursor:pointer;font-weight:600" onclick="reviewGame('gd2','rejected')">Reject</button>
-                      <button style="font-size:12px;background:#dcfce7;color:#16a34a;border:none;border-radius:6px;padding:6px 16px;cursor:pointer;font-weight:600" onclick="reviewGame('gd2','approved')">Approve</button>
-                    </div>
-                  </div>
-                </td>
-              </tr>
-              <tr data-gstatus="approved" style="cursor:pointer" onclick="toggleGameDetail('gd3')">
-                <td style="padding:10px 0"><div style="font-size:13px;font-weight:600">Neon Abyss 2</div><div style="font-size:11px;color:#9ca3af">Roguelite · 2027</div></td>
-                <td style="padding:10px 0;font-size:13px">Veewo Games</td>
-                <td style="padding:10px 0;font-size:13px;color:#6b7280">Action</td>
-                <td style="padding:10px 0;font-size:13px;color:#6b7280">PC / Switch</td>
-                <td style="padding:10px 0"><span style="font-size:11px;background:#dcfce7;color:#16a34a;padding:2px 8px;border-radius:4px;font-weight:600">Approved</span></td>
-                <td style="padding:10px 0;text-align:right;font-size:12px;color:#9ca3af" id="gd3-arrow">▼</td>
-              </tr>
-              <tr id="gd3" style="display:none;background:#f8f9fa">
-                <td colspan="6" style="padding:12px 16px">
-                  <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:10px">
-                    <div><div style="font-size:11px;color:#9ca3af;margin-bottom:2px">ENGINE</div><div style="font-size:13px;font-weight:500">Godot 4</div></div>
-                    <div><div style="font-size:11px;color:#9ca3af;margin-bottom:2px">PLAYERS</div><div style="font-size:13px;font-weight:500">1-2 Local Co-op</div></div>
-                    <div><div style="font-size:11px;color:#9ca3af;margin-bottom:2px">DEMO SLOT</div><div style="font-size:13px;font-weight:500">Day 2 · Hall B · Booth 07</div></div>
-                    <div><div style="font-size:11px;color:#9ca3af;margin-bottom:2px">TRAILER</div><a href="#" style="font-size:13px;color:#2563eb;font-weight:500" onclick="showToast('Trailer link will open in new tab');return false">🎥 Watch Trailer</a></div>
-                  </div>
-                  <div style="font-size:12px;color:#6b7280">The long-awaited sequel to the hit roguelite dungeon crawler. Dive deeper into the Abyss with new god powers, expanded co-op mechanics, and a fully voiced storyline across 12 procedural biomes.</div>
-                </td>
-              </tr>
-            </tbody>
-          </table>
+          <span id="gs-count" style="font-size:13px;color:#6b7280;margin-left:auto"></span>
         </div>
 
-        <!-- Game Submission Stats -->
-        <div class="editor-card" style="margin-top:16px">
-          <div style="font-weight:700;font-size:15px;margin-bottom:14px">📊 Submission Statistics</div>
-          <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px">
-            <!-- By Genre -->
-            <div>
-              <div style="font-size:12px;font-weight:600;color:#6b7280;text-transform:uppercase;letter-spacing:.5px;margin-bottom:10px">By Genre</div>
-              <div style="display:flex;flex-direction:column;gap:7px">
-                <div style="display:flex;align-items:center;gap:8px">
-                  <span style="font-size:12px;color:#374151;width:80px">Action</span>
-                  <div style="flex:1;background:#e5e7eb;border-radius:4px;height:12px">
-                    <div style="width:35%;background:#2563eb;border-radius:4px;height:12px"></div>
-                  </div>
-                  <span style="font-size:11px;font-weight:600;color:#374151">7</span>
-                </div>
-                <div style="display:flex;align-items:center;gap:8px">
-                  <span style="font-size:12px;color:#374151;width:80px">RPG</span>
-                  <div style="flex:1;background:#e5e7eb;border-radius:4px;height:12px">
-                    <div style="width:25%;background:#7c3aed;border-radius:4px;height:12px"></div>
-                  </div>
-                  <span style="font-size:11px;font-weight:600;color:#374151">5</span>
-                </div>
-                <div style="display:flex;align-items:center;gap:8px">
-                  <span style="font-size:12px;color:#374151;width:80px">Puzzle</span>
-                  <div style="flex:1;background:#e5e7eb;border-radius:4px;height:12px">
-                    <div style="width:20%;background:#16a34a;border-radius:4px;height:12px"></div>
-                  </div>
-                  <span style="font-size:11px;font-weight:600;color:#374151">4</span>
-                </div>
-                <div style="display:flex;align-items:center;gap:8px">
-                  <span style="font-size:12px;color:#374151;width:80px">Strategy</span>
-                  <div style="flex:1;background:#e5e7eb;border-radius:4px;height:12px">
-                    <div style="width:15%;background:#d97706;border-radius:4px;height:12px"></div>
-                  </div>
-                  <span style="font-size:11px;font-weight:600;color:#374151">3</span>
-                </div>
-                <div style="display:flex;align-items:center;gap:8px">
-                  <span style="font-size:12px;color:#374151;width:80px">Other</span>
-                  <div style="flex:1;background:#e5e7eb;border-radius:4px;height:12px">
-                    <div style="width:5%;background:#9ca3af;border-radius:4px;height:12px"></div>
-                  </div>
-                  <span style="font-size:11px;font-weight:600;color:#374151">1</span>
-                </div>
-              </div>
-            </div>
-            <!-- By Platform -->
-            <div>
-              <div style="font-size:12px;font-weight:600;color:#6b7280;text-transform:uppercase;letter-spacing:.5px;margin-bottom:10px">By Platform</div>
-              <div style="display:flex;flex-direction:column;gap:7px">
-                <div style="display:flex;align-items:center;gap:8px">
-                  <span style="font-size:12px;color:#374151;width:80px">PC</span>
-                  <div style="flex:1;background:#e5e7eb;border-radius:4px;height:12px">
-                    <div style="width:70%;background:#0ea5e9;border-radius:4px;height:12px"></div>
-                  </div>
-                  <span style="font-size:11px;font-weight:600;color:#374151">14</span>
-                </div>
-                <div style="display:flex;align-items:center;gap:8px">
-                  <span style="font-size:12px;color:#374151;width:80px">Console</span>
-                  <div style="flex:1;background:#e5e7eb;border-radius:4px;height:12px">
-                    <div style="width:40%;background:#ec4899;border-radius:4px;height:12px"></div>
-                  </div>
-                  <span style="font-size:11px;font-weight:600;color:#374151">8</span>
-                </div>
-                <div style="display:flex;align-items:center;gap:8px">
-                  <span style="font-size:12px;color:#374151;width:80px">Mobile</span>
-                  <div style="flex:1;background:#e5e7eb;border-radius:4px;height:12px">
-                    <div style="width:25%;background:#f59e0b;border-radius:4px;height:12px"></div>
-                  </div>
-                  <span style="font-size:11px;font-weight:600;color:#374151">5</span>
-                </div>
-                <div style="display:flex;align-items:center;gap:8px">
-                  <span style="font-size:12px;color:#374151;width:80px">VR/AR</span>
-                  <div style="flex:1;background:#e5e7eb;border-radius:4px;height:12px">
-                    <div style="width:10%;background:#6366f1;border-radius:4px;height:12px"></div>
-                  </div>
-                  <span style="font-size:11px;font-weight:600;color:#374151">2</span>
-                </div>
-              </div>
-            </div>
-          </div>
-          <div style="margin-top:14px;padding-top:12px;border-top:1px solid #f3f4f6;display:flex;gap:16px">
-            <div style="text-align:center;flex:1">
-              <div style="font-size:22px;font-weight:800;color:#2563eb">20</div>
-              <div style="font-size:11px;color:#6b7280">Total Submitted</div>
-            </div>
-            <div style="text-align:center;flex:1">
-              <div style="font-size:22px;font-weight:800;color:#16a34a">12</div>
-              <div style="font-size:11px;color:#6b7280">Approved</div>
-            </div>
-            <div style="text-align:center;flex:1">
-              <div style="font-size:22px;font-weight:800;color:#d97706">5</div>
-              <div style="font-size:11px;color:#6b7280">Pending Review</div>
-            </div>
-            <div style="text-align:center;flex:1">
-              <div style="font-size:22px;font-weight:800;color:#dc2626">3</div>
-              <div style="font-size:11px;color:#6b7280">Rejected</div>
-            </div>
-          </div>
-        </div>
-        <!-- Batch Review Actions -->
-        <div class="editor-card" style="margin-top:16px">
-          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px">
-            <div style="font-weight:700;font-size:15px">⚡ Batch Review Actions</div>
-            <span style="font-size:12px;color:#9ca3af">9 games pending review</span>
-          </div>
-          <div style="display:flex;gap:10px;margin-bottom:14px">
-            <button style="flex:1;background:#dcfce7;color:#16a34a;border:1px solid #86efac;border-radius:8px;padding:10px;font-size:13px;font-weight:700;cursor:pointer" onclick="batchReviewGames('approve')">✅ Approve All Pending</button>
-            <button style="flex:1;background:#fee2e2;color:#dc2626;border:1px solid #fca5a5;border-radius:8px;padding:10px;font-size:13px;font-weight:700;cursor:pointer" onclick="batchReviewGames('reject')">❌ Reject All Pending</button>
-            <button style="flex:1;background:#eff6ff;color:#2563eb;border:1px solid #93c5fd;border-radius:8px;padding:10px;font-size:13px;font-weight:700;cursor:pointer" onclick="showToast('📧 Review request emails sent to 9 developers')">📧 Request Info from All</button>
-          </div>
-          <div style="display:flex;flex-direction:column;gap:8px">
-            <div style="display:flex;justify-content:space-between;align-items:center;padding:10px 12px;background:#fef3c7;border-radius:8px;border:1px solid #fde68a">
-              <div>
-                <div style="font-size:13px;font-weight:600">Echo Protocol</div>
-                <div style="font-size:11px;color:#6b7280">Tarsier Studios · Puzzle / Story · Submitted 3 days ago</div>
-              </div>
-              <div style="display:flex;gap:6px">
-                <button style="font-size:11px;background:#dcfce7;color:#16a34a;border:none;border-radius:4px;padding:4px 12px;cursor:pointer;font-weight:600" onclick="reviewGame('gd2','approved')">Approve</button>
-                <button style="font-size:11px;background:#fee2e2;color:#dc2626;border:none;border-radius:4px;padding:4px 12px;cursor:pointer;font-weight:600" onclick="reviewGame('gd2','rejected')">Reject</button>
-                <button style="font-size:11px;background:#f3f4f6;color:#374151;border:none;border-radius:4px;padding:4px 12px;cursor:pointer" onclick="showToast('Opening game detail...')">View</button>
-              </div>
-            </div>
-            <div style="display:flex;justify-content:space-between;align-items:center;padding:10px 12px;background:#fef3c7;border-radius:8px;border:1px solid #fde68a">
-              <div>
-                <div style="font-size:13px;font-weight:600">Cyber Nomad</div>
-                <div style="font-size:11px;color:#6b7280">PixelWave Studio · Action · Submitted 1 day ago</div>
-              </div>
-              <div style="display:flex;gap:6px">
-                <button style="font-size:11px;background:#dcfce7;color:#16a34a;border:none;border-radius:4px;padding:4px 12px;cursor:pointer;font-weight:600" onclick="showToast('✅ Cyber Nomad approved')">Approve</button>
-                <button style="font-size:11px;background:#fee2e2;color:#dc2626;border:none;border-radius:4px;padding:4px 12px;cursor:pointer;font-weight:600" onclick="showToast('❌ Cyber Nomad rejected','warning')">Reject</button>
-                <button style="font-size:11px;background:#f3f4f6;color:#374151;border:none;border-radius:4px;padding:4px 12px;cursor:pointer" onclick="showToast('Opening game detail...')">View</button>
-              </div>
-            </div>
-            <div style="display:flex;justify-content:space-between;align-items:center;padding:10px 12px;background:#fef3c7;border-radius:8px;border:1px solid #fde68a">
-              <div>
-                <div style="font-size:13px;font-weight:600">Hollow Depths</div>
-                <div style="font-size:11px;color:#6b7280">Darkforge Games · Horror · Submitted 5 hours ago</div>
-              </div>
-              <div style="display:flex;gap:6px">
-                <button style="font-size:11px;background:#dcfce7;color:#16a34a;border:none;border-radius:4px;padding:4px 12px;cursor:pointer;font-weight:600" onclick="showToast('✅ Hollow Depths approved')">Approve</button>
-                <button style="font-size:11px;background:#fee2e2;color:#dc2626;border:none;border-radius:4px;padding:4px 12px;cursor:pointer;font-weight:600" onclick="showToast('❌ Hollow Depths rejected','warning')">Reject</button>
-                <button style="font-size:11px;background:#f3f4f6;color:#374151;border:none;border-radius:4px;padding:4px 12px;cursor:pointer" onclick="showToast('Opening game detail...')">View</button>
-              </div>
-            </div>
-          </div>
+        <!-- Card grid -->
+        <div id="gs-grid" style="display:grid;grid-template-columns:repeat(4,1fr);gap:16px"></div>
+        <div id="gs-empty" style="display:none;padding:56px;text-align:center;color:#9ca3af">
+          <div style="font-size:40px;margin-bottom:10px">🎮</div>
+          <div style="font-weight:600;font-size:15px;color:#374151">No games found</div>
         </div>
       </div>
 
@@ -4753,6 +4479,9 @@ document.addEventListener('DOMContentLoaded', () => {
 // ── Init ────────────────────────────────────────────────────────────────────────────────────
 let _projAll = [];
 
+// ── Projects state ────────────────────────────────────────────────────────────────────────────────
+let _projStatusFilter = 'all';
+
 function showProjects() {
   hideAllViews();
   document.getElementById('viewProjects').style.display = 'block';
@@ -4762,57 +4491,107 @@ function showProjects() {
   try { projects = JSON.parse(localStorage.getItem('gc_projects') || '[]'); } catch(e) {}
   if (ev) projects = projects.filter(p => p.eventId === ev.id);
 
-  // Fallback demo data
+  // Fallback demo data with status + colors
   if (!projects.length) {
     projects = [
-      { name:'Stellar Drift',  company:'Indie Forge',      genre:'Action RPG',  platform:'PC / Console', id:'p001' },
-      { name:'Neon Abyss 2',   company:'Veewo Games',      genre:'Roguelite',   platform:'PC / Switch',  id:'p002' },
-      { name:'Echo Protocol',  company:'Tarsier Studios',  genre:'Puzzle',      platform:'PC',           id:'p003' },
-      { name:'Void Hunters',   company:'Funcom',           genre:'Survival',    platform:'PC / Console', id:'p004' },
-      { name:'Pixel Odyssey',  company:'Devolver Digital', genre:'Platformer',  platform:'All',          id:'p005' },
-      { name:'Arcane Depths',  company:'Raw Fury',         genre:'Dungeon RPG', platform:'PC',           id:'p006' },
+      { name:'Stellar Drift',  company:'Indie Forge',      genre:'Action RPG',  platform:'PC / Console', id:'p001', status:'approved',  colors:['#1e3a5f','#2563eb'] },
+      { name:'Neon Abyss 2',   company:'Veewo Games',      genre:'Roguelite',   platform:'PC / Switch',  id:'p002', status:'pending',   colors:['#0f172a','#0ea5e9'] },
+      { name:'Echo Protocol',  company:'Tarsier Studios',  genre:'Puzzle',      platform:'PC',           id:'p003', status:'pending',   colors:['#3b1f5e','#9333ea'] },
+      { name:'Void Hunters',   company:'Funcom',           genre:'Survival',    platform:'PC / Console', id:'p004', status:'approved',  colors:['#1a3a2a','#16a34a'] },
+      { name:'Pixel Odyssey',  company:'Devolver Digital', genre:'Platformer',  platform:'All',          id:'p005', status:'approved',  colors:['#7c2d12','#ea580c'] },
+      { name:'Arcane Depths',  company:'Raw Fury',         genre:'Dungeon RPG', platform:'PC',           id:'p006', status:'rejected',  colors:['#1e1b4b','#6366f1'] },
     ];
   }
   _projAll = projects;
+  _projStatusFilter = 'all';
   const searchEl = document.getElementById('proj-search');
   if (searchEl) searchEl.value = '';
-  renderProjectList(_projAll);
+  // Reset filter buttons
+  const filterBtns = document.querySelectorAll('#viewProjects button[onclick^="filterProjStatus"]');
+  filterBtns.forEach(b => { b.style.background='transparent'; b.style.color='#6b7280'; b.style.fontWeight='400'; });
+  const allBtn = document.querySelector('#viewProjects button[onclick="filterProjStatus(\'all\',this)"]');
+  if (allBtn) { allBtn.style.background='#fff'; allBtn.style.color='#374151'; allBtn.style.fontWeight='600'; }
+  renderProjectGrid(_projAll);
 }
 
+function filterProjStatus(status, btn) {
+  _projStatusFilter = status;
+  if (btn) {
+    btn.closest('div').querySelectorAll('button').forEach(b => {
+      b.style.background='transparent'; b.style.color='#6b7280'; b.style.fontWeight='400';
+    });
+    btn.style.background='#fff'; btn.style.color='#374151'; btn.style.fontWeight='600';
+  }
+  filterProjects();
+}
 
 function filterProjects() {
-  const q = (document.getElementById('proj-search').value || '').toLowerCase().trim();
-  const rows = q ? _projAll.filter(p =>
+  const q = (document.getElementById('proj-search')?.value || '').toLowerCase().trim();
+  let rows = _projAll;
+  if (_projStatusFilter !== 'all') rows = rows.filter(p => (p.status||'pending') === _projStatusFilter);
+  if (q) rows = rows.filter(p =>
     (p.name||'').toLowerCase().includes(q) ||
     (p.company||'').toLowerCase().includes(q) ||
     (p.genre||'').toLowerCase().includes(q)
-  ) : _projAll;
-  renderProjectList(rows);
+  );
+  renderProjectGrid(rows);
 }
 
-function renderProjectList(rows) {
-  const list = document.getElementById('proj-list');
+function renderProjectGrid(rows) {
+  const grid = document.getElementById('proj-grid');
   const empty = document.getElementById('proj-empty');
   const countEl = document.getElementById('proj-count');
   if (countEl) countEl.textContent = rows.length + ' project' + (rows.length !== 1 ? 's' : '');
   if (!rows.length) {
-    list.innerHTML = '';
+    if (grid) grid.innerHTML = '';
     if (empty) empty.style.display = 'block';
     return;
   }
   if (empty) empty.style.display = 'none';
-  list.innerHTML = rows.map((p, i) => {
-    const projectUrl = 'ProjectBiz_v1_PC.html?id=' + (p.id || i);
-    return `<div onclick="window.open('${projectUrl}','_blank')" style="display:flex;align-items:center;gap:14px;padding:14px 20px;border-bottom:1px solid #f3f4f6;cursor:pointer" onmouseover="this.style.background='#f9fafb'" onmouseout="this.style.background=''">
-      <div style="width:38px;height:38px;border-radius:10px;background:linear-gradient(135deg,#064e3b,#059669);display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0">🎮</div>
-      <div style="flex:1;min-width:0">
-        <div style="font-weight:600;font-size:14px;color:#111827">${p.name || '—'}</div>
-        <div style="font-size:12px;color:#6b7280;margin-top:2px">${p.genre || ''} ${p.company ? '· ' + p.company : ''} ${p.platform ? '· ' + p.platform : ''}</div>
+  const colors = [
+    ['#1e3a5f','#2563eb'], ['#3b1f5e','#9333ea'], ['#1a3a2a','#16a34a'],
+    ['#7c2d12','#ea580c'], ['#1e1b4b','#6366f1'], ['#0f172a','#0ea5e9'],
+    ['#292524','#78716c'], ['#0c1a2e','#0284c7']
+  ];
+  grid.innerHTML = rows.map((p, i) => {
+    const c = p.colors || colors[i % colors.length];
+    const st = p.status || 'pending';
+    const statusColor = st === 'approved' ? '#16a34a' : st === 'rejected' ? '#dc2626' : '#d97706';
+    const statusBg    = st === 'approved' ? '#dcfce7' : st === 'rejected' ? '#fee2e2' : '#fef3c7';
+    const statusLabel = st.charAt(0).toUpperCase() + st.slice(1);
+    return `<div style="border-radius:12px;overflow:hidden;background:#fff;box-shadow:0 1px 4px rgba(0,0,0,.08);border:1px solid #e5e7eb;cursor:pointer" onclick="openProjectDrawer({name:'${p.name}',company:'${p.company}',genre:'${p.genre}',platform:'${p.platform}',id:'${p.id}'})">
+      <div style="height:140px;background:linear-gradient(135deg,${c[0]},${c[1]});display:flex;align-items:center;justify-content:center">
+        <span style="font-size:40px">🎮</span>
       </div>
-      <div style="font-size:18px;color:#d1d5db">›</div>
+      <div style="padding:12px">
+        <div style="font-weight:700;font-size:14px;color:#111827;margin-bottom:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${p.name||'—'}</div>
+        <div style="font-size:12px;color:#6b7280;margin-bottom:8px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${p.company||''}</div>
+        <div style="display:flex;gap:4px;flex-wrap:wrap;margin-bottom:10px">
+          ${p.genre ? `<span style="font-size:10px;background:#f3f4f6;color:#374151;padding:2px 7px;border-radius:4px">${p.genre}</span>` : ''}
+          ${p.platform ? `<span style="font-size:10px;background:#f3f4f6;color:#374151;padding:2px 7px;border-radius:4px">${p.platform}</span>` : ''}
+        </div>
+        <div style="display:flex;align-items:center;justify-content:space-between">
+          <span style="font-size:11px;background:${statusBg};color:${statusColor};padding:2px 8px;border-radius:4px;font-weight:600">${statusLabel}</span>
+          <div style="display:flex;gap:4px">
+            ${st !== 'approved' ? `<button onclick="event.stopPropagation();projApprove('${p.id}')" style="font-size:11px;padding:3px 8px;border:none;border-radius:4px;cursor:pointer;background:#dcfce7;color:#16a34a;font-weight:600">Approve</button>` : ''}
+            ${st !== 'rejected' ? `<button onclick="event.stopPropagation();projReject('${p.id}')" style="font-size:11px;padding:3px 8px;border:none;border-radius:4px;cursor:pointer;background:#fee2e2;color:#dc2626;font-weight:600">Reject</button>` : ''}
+          </div>
+        </div>
+      </div>
     </div>`;
   }).join('');
 }
+
+function projApprove(id) {
+  const p = _projAll.find(x => x.id === id);
+  if (p) { p.status = 'approved'; filterProjects(); showToast('✓ Project approved'); }
+}
+function projReject(id) {
+  const p = _projAll.find(x => x.id === id);
+  if (p) { p.status = 'rejected'; filterProjects(); showToast('Project rejected', 'warning'); }
+}
+
+function renderProjectList(rows) { renderProjectGrid(rows); }
 
 
 function exportProjectsCSV() {
@@ -5308,9 +5087,132 @@ function showLetsMeet() {
   document.getElementById('viewLetsMeet').style.display = 'block';
   setTimeout(initLmTab, 0);
 }
+// ── Game Showcase data ────────────────────────────────────────────────────────
+let _gsAll = [];
+let _gsFilter = 'all';
+
 function showGameShowcase() {
   hideAllViews();
   document.getElementById('viewGameShowcase').style.display = 'block';
+  // Demo data (gradient covers as placeholders)
+  _gsAll = [
+    { id:'gs1', name:'Stellar Drift',    studio:'Indie Forge',       genre:'Action RPG',  platform:'PC / Console', status:'approved',  showcase:true,  colors:['#1e3a5f','#2563eb'] },
+    { id:'gs2', name:'Echo Protocol',   studio:'Tarsier Studios',   genre:'Puzzle',      platform:'PC / Mobile',  status:'pending',   showcase:false, colors:['#3b1f5e','#9333ea'] },
+    { id:'gs3', name:'Void Hunters',    studio:'Funcom',            genre:'Survival',    platform:'PC / Console', status:'pending',   showcase:false, colors:['#1a3a2a','#16a34a'] },
+    { id:'gs4', name:'Pixel Odyssey',   studio:'Devolver Digital',  genre:'Platformer',  platform:'All',          status:'approved',  showcase:true,  colors:['#7c2d12','#ea580c'] },
+    { id:'gs5', name:'Arcane Depths',   studio:'Raw Fury',          genre:'Dungeon RPG', platform:'PC',           status:'approved',  showcase:false, colors:['#1e1b4b','#6366f1'] },
+    { id:'gs6', name:'Neon Abyss 2',    studio:'Veewo Games',       genre:'Roguelite',   platform:'PC / Switch',  status:'rejected',  showcase:false, colors:['#0f172a','#0ea5e9'] },
+    { id:'gs7', name:'Iron Citadel',    studio:'Paradox Arc',       genre:'Strategy',    platform:'PC',           status:'pending',   showcase:false, colors:['#292524','#78716c'] },
+    { id:'gs8', name:'Hollow Depths',   studio:'Team17',            genre:'Action',      platform:'PC / Console', status:'approved',  showcase:true,  colors:['#0c1a2e','#0284c7'] },
+  ];
+  _gsFilter = 'all';
+  const searchEl = document.getElementById('gs-search');
+  if (searchEl) searchEl.value = '';
+  // Reset filter buttons
+  document.querySelectorAll('#viewGameShowcase .editor-topbar ~ div button[onclick^="filterGS"]').forEach(b => {
+    b.style.background = 'transparent'; b.style.color = '#6b7280'; b.style.fontWeight = '400';
+  });
+  const allBtn = document.querySelector('#viewGameShowcase button[onclick="filterGS(\'all\',this)"]');
+  if (allBtn) { allBtn.style.background = '#fff'; allBtn.style.color = '#374151'; allBtn.style.fontWeight = '600'; }
+  renderGSGrid(_gsAll);
+}
+
+function filterGS(status, btn) {
+  _gsFilter = status;
+  // Update button styles
+  if (btn) {
+    btn.closest('div').querySelectorAll('button').forEach(b => {
+      b.style.background = 'transparent'; b.style.color = '#6b7280'; b.style.fontWeight = '400';
+    });
+    btn.style.background = '#fff'; btn.style.color = '#374151'; btn.style.fontWeight = '600';
+  }
+  filterGameShowcase();
+}
+
+function filterGameShowcase() {
+  const q = (document.getElementById('gs-search')?.value || '').toLowerCase().trim();
+  let rows = _gsAll;
+  if (_gsFilter !== 'all') rows = rows.filter(g => g.status === _gsFilter);
+  if (q) rows = rows.filter(g =>
+    (g.name||'').toLowerCase().includes(q) ||
+    (g.studio||'').toLowerCase().includes(q) ||
+    (g.genre||'').toLowerCase().includes(q)
+  );
+  renderGSGrid(rows);
+}
+
+function renderGSGrid(rows) {
+  const grid = document.getElementById('gs-grid');
+  const empty = document.getElementById('gs-empty');
+  const countEl = document.getElementById('gs-count');
+  if (countEl) countEl.textContent = rows.length + ' game' + (rows.length !== 1 ? 's' : '');
+  if (!rows.length) {
+    grid.innerHTML = '';
+    if (empty) empty.style.display = 'block';
+    return;
+  }
+  if (empty) empty.style.display = 'none';
+  grid.innerHTML = rows.map(g => {
+    const statusColor = g.status === 'approved' ? '#16a34a' : g.status === 'rejected' ? '#dc2626' : '#d97706';
+    const statusBg    = g.status === 'approved' ? '#dcfce7' : g.status === 'rejected' ? '#fee2e2' : '#fef3c7';
+    const statusLabel = g.status.charAt(0).toUpperCase() + g.status.slice(1);
+    const showcaseBtn = g.showcase
+      ? `<button onclick="toggleGSShowcase('${g.id}',this)" style="font-size:11px;padding:3px 10px;border:none;border-radius:4px;cursor:pointer;background:#2563eb;color:#fff;font-weight:600">✓ In Showcase</button>`
+      : `<button onclick="toggleGSShowcase('${g.id}',this)" style="font-size:11px;padding:3px 10px;border:none;border-radius:4px;cursor:pointer;background:#f3f4f6;color:#374151;font-weight:500">+ Showcase</button>`;
+    return `<div style="border-radius:12px;overflow:hidden;background:#fff;box-shadow:0 1px 4px rgba(0,0,0,.08);border:1px solid #e5e7eb">
+      <div style="position:relative;height:140px;background:linear-gradient(135deg,${g.colors[0]},${g.colors[1]});display:flex;align-items:center;justify-content:center">
+        <span style="font-size:40px">🎮</span>
+        <div style="position:absolute;top:8px;right:8px">${showcaseBtn}</div>
+        ${g.status !== 'pending' ? '' : ''}
+      </div>
+      <div style="padding:12px">
+        <div style="font-weight:700;font-size:14px;color:#111827;margin-bottom:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${g.name}</div>
+        <div style="font-size:12px;color:#6b7280;margin-bottom:8px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${g.studio}</div>
+        <div style="display:flex;gap:4px;flex-wrap:wrap;margin-bottom:10px">
+          <span style="font-size:10px;background:#f3f4f6;color:#374151;padding:2px 7px;border-radius:4px">${g.genre}</span>
+          <span style="font-size:10px;background:#f3f4f6;color:#374151;padding:2px 7px;border-radius:4px">${g.platform}</span>
+        </div>
+        <div style="display:flex;align-items:center;justify-content:space-between">
+          <span style="font-size:11px;background:${statusBg};color:${statusColor};padding:2px 8px;border-radius:4px;font-weight:600">${statusLabel}</span>
+          <div style="display:flex;gap:4px">
+            ${g.status !== 'approved' ? `<button onclick="gsApprove('${g.id}')" style="font-size:11px;padding:3px 8px;border:none;border-radius:4px;cursor:pointer;background:#dcfce7;color:#16a34a;font-weight:600">Approve</button>` : ''}
+            ${g.status !== 'rejected' ? `<button onclick="gsReject('${g.id}')" style="font-size:11px;padding:3px 8px;border:none;border-radius:4px;cursor:pointer;background:#fee2e2;color:#dc2626;font-weight:600">Reject</button>` : ''}
+          </div>
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function toggleGSShowcase(id, btn) {
+  const g = _gsAll.find(x => x.id === id);
+  if (!g) return;
+  g.showcase = !g.showcase;
+  if (g.showcase) {
+    btn.textContent = '✓ In Showcase';
+    btn.style.background = '#2563eb'; btn.style.color = '#fff'; btn.style.fontWeight = '600';
+    showToast('Added to Showcase');
+  } else {
+    btn.textContent = '+ Showcase';
+    btn.style.background = '#f3f4f6'; btn.style.color = '#374151'; btn.style.fontWeight = '500';
+    showToast('Removed from Showcase', 'info');
+  }
+}
+
+function gsApprove(id) {
+  const g = _gsAll.find(x => x.id === id);
+  if (!g) return;
+  g.status = 'approved';
+  filterGameShowcase();
+  showToast('✓ Game approved');
+}
+
+function gsReject(id) {
+  const g = _gsAll.find(x => x.id === id);
+  if (!g) return;
+  g.status = 'rejected';
+  filterGameShowcase();
+  showToast('Game rejected', 'warning');
 }
 function showMap() {
   hideAllViews();
