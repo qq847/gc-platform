@@ -57,7 +57,8 @@ html,body{min-height:100vh;background:var(--bg);font-family:'DM Sans',sans-serif
 .nav-item{display:flex;align-items:center;gap:9px;padding:8px 10px;border-radius:7px;font-size:13px;font-weight:500;color:var(--text2);cursor:pointer;text-decoration:none;transition:background .1s,color .1s;user-select:none;position:relative}
 .nav-item:hover{background:var(--bg);color:var(--text1)}
 .nav-item.active{background:var(--blue-light);color:var(--blue);font-weight:600}
-.nav-item .ni-icon{font-size:14px;width:18px;text-align:center;flex-shrink:0}
+.nav-item .ni-icon{width:10px;height:10px;border-radius:50%;flex-shrink:0;background:#d1d5db;border:2px solid #d1d5db;display:inline-block;transition:background .15s,border-color .15s}
+.nav-item .ni-icon.on{background:#16a34a;border-color:#16a34a}
 .nav-item.dim{opacity:.4;pointer-events:none}
 .nav-item .off-badge{margin-left:auto;font-size:10px;padding:1px 5px;border-radius:4px;background:var(--border-light);color:var(--text3);font-weight:600}
 /* nav toggle (left-side) */
@@ -170,7 +171,8 @@ html,body{min-height:100vh;background:var(--bg);font-family:'DM Sans',sans-serif
 .module-list{display:flex;flex-direction:column;gap:6px;margin-top:4px}
 .module-item{display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:7px;border:1px solid var(--border);background:var(--white);transition:border-color .12s}
 .module-item.enabled{border-color:var(--blue-mid);background:var(--blue-light)}
-.module-item-icon{font-size:16px;width:24px;text-align:center;flex-shrink:0}
+.module-item-icon{width:12px;height:12px;border-radius:50%;flex-shrink:0;background:#d1d5db;border:2px solid #d1d5db;transition:background .15s,border-color .15s}
+.module-item.enabled .module-item-icon{background:#16a34a;border-color:#16a34a}
 .module-item-info{flex:1;min-width:0}
 .module-item-name{font-size:12px;font-weight:600;color:var(--text1)}
 .module-item-desc{font-size:11px;color:var(--text3)}
@@ -3122,6 +3124,7 @@ const ALL_MODULES = [
   { id:'lets-meet',   icon:'📅', name:"Let's Meet",        desc:'Matchmaking scheduler' },
   { id:'showcase',    icon:'🎮', name:'Game Showcase',     desc:'Game pitch & showcase' },
   { id:'map',         icon:'🗺️', name:'Map',               desc:'Interactive venue map' },
+  { id:'faq',         icon:'❓', name:'FAQ',               desc:'Frequently asked questions' },
   { id:'live',        icon:'📡', name:'Live',              desc:'Livestream integration' },
 ];
 
@@ -3131,19 +3134,19 @@ const SIDEBAR_NAV = [
   { label:'Attendees',    icon:'👥', modId:null, fn:'showAttendees' },
   { label:'Projects',     icon:'🎮', modId:null, fn:'showProjects' },
   { sep: true },
-  { label:'Free Ticket',  icon:'🎫', modId:null, fn:'showFreeTicket' },
-  { label:'Paid Ticket',  icon:'💳', modId:null, fn:'showPaidTicket' },
-  { label:'Free Pod',     icon:'🪑', modId:null, fn:'showFreePod' },
-  { label:'Paid Pod',     icon:'💺', modId:null, fn:'showPaidPod' },
-  { label:'Free Booth',   icon:'🏪', modId:null, fn:'showFreeBooth' },
-  { label:'Paid Booth',   icon:'🏬', modId:null, fn:'showPaidBooth' },
-  { label:'Sponsorship',  icon:'🤝', modId:null, fn:'showSponsorship' },
-  { label:'Buyer Invitation', icon:'🛒', modId:null, fn:'showBuyerInvitation' },
-  { label:"Let's Meet",   icon:'📅', modId:null, fn:'showLetsMeet' },
-  { label:'Schedule',      icon:'🎤️', modId:null, fn:'showSchedule' },
-  { label:'Award',         icon:'🏆', modId:null, fn:'showAward' },
-  { label:'Game Showcase', icon:'🎮', modId:null, fn:'showGameShowcase' },
-  { label:'Map',           icon:'🗺️', modId:null, fn:'showMap' },
+  { label:'Free Ticket',  icon:'🎫', modId:'free-reg',    fn:'showFreeTicket' },
+  { label:'Paid Ticket',  icon:'💳', modId:'paid-ticket', fn:'showPaidTicket' },
+  { label:'Free Pod',     icon:'🪑', modId:'free-pod',    fn:'showFreePod' },
+  { label:'Paid Pod',     icon:'💺', modId:'paid-pod',    fn:'showPaidPod' },
+  { label:'Free Booth',   icon:'🏪', modId:'free-booth',  fn:'showFreeBooth' },
+  { label:'Paid Booth',   icon:'🏬', modId:'paid-booth',  fn:'showPaidBooth' },
+  { label:'Sponsorship',  icon:'🤝', modId:'sponsorship', fn:'showSponsorship' },
+  { label:'Buyer Invitation', icon:'🛒', modId:'buyer-inv',  fn:'showBuyerInvitation' },
+  { label:"Let's Meet",   icon:'📅', modId:'lets-meet',   fn:'showLetsMeet' },
+  { label:'Schedule',      icon:'🎤️', modId:'panel',       fn:'showSchedule' },
+  { label:'Award',         icon:'🏆', modId:'award',       fn:'showAward' },
+  { label:'Game Showcase', icon:'🎮', modId:'showcase',    fn:'showGameShowcase' },
+  { label:'Map',           icon:'🗺️', modId:'map',         fn:'showMap' },
   { sep: true },
 ];
 
@@ -3595,7 +3598,7 @@ function previewEvent() {
 function renderModuleList(ev) {
   const active = new Set(ev.modules || []);
   const list = document.getElementById('moduleList');
-  const SHOWN = ['free-reg','paid-ticket','free-pod','paid-pod','free-booth','paid-booth','sponsorship','panel','award','buyer-inv','lets-meet','showcase'];
+  const SHOWN = ['free-reg','paid-ticket','free-pod','paid-pod','free-booth','paid-booth','sponsorship','panel','award','buyer-inv','lets-meet','showcase','map','faq'];
   // Module completion scores (static demo data)
   const COMPLETION = {
     'free-reg': 85, 'paid-ticket': 72, 'free-pod': 40, 'paid-pod': 55,
@@ -3609,7 +3612,7 @@ function renderModuleList(ev) {
     const pct = COMPLETION[id] || 0;
     const pctColor = pct >= 80 ? '#16a34a' : pct >= 50 ? '#d97706' : '#dc2626';
     return `<div class="module-item ${on?'enabled':''}" id="mod-item-${id}">
-      <div class="module-item-icon">${m.icon}</div>
+      <div class="module-item-icon"></div>
       <div class="module-item-info" style="flex:1">
         <div class="module-item-name">${m.name}</div>
         <div class="module-item-desc">${m.desc}</div>
@@ -3728,7 +3731,7 @@ function renderEventSidebarNav(ev) {
       if (item.fn) fn = item.fn + '()';
       else if (item.label === 'Event Information') fn = 'showEventEditor()';
       else fn = "showSettings()";
-      return `<a class="nav-item" onclick="${fn}" style="cursor:pointer"><span class="ni-icon">${item.icon}</span><span class="ni-label on">${item.label}</span></a>`;
+      return `<a class="nav-item" onclick="${fn}" style="cursor:pointer"><span class="ni-label on" style="margin-left:0">${item.label}</span></a>`;
     }
     const on = active.has(item.modId);
     const uid = 'ntog-' + item.modId;
@@ -3741,9 +3744,7 @@ function renderEventSidebarNav(ev) {
         <input type="checkbox" id="${uid}" ${on ? 'checked' : ''} onchange="navToggleModule('${item.modId}',this)">
         <span class="nav-toggle-slider"></span>
       </label>
-      <span class="ni-icon">${item.icon}</span>
-      <span class="ni-label ${on ? 'on' : 'off'}" onclick="${on ? `openModulePage('${item.modId}')` : ''}">${item.label}</span>
-      <span style="width:6px;height:6px;border-radius:50%;background:${dotColor};flex-shrink:0;margin-left:auto" title="${on ? pct+'% complete' : 'Disabled'}"></span>
+      <span class="ni-label ${on ? 'on' : 'off'}" onclick="${item.fn ? item.fn+'()' : ''}" style="cursor:pointer">${item.label}</span>
     </div>`;
   }).join('');
 }
@@ -4312,7 +4313,8 @@ function buildPublicPageUrl() {
     cemail: ev.contactEmail || '',
     modules: modules,
     status: ev.status || 'draft',
-    attendees: ev.attendees || 0
+    attendees: ev.attendees || 0,
+    cover: ev.cover || ''
   });
   p.set('_v', '20260411');
   return base + '?' + p.toString();
