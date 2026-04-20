@@ -680,12 +680,12 @@ img { display: block; max-width: 100%; }
   <div class="nav-spacer"></div>
   <div class="nav-tabs">
     <button class="nav-tab active" onclick="scrollToSection('about')">About</button>
-    <button class="nav-tab" onclick="scrollToSection('tickets')">Tickets</button>
-    <button class="nav-tab" onclick="scrollToSection('sponsor')">Sponsor</button>
-    <button class="nav-tab" onclick="scrollToSection('booths')">Booths</button>
-    <button class="nav-tab" onclick="scrollToSection('schedule')">Schedule</button>
-    <button class="nav-tab" onclick="scrollToSection('projects')">Projects</button>
-    <button class="nav-tab" onclick="scrollToSection('attendees')">Attendees</button>
+    <button class="nav-tab" id="nav-tab-tickets" onclick="scrollToSection('tickets')">Tickets</button>
+    <button class="nav-tab" id="nav-tab-sponsor" onclick="scrollToSection('sponsor')">Sponsor</button>
+    <button class="nav-tab" id="nav-tab-booths" onclick="scrollToSection('booths')">Booths</button>
+    <button class="nav-tab" id="nav-tab-schedule" onclick="scrollToSection('schedule')">Schedule</button>
+    <button class="nav-tab" id="nav-tab-projects" onclick="scrollToSection('projects')">Projects</button>
+    <button class="nav-tab" id="nav-tab-attendees" onclick="scrollToSection('attendees')">Attendees</button>
     <button class="nav-tab" id="nav-tab-pod" onclick="scrollToSection('pods')" style="display:none">Pods</button>
     <button class="nav-tab" id="nav-tab-award" onclick="scrollToSection('award')" style="display:none">Awards</button>
     <button class="nav-tab" id="nav-tab-meet" onclick="scrollToSection('letsmeet')" style="display:none">Let's Meet</button>
@@ -776,12 +776,12 @@ img { display: block; max-width: 100%; }
 <div class="section-nav">
   <div class="section-nav-inner">
     <button class="snav-item active" onclick="scrollToSection('about')">About</button>
-    <button class="snav-item" onclick="scrollToSection('tickets')">🎟 Tickets</button>
-    <button class="snav-item" onclick="scrollToSection('sponsor')">🤝 Sponsorship</button>
-    <button class="snav-item" onclick="scrollToSection('booths')">🏪 Booths</button>
-    <button class="snav-item" onclick="scrollToSection('schedule')">📅 Schedule</button>
-    <button class="snav-item" onclick="scrollToSection('projects')">🕹 Projects</button>
-    <button class="snav-item" onclick="scrollToSection('attendees')">👥 Attendees</button>
+    <button class="snav-item" id="snav-tickets" onclick="scrollToSection('tickets')">🎟 Tickets</button>
+    <button class="snav-item" id="snav-sponsor" onclick="scrollToSection('sponsor')">🤝 Sponsorship</button>
+    <button class="snav-item" id="snav-booths" onclick="scrollToSection('booths')">🏪 Booths</button>
+    <button class="snav-item" id="snav-schedule" onclick="scrollToSection('schedule')">📅 Schedule</button>
+    <button class="snav-item" id="snav-projects" onclick="scrollToSection('projects')">🕹 Projects</button>
+    <button class="snav-item" id="snav-attendees" onclick="scrollToSection('attendees')">👥 Attendees</button>
     <button class="snav-item" id="snav-pod" onclick="scrollToSection('pods')" style="display:none">🛖 Pods</button>
     <button class="snav-item" id="snav-award" onclick="scrollToSection('award')" style="display:none">🏆 Awards</button>
     <button class="snav-item" id="snav-meet" onclick="scrollToSection('letsmeet')" style="display:none">🤝 Let's Meet</button>
@@ -1209,16 +1209,24 @@ const modules  = get('modules')  ? get('modules').split(',').map(s=>s.trim()) : 
 const status   = get('status')   || 'upcoming';
 const attendees= parseInt(get('attendees')) || 847;
 
-const hasFreeReg   = modules.some(m=>m.toLowerCase().includes('free'));
-const hasPaidReg   = modules.some(m=>m.toLowerCase().includes('paid reg'));
-const hasSponsorship = modules.some(m=>m.toLowerCase().includes('sponsor'));
-const hasBooth     = modules.some(m=>m.toLowerCase().includes('booth'));
-const hasPanel     = modules.some(m=>m.toLowerCase().includes('panel') || m.toLowerCase().includes('session'));
-const hasShowcase  = modules.some(m=>m.toLowerCase().includes('showcase') || m.toLowerCase().includes('game'));
-const hasAward     = modules.some(m=>m.toLowerCase().includes('award'));
-const hasPod       = modules.some(m=>m.toLowerCase().includes('pod'));
-const hasMeet      = modules.some(m=>m.toLowerCase().includes('meet'));
-const hasBuyer     = modules.some(m=>m.toLowerCase().includes('buyer'));
+// ─── MODULE FLAGS (exact match against Dashboard module IDs) ─────
+const hasModule      = id => modules.some(m => m.trim() === id);
+const hasFreeReg     = hasModule('free-reg');
+const hasPaidReg     = hasModule('paid-ticket');
+const hasTicket      = hasFreeReg || hasPaidReg;
+const hasSponsorship = hasModule('sponsorship');
+const hasFreeBooth   = hasModule('free-booth');
+const hasPaidBooth   = hasModule('paid-booth');
+const hasBooth       = hasFreeBooth || hasPaidBooth;
+const hasPanel       = hasModule('panel');
+const hasShowcase    = hasModule('showcase');
+const hasAward       = hasModule('award');
+const hasFreePod     = hasModule('free-pod');
+const hasPaidPod     = hasModule('paid-pod');
+const hasPod         = hasFreePod || hasPaidPod;
+const hasMeet        = hasModule('lets-meet');
+const hasBuyer       = hasModule('buyer-inv');
+const isBlankEvent   = modules.length === 0;
 
 // ─── FILL STATIC FIELDS ───────────────────────────────
 document.title = title;
@@ -1340,10 +1348,20 @@ if(hidTickets.length){
 }
 $('ticket-count-badge').textContent = TICKETS.length + ' ticket types';
 
-// Update hero/sidebar price
-const minPrice = TICKETS.find(t=>t.priceNum===0) ? 'From Free' : '€' + Math.min(...TICKETS.map(t=>t.priceNum));
-$('hero-reg-price').textContent = minPrice;
-$('side-price').textContent = minPrice;
+// Update hero/sidebar price — only if ticket module is enabled
+if (hasTicket) {
+  const minPrice = TICKETS.find(t=>t.priceNum===0) ? 'From Free' : '\u20ac' + Math.min(...TICKETS.map(t=>t.priceNum));
+  $('hero-reg-price').textContent = minPrice;
+  $('side-price').textContent = minPrice;
+} else {
+  // No ticket module: hide hero reg box and nav CTA
+  const regBox = document.querySelector('.hero-reg-box');
+  if (regBox) regBox.style.display = 'none';
+  const navCta = document.getElementById('nav-reg-btn');
+  if (navCta) navCta.style.display = 'none';
+  const sideReg = document.getElementById('side-reg-card');
+  if (sideReg) sideReg.style.display = 'none';
+}
 
 // ─── SPONSORSHIP ──────────────────────────────────────
 const SPONSORS = [
@@ -1777,15 +1795,29 @@ function injectComingSoon(sectionId, label) {
   }
 }
 
-// Sponsor: hide if not enabled
-if(!hasSponsorship){ const s=document.getElementById('sponsor'); if(s)s.style.display='none'; }
-
-// Always show Booth, Schedule, Projects — inject Coming Soon if empty
+// ─── MODULE-BASED SECTION VISIBILITY ────────────────────────────
+function hideSectionFull(sectionId, navTabId, snavId) {
+  const s = document.getElementById(sectionId);
+  if (s) s.style.display = 'none';
+  if (navTabId) { const n = document.getElementById(navTabId); if (n) n.style.display = 'none'; }
+  if (snavId)   { const sv = document.getElementById(snavId);   if (sv) sv.style.display = 'none'; }
+}
+// Tickets: hide if neither free-reg nor paid-ticket enabled
+if (!hasTicket) hideSectionFull('tickets', 'nav-tab-tickets', 'snav-tickets');
+// Sponsorship: hide if not enabled
+if (!hasSponsorship) {
+  hideSectionFull('sponsor', 'nav-tab-sponsor', 'snav-sponsor');
+  hideSectionFull('sponsor-wall', null, null);
+}
+// Booths: hide if neither free-booth nor paid-booth enabled
+if (!hasBooth) hideSectionFull('booths', 'nav-tab-booths', 'snav-booths');
+// Schedule: hide if panel module not enabled
+if (!hasPanel) hideSectionFull('schedule', 'nav-tab-schedule', 'snav-schedule');
+// Projects/Showcase: hide if showcase module not enabled
+if (!hasShowcase) hideSectionFull('projects', 'nav-tab-projects', 'snav-projects');
+// Attendees: always show, inject Coming Soon if blank event
 setTimeout(() => {
-  injectComingSoon('booths', 'Booth');
-  injectComingSoon('schedule', 'Schedule');
-  injectComingSoon('projects', 'Projects');
-  injectComingSoon('attendees', 'Attendees');
+  if (isBlankEvent) injectComingSoon('attendees', 'Attendees');
 }, 100);
 
 // ─── TICKET PROGRESS BARS ──────────────────────────────────────
