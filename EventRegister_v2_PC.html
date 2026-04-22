@@ -170,6 +170,19 @@ button { font-family: var(--font); cursor: pointer; }
 }
 .btn-submit:hover { background: var(--c-green-d); transform: translateY(-1px); }
 .btn-submit:disabled { background: var(--c-dim); cursor: not-allowed; transform: none; }
+.btn-submit-wrap { position: relative; margin-top: 20px; }
+.btn-submit-wrap .btn-submit { margin-top: 0; }
+.btn-submit-wrap .btn-tooltip {
+  display: none; position: absolute; bottom: calc(100% + 8px); left: 50%; transform: translateX(-50%);
+  background: #1f2937; color: #fff; font-size: 11px; font-weight: 500;
+  padding: 6px 10px; border-radius: 6px; white-space: nowrap;
+  pointer-events: none; z-index: 10;
+}
+.btn-submit-wrap .btn-tooltip::after {
+  content: ''; position: absolute; top: 100%; left: 50%; transform: translateX(-50%);
+  border: 5px solid transparent; border-top-color: #1f2937;
+}
+.btn-submit-wrap:hover .btn-tooltip { display: block; }
 
 /* ORDER SUMMARY (sidebar) */
 .summary-card { position: sticky; top: 80px; }
@@ -354,7 +367,10 @@ button { font-family: var(--font); cursor: pointer; }
         </div>
       </div>
 
-      <button class="btn-submit" id="submitBtn" disabled>Complete Registration →</button>
+      <div class="btn-submit-wrap" id="submitBtnWrap">
+        <span class="btn-tooltip" id="submitTooltip">Please select a ticket and agree to the Terms</span>
+        <button class="btn-submit" id="submitBtn" disabled>Complete Registration →</button>
+      </div>
     </div>
 
   </div>
@@ -475,7 +491,7 @@ document.getElementById('goEventBtn').onclick = () => location.href = eventUrl;
 
 // ─── TICKET DATA ──────────────────────────────────────────
 const tickets = [
-  { id:'general',   name:'General Admission', desc:'Access to all public areas, networking sessions, and event app.', price:0,    avail:999, badges:['Free'] },
+  { id:'free',      name:'General Admission', desc:'Access to all public areas, networking sessions, and event app.', price:0,    avail:999, badges:['Free'] },
   { id:'pro',       name:'Professional Pass',  desc:'All General perks + priority seating, 1 business meeting slot, lunch.', price:299,  avail:90,  badges:['Paid','Business'] },
   { id:'business',  name:'Business Pass',      desc:'All Professional perks + 3 meeting slots, VIP lounge, speaker dinner.', price:499,  avail:80,  badges:['Paid','Business'] },
   { id:'vip',       name:'VIP All-Access',     desc:'Unlimited meetings, private lounge, award ceremony seat, concierge.', price:899,  avail:30,  badges:['Premium'] },
@@ -545,8 +561,18 @@ function validateForm() {
   const role    = document.getElementById('f-role').value;
   const terms   = document.getElementById('chk-terms').checked;
   const btn     = document.getElementById('submitBtn');
+  const tooltip = document.getElementById('submitTooltip');
   const valid   = selectedTicket && fname && lname && email && company && title && role && terms;
   btn.disabled = !valid;
+  if (!valid && tooltip) {
+    if (!selectedTicket) tooltip.textContent = 'Please select a ticket first';
+    else if (!terms) tooltip.textContent = 'Please agree to the Terms & Conditions';
+    else tooltip.textContent = 'Please fill in all required fields';
+  }
+  // Hide tooltip wrapper hover when valid
+  const wrap = document.getElementById('submitBtnWrap');
+  if (wrap) wrap.style.pointerEvents = valid ? 'none' : '';
+  if (btn) btn.style.pointerEvents = 'auto';
 }
 
 ['f-fname','f-lname','f-email','f-company','f-title','f-role'].forEach(id => {
